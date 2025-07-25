@@ -1,0 +1,338 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/api-gateway/app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - auth-service
+      - data-service
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/auth-service/app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Data Service
+  data-service:
+    build:
+      context: ./services/data-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./services/data-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - app-network
+    restart: unless-stopped
+  
+  # Celery Worker for Data Processing
+  celery-worker:
+    build:
+      context: ./services/data-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/data-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - app-network
+    command: celery -A app.celery_app worker --loglevel=info
+    restart: unless-stopped
+
+  # Celery Worker for Video Processing
+  video-worker:
+    build:
+      context: ./services/video-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/video-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - ai-service
+    networks:
+      - app-network
+    command: celery -A app.celery_app worker --loglevel=info --queues=video_generation
+    restart: unless-stopped
+
+  # Celery Worker for AI Tasks
+  ai-worker:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/ai-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    command: celery -A app.celery_app worker --loglevel=info --queues=ai_tasks
+    restart: unless-stopped
+
+  # Celery Beat Scheduler
+  celery-beat:
+    build:
+      context: ./services/scheduler-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/scheduler-service/app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    command: celery -A app.celery_app beat --loglevel=info
+    restart: unless-stopped
+
+  # Inference Service (Legacy - to be phased out)
+  inference-service:
+    build:
+      context: ./services/inference-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./services/inference-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Video Generation Service
+  video-service:
+    build:
+      context: ./services/video-service
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./services/video-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - ai-service
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # AI Integration Service
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./services/ai-service/app:/app/app
+      - /tmp:/tmp
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Social Platform Service
+  social-service:
+    build:
+      context: ./services/social-service
+      dockerfile: Dockerfile
+    ports:
+      - "8006:8006"
+    volumes:
+      - ./services/social-service/app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Trending Analysis Service
+  trend-service:
+    build:
+      context: ./services/trend-service
+      dockerfile: Dockerfile
+    ports:
+      - "8007:8007"
+    volumes:
+      - ./services/trend-service/app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Scheduler Service
+  scheduler-service:
+    build:
+      context: ./services/scheduler-service
+      dockerfile: Dockerfile
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./services/scheduler-service/app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-auto_video_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password_here}
+      POSTGRES_DB: ${POSTGRES_DB:-auto_video_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+      - ./scripts/video_schema.sql:/docker-entrypoint-initdb.d/02-video-schema.sql
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-auto_video_user}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MinIO (S3-compatible storage)
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Database Migrations (runs once)
+  migrations:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-auto_video_user}:${POSTGRES_PASSWORD:-your_secure_password_here}@postgres:5432/${POSTGRES_DB:-auto_video_db}
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Waiting for postgres...' &&
+        while ! nc -z postgres 5432; do sleep 1; done &&
+        echo 'PostgreSQL started' &&
+        python -c 'from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)' &&
+        echo 'Database tables created successfully'
+      "
+    restart: "no"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

@@ -1,0 +1,183 @@
+name: Performance Testing
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Weekly on Sunday at 3 AM
+  workflow_dispatch:
+    inputs:
+      test_duration:
+        description: 'Test duration in minutes'
+        required: false
+        default: '5'
+      target_rps:
+        description: 'Target requests per second'
+        required: false
+        default: '100'
+
+jobs:
+  load-test:
+    name: API Load Testing
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install locust psutil
+
+      - name: Start services
+        run: |
+          cp .env.example .env
+          docker-compose up -d --build
+          sleep 60  # Wait for services to be ready
+
+      - name: Create Locust test file
+        run: |
+          cat > locustfile.py << 'EOF'
+          from locust import HttpUser, task, between
+          import json
+          import random
+          import string
+
+          class VideoGenerationUser(HttpUser):
+              wait_time = between(1, 3)
+              
+              def on_start(self):
+                  # Register a test user
+                  username = ''.join(random.choices(string.ascii_letters, k=8))
+                  email = f"{username}@test.com"
+                  password = "testpass123"
+                  
+                  response = self.client.post("/api/v1/auth/register", json={
+                      "username": username,
+                      "email": email, 
+                      "password": password
+                  })
+                  
+                  if response.status_code == 201:
+                      # Login to get token
+                      login_response = self.client.post("/api/v1/auth/login", data={
+                          "username": email,
+                          "password": password
+                      })
+                      
+                      if login_response.status_code == 200:
+                          token = login_response.json()["access_token"]
+                          self.headers = {"Authorization": f"Bearer {token}"}
+                      else:
+                          self.headers = {}
+                  else:
+                      self.headers = {}
+
+              @task(3)
+              def health_check(self):
+                  self.client.get("/health")
+
+              @task(2)
+              def user_profile(self):
+                  if hasattr(self, 'headers'):
+                      self.client.get("/api/v1/auth/me", headers=self.headers)
+
+              @task(1)
+              def create_video_project(self):
+                  if hasattr(self, 'headers'):
+                      self.client.post("/api/v1/video/projects", 
+                          headers=self.headers,
+                          json={
+                              "title": f"Test Video {random.randint(1, 1000)}",
+                              "description": "Performance test video"
+                          })
+          EOF
+
+      - name: Run load test
+        run: |
+          locust -f locustfile.py \
+            --host=http://localhost:8000 \
+            --users=50 \
+            --spawn-rate=5 \
+            --run-time=${{ github.event.inputs.test_duration || '5' }}m \
+            --headless \
+            --html=load_test_report.html \
+            --csv=load_test_results
+
+      - name: Generate performance report
+        run: |
+          cat > performance_summary.md << 'EOF'
+          # Performance Test Results
+          
+          ## Test Configuration
+          - Duration: ${{ github.event.inputs.test_duration || '5' }} minutes
+          - Target RPS: ${{ github.event.inputs.target_rps || '100' }}
+          - Concurrent Users: 50
+          
+          ## Results Summary
+          EOF
+          
+          if [ -f "load_test_results_stats.csv" ]; then
+            echo "Load test completed. Results saved."
+            tail -n +2 load_test_results_stats.csv | head -10 >> performance_summary.md
+          else
+            echo "Load test results not found."
+          fi
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-reports
+          path: |
+            load_test_report.html
+            load_test_results_*.csv
+            performance_summary.md
+
+      - name: Check performance thresholds
+        run: |
+          # Simple threshold checking
+          if [ -f "load_test_results_stats.csv" ]; then
+            avg_response_time=$(tail -n +2 load_test_results_stats.csv | head -1 | cut -d',' -f7)
+            echo "Average response time: ${avg_response_time}ms"
+            
+            # Fail if average response time > 2000ms
+            if (( $(echo "$avg_response_time > 2000" | bc -l) )); then
+              echo "Performance test failed: Average response time too high"
+              exit 1
+            fi
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose down -v
