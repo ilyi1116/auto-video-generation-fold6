@@ -203,7 +203,7 @@ jobs:
 
       - name: Build Docker image
         if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./services/${{ matrix.service }}
           push: false
@@ -230,7 +230,7 @@ jobs:
 
       - name: Push Docker image
         if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./services/${{ matrix.service }}
           push: true
