@@ -29,7 +29,11 @@ jobs:
 
       - name: Run Safety check on all requirements
         run: |
-          find services -name "requirements.txt" -exec safety check -r {} \;
+          # Find and check all requirements.txt files
+          for req_file in $(find services -name "requirements.txt"); do
+            echo "Checking $req_file"
+            safety check -r "$req_file" || echo "Safety check failed for $req_file"
+          done
         continue-on-error: true
 
       - name: Run Bandit security linter
@@ -51,17 +55,29 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api-gateway, auth-service, data-service, inference-service]
+        service: [api-gateway, auth-service, data-service, inference-service, video-service]
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check if service has Dockerfile
+        id: check_dockerfile
+        run: |
+          if [ -f "./services/${{ matrix.service }}/Dockerfile" ]; then
+            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
+            echo "Skipping ${{ matrix.service }} - no Dockerfile found"
+          fi
+
       - name: Build Docker image
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
         run: |
           docker build -t ${{ matrix.service }}:latest ./services/${{ matrix.service }}
 
       - name: Run Trivy vulnerability scanner
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ matrix.service }}:latest'
@@ -69,8 +85,8 @@ jobs:
           output: 'trivy-results-${{ matrix.service }}.sarif'
 
       - name: Upload Trivy scan results
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true' && always()
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
         with:
           sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
 

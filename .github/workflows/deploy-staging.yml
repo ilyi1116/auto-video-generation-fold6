@@ -31,17 +31,36 @@ jobs:
 
       - name: Build staging images
         run: |
+          # Create staging environment file
+          cp .env.example .env
+          
           # Build images with staging tag
           docker-compose -f docker-compose.yml build
           
-          # Tag for staging
-          docker tag auto-video-generation_api-gateway:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:staging
-          docker tag auto-video-generation_auth-service:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/auth-service:staging
+          # Tag images for staging (using proper image names)
+          COMPOSE_PROJECT_NAME=$(basename $PWD | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]//g')
+          
+          for service in api-gateway auth-service data-service inference-service video-service; do
+            if docker images --format "table {{.Repository}}:{{.Tag}}" | grep -q "${COMPOSE_PROJECT_NAME}[-_]${service}"; then
+              IMAGE_NAME=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "${COMPOSE_PROJECT_NAME}[-_]${service}" | head -1)
+              docker tag "$IMAGE_NAME" ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${service}:staging
+              echo "Tagged ${service} for staging"
+            else
+              echo "Skipping ${service} - image not found"
+            fi
+          done
 
       - name: Push staging images
         run: |
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:staging
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/auth-service:staging
+          # Push all tagged staging images
+          for service in api-gateway auth-service data-service inference-service video-service; do
+            if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${service}:staging"; then
+              docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${service}:staging
+              echo "Pushed ${service}:staging"
+            else
+              echo "Skipping ${service} - staging image not found"
+            fi
+          done
 
       - name: Deploy to staging server
         run: |
