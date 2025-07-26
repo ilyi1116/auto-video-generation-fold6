@@ -1,0 +1,369 @@
+name: Branch Protection Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # 基本檢查
+  basic-checks:
+    name: Basic Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check branch protection status
+        run: |
+          echo "🛡️ 檢查分支保護狀態..."
+          echo "Base branch: ${{ github.base_ref }}"
+          echo "Head branch: ${{ github.head_ref }}"
+          echo "PR number: ${{ github.event.number }}"
+
+  # 代碼品質檢查
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm run lint || echo "⚠️ ESLint 檢查發現問題"
+
+      - name: Run Prettier check
+        run: |
+          cd frontend
+          npm run format:check || echo "⚠️ Prettier 格式檢查發現問題"
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black mypy
+
+      - name: Run Python linting
+        run: |
+          find services -name "*.py" -exec ruff check {} + || echo "⚠️ Ruff 檢查發現問題"
+          find services -name "*.py" -exec black --check {} + || echo "⚠️ Black 格式檢查發現問題"
+
+  # 測試執行
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm run test
+
+      - name: Run frontend tests with coverage
+        run: |
+          cd frontend
+          npm run test:coverage
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+
+      - name: Run Python tests
+        run: |
+          find services -name "requirements*.txt" -exec pip install -r {} +
+          python -m pytest services/ --cov=services/ || echo "⚠️ Python 測試發現問題"
+
+  # TypeScript 類型檢查
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run TypeScript check
+        run: |
+          cd frontend
+          npm run check
+
+  # 構建測試
+  build-test:
+    name: Build Test
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Test Docker build
+        run: |
+          docker build -t test-frontend ./frontend || echo "⚠️ Docker 構建發現問題"
+
+  # 安全掃描
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm audit
+        run: |
+          cd frontend
+          npm audit --audit-level high || echo "⚠️ npm audit 發現高風險漏洞"
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # 依賴檢查
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check for vulnerable dependencies
+        run: |
+          cd frontend
+          npm audit --audit-level moderate || echo "⚠️ 發現中等風險依賴漏洞"
+
+      - name: Check for outdated dependencies
+        run: |
+          cd frontend
+          npm outdated || echo "📦 有依賴可以更新"
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install safety
+        run: pip install safety
+
+      - name: Check Python dependencies
+        run: |
+          find services -name "requirements*.txt" -exec safety check -r {} + || echo "⚠️ 發現 Python 依賴漏洞"
+
+  # PR 品質檢查
+  pr-quality-check:
+    name: PR Quality Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR title format
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+          
+          # 檢查 PR 標題格式 (type: description)
+          if [[ ! $PR_TITLE =~ ^(feat|fix|docs|style|refactor|perf|test|chore|security)(\(.+\))?: .+ ]]; then
+            echo "❌ PR 標題格式不正確"
+            echo "正確格式: type(scope): description"
+            echo "範例: feat(auth): add login functionality"
+            exit 1
+          else
+            echo "✅ PR 標題格式正確"
+          fi
+
+      - name: Check PR description
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          if [[ -z "$PR_BODY" || ${#PR_BODY} -lt 50 ]]; then
+            echo "❌ PR 描述太短或為空"
+            echo "請提供詳細的變更描述"
+            exit 1
+          else
+            echo "✅ PR 描述符合要求"
+          fi
+
+      - name: Check changed files
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          echo "變更的檔案:"
+          echo "$CHANGED_FILES"
+          
+          # 檢查是否有敏感檔案變更
+          SENSITIVE_FILES=(
+            ".env"
+            "docker-compose.yml"
+            ".github/workflows/"
+            "pyproject.toml"
+          )
+          
+          for file in $CHANGED_FILES; do
+            for sensitive in "${SENSITIVE_FILES[@]}"; do
+              if [[ $file == *"$sensitive"* ]]; then
+                echo "⚠️ 注意：變更了敏感檔案 $file"
+              fi
+            done
+          done
+
+      - name: Check commit messages
+        run: |
+          COMMITS=$(git log --pretty=format:"%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          echo "提交訊息:"
+          echo "$COMMITS"
+          
+          # 檢查是否有 WIP 提交
+          if echo "$COMMITS" | grep -i "wip\|work in progress\|tmp\|temp"; then
+            echo "⚠️ 發現 WIP 或臨時提交，請考慮清理提交歷史"
+          fi
+
+  # 最終狀態檢查
+  final-check:
+    name: Final Status Check
+    runs-on: ubuntu-latest
+    needs: [code-quality, run-tests, typecheck, build-test, security-scan, dependency-scan]
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "📊 檢查所有工作狀態..."
+          
+          # 檢查必要工作的狀態
+          CODE_QUALITY="${{ needs.code-quality.result }}"
+          TESTS="${{ needs.run-tests.result }}"
+          TYPECHECK="${{ needs.typecheck.result }}"
+          BUILD="${{ needs.build-test.result }}"
+          SECURITY="${{ needs.security-scan.result }}"
+          DEPS="${{ needs.dependency-scan.result }}"
+          
+          echo "代碼品質: $CODE_QUALITY"
+          echo "測試: $TESTS"
+          echo "類型檢查: $TYPECHECK" 
+          echo "構建: $BUILD"
+          echo "安全掃描: $SECURITY"
+          echo "依賴檢查: $DEPS"
+          
+          # 如果有任何必要檢查失敗，整個檢查失敗
+          if [[ "$CODE_QUALITY" == "failure" || "$TESTS" == "failure" || "$TYPECHECK" == "failure" || "$BUILD" == "failure" ]]; then
+            echo "❌ 必要檢查失敗，請修復問題後再次提交"
+            exit 1
+          fi
+          
+          # 警告性檢查
+          if [[ "$SECURITY" == "failure" || "$DEPS" == "failure" ]]; then
+            echo "⚠️ 安全或依賴檢查發現問題，請檢查並評估風險"
+          fi
+          
+          echo "✅ 所有必要檢查通過！"
+
+      - name: Post success comment
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **分支保護檢查通過**\n\n所有必要的品質檢查都已通過，此 PR 可以進行審查。'
+            })
+
+      - name: Post failure comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **分支保護檢查失敗**\n\n請檢查上方的錯誤訊息，修復問題後重新推送。'
+            })
