@@ -5,7 +5,7 @@ import structlog
 from contextlib import asynccontextmanager
 
 from .config import settings
-from .routers import text_generation, image_generation, audio_processing
+from .routers import text_generation, image_generation, audio_processing, music_generation
 from .services.ai_manager import AIManager
 
 
@@ -78,11 +78,24 @@ app.include_router(
     tags=["audio-processing"]
 )
 
+app.include_router(
+    music_generation.router,
+    prefix=f"{settings.api_v1_str}/music",
+    tags=["music-generation"]
+)
+
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "ai-service"}
+    ai_manager = app.state.ai_manager
+    health_status = ai_manager.get_health_status()
+    
+    return {
+        "status": health_status["overall_status"],
+        "service": "ai-service",
+        "details": health_status
+    }
 
 
 @app.get("/")
@@ -91,8 +104,68 @@ async def root():
     return {
         "message": "Auto Video Generation AI Service",
         "version": "1.0.0",
-        "status": "active"
+        "status": "active",
+        "endpoints": {
+            "text": f"{settings.api_v1_str}/text",
+            "images": f"{settings.api_v1_str}/images", 
+            "audio": f"{settings.api_v1_str}/audio",
+            "music": f"{settings.api_v1_str}/music",
+            "video": f"{settings.api_v1_str}/video"
+        }
     }
+
+
+@app.get(f"{settings.api_v1_str}/capabilities")
+async def get_capabilities():
+    """Get AI service capabilities"""
+    ai_manager = app.state.ai_manager
+    return ai_manager.get_service_capabilities()
+
+
+# Comprehensive video generation endpoint
+from pydantic import BaseModel
+from typing import Optional
+from fastapi import Depends
+from .auth import get_current_user
+
+class VideoContentRequest(BaseModel):
+    script_topic: str
+    video_style: str = "modern"
+    duration_seconds: int = 60
+    platform: str = "tiktok"
+    include_music: bool = True
+    include_voice: bool = True
+
+
+@app.post(f"{settings.api_v1_str}/video/generate")
+async def generate_video_content(
+    request: VideoContentRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate complete video content with all AI services"""
+    try:
+        logger.info(
+            "Generating video content",
+            user_id=current_user.get("id"),
+            topic=request.script_topic,
+            platform=request.platform
+        )
+        
+        ai_manager = app.state.ai_manager
+        result = await ai_manager.generate_video_content(
+            script_topic=request.script_topic,
+            video_style=request.video_style,
+            duration_seconds=request.duration_seconds,
+            platform=request.platform,
+            include_music=request.include_music,
+            include_voice=request.include_voice
+        )
+        
+        return result
+    
+    except Exception as e:
+        logger.error("Video content generation failed", error=str(e))
+        raise HTTPException(status_code=500, detail="Video content generation failed")
 
 
 @app.exception_handler(Exception)
