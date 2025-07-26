@@ -14,7 +14,7 @@ from ..auth import get_current_user
 from ..video.video_generator import (
     video_generation_service,
     VideoGenerationRequest,
-    VideoGenerationResult
+    VideoGenerationResult,
 )
 
 router = APIRouter()
@@ -23,6 +23,7 @@ logger = structlog.get_logger()
 
 class VideoGenerationResponse(BaseModel):
     """API response for video generation"""
+
     success: bool
     generation_id: str
     status: str
@@ -33,6 +34,7 @@ class VideoGenerationResponse(BaseModel):
 
 class VideoStatusResponse(BaseModel):
     """API response for generation status"""
+
     generation_id: str
     status: str
     progress: int
@@ -47,6 +49,7 @@ class VideoStatusResponse(BaseModel):
 
 class QuickVideoRequest(BaseModel):
     """Quick video generation request"""
+
     topic: str
     platform: str = "youtube"
     length: str = "short"
@@ -57,6 +60,7 @@ class QuickVideoRequest(BaseModel):
 
 class CustomVideoRequest(BaseModel):
     """Custom video generation with detailed parameters"""
+
     topic: str
     script_prompt: Optional[str] = None
     platform: str = "youtube"
@@ -72,8 +76,7 @@ class CustomVideoRequest(BaseModel):
 
 @router.post("/generate/quick", response_model=VideoGenerationResponse)
 async def generate_quick_video(
-    request: QuickVideoRequest,
-    current_user: dict = Depends(get_current_user)
+    request: QuickVideoRequest, current_user: dict = Depends(get_current_user)
 ):
     """Generate video with preset configurations for quick creation"""
     try:
@@ -81,9 +84,9 @@ async def generate_quick_video(
             "Quick video generation requested",
             user_id=current_user.get("id"),
             topic=request.topic,
-            platform=request.platform
+            platform=request.platform,
         )
-        
+
         # Convert to full generation request
         generation_request = VideoGenerationRequest(
             topic=request.topic,
@@ -92,22 +95,21 @@ async def generate_quick_video(
             voice_settings=request.voice_settings,
             include_music=request.include_music,
             image_style=request.image_style,
-            quality="medium"  # Fixed for quick generation
+            quality="medium",  # Fixed for quick generation
         )
-        
+
         result = await video_generation_service.generate_video(
-            generation_request,
-            current_user.get("id")
+            generation_request, current_user.get("id")
         )
-        
+
         return VideoGenerationResponse(
             success=True,
             generation_id=result.generation_id,
             status=result.status,
             message="Video generation started successfully",
-            estimated_completion=result.estimated_completion.isoformat()
+            estimated_completion=result.estimated_completion.isoformat(),
         )
-        
+
     except Exception as e:
         logger.error("Quick video generation failed", error=str(e), user_id=current_user.get("id"))
         raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
@@ -115,8 +117,7 @@ async def generate_quick_video(
 
 @router.post("/generate/custom", response_model=VideoGenerationResponse)
 async def generate_custom_video(
-    request: CustomVideoRequest,
-    current_user: dict = Depends(get_current_user)
+    request: CustomVideoRequest, current_user: dict = Depends(get_current_user)
 ):
     """Generate video with custom parameters and advanced settings"""
     try:
@@ -125,9 +126,9 @@ async def generate_custom_video(
             user_id=current_user.get("id"),
             topic=request.topic,
             platform=request.platform,
-            quality=request.quality
+            quality=request.quality,
         )
-        
+
         # Build generation request
         generation_request = VideoGenerationRequest(
             topic=request.topic,
@@ -137,36 +138,32 @@ async def generate_custom_video(
             include_music=request.include_music,
             include_captions=request.include_captions,
             image_style=request.image_style,
-            quality=request.quality
+            quality=request.quality,
         )
-        
+
         result = await video_generation_service.generate_video(
-            generation_request,
-            current_user.get("id")
+            generation_request, current_user.get("id")
         )
-        
+
         return VideoGenerationResponse(
             success=True,
             generation_id=result.generation_id,
             status=result.status,
             message="Custom video generation started successfully",
-            estimated_completion=result.estimated_completion.isoformat()
+            estimated_completion=result.estimated_completion.isoformat(),
         )
-        
+
     except Exception as e:
         logger.error("Custom video generation failed", error=str(e), user_id=current_user.get("id"))
         raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
 
 
 @router.get("/status/{generation_id}", response_model=VideoStatusResponse)
-async def get_generation_status(
-    generation_id: str,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_generation_status(generation_id: str, current_user: dict = Depends(get_current_user)):
     """Get current status of video generation"""
     try:
         status = await video_generation_service.get_generation_status(generation_id)
-        
+
         return VideoStatusResponse(
             generation_id=generation_id,
             status=status["status"],
@@ -177,32 +174,29 @@ async def get_generation_status(
             thumbnail_url=status.get("thumbnail_url"),
             created_at=status["created_at"].isoformat(),
             estimated_completion=status.get("estimated_completion"),
-            error_message=status.get("error_message")
+            error_message=status.get("error_message"),
         )
-        
+
     except Exception as e:
         logger.error("Failed to get generation status", error=str(e), generation_id=generation_id)
         raise HTTPException(status_code=404, detail="Generation not found")
 
 
 @router.post("/cancel/{generation_id}")
-async def cancel_generation(
-    generation_id: str,
-    current_user: dict = Depends(get_current_user)
-):
+async def cancel_generation(generation_id: str, current_user: dict = Depends(get_current_user)):
     """Cancel ongoing video generation"""
     try:
         # In a real implementation, this would stop the generation process
         await video_generation_service.cleanup_generation(generation_id)
-        
+
         logger.info(
             "Video generation cancelled",
             generation_id=generation_id,
-            user_id=current_user.get("id")
+            user_id=current_user.get("id"),
         )
-        
+
         return {"message": "Generation cancelled successfully", "generation_id": generation_id}
-        
+
     except Exception as e:
         logger.error("Failed to cancel generation", error=str(e), generation_id=generation_id)
         raise HTTPException(status_code=500, detail="Failed to cancel generation")
@@ -210,11 +204,10 @@ async def cancel_generation(
 
 @router.get("/templates")
 async def get_video_templates(
-    platform: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    platform: Optional[str] = None, current_user: dict = Depends(get_current_user)
 ):
     """Get available video templates for different platforms"""
-    
+
     templates = {
         "youtube": [
             {
@@ -223,7 +216,7 @@ async def get_video_templates(
                 "description": "Educational content with clear explanations",
                 "duration": "3-5 minutes",
                 "style": "professional",
-                "recommended_for": ["education", "business", "tutorials"]
+                "recommended_for": ["education", "business", "tutorials"],
             },
             {
                 "id": "youtube_entertainment",
@@ -231,8 +224,8 @@ async def get_video_templates(
                 "description": "Engaging content for entertainment",
                 "duration": "5-10 minutes",
                 "style": "dynamic",
-                "recommended_for": ["entertainment", "lifestyle", "vlogs"]
-            }
+                "recommended_for": ["entertainment", "lifestyle", "vlogs"],
+            },
         ],
         "tiktok": [
             {
@@ -241,7 +234,7 @@ async def get_video_templates(
                 "description": "Short, catchy content designed to go viral",
                 "duration": "15-30 seconds",
                 "style": "trendy",
-                "recommended_for": ["trends", "challenges", "entertainment"]
+                "recommended_for": ["trends", "challenges", "entertainment"],
             },
             {
                 "id": "tiktok_educational",
@@ -249,8 +242,8 @@ async def get_video_templates(
                 "description": "Fast-paced educational content",
                 "duration": "30-60 seconds",
                 "style": "informative",
-                "recommended_for": ["tips", "tutorials", "facts"]
-            }
+                "recommended_for": ["tips", "tutorials", "facts"],
+            },
         ],
         "instagram": [
             {
@@ -259,7 +252,7 @@ async def get_video_templates(
                 "description": "Vertical content for Instagram Stories",
                 "duration": "15-30 seconds",
                 "style": "casual",
-                "recommended_for": ["behind-the-scenes", "daily updates", "quick announcements"]
+                "recommended_for": ["behind-the-scenes", "daily updates", "quick announcements"],
             },
             {
                 "id": "instagram_reel",
@@ -267,83 +260,62 @@ async def get_video_templates(
                 "description": "Engaging short-form content",
                 "duration": "30-90 seconds",
                 "style": "creative",
-                "recommended_for": ["showcases", "tutorials", "entertainment"]
-            }
-        ]
+                "recommended_for": ["showcases", "tutorials", "entertainment"],
+            },
+        ],
     }
-    
+
     if platform:
         return {"templates": templates.get(platform, [])}
-    
+
     return {"templates": templates}
 
 
 @router.get("/presets")
-async def get_generation_presets(
-    current_user: dict = Depends(get_current_user)
-):
+async def get_generation_presets(current_user: dict = Depends(get_current_user)):
     """Get preset configurations for different video types"""
-    
+
     presets = {
         "educational": {
-            "voice_settings": {
-                "voice_id": "echo",
-                "speed": 0.9,
-                "emotion": "professional"
-            },
+            "voice_settings": {"voice_id": "echo", "speed": 0.9, "emotion": "professional"},
             "image_style": "clean",
             "include_music": True,
             "music_style": "ambient",
-            "include_captions": True
+            "include_captions": True,
         },
         "entertainment": {
-            "voice_settings": {
-                "voice_id": "alloy",
-                "speed": 1.1,
-                "emotion": "enthusiastic"
-            },
+            "voice_settings": {"voice_id": "alloy", "speed": 1.1, "emotion": "enthusiastic"},
             "image_style": "vibrant",
             "include_music": True,
             "music_style": "upbeat",
-            "include_captions": True
+            "include_captions": True,
         },
         "business": {
-            "voice_settings": {
-                "voice_id": "nova",
-                "speed": 1.0,
-                "emotion": "confident"
-            },
+            "voice_settings": {"voice_id": "nova", "speed": 1.0, "emotion": "confident"},
             "image_style": "professional",
             "include_music": True,
             "music_style": "corporate",
-            "include_captions": True
+            "include_captions": True,
         },
         "storytelling": {
-            "voice_settings": {
-                "voice_id": "shimmer",
-                "speed": 0.95,
-                "emotion": "narrative"
-            },
+            "voice_settings": {"voice_id": "shimmer", "speed": 0.95, "emotion": "narrative"},
             "image_style": "artistic",
             "include_music": True,
             "music_style": "cinematic",
-            "include_captions": False
-        }
+            "include_captions": False,
+        },
     }
-    
+
     return {"presets": presets}
 
 
 @router.get("/history")
-async def get_generation_history(
-    limit: int = 20,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_generation_history(limit: int = 20, current_user: dict = Depends(get_current_user)):
     """Get user's video generation history"""
-    
+
     # In a real implementation, this would query the database
     # For now, return placeholder data
-    
+
     history = [
         {
             "generation_id": "gen_123",
@@ -352,10 +324,10 @@ async def get_generation_history(
             "created_at": "2024-01-15T10:30:00Z",
             "platform": "youtube",
             "video_url": "https://example.com/video1.mp4",
-            "thumbnail_url": "https://example.com/thumb1.jpg"
+            "thumbnail_url": "https://example.com/thumb1.jpg",
         }
     ]
-    
+
     return {"history": history, "total": len(history)}
 
 
@@ -363,13 +335,10 @@ async def get_generation_history(
 async def cleanup_generation(
     generation_id: str,
     background_tasks: BackgroundTasks,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Clean up generation data and temporary files"""
-    
-    background_tasks.add_task(
-        video_generation_service.cleanup_generation,
-        generation_id
-    )
-    
+
+    background_tasks.add_task(video_generation_service.cleanup_generation, generation_id)
+
     return {"message": "Cleanup initiated", "generation_id": generation_id}

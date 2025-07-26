@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api-gateway, auth-service, data-service, ai-service, video-service]
+        service: [api-gateway, auth-service, data-service, ai-service, video-service, storage-service]
     
     steps:
       - name: Checkout code

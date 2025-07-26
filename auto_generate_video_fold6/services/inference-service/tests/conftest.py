@@ -24,19 +24,15 @@ def client():
 @pytest.fixture
 def mock_auth_service():
     """Mock authentication service responses"""
-    with patch('app.auth.get_current_user') as mock:
-        mock.return_value = {
-            "id": 1,
-            "username": "testuser",
-            "email": "test@example.com"
-        }
+    with patch("app.auth.get_current_user") as mock:
+        mock.return_value = {"id": 1, "username": "testuser", "email": "test@example.com"}
         yield mock
 
 
 @pytest.fixture
 def mock_database():
     """Mock database operations"""
-    with patch('app.database.database') as mock:
+    with patch("app.database.database") as mock:
         mock.execute = AsyncMock(return_value=1)  # Return mock ID
         mock.fetch_one = AsyncMock()
         mock.fetch_all = AsyncMock(return_value=[])
@@ -46,7 +42,7 @@ def mock_database():
 @pytest.fixture
 def mock_s3_storage():
     """Mock S3 storage operations"""
-    with patch('app.storage.s3_storage') as mock:
+    with patch("app.storage.s3_storage") as mock:
         mock.upload_audio = AsyncMock(return_value="http://minio:9000/voice-models/test-audio.wav")
         mock.delete_file = AsyncMock(return_value=True)
         mock.file_exists = AsyncMock(return_value=True)
@@ -56,17 +52,19 @@ def mock_s3_storage():
 @pytest.fixture
 def mock_model_manager():
     """Mock model manager operations"""
-    with patch('app.services.model_manager.model_manager') as mock:
+    with patch("app.services.model_manager.model_manager") as mock:
         mock_model = MagicMock()
         mock_model.synthesize = AsyncMock(return_value=b"fake audio data")
         mock.get_model = AsyncMock(return_value=mock_model)
-        mock.get_cache_stats = AsyncMock(return_value={
-            "cached_models": 1,
-            "max_cache_size": 3,
-            "cache_ttl": 3600,
-            "model_ids": [1],
-            "oldest_cache_age": 100.0
-        })
+        mock.get_cache_stats = AsyncMock(
+            return_value={
+                "cached_models": 1,
+                "max_cache_size": 3,
+                "cache_ttl": 3600,
+                "model_ids": [1],
+                "oldest_cache_age": 100.0,
+            }
+        )
         yield mock
 
 
@@ -85,7 +83,7 @@ def sample_voice_model():
         "config_data": '{"sample_rate": 22050}',
         "training_data_size": 100,
         "training_duration": 3600.0,
-        "quality_score": 0.95
+        "quality_score": 0.95,
     }
 
 
@@ -99,5 +97,5 @@ def sample_synthesis_request():
         "pitch": 1.0,
         "volume": 1.0,
         "emotion": "neutral",
-        "return_audio": False
+        "return_audio": False,
     }

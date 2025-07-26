@@ -103,7 +103,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [auth-service, api-gateway, data-service, ai-service, video-service]
+        service: [auth-service, api-gateway, data-service, ai-service, video-service, storage-service, scheduler-service, social-service, trend-service]
     
     steps:
       - uses: actions/checkout@v4
@@ -137,52 +137,56 @@ jobs:
           name: ${{ matrix.service }}-coverage
 
   # Frontend tests
-  # Uncomment when frontend is implemented
-  # test-frontend:
-  #   name: Frontend Tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #         cache: 'npm'
-  #         cache-dependency-path: frontend/package-lock.json
-  #     
-  #     - name: Install dependencies
-  #       run: |
-  #         cd frontend
-  #         npm ci
-  #     
-  #     - name: Run linting
-  #       run: |
-  #         cd frontend
-  #         npm run lint
-  #     
-  #     - name: Run tests
-  #       run: |
-  #         cd frontend
-  #         npm run test:coverage
-  #     
-  #     - name: Upload coverage
-  #       uses: codecov/codecov-action@v3
-  #       with:
-  #         file: frontend/coverage/coverage-final.json
-  #         flags: frontend
-  #         name: frontend-coverage
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run linting
+        run: |
+          cd frontend
+          npm run lint
+      
+      - name: Run type checking
+        run: |
+          cd frontend
+          npm run check
+      
+      - name: Run tests
+        run: |
+          cd frontend
+          npm run test:coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: frontend/coverage/coverage-final.json
+          flags: frontend
+          name: frontend-coverage
 
   # Docker build tests
   docker-build:
     name: Docker Build Test
     runs-on: ubuntu-latest
-    needs: [lint, test-backend]
+    needs: [lint, test-backend, test-frontend]
     if: github.event_name == 'pull_request'
     
     strategy:
       matrix:
-        service: [api-gateway, auth-service, data-service, ai-service, video-service, social-service, trend-service, scheduler-service]
+        service: [api-gateway, auth-service, data-service, ai-service, video-service, storage-service, scheduler-service, social-service, trend-service]
     
     steps:
       - uses: actions/checkout@v4
@@ -203,7 +207,7 @@ jobs:
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest
-    needs: [test-backend]
+    needs: [test-backend, test-frontend]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     
     steps:
@@ -235,7 +239,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [security, lint, test-backend, integration-test]
+    needs: [security, lint, test-backend, test-frontend, integration-test]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     environment: staging
     
@@ -251,7 +255,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [security, lint, test-backend, integration-test]
+    needs: [security, lint, test-backend, test-frontend, integration-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
     

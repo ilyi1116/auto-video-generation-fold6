@@ -14,7 +14,7 @@ structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.add_log_level,
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     wrapper_class=structlog.make_filtering_bound_logger(int(settings.log_level.upper())),
     logger_factory=structlog.PrintLoggerFactory(),
@@ -28,14 +28,14 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting AI Service", version="1.0.0")
-    
+
     # Initialize AI Manager
     ai_manager = AIManager()
     app.state.ai_manager = ai_manager
     await ai_manager.initialize()
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down AI Service")
     await ai_manager.shutdown()
@@ -46,7 +46,7 @@ app = FastAPI(
     description="AI Integration Service for Auto Video Generation System",
     version="1.0.0",
     openapi_url=f"{settings.api_v1_str}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -61,27 +61,19 @@ app.add_middleware(
 
 # Include routers
 app.include_router(
-    text_generation.router,
-    prefix=f"{settings.api_v1_str}/text",
-    tags=["text-generation"]
+    text_generation.router, prefix=f"{settings.api_v1_str}/text", tags=["text-generation"]
 )
 
 app.include_router(
-    image_generation.router,
-    prefix=f"{settings.api_v1_str}/images",
-    tags=["image-generation"]
+    image_generation.router, prefix=f"{settings.api_v1_str}/images", tags=["image-generation"]
 )
 
 app.include_router(
-    audio_processing.router,
-    prefix=f"{settings.api_v1_str}/audio",
-    tags=["audio-processing"]
+    audio_processing.router, prefix=f"{settings.api_v1_str}/audio", tags=["audio-processing"]
 )
 
 app.include_router(
-    music_generation.router,
-    prefix=f"{settings.api_v1_str}/music",
-    tags=["music-generation"]
+    music_generation.router, prefix=f"{settings.api_v1_str}/music", tags=["music-generation"]
 )
 
 
@@ -90,11 +82,11 @@ async def health_check():
     """Health check endpoint"""
     ai_manager = app.state.ai_manager
     health_status = ai_manager.get_health_status()
-    
+
     return {
         "status": health_status["overall_status"],
         "service": "ai-service",
-        "details": health_status
+        "details": health_status,
     }
 
 
@@ -107,11 +99,11 @@ async def root():
         "status": "active",
         "endpoints": {
             "text": f"{settings.api_v1_str}/text",
-            "images": f"{settings.api_v1_str}/images", 
+            "images": f"{settings.api_v1_str}/images",
             "audio": f"{settings.api_v1_str}/audio",
             "music": f"{settings.api_v1_str}/music",
-            "video": f"{settings.api_v1_str}/video"
-        }
+            "video": f"{settings.api_v1_str}/video",
+        },
     }
 
 
@@ -128,6 +120,7 @@ from typing import Optional
 from fastapi import Depends
 from .auth import get_current_user
 
+
 class VideoContentRequest(BaseModel):
     script_topic: str
     video_style: str = "modern"
@@ -139,8 +132,7 @@ class VideoContentRequest(BaseModel):
 
 @app.post(f"{settings.api_v1_str}/video/generate")
 async def generate_video_content(
-    request: VideoContentRequest,
-    current_user: dict = Depends(get_current_user)
+    request: VideoContentRequest, current_user: dict = Depends(get_current_user)
 ):
     """Generate complete video content with all AI services"""
     try:
@@ -148,9 +140,9 @@ async def generate_video_content(
             "Generating video content",
             user_id=current_user.get("id"),
             topic=request.script_topic,
-            platform=request.platform
+            platform=request.platform,
         )
-        
+
         ai_manager = app.state.ai_manager
         result = await ai_manager.generate_video_content(
             script_topic=request.script_topic,
@@ -158,11 +150,11 @@ async def generate_video_content(
             duration_seconds=request.duration_seconds,
             platform=request.platform,
             include_music=request.include_music,
-            include_voice=request.include_voice
+            include_voice=request.include_voice,
         )
-        
+
         return result
-    
+
     except Exception as e:
         logger.error("Video content generation failed", error=str(e))
         raise HTTPException(status_code=500, detail="Video content generation failed")
@@ -172,7 +164,4 @@ async def generate_video_content(
 async def global_exception_handler(request, exc):
     """Global exception handler"""
     logger.error("Unhandled exception", error=str(exc), path=request.url.path)
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})

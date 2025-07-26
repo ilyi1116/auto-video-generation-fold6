@@ -12,7 +12,9 @@ logger = structlog.get_logger()
 
 class MusicGenerationRequest(BaseModel):
     prompt: str
-    style: str = "background"  # background, energetic, cinematic, acoustic, corporate, hip_hop, jazz
+    style: str = (
+        "background"  # background, energetic, cinematic, acoustic, corporate, hip_hop, jazz
+    )
     duration_seconds: int = 30  # 15-300 seconds
     instrumental: bool = True
     mood: str = "neutral"  # upbeat, calm, dramatic, energetic, peaceful
@@ -49,8 +51,7 @@ class MusicExtensionRequest(BaseModel):
 
 @router.post("/generate", response_model=MusicGenerationResponse)
 async def generate_music(
-    request: MusicGenerationRequest,
-    current_user: dict = Depends(get_current_user)
+    request: MusicGenerationRequest, current_user: dict = Depends(get_current_user)
 ) -> MusicGenerationResponse:
     """Generate background music using AI"""
     try:
@@ -59,12 +60,12 @@ async def generate_music(
             user_id=current_user.get("id"),
             style=request.style,
             duration=request.duration_seconds,
-            platform=request.platform
+            platform=request.platform,
         )
-        
+
         suno_client = SunoClient()
         await suno_client.initialize()
-        
+
         result = await suno_client.generate_music(
             prompt=request.prompt,
             style=request.style,
@@ -73,12 +74,12 @@ async def generate_music(
             mood=request.mood,
             platform=request.platform,
             custom_lyrics=request.custom_lyrics,
-            tempo=request.tempo
+            tempo=request.tempo,
         )
-        
+
         await suno_client.shutdown()
         return MusicGenerationResponse(**result)
-    
+
     except Exception as e:
         logger.error("Music generation failed", error=str(e))
         raise HTTPException(status_code=500, detail="Music generation failed")
@@ -86,8 +87,7 @@ async def generate_music(
 
 @router.post("/variations")
 async def generate_variations(
-    request: MusicVariationRequest,
-    current_user: dict = Depends(get_current_user)
+    request: MusicVariationRequest, current_user: dict = Depends(get_current_user)
 ):
     """Generate variations of existing music"""
     try:
@@ -95,21 +95,21 @@ async def generate_variations(
             "Generating music variations",
             user_id=current_user.get("id"),
             base_music_id=request.base_music_id,
-            count=request.variation_count
+            count=request.variation_count,
         )
-        
+
         suno_client = SunoClient()
         await suno_client.initialize()
-        
+
         result = await suno_client.generate_variations(
             base_music_id=request.base_music_id,
             variation_count=request.variation_count,
-            variation_strength=request.variation_strength
+            variation_strength=request.variation_strength,
         )
-        
+
         await suno_client.shutdown()
         return result
-    
+
     except Exception as e:
         logger.error("Music variation generation failed", error=str(e))
         raise HTTPException(status_code=500, detail="Music variation generation failed")
@@ -117,8 +117,7 @@ async def generate_variations(
 
 @router.post("/extend")
 async def extend_music(
-    request: MusicExtensionRequest,
-    current_user: dict = Depends(get_current_user)
+    request: MusicExtensionRequest, current_user: dict = Depends(get_current_user)
 ):
     """Extend existing music to longer duration"""
     try:
@@ -126,21 +125,21 @@ async def extend_music(
             "Extending music",
             user_id=current_user.get("id"),
             music_id=request.music_id,
-            additional_duration=request.additional_duration
+            additional_duration=request.additional_duration,
         )
-        
+
         suno_client = SunoClient()
         await suno_client.initialize()
-        
+
         result = await suno_client.extend_music(
             music_id=request.music_id,
             additional_duration=request.additional_duration,
-            maintain_style=request.maintain_style
+            maintain_style=request.maintain_style,
         )
-        
+
         await suno_client.shutdown()
         return result
-    
+
     except Exception as e:
         logger.error("Music extension failed", error=str(e))
         raise HTTPException(status_code=500, detail="Music extension failed")
@@ -165,7 +164,7 @@ async def get_platform_specifications():
                 "sample_rate": 44100,
                 "bitrate": "128k",
                 "volume_level": "normalized",
-                "fade_in_out": True
+                "fade_in_out": True,
             },
             "youtube": {
                 "duration_range": [30, 300],
@@ -174,7 +173,7 @@ async def get_platform_specifications():
                 "sample_rate": 44100,
                 "bitrate": "320k",
                 "volume_level": "normalized",
-                "fade_in_out": False
+                "fade_in_out": False,
             },
             "instagram": {
                 "duration_range": [15, 90],
@@ -183,7 +182,7 @@ async def get_platform_specifications():
                 "sample_rate": 44100,
                 "bitrate": "256k",
                 "volume_level": "normalized",
-                "fade_in_out": True
+                "fade_in_out": True,
             },
             "podcast": {
                 "duration_range": [60, 600],
@@ -192,7 +191,7 @@ async def get_platform_specifications():
                 "sample_rate": 44100,
                 "bitrate": "320k",
                 "volume_level": "consistent",
-                "fade_in_out": False
-            }
+                "fade_in_out": False,
+            },
         }
     }

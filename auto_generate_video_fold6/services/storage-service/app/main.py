@@ -20,7 +20,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -41,9 +41,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error("Failed to initialize database", error=str(e))
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Storage Service")
     try:
@@ -60,7 +60,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -74,33 +74,30 @@ app.add_middleware(
 
 # Add trusted host middleware for security
 if not settings.debug:
-    app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=settings.allowed_hosts
-    )
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
 
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
     """Log all requests"""
     start_time = time.time()
-    
+
     # Extract user info from headers (set by API Gateway)
     user_id = request.headers.get("x-user-id")
     user_role = request.headers.get("x-user-role")
-    
+
     logger.info(
         "Request started",
         method=request.method,
         url=str(request.url),
         user_id=user_id,
         user_role=user_role,
-        client_ip=request.client.host
+        client_ip=request.client.host,
     )
-    
+
     try:
         response = await call_next(request)
-        
+
         process_time = time.time() - start_time
         logger.info(
             "Request completed",
@@ -108,12 +105,12 @@ async def logging_middleware(request: Request, call_next):
             url=str(request.url),
             status_code=response.status_code,
             process_time=round(process_time, 4),
-            user_id=user_id
+            user_id=user_id,
         )
-        
+
         response.headers["X-Process-Time"] = str(process_time)
         return response
-        
+
     except Exception as e:
         process_time = time.time() - start_time
         logger.error(
@@ -122,7 +119,7 @@ async def logging_middleware(request: Request, call_next):
             url=str(request.url),
             error=str(e),
             process_time=round(process_time, 4),
-            user_id=user_id
+            user_id=user_id,
         )
         raise
 
@@ -135,7 +132,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         status_code=exc.status_code,
         detail=exc.detail,
         method=request.method,
-        url=str(request.url)
+        url=str(request.url),
     )
     raise exc
 
@@ -148,7 +145,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         error=str(exc),
         method=request.method,
         url=str(request.url),
-        exc_info=True
+        exc_info=True,
     )
     raise HTTPException(status_code=500, detail="Internal server error")
 
@@ -161,7 +158,7 @@ async def health_check():
         "status": "healthy",
         "service": "storage-service",
         "version": "1.0.0",
-        "storage_backend": settings.storage_backend
+        "storage_backend": settings.storage_backend,
     }
 
 
@@ -171,7 +168,7 @@ async def root():
     return {
         "message": "Storage Service API",
         "version": "1.0.0",
-        "docs_url": "/docs" if settings.debug else None
+        "docs_url": "/docs" if settings.debug else None,
     }
 
 
@@ -182,11 +179,5 @@ app.include_router(download.router, prefix="/api/v1", tags=["download"])
 
 if __name__ == "__main__":
     import uvicorn
-    
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8003,
-        reload=settings.debug,
-        log_level="info"
-    )
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8003, reload=settings.debug, log_level="info")

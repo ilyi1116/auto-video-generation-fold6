@@ -6,7 +6,7 @@ from enum import Enum
 
 class FileStatus(str, Enum):
     PENDING = "pending"
-    PROCESSING = "processing" 
+    PROCESSING = "processing"
     PROCESSED = "processed"
     FAILED = "failed"
 

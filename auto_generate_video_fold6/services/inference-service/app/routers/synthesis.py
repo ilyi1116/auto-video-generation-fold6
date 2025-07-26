@@ -51,24 +51,23 @@ class SynthesisResponse(BaseModel):
 async def synthesize_voice(
     request: SynthesisRequest,
     background_tasks: BackgroundTasks,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Synthesize voice from text"""
-    
+
     # Validate model access
     model_query = voice_models.select().where(
-        (voice_models.c.id == request.model_id) &
-        (voice_models.c.user_id == current_user["id"]) &
-        (voice_models.c.status == "ready")
+        (voice_models.c.id == request.model_id)
+        & (voice_models.c.user_id == current_user["id"])
+        & (voice_models.c.status == "ready")
     )
     model_result = await database.fetch_one(model_query)
-    
+
     if not model_result:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Voice model not found or not ready"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Voice model not found or not ready"
         )
-    
+
     # Create synthesis job record
     job_insert = synthesis_jobs.insert().values(
         user_id=current_user["id"],
@@ -79,16 +78,18 @@ async def synthesize_voice(
             "speed": request.speed,
             "pitch": request.pitch,
             "volume": request.volume,
-            "emotion": request.emotion
-        }
+            "emotion": request.emotion,
+        },
     )
     job_id = await database.execute(job_insert)
-    
-    logger.info("Synthesis job created", 
-               job_id=job_id, 
-               user_id=current_user["id"],
-               text_length=len(request.text))
-    
+
+    logger.info(
+        "Synthesis job created",
+        job_id=job_id,
+        user_id=current_user["id"],
+        text_length=len(request.text),
+    )
+
     # If return_audio is True, process synchronously
     if request.return_audio:
         try:
@@ -98,13 +99,13 @@ async def synthesize_voice(
                 .where(synthesis_jobs.c.id == job_id)
                 .values(status="processing")
             )
-            
+
             # Perform synthesis
             model_config = {
                 "model_path": model_result["model_path"],
-                "config_data": model_result["config_data"]
+                "config_data": model_result["config_data"],
             }
-            
+
             synthesis_result = await synthesis_engine.synthesize_speech(
                 text=request.text,
                 model_id=request.model_id,
@@ -113,18 +114,15 @@ async def synthesize_voice(
                     "speed": request.speed,
                     "pitch": request.pitch,
                     "volume": request.volume,
-                    "emotion": request.emotion
+                    "emotion": request.emotion,
                 },
-                user_id=current_user["id"]
+                user_id=current_user["id"],
             )
-            
+
             # Upload audio to S3
             audio_key = f"synthesized/{current_user['id']}/{job_id}.wav"
-            audio_url = await s3_storage.upload_audio(
-                synthesis_result["audio_data"], 
-                audio_key
-            )
-            
+            audio_url = await s3_storage.upload_audio(synthesis_result["audio_data"], audio_key)
+
             # Update job with results
             await database.execute(
                 synthesis_jobs.update()
@@ -134,10 +132,10 @@ async def synthesize_voice(
                     audio_url=audio_url,
                     audio_duration=synthesis_result["audio_duration"],
                     processing_time=synthesis_result["processing_time"],
-                    completed_at=datetime.utcnow()
+                    completed_at=datetime.utcnow(),
                 )
             )
-            
+
             return SynthesisResponse(
                 job_id=job_id,
                 status="completed",
@@ -147,25 +145,21 @@ async def synthesize_voice(
                 audio_duration=synthesis_result["audio_duration"],
                 processing_time=synthesis_result["processing_time"],
                 created_at=datetime.utcnow(),
-                completed_at=datetime.utcnow()
+                completed_at=datetime.utcnow(),
             )
-            
+
         except Exception as e:
             # Update job with error
             await database.execute(
                 synthesis_jobs.update()
                 .where(synthesis_jobs.c.id == job_id)
-                .values(
-                    status="failed",
-                    error_message=str(e),
-                    completed_at=datetime.utcnow()
-                )
+                .values(status="failed", error_message=str(e), completed_at=datetime.utcnow())
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Synthesis failed: {str(e)}"
+                detail=f"Synthesis failed: {str(e)}",
             )
-    
+
     else:
         # Process asynchronously
         background_tasks.add_task(
@@ -174,15 +168,15 @@ async def synthesize_voice(
             request.model_id,
             model_result,
             request,
-            current_user["id"]
+            current_user["id"],
         )
-        
+
         return SynthesisResponse(
             job_id=job_id,
             status="pending",
             text=request.text,
             model_id=request.model_id,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
 
 
@@ -190,24 +184,23 @@ async def synthesize_voice(
 async def batch_synthesize_voice(
     request: BatchSynthesisRequest,
     background_tasks: BackgroundTasks,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Batch synthesize multiple texts"""
-    
+
     # Validate model access
     model_query = voice_models.select().where(
-        (voice_models.c.id == request.model_id) &
-        (voice_models.c.user_id == current_user["id"]) &
-        (voice_models.c.status == "ready")
+        (voice_models.c.id == request.model_id)
+        & (voice_models.c.user_id == current_user["id"])
+        & (voice_models.c.status == "ready")
     )
     model_result = await database.fetch_one(model_query)
-    
+
     if not model_result:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Voice model not found or not ready"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Voice model not found or not ready"
         )
-    
+
     # Create synthesis jobs for each text
     job_ids = []
     for text in request.texts:
@@ -220,12 +213,12 @@ async def batch_synthesize_voice(
                 "speed": request.speed,
                 "pitch": request.pitch,
                 "volume": request.volume,
-                "emotion": request.emotion
-            }
+                "emotion": request.emotion,
+            },
         )
         job_id = await database.execute(job_insert)
         job_ids.append(job_id)
-    
+
     # Process batch asynchronously
     background_tasks.add_task(
         process_batch_synthesis,
@@ -233,74 +226,57 @@ async def batch_synthesize_voice(
         request.model_id,
         model_result,
         request,
-        current_user["id"]
+        current_user["id"],
     )
-    
-    return {
-        "job_ids": job_ids,
-        "status": "pending",
-        "batch_size": len(request.texts)
-    }
+
+    return {"job_ids": job_ids, "status": "pending", "batch_size": len(request.texts)}
 
 
 @router.get("/synthesize/audio/{job_id}")
-async def get_synthesis_audio(
-    job_id: int,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_synthesis_audio(job_id: int, current_user: dict = Depends(get_current_user)):
     """Get synthesized audio file"""
-    
+
     # Get job details
     job_query = synthesis_jobs.select().where(
-        (synthesis_jobs.c.id == job_id) &
-        (synthesis_jobs.c.user_id == current_user["id"])
+        (synthesis_jobs.c.id == job_id) & (synthesis_jobs.c.user_id == current_user["id"])
     )
     job = await database.fetch_one(job_query)
-    
+
     if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Synthesis job not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Synthesis job not found")
+
     if job["status"] != "completed" or not job["audio_url"]:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Audio not ready or synthesis failed"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Audio not ready or synthesis failed"
         )
-    
+
     # Stream audio file
     try:
         # Extract S3 key from URL
         audio_key = job["audio_url"].split("/")[-1]
-        
+
         # For demonstration, return mock audio
         mock_audio = b"RIFF\x24\x08\x00\x00WAVEfmt \x10\x00\x00\x00" + b"\x00" * 1000
-        
+
         return StreamingResponse(
             io.BytesIO(mock_audio),
             media_type="audio/wav",
-            headers={
-                "Content-Disposition": f"attachment; filename=synthesis_{job_id}.wav"
-            }
+            headers={"Content-Disposition": f"attachment; filename=synthesis_{job_id}.wav"},
         )
-        
+
     except Exception as e:
         logger.error("Failed to stream audio", job_id=job_id, error=str(e))
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve audio"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve audio"
         )
 
 
 @router.get("/jobs", response_model=List[SynthesisResponse])
 async def get_synthesis_jobs(
-    current_user: dict = Depends(get_current_user),
-    limit: int = 20,
-    offset: int = 0
+    current_user: dict = Depends(get_current_user), limit: int = 20, offset: int = 0
 ):
     """Get user's synthesis jobs"""
-    
+
     query = (
         synthesis_jobs.select()
         .where(synthesis_jobs.c.user_id == current_user["id"])
@@ -308,9 +284,9 @@ async def get_synthesis_jobs(
         .limit(limit)
         .offset(offset)
     )
-    
+
     jobs = await database.fetch_all(query)
-    
+
     return [
         SynthesisResponse(
             job_id=job["id"],
@@ -321,32 +297,25 @@ async def get_synthesis_jobs(
             audio_duration=job["audio_duration"],
             processing_time=job["processing_time"],
             created_at=job["created_at"],
-            completed_at=job["completed_at"]
+            completed_at=job["completed_at"],
         )
         for job in jobs
     ]
 
 
 @router.get("/jobs/{job_id}", response_model=SynthesisResponse)
-async def get_synthesis_job(
-    job_id: int,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_synthesis_job(job_id: int, current_user: dict = Depends(get_current_user)):
     """Get synthesis job details"""
-    
+
     query = synthesis_jobs.select().where(
-        (synthesis_jobs.c.id == job_id) &
-        (synthesis_jobs.c.user_id == current_user["id"])
+        (synthesis_jobs.c.id == job_id) & (synthesis_jobs.c.user_id == current_user["id"])
     )
-    
+
     job = await database.fetch_one(query)
-    
+
     if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Synthesis job not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Synthesis job not found")
+
     return SynthesisResponse(
         job_id=job["id"],
         status=job["status"],
@@ -356,32 +325,26 @@ async def get_synthesis_job(
         audio_duration=job["audio_duration"],
         processing_time=job["processing_time"],
         created_at=job["created_at"],
-        completed_at=job["completed_at"]
+        completed_at=job["completed_at"],
     )
 
 
 async def process_synthesis_job(
-    job_id: int,
-    model_id: int,
-    model_result,
-    request: SynthesisRequest,
-    user_id: int
+    job_id: int, model_id: int, model_result, request: SynthesisRequest, user_id: int
 ):
     """Background task to process synthesis job"""
     try:
         # Update job status
         await database.execute(
-            synthesis_jobs.update()
-            .where(synthesis_jobs.c.id == job_id)
-            .values(status="processing")
+            synthesis_jobs.update().where(synthesis_jobs.c.id == job_id).values(status="processing")
         )
-        
+
         # Perform synthesis
         model_config = {
             "model_path": model_result["model_path"],
-            "config_data": model_result["config_data"]
+            "config_data": model_result["config_data"],
         }
-        
+
         synthesis_result = await synthesis_engine.synthesize_speech(
             text=request.text,
             model_id=model_id,
@@ -390,18 +353,15 @@ async def process_synthesis_job(
                 "speed": request.speed,
                 "pitch": request.pitch,
                 "volume": request.volume,
-                "emotion": request.emotion
+                "emotion": request.emotion,
             },
-            user_id=user_id
+            user_id=user_id,
         )
-        
+
         # Upload audio to S3
         audio_key = f"synthesized/{user_id}/{job_id}.wav"
-        audio_url = await s3_storage.upload_audio(
-            synthesis_result["audio_data"], 
-            audio_key
-        )
-        
+        audio_url = await s3_storage.upload_audio(synthesis_result["audio_data"], audio_key)
+
         # Update job with results
         await database.execute(
             synthesis_jobs.update()
@@ -411,36 +371,28 @@ async def process_synthesis_job(
                 audio_url=audio_url,
                 audio_duration=synthesis_result["audio_duration"],
                 processing_time=synthesis_result["processing_time"],
-                completed_at=datetime.utcnow()
+                completed_at=datetime.utcnow(),
             )
         )
-        
+
         logger.info("Synthesis job completed", job_id=job_id)
-        
+
     except Exception as e:
         # Update job with error
         await database.execute(
             synthesis_jobs.update()
             .where(synthesis_jobs.c.id == job_id)
-            .values(
-                status="failed",
-                error_message=str(e),
-                completed_at=datetime.utcnow()
-            )
+            .values(status="failed", error_message=str(e), completed_at=datetime.utcnow())
         )
         logger.error("Synthesis job failed", job_id=job_id, error=str(e))
 
 
 async def process_batch_synthesis(
-    job_ids: List[int],
-    model_id: int,
-    model_result,
-    request: BatchSynthesisRequest,
-    user_id: int
+    job_ids: List[int], model_id: int, model_result, request: BatchSynthesisRequest, user_id: int
 ):
     """Background task to process batch synthesis"""
     logger.info("Starting batch synthesis", job_ids=job_ids, batch_size=len(job_ids))
-    
+
     for i, job_id in enumerate(job_ids):
         try:
             await process_synthesis_job(
@@ -453,9 +405,9 @@ async def process_batch_synthesis(
                     speed=request.speed,
                     pitch=request.pitch,
                     volume=request.volume,
-                    emotion=request.emotion
+                    emotion=request.emotion,
                 ),
-                user_id
+                user_id,
             )
         except Exception as e:
             logger.error("Batch synthesis item failed", job_id=job_id, error=str(e))

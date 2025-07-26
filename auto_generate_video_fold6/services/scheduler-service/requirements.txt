@@ -11,6 +11,7 @@ python-crontab==2.7.1
 
 # Database
 asyncpg==0.29.0
+psycopg2-binary==2.9.9
 sqlalchemy==2.0.25
 
 # HTTP Client
@@ -18,6 +19,7 @@ httpx==0.25.2
 
 # Authentication
 python-jose[cryptography]==3.3.4
+pyjwt==2.8.0
 
 # Utilities
 python-dotenv==1.0.0

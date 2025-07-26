@@ -19,7 +19,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -33,15 +33,15 @@ logger = structlog.get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting voice data service", service="data-service")
-    
+
     # Create database tables
     metadata.create_all(bind=engine)
-    
+
     # Connect to database
     await database.connect()
-    
+
     yield
-    
+
     # Disconnect from database
     await database.disconnect()
     logger.info("Shutting down voice data service")
@@ -51,7 +51,7 @@ app = FastAPI(
     title="Voice Data Service",
     description="Handles voice data ingestion, validation, and preprocessing",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -71,11 +71,7 @@ app.include_router(process.router, prefix="/api/v1", tags=["process"])
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "data-service",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "data-service", "version": "1.0.0"}
 
 
 @app.get("/")
@@ -84,9 +80,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8002,
-        reload=settings.debug
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=settings.debug)

@@ -42,16 +42,18 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     return db_user
 
 
-def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> Optional[models.User]:
+def update_user(
+    db: Session, user_id: int, user_update: schemas.UserUpdate
+) -> Optional[models.User]:
     """Update user"""
     db_user = get_user(db, user_id)
     if not db_user:
         return None
-    
+
     update_data = user_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_user, field, value)
-    
+
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -62,7 +64,7 @@ def delete_user(db: Session, user_id: int) -> bool:
     db_user = get_user(db, user_id)
     if not db_user:
         return False
-    
+
     db.delete(db_user)
     db.commit()
     return True
@@ -83,7 +85,7 @@ def update_user_password(db: Session, user_id: int, new_password: str) -> bool:
     db_user = get_user(db, user_id)
     if not db_user:
         return False
-    
+
     db_user.hashed_password = security.get_password_hash(new_password)
     db.commit()
     return True
@@ -108,13 +110,13 @@ def increment_api_calls(db: Session, user_id: int) -> None:
 def check_user_exists(db: Session, email: str = None, username: str = None) -> bool:
     """Check if user exists by email or username"""
     query = db.query(models.User)
-    
+
     conditions = []
     if email:
         conditions.append(models.User.email == email)
     if username:
         conditions.append(models.User.username == username)
-    
+
     if conditions:
         return query.filter(*conditions).first() is not None
     return False

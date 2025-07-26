@@ -1,0 +1,44 @@
+# Development and testing dependencies for Scheduler Service
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+httpx==0.25.2
+
+# FastAPI testing
+fastapi[testing]==0.104.1
+
+# Code quality and formatting
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+mypy==1.7.1
+bandit==1.7.5
+
+# Pre-commit hooks
+pre-commit==3.5.0
+
+# Development utilities
+watchdog==3.0.0
+python-dotenv==1.0.0
+
+# Database testing
+sqlalchemy[asyncio]==2.0.25
+pytest-postgresql==5.0.0
+
+# Celery testing
+pytest-celery==0.0.0a1
+celery[pytest]==5.3.4
+
+# Time zone handling for scheduler testing
+freezegun==1.2.2
+factory-boy==3.3.0
+
+# Type stubs
+types-requests==2.31.0.10
+types-python-dateutil==2.8.19.14
+types-pytz==2023.3.1.1
+
+# Mock external services
+responses==0.24.1
+requests-mock==1.11.0

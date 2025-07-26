@@ -19,7 +19,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -34,21 +34,22 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Application lifespan management"""
     logger.info("Starting voice inference service", service="inference-service")
-    
+
     # Create database tables
     metadata.create_all(bind=engine)
-    
+
     # Connect to database
     await database.connect()
-    
+
     # Initialize model cache
     from .services.model_manager import model_manager
+
     await model_manager.initialize()
-    
+
     logger.info("Inference service started successfully")
-    
+
     yield
-    
+
     # Cleanup
     await database.disconnect()
     logger.info("Inference service shutdown complete")
@@ -61,7 +62,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Configure CORS
@@ -88,8 +89,4 @@ async def health_check():
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {
-        "service": "voice-cloning-inference",
-        "version": "1.0.0",
-        "status": "running"
-    }
+    return {"service": "voice-cloning-inference", "version": "1.0.0", "status": "running"}

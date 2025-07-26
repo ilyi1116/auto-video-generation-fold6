@@ -17,8 +17,13 @@ httpx==0.25.2
 
 # Database
 asyncpg==0.29.0
+psycopg2-binary==2.9.9
 sqlalchemy==2.0.25
 redis==5.0.1
+
+# Authentication
+python-jose[cryptography]==3.3.4
+pyjwt==2.8.0
 
 # Task Queue
 celery==5.3.4

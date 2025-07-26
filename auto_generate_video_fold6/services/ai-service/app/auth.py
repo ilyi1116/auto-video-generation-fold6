@@ -11,11 +11,7 @@ security_scheme = HTTPBearer()
 def verify_token_locally(token: str) -> dict:
     """Verify JWT token locally"""
     try:
-        payload = jwt.decode(
-            token, 
-            settings.jwt_secret_key, 
-            algorithms=[settings.jwt_algorithm]
-        )
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         email: str = payload.get("sub")
         if email is None:
             return None
@@ -24,25 +20,23 @@ def verify_token_locally(token: str) -> dict:
         return None
 
 
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security_scheme)
-):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_scheme)):
     """Get current authenticated user"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     try:
         token = credentials.credentials
         user_data = verify_token_locally(token)
-        
+
         if user_data is None:
             raise credentials_exception
-            
+
         return user_data
-        
+
     except Exception as e:
         logger.error("Token verification error", error=str(e))
         raise credentials_exception

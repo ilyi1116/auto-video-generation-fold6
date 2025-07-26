@@ -17,7 +17,7 @@ structlog.configure(
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -32,13 +32,13 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting authentication service", service="auth-service")
-    
+
     # Create database tables
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down authentication service")
 
@@ -48,7 +48,7 @@ app = FastAPI(
     version="1.0.0",
     description="Authentication service for voice cloning system",
     openapi_url=f"{settings.api_v1_str}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -65,27 +65,20 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "auth-service",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "auth-service", "version": "1.0.0"}
 
 
 # Include routers
-app.include_router(
-    router,
-    prefix=settings.api_v1_str,
-    tags=["authentication"]
-)
+app.include_router(router, prefix=settings.api_v1_str, tags=["authentication"])
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8001,
         reload=settings.debug,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )

@@ -12,12 +12,12 @@ from .composer import (
     SceneComposition,
     CompositionRequest,
     CompositionResult,
-    FinalRenderResult
+    FinalRenderResult,
 )
 
 __all__ = [
     "VideoComposer",
-    "SceneComposition", 
+    "SceneComposition",
     "CompositionRequest",
     "CompositionResult",
     "FinalRenderResult",

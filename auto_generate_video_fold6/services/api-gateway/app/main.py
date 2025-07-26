@@ -6,7 +6,12 @@ from slowapi.errors import RateLimitExceeded
 
 from .config import settings
 from .middleware import LoggingMiddleware
-from .security import SecurityHeadersMiddleware, TrustedProxyMiddleware, validate_ssl_config, get_ssl_context
+from .security import (
+    SecurityHeadersMiddleware,
+    TrustedProxyMiddleware,
+    validate_ssl_config,
+    get_ssl_context,
+)
 from .rate_limiter import limiter, custom_rate_limit_exceeded_handler
 from .routers import auth_router, data_router, inference_router, admin_router
 
@@ -19,7 +24,7 @@ structlog.configure(
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -34,7 +39,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting API Gateway", service="api-gateway")
-    
+
     # Validate SSL configuration
     try:
         validate_ssl_config()
@@ -42,9 +47,9 @@ async def lifespan(app: FastAPI):
         logger.error("SSL configuration validation failed", error=str(e))
         if settings.ssl_enabled:
             raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down API Gateway")
 
@@ -54,7 +59,7 @@ app = FastAPI(
     version="1.0.0",
     description="API Gateway for voice cloning system",
     openapi_url=f"{settings.api_v1_str}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add rate limiting
@@ -63,7 +68,10 @@ app.add_exception_handler(RateLimitExceeded, custom_rate_limit_exceeded_handler)
 
 # Add middleware
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(TrustedProxyMiddleware, trusted_proxies=["127.0.0.1", "::1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"])
+app.add_middleware(
+    TrustedProxyMiddleware,
+    trusted_proxies=["127.0.0.1", "::1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
+)
 app.add_middleware(LoggingMiddleware)
 
 # CORS middleware
@@ -80,11 +88,7 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "api-gateway",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "api-gateway", "version": "1.0.0"}
 
 
 # Root endpoint
@@ -95,7 +99,7 @@ async def root():
         "message": "Voice Cloning API Gateway",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
 
 
@@ -123,9 +127,9 @@ app.include_router(
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     ssl_context = get_ssl_context() if settings.ssl_enabled else None
-    
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
@@ -135,5 +139,5 @@ if __name__ == "__main__":
         ssl_certfile=settings.ssl_cert_path if settings.ssl_enabled else None,
         ssl_keyfile=settings.ssl_key_path if settings.ssl_enabled else None,
         ssl_ca_certs=None,
-        ssl_ciphers="ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS"
+        ssl_ciphers="ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS",
     )

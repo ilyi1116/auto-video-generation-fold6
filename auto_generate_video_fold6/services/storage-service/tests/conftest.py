@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 import sys
 
 # Add the app directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
 
 from app.main import app
 from app.database import get_db
@@ -53,13 +53,14 @@ def db_session():
 @pytest.fixture
 def mock_db():
     """Mock database dependency"""
+
     async def override_get_db():
         db = TestingSessionLocal()
         try:
             yield db
         finally:
             db.close()
-    
+
     app.dependency_overrides[get_db] = override_get_db
     yield
     app.dependency_overrides.clear()
@@ -69,37 +70,37 @@ def mock_db():
 def mock_storage():
     """Mock storage manager"""
     from app.storage import storage_manager
-    
+
     original_upload = storage_manager.upload_file
     original_download = storage_manager.download_file
     original_delete = storage_manager.delete_file
     original_validate = storage_manager.validate_file_type
-    
+
     async def mock_upload_file(file_data, filename, content_type, user_id, file_type, category):
         return {
             "object_key": f"test/{user_id}/{filename}",
             "file_size": 1024,
             "content_type": content_type,
             "file_hash": "test_hash_123",
-            "public_url": f"https://test.com/test/{user_id}/{filename}"
+            "public_url": f"https://test.com/test/{user_id}/{filename}",
         }
-    
+
     async def mock_download_file(object_key):
         return b"test file content"
-    
+
     async def mock_delete_file(object_key):
         return True
-    
+
     def mock_validate_file_type(mime_type, file_type):
         return True
-    
+
     storage_manager.upload_file = mock_upload_file
     storage_manager.download_file = mock_download_file
     storage_manager.delete_file = mock_delete_file
     storage_manager.validate_file_type = mock_validate_file_type
-    
+
     yield storage_manager
-    
+
     # Restore original methods
     storage_manager.upload_file = original_upload
     storage_manager.download_file = original_download
@@ -111,10 +112,10 @@ def mock_storage():
 def mock_auth():
     """Mock authentication"""
     from app.auth import get_current_user
-    
+
     async def mock_get_current_user():
         return {"id": "test_user_123", "email": "test@example.com"}
-    
+
     app.dependency_overrides[get_current_user] = mock_get_current_user
     yield
     app.dependency_overrides.clear()
@@ -142,13 +143,13 @@ def test_image():
     """Create a test image file"""
     from PIL import Image
     import io
-    
+
     # Create a simple test image
-    img = Image.new('RGB', (100, 100), color='red')
+    img = Image.new("RGB", (100, 100), color="red")
     img_bytes = io.BytesIO()
-    img.save(img_bytes, format='JPEG')
+    img.save(img_bytes, format="JPEG")
     img_bytes.seek(0)
-    
+
     return img_bytes
 
 
@@ -171,5 +172,5 @@ def sample_file_data():
         "description": "Test image",
         "tags": ["test", "image"],
         "is_processed": False,
-        "processing_status": "pending"
+        "processing_status": "pending",
     }

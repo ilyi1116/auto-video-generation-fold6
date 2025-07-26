@@ -16,13 +16,11 @@ engine = create_async_engine(
     poolclass=StaticPool,
     pool_pre_ping=True,
     pool_recycle=300,
-    connect_args={"server_settings": {"jit": "off"}}
+    connect_args={"server_settings": {"jit": "off"}},
 )
 
 # Create async session factory
-AsyncSessionLocal = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def get_db():

@@ -41,8 +41,7 @@ class ImageVariationRequest(BaseModel):
 
 @router.post("/generate", response_model=ImageGenerationResponse)
 async def generate_image(
-    request: ImageGenerationRequest,
-    current_user: dict = Depends(get_current_user)
+    request: ImageGenerationRequest, current_user: dict = Depends(get_current_user)
 ) -> ImageGenerationResponse:
     """Generate image based on text prompt"""
     try:
@@ -51,9 +50,9 @@ async def generate_image(
             user_id=current_user.get("id"),
             prompt=request.prompt[:100],  # Log first 100 chars
             style=request.style,
-            aspect_ratio=request.aspect_ratio
+            aspect_ratio=request.aspect_ratio,
         )
-        
+
         image_generator = ImageGenerator()
         result = await image_generator.generate_image(
             prompt=request.prompt,
@@ -63,11 +62,11 @@ async def generate_image(
             negative_prompt=request.negative_prompt,
             seed=request.seed,
             guidance_scale=request.guidance_scale,
-            num_inference_steps=request.num_inference_steps
+            num_inference_steps=request.num_inference_steps,
         )
-        
+
         return ImageGenerationResponse(**result)
-    
+
     except Exception as e:
         logger.error("Image generation failed", error=str(e))
         raise HTTPException(status_code=500, detail="Image generation failed")
@@ -75,8 +74,7 @@ async def generate_image(
 
 @router.post("/generate-variations")
 async def generate_variations(
-    request: ImageVariationRequest,
-    current_user: dict = Depends(get_current_user)
+    request: ImageVariationRequest, current_user: dict = Depends(get_current_user)
 ):
     """Generate variations of an existing image"""
     try:
@@ -84,19 +82,19 @@ async def generate_variations(
             "Generating image variations",
             user_id=current_user.get("id"),
             base_image=request.base_image_url,
-            num_variations=request.num_variations
+            num_variations=request.num_variations,
         )
-        
+
         image_generator = ImageGenerator()
         result = await image_generator.generate_variations(
             base_image_url=request.base_image_url,
             variation_prompt=request.variation_prompt,
             strength=request.strength,
-            num_variations=request.num_variations
+            num_variations=request.num_variations,
         )
-        
+
         return result
-    
+
     except Exception as e:
         logger.error("Image variation generation failed", error=str(e))
         raise HTTPException(status_code=500, detail="Image variation generation failed")
@@ -104,9 +102,7 @@ async def generate_variations(
 
 @router.post("/upscale")
 async def upscale_image(
-    image_url: str,
-    scale_factor: int = 2,
-    current_user: dict = Depends(get_current_user)
+    image_url: str, scale_factor: int = 2, current_user: dict = Depends(get_current_user)
 ):
     """Upscale image resolution"""
     try:
@@ -114,17 +110,14 @@ async def upscale_image(
             "Upscaling image",
             user_id=current_user.get("id"),
             image_url=image_url,
-            scale_factor=scale_factor
+            scale_factor=scale_factor,
         )
-        
+
         image_generator = ImageGenerator()
-        result = await image_generator.upscale_image(
-            image_url=image_url,
-            scale_factor=scale_factor
-        )
-        
+        result = await image_generator.upscale_image(image_url=image_url, scale_factor=scale_factor)
+
         return result
-    
+
     except Exception as e:
         logger.error("Image upscaling failed", error=str(e))
         raise HTTPException(status_code=500, detail="Image upscaling failed")
@@ -134,7 +127,7 @@ async def upscale_image(
 async def enhance_image(
     image_url: str,
     enhancement_type: str = "general",  # general, face, artifact_removal
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Enhance image quality using AI"""
     try:
@@ -142,17 +135,16 @@ async def enhance_image(
             "Enhancing image",
             user_id=current_user.get("id"),
             image_url=image_url,
-            enhancement_type=enhancement_type
+            enhancement_type=enhancement_type,
         )
-        
+
         image_generator = ImageGenerator()
         result = await image_generator.enhance_image(
-            image_url=image_url,
-            enhancement_type=enhancement_type
+            image_url=image_url, enhancement_type=enhancement_type
         )
-        
+
         return result
-    
+
     except Exception as e:
         logger.error("Image enhancement failed", error=str(e))
         raise HTTPException(status_code=500, detail="Image enhancement failed")
@@ -170,17 +162,17 @@ async def get_supported_styles():
             {"name": "photorealistic", "description": "Realistic photography style"},
             {"name": "cartoon", "description": "Animated cartoon style"},
             {"name": "anime", "description": "Japanese animation style"},
-            {"name": "cyberpunk", "description": "Futuristic sci-fi aesthetic"}
+            {"name": "cyberpunk", "description": "Futuristic sci-fi aesthetic"},
         ],
         "aspect_ratios": [
             {"ratio": "9:16", "description": "Vertical (Mobile/TikTok)"},
             {"ratio": "16:9", "description": "Horizontal (YouTube)"},
             {"ratio": "1:1", "description": "Square (Instagram)"},
-            {"ratio": "4:3", "description": "Traditional (Facebook)"}
+            {"ratio": "4:3", "description": "Traditional (Facebook)"},
         ],
         "resolutions": [
             {"name": "720p", "dimensions": "1280x720"},
             {"name": "1080p", "dimensions": "1920x1080"},
-            {"name": "4k", "dimensions": "3840x2160"}
-        ]
+            {"name": "4k", "dimensions": "3840x2160"},
+        ],
     }
