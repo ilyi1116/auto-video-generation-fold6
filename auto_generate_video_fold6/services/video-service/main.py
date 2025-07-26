@@ -26,7 +26,7 @@ from .video.composer import VideoComposer
 from .models.video_project import VideoProject, VideoStatus
 from .database import get_db_connection
 from .auth import verify_token
-from .routers import video_generation
+from .routers import video_generation, social_media
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(video_generation.router, prefix="/api/v1/video", tags=["video-generation"])
+app.include_router(social_media.router, prefix="/api/v1/social", tags=["social-media"])
 
 security = HTTPBearer()
 
