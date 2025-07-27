@@ -1,0 +1,108 @@
+{
+  "mode": "startup",
+  "description": "個人創業模式 - 輕量化配置",
+  "extends": "base-config.json",
+  
+  "generation": {
+    "daily_video_limit": 5,
+    "batch_size": 1,
+    "max_concurrent_jobs": 2,
+    "quality_preset": "medium",
+    "duration_range": [15, 30],
+    "platforms": ["tiktok", "instagram_reels"]
+  },
+  
+  "scheduling": {
+    "enabled": true,
+    "mode": "manual_trigger",
+    "work_hours": {
+      "start": "18:00",
+      "end": "22:00",
+      "timezone": "Asia/Taipei"
+    },
+    "auto_stop_after_daily_limit": true
+  },
+  
+  "resources": {
+    "max_memory_usage": "8GB",
+    "max_cpu_cores": 4,
+    "temp_storage_limit": "10GB",
+    "parallel_video_processing": 1
+  },
+  
+  "cost_control": {
+    "daily_budget_usd": 10,
+    "api_rate_limits": {
+      "openai_requests_per_hour": 20,
+      "stability_ai_requests_per_hour": 10,
+      "elevenlabs_requests_per_hour": 15
+    },
+    "stop_on_budget_exceeded": true,
+    "cost_tracking_enabled": true
+  },
+  
+  "content": {
+    "trending_sources": ["google_trends"],
+    "content_categories": ["lifestyle", "tech", "business"],
+    "language": "zh-TW",
+    "voice_synthesis": {
+      "provider": "elevenlabs",
+      "voice_id": "default",
+      "speed": 1.0
+    }
+  },
+  
+  "ai_services": {
+    "text_generation": {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo",
+      "max_tokens": 200
+    },
+    "image_generation": {
+      "provider": "stability_ai",
+      "model": "stable-diffusion-xl",
+      "quality": "standard"
+    }
+  },
+  
+  "storage": {
+    "local_storage_enabled": true,
+    "cloud_backup": false,
+    "retention_days": 7,
+    "auto_cleanup": true
+  },
+  
+  "monitoring": {
+    "basic_logging": true,
+    "performance_metrics": false,
+    "detailed_analytics": false,
+    "notification_channels": ["console"]
+  },
+  
+  "social_publishing": {
+    "auto_publish": false,
+    "save_to_draft": true,
+    "platforms_config": {
+      "tiktok": {
+        "hashtags_limit": 3,
+        "privacy": "public"
+      },
+      "instagram": {
+        "hashtags_limit": 5,
+        "privacy": "public"
+      }
+    }
+  },
+  
+  "deployment": {
+    "mode": "local",
+    "services_required": [
+      "trend-service",
+      "ai-service", 
+      "video-service",
+      "social-service"
+    ],
+    "database_mode": "sqlite",
+    "cache_mode": "local"
+  }
+}

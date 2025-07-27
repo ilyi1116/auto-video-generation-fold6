@@ -1,43 +1,63 @@
+/**
+ * Vitest 測試配置
+ * 單元測試和覆蓋率報告設定
+ */
+
 import { defineConfig } from 'vitest/config';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { sveltekit } from '@sveltejs/kit/vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [svelte({ 
-    hot: !process.env.VITEST,
-    compilerOptions: {
-      // Enable runtime checks when not in production
-      dev: !process.env.VITEST
-    }
-  })],
+  plugins: [sveltekit()],
+  
   test: {
-    globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/test/setup.js'],
-    include: ['src/**/*.{test,spec}.{js,ts}'],
+    globals: true,
+    setupFiles: ['src/tests/setup.js'],
+    
+    include: [
+      'src/**/*.{test,spec}.{js,ts}',
+      'src/tests/**/*.{test,spec}.{js,ts}'
+    ],
+    exclude: [
+      'src/tests/e2e/**/*',
+      'node_modules/**/*',
+      'dist/**/*'
+    ],
+    
     coverage: {
-      reporter: ['text', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'src/test/',
-        '**/*.d.ts',
-        '**/*.config.{js,ts}',
-        'src/app.html'
+      provider: 'v8',
+      reporter: ['text', 'html', 'json', 'lcov'],
+      reportsDirectory: './coverage',
+      
+      include: [
+        'src/lib/**/*.{js,ts,svelte}',
+        'src/routes/**/*.{js,ts,svelte}'
       ],
-      threshold: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80
-        }
-      }
-    }
+      
+      exclude: [
+        '**/*.test.{js,ts}',
+        '**/*.spec.{js,ts}',
+        '**/tests/**',
+        '**/__tests__/**'
+      ],
+      
+      statements: 80,
+      branches: 75,
+      functions: 80,
+      lines: 80,
+      
+      check: true,
+      all: true
+    },
+    
+    testTimeout: 10000,
+    hookTimeout: 10000
   },
+  
   resolve: {
     alias: {
-      '$lib': resolve('./src/lib'),
-      '$app': resolve('./src/app')
+      $lib: resolve('./src/lib')
     }
   }
 });

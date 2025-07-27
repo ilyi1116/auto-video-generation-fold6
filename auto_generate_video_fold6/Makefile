@@ -1,9 +1,10 @@
-# Auto Video System - Development Makefile
-# 自動化開發工作流程
+# ====================================================================
+# Auto Video 系統開發工作流程自動化 Makefile
+# ====================================================================
 
-.PHONY: help install build test lint format clean docker-build docker-up docker-down deploy backup restore
+.PHONY: help install build test deploy clean dev prod
 
-# Default target
+# 預設目標
 .DEFAULT_GOAL := help
 
 # Colors for output
@@ -54,9 +55,9 @@ setup: ## 🔧 初始化開發環境
 lint: ## 🔍 執行程式碼檢查
 	@echo "$(GREEN)Running linters...$(NC)"
 	@echo "Linting Python code..."
-	@find services -name "*.py" -exec flake8 {} \;
-	@find services -name "*.py" -exec black --check {} \;
-	@find services -name "*.py" -exec isort --check {} \;
+	@ruff check services/
+	@flake8 services/
+	@mypy services/
 	@echo "Linting frontend code..."
 	@cd frontend && npm run lint
 	@echo "$(GREEN)✅ All linting checks passed$(NC)"
@@ -64,8 +65,9 @@ lint: ## 🔍 執行程式碼檢查
 format: ## 🎨 格式化程式碼
 	@echo "$(GREEN)Formatting code...$(NC)"
 	@echo "Formatting Python code..."
-	@find services -name "*.py" -exec black {} \;
-	@find services -name "*.py" -exec isort {} \;
+	@black services/
+	@isort services/
+	@ruff --fix services/
 	@echo "Formatting frontend code..."
 	@cd frontend && npm run format
 	@echo "$(GREEN)✅ Code formatted successfully$(NC)"
@@ -231,8 +233,12 @@ benchmark: ## ⚡ 執行效能基準測試
 
 security-scan: ## 🔒 執行安全掃描
 	@echo "$(GREEN)Running security scans...$(NC)"
+	@echo "Scanning Python code..."
+	@bandit -r services/ -f json -o bandit-report.json
 	@echo "Scanning Python dependencies..."
 	@safety check
+	@echo "Scanning frontend dependencies..."
+	@cd frontend && npm audit --audit-level=high
 	@echo "Scanning Docker images..."
 	@docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 		aquasec/trivy image $(DOCKER_REGISTRY)/api-gateway:latest

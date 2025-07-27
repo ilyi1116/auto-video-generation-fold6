@@ -8,6 +8,7 @@
     Filter,
     Globe,
     Clock,
+    RefreshCw,
     Target,
     Fire,
     ArrowUpRight,

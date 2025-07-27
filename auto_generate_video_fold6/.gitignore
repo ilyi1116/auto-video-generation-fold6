@@ -16,6 +16,8 @@
 *.p12
 secrets/
 certs/
+secrets.yaml
+k8s/secrets.yaml
 
 # 資料庫檔案
 *.db

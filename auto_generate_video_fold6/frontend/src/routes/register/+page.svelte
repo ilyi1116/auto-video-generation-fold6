@@ -327,16 +327,29 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Lock class="h-5 w-5 text-gray-400" />
             </div>
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              autocomplete="new-password"
-              bind:value={formData.password}
-              class="form-input pl-10 pr-10 {errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
-              placeholder="Create a strong password"
-              disabled={isLoading}
-            />
+            {#if showPassword}
+              <input
+                id="password"
+                name="password"
+                type="text"
+                autocomplete="new-password"
+                bind:value={formData.password}
+                class="form-input pl-10 pr-10 {errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
+                placeholder="Create a strong password"
+                disabled={isLoading}
+              />
+            {:else}
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                bind:value={formData.password}
+                class="form-input pl-10 pr-10 {errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
+                placeholder="Create a strong password"
+                disabled={isLoading}
+              />
+            {/if}
             <button
               type="button"
               class="absolute inset-y-0 right-0 pr-3 flex items-center"
@@ -396,16 +409,29 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Lock class="h-5 w-5 text-gray-400" />
             </div>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              autocomplete="new-password"
-              bind:value={formData.confirmPassword}
-              class="form-input pl-10 pr-10 {errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
-              placeholder="Confirm your password"
-              disabled={isLoading}
-            />
+            {#if showConfirmPassword}
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="text"
+                autocomplete="new-password"
+                bind:value={formData.confirmPassword}
+                class="form-input pl-10 pr-10 {errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
+                placeholder="Confirm your password"
+                disabled={isLoading}
+              />
+            {:else}
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autocomplete="new-password"
+                bind:value={formData.confirmPassword}
+                class="form-input pl-10 pr-10 {errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
+                placeholder="Confirm your password"
+                disabled={isLoading}
+              />
+            {/if}
             <button
               type="button"
               class="absolute inset-y-0 right-0 pr-3 flex items-center"

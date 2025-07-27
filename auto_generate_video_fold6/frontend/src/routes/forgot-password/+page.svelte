@@ -109,7 +109,6 @@
                 class="form-input pl-10 {errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
                 placeholder="Enter your email address"
                 disabled={isLoading}
-                autofocus
               />
             </div>
             {#if errors.email}

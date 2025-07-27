@@ -1,0 +1,467 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # 每日凌晨 2 點執行安全掃描
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+        - comprehensive
+        - code-only
+        - dependencies-only
+        - secrets-only
+        - containers-only
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 程式碼安全掃描
+  code-security:
+    name: Code Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'comprehensive' || github.event.inputs.scan_type == 'code-only' || github.event.inputs.scan_type == '' }}
+    
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit[toml] safety semgrep
+    
+    - name: Run Bandit security scan
+      run: |
+        bandit -r . -f json -o bandit-report.json -c security/bandit-config.yaml || true
+    
+    - name: Run Semgrep security scan
+      run: |
+        semgrep --config=auto --json --output=semgrep-report.json . || true
+    
+    - name: Upload Bandit results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: bandit-report.json
+        category: bandit
+    
+    - name: Upload Semgrep results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: semgrep-report.json
+        category: semgrep
+    
+    - name: Upload security scan reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: code-security-reports
+        path: |
+          bandit-report.json
+          semgrep-report.json
+
+  # 依賴套件安全掃描
+  dependency-security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'comprehensive' || github.event.inputs.scan_type == 'dependencies-only' || github.event.inputs.scan_type == '' }}
+    
+    strategy:
+      matrix:
+        include:
+          - language: python
+            path: "."
+          - language: javascript
+            path: "./frontend"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python (for Python dependencies)
+      if: matrix.language == 'python'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js (for JavaScript dependencies)
+      if: matrix.language == 'javascript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Python dependency scan with Safety
+      if: matrix.language == 'python'
+      run: |
+        pip install safety
+        find . -name "requirements*.txt" -exec safety check -r {} --json --output safety-report.json \; || true
+    
+    - name: Python dependency scan with pip-audit
+      if: matrix.language == 'python'
+      run: |
+        pip install pip-audit
+        find . -name "requirements*.txt" -exec pip-audit -r {} --format=json --output=pip-audit-report.json \; || true
+    
+    - name: JavaScript dependency scan with npm audit
+      if: matrix.language == 'javascript'
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm audit --audit-level=moderate --json > npm-audit-report.json || true
+    
+    - name: JavaScript dependency scan with Yarn audit
+      if: matrix.language == 'javascript'
+      working-directory: ./frontend
+      run: |
+        npm install -g yarn
+        yarn install
+        yarn audit --json > yarn-audit-report.json || true
+    
+    - name: Upload dependency scan reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: dependency-security-reports-${{ matrix.language }}
+        path: |
+          safety-report.json
+          pip-audit-report.json
+          npm-audit-report.json
+          yarn-audit-report.json
+
+  # 密鑰洩露掃描
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'comprehensive' || github.event.inputs.scan_type == 'secrets-only' || github.event.inputs.scan_type == '' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Run Trivy secret scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        scanners: 'secret'
+        format: 'sarif'
+        output: 'trivy-secrets.sarif'
+        trivy-config: 'security/trivy-secret.yaml'
+    
+    - name: Run GitLeaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+    
+    - name: Upload Trivy secret scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-secrets.sarif'
+        category: 'trivy-secrets'
+    
+    - name: Upload secrets scan reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: secrets-scan-reports
+        path: |
+          trivy-secrets.sarif
+          gitleaks-report.json
+
+  # 容器映像安全掃描
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'comprehensive' || github.event.inputs.scan_type == 'containers-only' || github.event.inputs.scan_type == '' }}
+    
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - data-service
+          - inference-service
+          - video-service
+          - ai-service
+          - social-service
+          - trend-service
+          - scheduler-service
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build container image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./services/${{ matrix.service }}
+        push: false
+        tags: auto-video/${{ matrix.service }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: auto-video/${{ matrix.service }}:latest
+        format: 'sarif'
+        output: 'trivy-${{ matrix.service }}.sarif'
+        trivy-config: 'security/trivy-config.yaml'
+    
+    - name: Run Grype vulnerability scanner
+      uses: anchore/scan-action@v3
+      with:
+        image: auto-video/${{ matrix.service }}:latest
+        format: sarif
+        output-file: grype-${{ matrix.service }}.sarif
+    
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-${{ matrix.service }}.sarif'
+        category: 'trivy-${{ matrix.service }}'
+    
+    - name: Upload Grype scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'grype-${{ matrix.service }}.sarif'
+        category: 'grype-${{ matrix.service }}'
+    
+    - name: Upload container scan reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: container-security-reports-${{ matrix.service }}
+        path: |
+          trivy-${{ matrix.service }}.sarif
+          grype-${{ matrix.service }}.sarif
+
+  # 基礎設施安全掃描
+  infrastructure-security:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'comprehensive' || github.event.inputs.scan_type == '' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Trivy config scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-config.sarif'
+        trivy-config: 'security/trivy-config.yaml'
+    
+    - name: Run Checkov static analysis
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        quiet: true
+        soft_fail: true
+        framework: dockerfile,kubernetes,docker_compose
+        output_format: sarif
+        output_file_path: checkov-results.sarif
+    
+    - name: Run Hadolint Dockerfile linter
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: "services/*/Dockerfile"
+        format: sarif
+        output-file: hadolint-results.sarif
+        no-fail: true
+    
+    - name: Upload Trivy config scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-config.sarif'
+        category: 'trivy-config'
+    
+    - name: Upload Checkov scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'checkov-results.sarif'
+        category: 'checkov'
+    
+    - name: Upload Hadolint scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'hadolint-results.sarif'
+        category: 'hadolint'
+    
+    - name: Upload infrastructure scan reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: infrastructure-security-reports
+        path: |
+          trivy-config.sarif
+          checkov-results.sarif
+          hadolint-results.sarif
+
+  # 綜合安全報告
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [code-security, dependency-security, secrets-scan, container-security, infrastructure-security]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download all scan reports
+      uses: actions/download-artifact@v3
+      with:
+        path: security-reports
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install report generator dependencies
+      run: |
+        pip install jinja2 pyyaml
+    
+    - name: Generate comprehensive security report
+      run: |
+        python security/generate_security_report.py \
+          --input-dir security-reports \
+          --output security-comprehensive-report.json \
+          --format json
+    
+    - name: Create security summary
+      run: |
+        python security/create_security_summary.py \
+          --report security-comprehensive-report.json \
+          --output $GITHUB_STEP_SUMMARY
+    
+    - name: Upload comprehensive security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: comprehensive-security-report
+        path: security-comprehensive-report.json
+    
+    - name: Comment security summary on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('security-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+    
+    - name: Fail job if critical vulnerabilities found
+      run: |
+        python security/check_security_thresholds.py \
+          --report security-comprehensive-report.json \
+          --max-critical 0 \
+          --max-high 5
+
+  # 安全通知
+  security-notification:
+    name: Security Notifications
+    runs-on: ubuntu-latest
+    if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
+    needs: [security-report]
+    
+    steps:
+    - name: Download security report
+      uses: actions/download-artifact@v3
+      with:
+        name: comprehensive-security-report
+    
+    - name: Send security alert to Slack
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#security-alerts'
+        text: |
+          🚨 Security scan detected critical vulnerabilities in ${{ github.repository }}
+          
+          Branch: ${{ github.ref }}
+          Commit: ${{ github.sha }}
+          
+          Please review the security report and take immediate action.
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    
+    - name: Create security issue
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚨 Critical Security Vulnerabilities Detected - ${new Date().toISOString().split('T')[0]}`,
+            body: `
+            ## Security Scan Alert
+            
+            Critical security vulnerabilities have been detected in the codebase.
+            
+            **Scan Details:**
+            - Branch: ${{ github.ref }}
+            - Commit: ${{ github.sha }}
+            - Workflow: ${{ github.workflow }}
+            - Run ID: ${{ github.run_id }}
+            
+            **Next Steps:**
+            1. Review the security scan results in the workflow artifacts
+            2. Prioritize fixing critical and high severity issues
+            3. Update dependencies with known vulnerabilities
+            4. Remove any detected secrets from the codebase
+            
+            This issue was automatically created by the security scanning workflow.
+            `,
+            labels: ['security', 'critical', 'automated']
+          });

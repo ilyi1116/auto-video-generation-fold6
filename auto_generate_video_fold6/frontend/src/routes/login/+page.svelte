@@ -209,16 +209,29 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Lock class="h-5 w-5 text-gray-400" />
             </div>
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              autocomplete="current-password"
-              bind:value={password}
-              class="form-input pl-10 pr-10 {errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
-              placeholder="Enter your password"
-              disabled={isLoading}
-            />
+            {#if showPassword}
+              <input
+                id="password"
+                name="password"
+                type="text"
+                autocomplete="current-password"
+                bind:value={password}
+                class="form-input pl-10 pr-10 {errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
+                placeholder="Enter your password"
+                disabled={isLoading}
+              />
+            {:else}
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                bind:value={password}
+                class="form-input pl-10 pr-10 {errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}"
+                placeholder="Enter your password"
+                disabled={isLoading}
+              />
+            {/if}
             <button
               type="button"
               class="absolute inset-y-0 right-0 pr-3 flex items-center"
