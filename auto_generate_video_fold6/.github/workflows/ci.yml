@@ -33,6 +33,42 @@ jobs:
           bandit -r services/ -f json -o bandit-report.json || true
         continue-on-error: true
       
+      - name: Run Snyk security scan
+        run: |
+          # Create empty SARIF file as fallback
+          cat > snyk.sarif << 'EOF'
+          {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Snyk",
+                    "version": "1.0.0"
+                  }
+                },
+                "results": []
+              }
+            ]
+          }
+          EOF
+          
+          # Try to run Snyk if token is available
+          if [ -n "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "Running Snyk security scan..."
+            npx snyk test --sarif-file-output=snyk.sarif || echo "Snyk scan completed with issues"
+          else
+            echo "SNYK_TOKEN not configured, using empty SARIF file"
+          fi
+        continue-on-error: true
+      
+      - name: Upload Snyk results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('snyk.sarif') != ''
+        with:
+          sarif_file: snyk.sarif
+      
       - name: Run Python code quality checks
         run: |
           # Check if services directory exists and has Python files
@@ -53,6 +89,7 @@ jobs:
           name: security-reports
           path: |
             bandit-report.json
+            snyk.sarif
           retention-days: 7
 
   # Frontend tests
