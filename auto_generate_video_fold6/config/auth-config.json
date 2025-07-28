@@ -1,0 +1,242 @@
+{
+  "authentication": {
+    "enabled_providers": ["local", "ldap", "saml", "oauth2", "azure_ad"],
+    "default_provider": "local",
+    "multi_factor_auth": {
+      "enabled": true,
+      "required_for_roles": ["admin", "super_admin"],
+      "providers": ["totp", "sms", "email"],
+      "backup_codes": true
+    },
+    "session_management": {
+      "max_concurrent_sessions": 5,
+      "session_timeout_minutes": 1440,
+      "remember_me_days": 30,
+      "force_logout_on_password_change": true
+    }
+  },
+  "ldap": {
+    "enabled": true,
+    "server_uri": "ldaps://ldap.company.com:636",
+    "bind_dn": "cn=service_account,ou=service,dc=company,dc=com",
+    "bind_password": "${LDAP_BIND_PASSWORD}",
+    "base_dn": "dc=company,dc=com",
+    "user_search": {
+      "base_dn": "ou=users,dc=company,dc=com",
+      "filter": "(|(uid={username})(mail={username}))",
+      "attributes": ["uid", "mail", "displayName", "department", "employeeID", "memberOf"]
+    },
+    "group_search": {
+      "base_dn": "ou=groups,dc=company,dc=com",
+      "filter": "(member={user_dn})",
+      "attributes": ["cn", "description"]
+    },
+    "role_mapping": {
+      "cn=administrators,ou=groups,dc=company,dc=com": "admin",
+      "cn=developers,ou=groups,dc=company,dc=com": "user",
+      "cn=premium_users,ou=groups,dc=company,dc=com": "premium",
+      "cn=super_admins,ou=groups,dc=company,dc=com": "super_admin"
+    },
+    "connection": {
+      "timeout": 10,
+      "use_tls": true,
+      "validate_cert": true,
+      "ca_cert_file": "/etc/ssl/certs/ldap-ca.crt"
+    }
+  },
+  "saml": {
+    "enabled": true,
+    "sp": {
+      "entity_id": "https://auto-video.company.com",
+      "acs_url": "https://auto-video.company.com/auth/saml/callback",
+      "sls_url": "https://auto-video.company.com/auth/saml/logout",
+      "certificate_file": "/etc/ssl/certs/saml-sp.crt",
+      "private_key_file": "/etc/ssl/private/saml-sp.key"
+    },
+    "idp": {
+      "entity_id": "https://sso.company.com/adfs/services/trust",
+      "sso_url": "https://sso.company.com/adfs/ls/",
+      "slo_url": "https://sso.company.com/adfs/ls/",
+      "certificate_file": "/etc/ssl/certs/saml-idp.crt",
+      "certificate_fingerprint": "AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD"
+    },
+    "security": {
+      "want_assertions_signed": true,
+      "want_response_signed": true,
+      "signature_algorithm": "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+      "digest_algorithm": "http://www.w3.org/2001/04/xmlenc#sha256"
+    },
+    "attribute_mapping": {
+      "user_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+      "username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+      "email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+      "full_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+      "department": "http://schemas.company.com/department",
+      "groups": "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups"
+    }
+  },
+  "oauth2": {
+    "providers": {
+      "google": {
+        "enabled": true,
+        "client_id": "${GOOGLE_OAUTH_CLIENT_ID}",
+        "client_secret": "${GOOGLE_OAUTH_CLIENT_SECRET}",
+        "auth_url": "https://accounts.google.com/o/oauth2/v2/auth",
+        "token_url": "https://oauth2.googleapis.com/token",
+        "userinfo_url": "https://www.googleapis.com/oauth2/v2/userinfo",
+        "scopes": ["openid", "profile", "email"],
+        "redirect_uri": "https://auto-video.company.com/auth/oauth/google/callback"
+      },
+      "microsoft": {
+        "enabled": true,
+        "client_id": "${MICROSOFT_OAUTH_CLIENT_ID}",
+        "client_secret": "${MICROSOFT_OAUTH_CLIENT_SECRET}",
+        "auth_url": "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize",
+        "token_url": "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
+        "userinfo_url": "https://graph.microsoft.com/v1.0/me",
+        "scopes": ["openid", "profile", "email", "User.Read"],
+        "redirect_uri": "https://auto-video.company.com/auth/oauth/microsoft/callback",
+        "tenant": "${MICROSOFT_TENANT_ID}"
+      },
+      "okta": {
+        "enabled": false,
+        "client_id": "${OKTA_CLIENT_ID}",
+        "client_secret": "${OKTA_CLIENT_SECRET}",
+        "auth_url": "https://{domain}/oauth2/default/v1/authorize",
+        "token_url": "https://{domain}/oauth2/default/v1/token",
+        "userinfo_url": "https://{domain}/oauth2/default/v1/userinfo",
+        "scopes": ["openid", "profile", "email", "groups"],
+        "redirect_uri": "https://auto-video.company.com/auth/oauth/okta/callback",
+        "domain": "${OKTA_DOMAIN}"
+      }
+    }
+  },
+  "azure_ad": {
+    "enabled": true,
+    "tenant_id": "${AZURE_TENANT_ID}",
+    "client_id": "${AZURE_CLIENT_ID}",
+    "client_secret": "${AZURE_CLIENT_SECRET}",
+    "authority": "https://login.microsoftonline.com/${AZURE_TENANT_ID}",
+    "scopes": ["User.Read", "Group.Read.All"],
+    "graph_api_url": "https://graph.microsoft.com/v1.0",
+    "group_mapping": {
+      "auto-video-admins": "admin",
+      "auto-video-users": "user",
+      "auto-video-premium": "premium"
+    }
+  },
+  "jwt": {
+    "secret_key": "${JWT_SECRET_KEY}",
+    "algorithm": "RS256",
+    "access_token_expire_minutes": 30,
+    "refresh_token_expire_days": 7,
+    "id_token_expire_minutes": 60,
+    "issuer": "https://auto-video.company.com",
+    "audience": ["auto-video-web", "auto-video-api"],
+    "private_key_file": "/etc/ssl/private/jwt-private.key",
+    "public_key_file": "/etc/ssl/certs/jwt-public.key"
+  },
+  "rbac": {
+    "enabled": true,
+    "roles": {
+      "guest": {
+        "permissions": ["read_public"]
+      },
+      "user": {
+        "permissions": ["read_own", "write_own", "create_video", "use_ai_basic"]
+      },
+      "premium": {
+        "inherits": ["user"],
+        "permissions": ["use_ai_advanced", "access_premium_features", "export_hd"]
+      },
+      "admin": {
+        "inherits": ["premium"],
+        "permissions": ["read_all", "write_all", "manage_users", "view_analytics"]
+      },
+      "super_admin": {
+        "inherits": ["admin"],
+        "permissions": ["system_config", "manage_billing", "access_logs"]
+      }
+    },
+    "resources": {
+      "videos": ["create", "read", "update", "delete", "share"],
+      "ai_services": ["text_generation", "image_generation", "voice_synthesis", "music_generation"],
+      "analytics": ["view", "export"],
+      "users": ["create", "read", "update", "delete", "impersonate"],
+      "system": ["config", "backup", "monitoring"]
+    }
+  },
+  "security": {
+    "password_policy": {
+      "min_length": 12,
+      "require_uppercase": true,
+      "require_lowercase": true,
+      "require_numbers": true,
+      "require_special_chars": true,
+      "max_age_days": 90,
+      "history_count": 12,
+      "lockout_attempts": 5,
+      "lockout_duration_minutes": 30
+    },
+    "encryption": {
+      "algorithm": "AES-256-GCM",
+      "key_rotation_days": 30,
+      "key_storage": "hsm"
+    },
+    "audit": {
+      "enabled": true,
+      "log_all_auth_events": true,
+      "log_permission_checks": true,
+      "retention_days": 365,
+      "export_format": "json",
+      "siem_integration": true
+    },
+    "rate_limiting": {
+      "login_attempts": {
+        "max_attempts": 10,
+        "window_minutes": 15,
+        "block_duration_minutes": 60
+      },
+      "api_requests": {
+        "max_requests": 1000,
+        "window_minutes": 60
+      }
+    }
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "auto_video_auth",
+    "username": "auth_service",
+    "password": "${AUTH_DB_PASSWORD}",
+    "pool_size": 20,
+    "max_overflow": 10,
+    "connection_timeout": 30
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "password": "${REDIS_PASSWORD}",
+    "db": 1,
+    "pool_size": 20,
+    "connection_timeout": 5
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "audit_log_file": "/var/log/auto-video/auth-audit.log",
+    "error_log_file": "/var/log/auto-video/auth-error.log",
+    "max_file_size": "100MB",
+    "backup_count": 10
+  },
+  "monitoring": {
+    "metrics_enabled": true,
+    "prometheus_port": 9090,
+    "health_check_path": "/health",
+    "alerts": {
+      "failed_login_threshold": 100,
+      "unusual_activity_detection": true,
+      "privilege_escalation_alerts": true
+    }
+  }
+}

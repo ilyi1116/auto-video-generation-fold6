@@ -1,0 +1,56 @@
+{
+  "postgresql": {
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "${POSTGRES_PASSWORD}",
+    "database": "auto_video"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379, 
+    "password": "${REDIS_PASSWORD}",
+    "dump_dir": "/var/lib/redis/dump.rdb"
+  },
+  "s3": {
+    "access_key_id": "${AWS_ACCESS_KEY_ID}",
+    "secret_access_key": "${AWS_SECRET_ACCESS_KEY}",
+    "bucket_name": "${S3_BACKUP_BUCKET}",
+    "region": "us-west-2"
+  },
+  "backup": {
+    "local_path": "/var/backups/auto-video",
+    "retention_days": 30,
+    "schedule": {
+      "full_backup": "0 2 * * 0",
+      "incremental_backup": "0 2 * * 1-6"
+    },
+    "encryption": {
+      "enabled": true,
+      "key_file": "/etc/auto-video/backup.key"
+    },
+    "compression": {
+      "enabled": true,
+      "level": 6
+    }
+  },
+  "notification": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "${BACKUP_EMAIL_USER}",
+      "password": "${BACKUP_EMAIL_PASS}",
+      "recipients": ["admin@example.com"]
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "${SLACK_WEBHOOK_URL}"
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "prometheus_metrics": true,
+    "health_check_url": "http://localhost:8080/health/backup"
+  }
+}
