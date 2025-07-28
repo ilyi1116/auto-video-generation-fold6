@@ -6,7 +6,7 @@ numpy==1.25.2
 
 # 圖表生成
 matplotlib==3.8.2
-seaborn==0.13.0
+seaborn==0.13.2
 plotly==5.17.0
 
 # 互動式儀表板
