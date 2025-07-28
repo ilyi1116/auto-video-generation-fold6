@@ -35,4 +35,4 @@ statsmodels==0.14.1
 Pillow==10.1.0
 
 # 非同步支援
-aiofiles==23.2.1
+aiofiles==24.1.0
