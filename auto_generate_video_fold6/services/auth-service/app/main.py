@@ -70,8 +70,6 @@ async def health_check():
 
 # Include routers
 app.include_router(router, prefix=settings.api_v1_str, tags=["authentication"])
-
-
 if __name__ == "__main__":
     import uvicorn
 

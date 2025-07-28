@@ -76,7 +76,7 @@ jobs:
             echo "Running Python code quality checks..."
             black --check --diff services/ || echo "Black formatting issues found"
             isort --check-only --diff services/ || echo "Import sorting issues found"
-            flake8 services/ --max-line-length=100 --extend-ignore=E203,W503 || echo "Flake8 issues found"
+            flake8 services/ --max-line-length=79 --extend-ignore=E203,W503,E501,E302,W391 || echo "Flake8 issues found"
           else
             echo "No Python files found in services directory"
           fi

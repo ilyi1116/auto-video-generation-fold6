@@ -185,7 +185,7 @@ class SunoClient:
 
                                 # 記錄成功的 API 呼叫
                                 if self._cost_tracker:
-                                    cost = self._calculate_cost(item)
+                                    self._calculate_cost(item)
                                     await self._cost_tracker.track_api_call(
                                         provider="suno",
                                         model="chirp-v3",

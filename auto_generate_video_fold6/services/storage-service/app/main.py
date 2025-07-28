@@ -177,8 +177,6 @@ async def root():
 # Include routers
 app.include_router(upload.router, prefix="/api/v1", tags=["upload"])
 app.include_router(download.router, prefix="/api/v1", tags=["download"])
-
-
 if __name__ == "__main__":
     import uvicorn
 

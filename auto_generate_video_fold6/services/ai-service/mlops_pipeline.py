@@ -111,7 +111,7 @@ class ModelRegistry:
     ) -> ModelMetrics:
         """模型效能基準測試"""
         # 模擬基準測試 - 實際實現會載入模型並進行測試
-        start_time = datetime.utcnow()
+        datetime.utcnow()
 
         # 測試延遲
         test_requests = 100

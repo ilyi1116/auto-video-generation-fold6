@@ -210,7 +210,6 @@ class DatabaseError(Exception):
     """Custom database error"""
 
 
-
 class TransactionManager:
     """Transaction management utility"""
 
@@ -331,7 +330,7 @@ async def startup_database():
     """Database startup handler"""
 
     try:
-        db_manager = await get_database_manager()
+        await get_database_manager()
         await run_migrations()
         logger.info("Database startup completed")
 

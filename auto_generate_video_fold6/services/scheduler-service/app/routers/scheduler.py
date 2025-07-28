@@ -247,8 +247,6 @@ async def publish_now(
 
 
 # 平台帳號管理
-
-
 @router.post("/accounts", response_model=PlatformAccountResponse)
 async def connect_platform_account(
     request: PlatformAccountRequest,

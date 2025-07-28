@@ -286,7 +286,7 @@ async def get_synthesis_audio(
     # Stream audio file
     try:
         # Extract S3 key from URL
-        audio_key = job["audio_url"].split("/")[-1]
+        job["audio_url"].split("/")[-1]
 
         # For demonstration, return mock audio
         mock_audio = (

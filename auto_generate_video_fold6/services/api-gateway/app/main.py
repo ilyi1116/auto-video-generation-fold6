@@ -131,8 +131,6 @@ app.include_router(
     admin_router,
     prefix=settings.api_v1_str,
 )
-
-
 if __name__ == "__main__":
     import uvicorn
 

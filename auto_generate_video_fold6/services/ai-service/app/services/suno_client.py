@@ -348,7 +348,7 @@ async def main():
 
         try:
             result = await client.generate_music(request)
-            print(f"✅ Music generated successfully!")
+            print("✅ Music generated successfully!")
             print(f"Music ID: {result['music_id']}")
             print(f"Music URL: {result['music_url']}")
             print(f"Duration: {result['duration_seconds']} seconds")

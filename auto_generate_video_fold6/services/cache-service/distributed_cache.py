@@ -246,7 +246,7 @@ class MemoryCache:
 
         elif self.eviction_policy == EvictionPolicy.TTL:
             # 淘汰即將過期的
-            now = datetime.utcnow()
+            datetime.utcnow()
             min_ttl_key = min(
                 self.cache.keys(),
                 key=lambda k: (

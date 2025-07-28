@@ -256,8 +256,6 @@ async def test_get_keyword_performance(
 
 
 # 關鍵字路由測試
-
-
 @patch("app.services.keyword_analyzer.analyze_keyword")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio

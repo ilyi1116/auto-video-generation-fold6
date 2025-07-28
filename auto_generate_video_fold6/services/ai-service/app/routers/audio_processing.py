@@ -1,4 +1,3 @@
-
 import structlog
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel

@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
+from .auth import get_current_user
 from .config import settings
 from .routers import (
     audio_processing,
@@ -64,8 +66,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 # Include routers
 app.include_router(
     text_generation.router,
@@ -129,15 +129,7 @@ async def get_capabilities():
     return ai_manager.get_service_capabilities()
 
 
-
-from fastapi import Depends
-
 # Comprehensive video generation endpoint
-from pydantic import BaseModel
-
-from .auth import get_current_user
-
-
 class VideoContentRequest(BaseModel):
     script_topic: str
     video_style: str = "modern"

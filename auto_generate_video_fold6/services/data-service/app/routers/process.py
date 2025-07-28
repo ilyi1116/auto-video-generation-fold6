@@ -1,4 +1,3 @@
-
 import structlog
 from app.audio_validator import audio_validator
 from app.auth import get_current_user

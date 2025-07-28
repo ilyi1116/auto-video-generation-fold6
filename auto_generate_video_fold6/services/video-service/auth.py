@@ -21,7 +21,6 @@ class AuthenticationError(Exception):
     """Custom authentication error"""
 
 
-
 async def verify_token(token: str) -> Optional[str]:
     """
     Verify JWT token and return user ID

@@ -78,7 +78,7 @@ async def upload_voice_file(
 
         # Upload to S3
         try:
-            s3_url = await s3_storage.upload_file(temp_file_path, s3_key)
+            await s3_storage.upload_file(temp_file_path, s3_key)
         except Exception as e:
             # Clean up temp file
             await local_storage.delete_file(temp_file_path)
