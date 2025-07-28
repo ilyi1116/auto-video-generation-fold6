@@ -1,6 +1,15 @@
 import uuid
 
-from sqlalchemy import JSON, BigInteger, Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
@@ -21,7 +30,9 @@ class StoredFile(Base):
     file_path = Column(String, nullable=False)  # Storage path
     file_size = Column(BigInteger, nullable=False)
     mime_type = Column(String, nullable=False)
-    file_hash = Column(String, nullable=False)  # SHA-256 hash for deduplication
+    file_hash = Column(
+        String, nullable=False
+    )  # SHA-256 hash for deduplication
 
     # File categorization
     file_type = Column(String, nullable=False)  # image, audio, video, document
@@ -36,7 +47,9 @@ class StoredFile(Base):
 
     # Processing information
     is_processed = Column(Boolean, default=False)
-    processing_status = Column(String, default="pending")  # pending, processing, completed, failed
+    processing_status = Column(
+        String, default="pending"
+    )  # pending, processing, completed, failed
     processing_metadata = Column(JSON)
 
     # Image-specific metadata
@@ -61,8 +74,12 @@ class StoredFile(Base):
     video_codec = Column(String)
 
     # Security and moderation
-    virus_scan_status = Column(String, default="pending")  # pending, clean, infected, failed
-    content_moderation_status = Column(String, default="pending")  # pending, approved, rejected
+    virus_scan_status = Column(
+        String, default="pending"
+    )  # pending, clean, infected, failed
+    content_moderation_status = Column(
+        String, default="pending"
+    )  # pending, approved, rejected
     content_moderation_flags = Column(JSON)
 
     # Access control
@@ -95,8 +112,12 @@ class FileProcessingJob(Base):
     user_id = Column(String, nullable=False, index=True)
 
     # Job information
-    job_type = Column(String, nullable=False)  # thumbnail, transcode, compress, enhance
-    status = Column(String, default="pending")  # pending, processing, completed, failed
+    job_type = Column(
+        String, nullable=False
+    )  # thumbnail, transcode, compress, enhance
+    status = Column(
+        String, default="pending"
+    )  # pending, processing, completed, failed
     priority = Column(Integer, default=5)  # 1-10, lower is higher priority
 
     # Processing parameters

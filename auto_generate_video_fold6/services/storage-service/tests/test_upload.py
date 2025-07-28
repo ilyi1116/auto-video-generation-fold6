@@ -1,10 +1,8 @@
 import io
-import json
 import os
 import sys
 from unittest.mock import AsyncMock, patch
 
-import pytest
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
@@ -24,7 +22,11 @@ class TestUploadAPI:
     def test_upload_file_success(self, client, test_image):
         """Test successful file upload"""
         files = {"file": ("test.jpg", test_image, "image/jpeg")}
-        data = {"file_type": "image", "category": "uploaded", "description": "Test image upload"}
+        data = {
+            "file_type": "image",
+            "category": "uploaded",
+            "description": "Test image upload",
+        }
 
         response = client.post("/api/v1/upload", files=files, data=data)
 
@@ -90,7 +92,9 @@ class TestUploadAPI:
         ]
         data = {"file_type": "image", "category": "batch"}
 
-        response = client.post("/api/v1/upload-multiple", files=files, data=data)
+        response = client.post(
+            "/api/v1/upload-multiple", files=files, data=data
+        )
 
         assert response.status_code == 200
         result = response.json()
@@ -109,7 +113,9 @@ class TestUploadAPI:
         ]
         data = {"file_type": "image"}
 
-        response = client.post("/api/v1/upload-multiple", files=files, data=data)
+        response = client.post(
+            "/api/v1/upload-multiple", files=files, data=data
+        )
 
         assert response.status_code == 400
         assert "Too many files" in response.json()["detail"]
@@ -149,7 +155,10 @@ class TestUploadAPI:
         mock_client.get.side_effect = Exception("Connection failed")
         mock_httpx.return_value.__aenter__.return_value = mock_client
 
-        data = {"url": "https://invalid-url.com/test.jpg", "file_type": "image"}
+        data = {
+            "url": "https://invalid-url.com/test.jpg",
+            "file_type": "image",
+        }
 
         response = client.post("/api/v1/upload-from-url", data=data)
 

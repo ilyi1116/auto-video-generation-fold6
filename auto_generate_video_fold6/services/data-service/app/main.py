@@ -5,7 +5,7 @@ import uvicorn
 from app.config import settings
 from app.database import database, engine, metadata
 from app.routers import process, upload
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Configure structured logging

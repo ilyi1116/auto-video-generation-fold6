@@ -25,7 +25,11 @@ def client():
 def mock_auth_service():
     """Mock authentication service responses"""
     with patch("app.auth.get_current_user") as mock:
-        mock.return_value = {"id": 1, "username": "testuser", "email": "test@example.com"}
+        mock.return_value = {
+            "id": 1,
+            "username": "testuser",
+            "email": "test@example.com",
+        }
         yield mock
 
 
@@ -43,7 +47,9 @@ def mock_database():
 def mock_s3_storage():
     """Mock S3 storage operations"""
     with patch("app.storage.s3_storage") as mock:
-        mock.upload_audio = AsyncMock(return_value="http://minio:9000/voice-models/test-audio.wav")
+        mock.upload_audio = AsyncMock(
+            return_value="http://minio:9000/voice-models/test-audio.wav"
+        )
         mock.delete_file = AsyncMock(return_value=True)
         mock.file_exists = AsyncMock(return_value=True)
         yield mock

@@ -7,7 +7,6 @@ and the video composition engine.
 """
 
 import asyncio
-import logging
 import os
 import uuid
 from datetime import datetime
@@ -17,7 +16,7 @@ import httpx
 import structlog
 from pydantic import BaseModel
 
-from .composer import CompositionResult, FinalRenderResult, VideoComposer
+from .composer import VideoComposer
 
 logger = structlog.get_logger()
 
@@ -55,8 +54,12 @@ class VideoGenerationService:
         self.composer = VideoComposer()
 
         # AI Service endpoints
-        self.ai_service_base = os.getenv("AI_SERVICE_URL", "http://ai-service:8002")
-        self.storage_service_base = os.getenv("STORAGE_SERVICE_URL", "http://storage-service:8003")
+        self.ai_service_base = os.getenv(
+            "AI_SERVICE_URL", "http://ai-service:8002"
+        )
+        self.storage_service_base = os.getenv(
+            "STORAGE_SERVICE_URL", "http://storage-service:8003"
+        )
 
         # Generation status tracking
         self.generation_status = {}
@@ -86,13 +89,17 @@ class VideoGenerationService:
             }
 
             # Start async generation process
-            asyncio.create_task(self._generate_video_async(generation_id, request, user_id))
+            asyncio.create_task(
+                self._generate_video_async(generation_id, request, user_id)
+            )
 
             return VideoGenerationResult(
                 generation_id=generation_id,
                 status="processing",
                 created_at=datetime.utcnow(),
-                estimated_completion=datetime.utcnow().replace(microsecond=0).replace(second=0)
+                estimated_completion=datetime.utcnow()
+                .replace(microsecond=0)
+                .replace(second=0)
                 + self._estimate_completion_time(request),
                 metadata={
                     "topic": request.topic,
@@ -110,7 +117,9 @@ class VideoGenerationService:
             )
             raise Exception(f"Failed to start video generation: {str(e)}")
 
-    async def get_generation_status(self, generation_id: str) -> Dict[str, Any]:
+    async def get_generation_status(
+        self, generation_id: str
+    ) -> Dict[str, Any]:
         """Get current generation status"""
 
         status = self.generation_status.get(generation_id)
@@ -127,7 +136,10 @@ class VideoGenerationService:
         try:
             # Step 1: Generate script
             await self._update_status(
-                generation_id, "generating_script", 10, "Generating video script"
+                generation_id,
+                "generating_script",
+                10,
+                "Generating video script",
             )
 
             script_data = await self._generate_script(
@@ -136,14 +148,22 @@ class VideoGenerationService:
 
             # Step 2: Generate images
             await self._update_status(
-                generation_id, "generating_images", 30, "Creating visual content"
+                generation_id,
+                "generating_images",
+                30,
+                "Creating visual content",
             )
 
-            image_urls = await self._generate_images(script_data["scenes"], request.image_style)
+            image_urls = await self._generate_images(
+                script_data["scenes"], request.image_style
+            )
 
             # Step 3: Generate voice narration
             await self._update_status(
-                generation_id, "generating_voice", 50, "Synthesizing voice narration"
+                generation_id,
+                "generating_voice",
+                50,
+                "Synthesizing voice narration",
             )
 
             voice_url = await self._generate_voice(
@@ -154,14 +174,22 @@ class VideoGenerationService:
             music_url = None
             if request.include_music:
                 await self._update_status(
-                    generation_id, "generating_music", 60, "Creating background music"
+                    generation_id,
+                    "generating_music",
+                    60,
+                    "Creating background music",
                 )
 
-                music_url = await self._generate_music(request.topic, script_data["mood"])
+                music_url = await self._generate_music(
+                    request.topic, script_data["mood"]
+                )
 
             # Step 5: Create video composition
             await self._update_status(
-                generation_id, "composing_video", 70, "Composing video elements"
+                generation_id,
+                "composing_video",
+                70,
+                "Composing video elements",
             )
 
             composition_result = await self.composer.create_video(
@@ -175,11 +203,16 @@ class VideoGenerationService:
 
             # Step 6: Generate preview
             await self._update_status(
-                generation_id, "generating_preview", 80, "Creating preview video"
+                generation_id,
+                "generating_preview",
+                80,
+                "Creating preview video",
             )
 
             # Step 7: Render final video
-            await self._update_status(generation_id, "rendering_final", 90, "Rendering final video")
+            await self._update_status(
+                generation_id, "rendering_final", 90, "Rendering final video"
+            )
 
             final_result = await self.composer.render_final(
                 composition_result.composition_id, request.quality
@@ -216,9 +249,13 @@ class VideoGenerationService:
                 user_id=user_id,
             )
 
-            await self._update_status(generation_id, "failed", 0, f"Generation failed: {str(e)}")
+            await self._update_status(
+                generation_id, "failed", 0, f"Generation failed: {str(e)}"
+            )
 
-    async def _generate_script(self, topic: str, platform: str, length: str) -> Dict[str, Any]:
+    async def _generate_script(
+        self, topic: str, platform: str, length: str
+    ) -> Dict[str, Any]:
         """Generate video script using AI service"""
 
         async with httpx.AsyncClient() as client:
@@ -238,7 +275,9 @@ class VideoGenerationService:
 
             return response.json()
 
-    async def _generate_images(self, scenes: List[Dict], style: str) -> List[str]:
+    async def _generate_images(
+        self, scenes: List[Dict], style: str
+    ) -> List[str]:
         """Generate images for each scene"""
 
         image_urls = []
@@ -260,17 +299,23 @@ class VideoGenerationService:
                         result = response.json()
                         image_urls.append(result["image_url"])
                     else:
-                        logger.warning(f"Image generation failed for scene {i}: {response.text}")
+                        logger.warning(
+                            f"Image generation failed for scene {i}: {response.text}"
+                        )
                         # Use a placeholder or default image
                         image_urls.append(self._get_placeholder_image())
 
                 except Exception as e:
-                    logger.warning(f"Image generation error for scene {i}: {str(e)}")
+                    logger.warning(
+                        f"Image generation error for scene {i}: {str(e)}"
+                    )
                     image_urls.append(self._get_placeholder_image())
 
         return image_urls
 
-    async def _generate_voice(self, script_text: str, voice_settings: Dict[str, Any]) -> str:
+    async def _generate_voice(
+        self, script_text: str, voice_settings: Dict[str, Any]
+    ) -> str:
         """Generate voice narration using AI service"""
 
         async with httpx.AsyncClient(timeout=120.0) as client:
@@ -346,7 +391,9 @@ class VideoGenerationService:
             step=current_step,
         )
 
-    def _estimate_completion_time(self, request: VideoGenerationRequest) -> datetime:
+    def _estimate_completion_time(
+        self, request: VideoGenerationRequest
+    ) -> datetime:
         """Estimate completion time based on request parameters"""
 
         base_minutes = 5  # Base processing time

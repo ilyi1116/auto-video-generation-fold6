@@ -3,11 +3,10 @@
 測試所有認證相關的 API 端點
 """
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from app.main import app
-from app.schemas import Token, UserCreate
 from fastapi import status
 from httpx import AsyncClient
 
@@ -68,7 +67,10 @@ class TestAuthRouters:
         }
 
         with patch("app.crud.get_user_by_email") as mock_get_email:
-            mock_get_email.return_value = {"id": 1, "email": "existing@example.com"}
+            mock_get_email.return_value = {
+                "id": 1,
+                "email": "existing@example.com",
+            }
 
             response = await client.post("/auth/register", json=user_data)
 
@@ -78,7 +80,10 @@ class TestAuthRouters:
     @pytest.mark.asyncio
     async def test_login_success(self, client: AsyncClient):
         """測試用戶登入成功"""
-        login_data = {"username": "testuser@example.com", "password": "correctpassword"}
+        login_data = {
+            "username": "testuser@example.com",
+            "password": "correctpassword",
+        }
 
         with (
             patch("app.crud.get_user_by_email") as mock_get_user,
@@ -109,7 +114,10 @@ class TestAuthRouters:
     @pytest.mark.asyncio
     async def test_login_invalid_credentials(self, client: AsyncClient):
         """測試用戶登入 - 無效憑證"""
-        login_data = {"username": "testuser@example.com", "password": "wrongpassword"}
+        login_data = {
+            "username": "testuser@example.com",
+            "password": "wrongpassword",
+        }
 
         with (
             patch("app.crud.get_user_by_email") as mock_get_user,
@@ -132,7 +140,10 @@ class TestAuthRouters:
     @pytest.mark.asyncio
     async def test_login_inactive_user(self, client: AsyncClient):
         """測試用戶登入 - 帳戶未啟用"""
-        login_data = {"username": "inactive@example.com", "password": "correctpassword"}
+        login_data = {
+            "username": "inactive@example.com",
+            "password": "correctpassword",
+        }
 
         with (
             patch("app.crud.get_user_by_email") as mock_get_user,
@@ -241,7 +252,10 @@ class TestAuthRouters:
     async def test_change_password_success(self, client: AsyncClient):
         """測試修改密碼成功"""
         headers = {"Authorization": "Bearer valid_access_token"}
-        password_data = {"current_password": "oldpassword", "new_password": "newpassword123"}
+        password_data = {
+            "current_password": "oldpassword",
+            "new_password": "newpassword123",
+        }
 
         with (
             patch("app.dependencies.get_current_user") as mock_get_current,
@@ -249,7 +263,10 @@ class TestAuthRouters:
             patch("app.crud.update_user_password") as mock_update,
         ):
 
-            mock_get_current.return_value = {"id": 1, "hashed_password": "hashed_old_password"}
+            mock_get_current.return_value = {
+                "id": 1,
+                "hashed_password": "hashed_old_password",
+            }
             mock_verify.return_value = True
             mock_update.return_value = True
 
@@ -258,20 +275,28 @@ class TestAuthRouters:
             )
 
             assert response.status_code == status.HTTP_200_OK
-            assert "Password updated successfully" in response.json()["message"]
+            assert (
+                "Password updated successfully" in response.json()["message"]
+            )
 
     @pytest.mark.asyncio
     async def test_change_password_wrong_current(self, client: AsyncClient):
         """測試修改密碼 - 當前密碼錯誤"""
         headers = {"Authorization": "Bearer valid_access_token"}
-        password_data = {"current_password": "wrongpassword", "new_password": "newpassword123"}
+        password_data = {
+            "current_password": "wrongpassword",
+            "new_password": "newpassword123",
+        }
 
         with (
             patch("app.dependencies.get_current_user") as mock_get_current,
             patch("app.security.verify_password") as mock_verify,
         ):
 
-            mock_get_current.return_value = {"id": 1, "hashed_password": "hashed_old_password"}
+            mock_get_current.return_value = {
+                "id": 1,
+                "hashed_password": "hashed_old_password",
+            }
             mock_verify.return_value = False
 
             response = await client.put(
@@ -301,7 +326,10 @@ class TestAuthIntegration:
         assert register_response.status_code == status.HTTP_201_CREATED
 
         # 登入
-        login_data = {"username": user_data["email"], "password": user_data["password"]}
+        login_data = {
+            "username": user_data["email"],
+            "password": user_data["password"],
+        }
 
         login_response = await client.post("/auth/login", data=login_data)
         assert login_response.status_code == status.HTTP_200_OK

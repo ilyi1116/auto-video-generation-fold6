@@ -74,7 +74,9 @@ app.add_middleware(
 
 # Add trusted host middleware for security
 if not settings.debug:
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
+    app.add_middleware(
+        TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts
+    )
 
 
 @app.middleware("http")
@@ -180,4 +182,10 @@ app.include_router(download.router, prefix="/api/v1", tags=["download"])
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=8003, reload=settings.debug, log_level="info")
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8003,
+        reload=settings.debug,
+        log_level="info",
+    )

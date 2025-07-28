@@ -10,8 +10,7 @@ import json
 import logging
 import time
 from dataclasses import asdict, dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -74,7 +73,9 @@ class GeminiClient:
             logger.warning("成本追蹤器不可用")
 
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60))
+        self.session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=60)
+        )
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -101,14 +102,21 @@ class GeminiClient:
         if images and "vision" not in model_name:
             model_name = self.models["gemini-pro-vision"]
 
-        logger.info(f"使用 Gemini 生成內容: {prompt[:50]}... (模型: {model_name})")
+        logger.info(
+            f"使用 Gemini 生成內容: {prompt[:50]}... (模型: {model_name})"
+        )
 
         # 準備請求數據
         contents = []
 
         # 系統指令
         if system_instruction:
-            contents.append({"role": "user", "parts": [{"text": f"System: {system_instruction}"}]})
+            contents.append(
+                {
+                    "role": "user",
+                    "parts": [{"text": f"System: {system_instruction}"}],
+                }
+            )
 
         # 用戶內容
         user_parts = [{"text": prompt}]
@@ -117,11 +125,21 @@ class GeminiClient:
         if images:
             for image_data in images:
                 image_b64 = base64.b64encode(image_data).decode()
-                user_parts.append({"inline_data": {"mime_type": "image/jpeg", "data": image_b64}})
+                user_parts.append(
+                    {
+                        "inline_data": {
+                            "mime_type": "image/jpeg",
+                            "data": image_b64,
+                        }
+                    }
+                )
 
         contents.append({"role": "user", "parts": user_parts})
 
-        request_data = {"contents": contents, "generationConfig": asdict(generation_config)}
+        request_data = {
+            "contents": contents,
+            "generationConfig": asdict(generation_config),
+        }
 
         start_time = time.time()
 
@@ -130,14 +148,19 @@ class GeminiClient:
             params = {"key": self.api_key}
 
             async with self.session.post(
-                url, params=params, json=request_data, headers={"Content-Type": "application/json"}
+                url,
+                params=params,
+                json=request_data,
+                headers={"Content-Type": "application/json"},
             ) as response:
 
                 duration = time.time() - start_time
 
                 if response.status != 200:
                     error_text = await response.text()
-                    logger.error(f"Gemini API 錯誤 {response.status}: {error_text}")
+                    logger.error(
+                        f"Gemini API 錯誤 {response.status}: {error_text}"
+                    )
 
                     # 記錄失敗的 API 呼叫
                     if self._cost_tracker:
@@ -146,7 +169,10 @@ class GeminiClient:
                             model=model_name,
                             operation_type="text_generation",
                             success=False,
-                            metadata={"error": error_text, "status": response.status},
+                            metadata={
+                                "error": error_text,
+                                "status": response.status,
+                            },
                         )
 
                     return GeminiResponse(
@@ -196,7 +222,9 @@ class GeminiClient:
                 # 記錄成功的 API 呼叫
                 if self._cost_tracker:
                     input_tokens = usage_metadata.get("promptTokenCount", 0)
-                    output_tokens = usage_metadata.get("candidatesTokenCount", 0)
+                    output_tokens = usage_metadata.get(
+                        "candidatesTokenCount", 0
+                    )
                     total_tokens = usage_metadata.get(
                         "totalTokenCount", input_tokens + output_tokens
                     )
@@ -266,7 +294,10 @@ class GeminiClient:
         for msg in messages:
             contents.append({"role": msg.role, "parts": msg.parts})
 
-        request_data = {"contents": contents, "generationConfig": asdict(generation_config)}
+        request_data = {
+            "contents": contents,
+            "generationConfig": asdict(generation_config),
+        }
 
         start_time = time.time()
 
@@ -275,7 +306,10 @@ class GeminiClient:
             params = {"key": self.api_key}
 
             async with self.session.post(
-                url, params=params, json=request_data, headers={"Content-Type": "application/json"}
+                url,
+                params=params,
+                json=request_data,
+                headers={"Content-Type": "application/json"},
             ) as response:
 
                 if response.status == 200:
@@ -291,11 +325,15 @@ class GeminiClient:
 
                         if parts:
                             text = parts[0].get("text", "")
-                            usage_metadata = result_data.get("usageMetadata", {})
+                            usage_metadata = result_data.get(
+                                "usageMetadata", {}
+                            )
 
                             # 記錄成功的 API 呼叫
                             if self._cost_tracker:
-                                total_tokens = usage_metadata.get("totalTokenCount", 0)
+                                total_tokens = usage_metadata.get(
+                                    "totalTokenCount", 0
+                                )
                                 await self._cost_tracker.track_api_call(
                                     provider="google",
                                     model=model_name,
@@ -307,8 +345,12 @@ class GeminiClient:
 
                             return GeminiResponse(
                                 text=text,
-                                finish_reason=candidate.get("finishReason", "STOP"),
-                                safety_ratings=candidate.get("safetyRatings", []),
+                                finish_reason=candidate.get(
+                                    "finishReason", "STOP"
+                                ),
+                                safety_ratings=candidate.get(
+                                    "safetyRatings", []
+                                ),
                                 usage_metadata=usage_metadata,
                                 success=True,
                             )
@@ -364,7 +406,9 @@ class GeminiClient:
         return await self.generate_content(
             prompt=prompt,
             system_instruction=system_instruction,
-            generation_config=GeminiGenerationConfig(temperature=0.8, max_output_tokens=1024),
+            generation_config=GeminiGenerationConfig(
+                temperature=0.8, max_output_tokens=1024
+            ),
         )
 
     async def optimize_content(
@@ -387,13 +431,18 @@ class GeminiClient:
         return await self.generate_content(
             prompt=prompt,
             system_instruction=system_instruction,
-            generation_config=GeminiGenerationConfig(temperature=0.6, max_output_tokens=1024),
+            generation_config=GeminiGenerationConfig(
+                temperature=0.6, max_output_tokens=1024
+            ),
         )
 
 
 # 便利函數
 async def generate_video_script(
-    topic: str, platform: str = "tiktok", style: str = "engaging", api_key: str = None
+    topic: str,
+    platform: str = "tiktok",
+    style: str = "engaging",
+    api_key: str = None,
 ) -> str:
     """生成影片腳本的便利函數"""
 
@@ -435,7 +484,9 @@ async def analyze_trends(content: str, api_key: str = None) -> Dict[str, Any]:
     async with GeminiClient(api_key=api_key) as client:
         result = await client.generate_content(
             prompt=prompt,
-            generation_config=GeminiGenerationConfig(temperature=0.3, max_output_tokens=512),
+            generation_config=GeminiGenerationConfig(
+                temperature=0.3, max_output_tokens=512
+            ),
         )
 
         if result.success:
@@ -465,7 +516,10 @@ async def main():
 
     # 測試腳本生成
     script = await generate_video_script(
-        topic="AI 如何改變我們的生活", platform="tiktok", style="educative", api_key=api_key
+        topic="AI 如何改變我們的生活",
+        platform="tiktok",
+        style="educative",
+        api_key=api_key,
     )
     print(f"生成的腳本：\n{script}")
 

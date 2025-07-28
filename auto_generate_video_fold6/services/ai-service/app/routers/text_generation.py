@@ -43,7 +43,8 @@ class TitleGenerationResponse(BaseModel):
 
 @router.post("/generate-script", response_model=ScriptGenerationResponse)
 async def generate_script(
-    request: ScriptGenerationRequest, current_user: dict = Depends(get_current_user)
+    request: ScriptGenerationRequest,
+    current_user: dict = Depends(get_current_user),
 ) -> ScriptGenerationResponse:
     """Generate script content based on topic and parameters"""
     try:
@@ -74,11 +75,16 @@ async def generate_script(
 
 @router.post("/generate-titles", response_model=TitleGenerationResponse)
 async def generate_titles(
-    request: TitleGenerationRequest, current_user: dict = Depends(get_current_user)
+    request: TitleGenerationRequest,
+    current_user: dict = Depends(get_current_user),
 ) -> TitleGenerationResponse:
     """Generate catchy titles based on script content"""
     try:
-        logger.info("Generating titles", user_id=current_user.get("id"), style=request.style)
+        logger.info(
+            "Generating titles",
+            user_id=current_user.get("id"),
+            style=request.style,
+        )
 
         text_generator = TextGenerator()
         result = await text_generator.generate_titles(
@@ -97,12 +103,16 @@ async def generate_titles(
 
 @router.post("/optimize-script")
 async def optimize_script(
-    script_content: str, target_duration: int, current_user: dict = Depends(get_current_user)
+    script_content: str,
+    target_duration: int,
+    current_user: dict = Depends(get_current_user),
 ):
     """Optimize script for specific duration and engagement"""
     try:
         logger.info(
-            "Optimizing script", user_id=current_user.get("id"), target_duration=target_duration
+            "Optimizing script",
+            user_id=current_user.get("id"),
+            target_duration=target_duration,
         )
 
         text_generator = TextGenerator()
@@ -114,7 +124,9 @@ async def optimize_script(
 
     except Exception as e:
         logger.error("Script optimization failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Script optimization failed")
+        raise HTTPException(
+            status_code=500, detail="Script optimization failed"
+        )
 
 
 @router.get("/supported-styles")
@@ -122,15 +134,33 @@ async def get_supported_styles():
     """Get list of supported text generation styles"""
     return {
         "script_styles": [
-            {"name": "engaging", "description": "Engaging and captivating content"},
-            {"name": "informative", "description": "Educational and fact-based content"},
-            {"name": "humorous", "description": "Funny and entertaining content"},
-            {"name": "professional", "description": "Formal and business-oriented content"},
+            {
+                "name": "engaging",
+                "description": "Engaging and captivating content",
+            },
+            {
+                "name": "informative",
+                "description": "Educational and fact-based content",
+            },
+            {
+                "name": "humorous",
+                "description": "Funny and entertaining content",
+            },
+            {
+                "name": "professional",
+                "description": "Formal and business-oriented content",
+            },
         ],
         "title_styles": [
             {"name": "catchy", "description": "Attention-grabbing titles"},
-            {"name": "descriptive", "description": "Clear and informative titles"},
+            {
+                "name": "descriptive",
+                "description": "Clear and informative titles",
+            },
             {"name": "clickbait", "description": "High-engagement titles"},
-            {"name": "professional", "description": "Formal and straightforward titles"},
+            {
+                "name": "professional",
+                "description": "Formal and straightforward titles",
+            },
         ],
     }

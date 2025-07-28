@@ -1,7 +1,7 @@
 import redis
 import structlog
 from fastapi import HTTPException, Request, status
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
@@ -41,7 +41,9 @@ limiter = Limiter(
 )
 
 
-def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+def custom_rate_limit_exceeded_handler(
+    request: Request, exc: RateLimitExceeded
+):
     """Custom rate limit exceeded handler"""
     response = HTTPException(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,

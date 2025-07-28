@@ -1,12 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import List
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .auth import verify_token
-from .celery_app import celery_app
 from .config import settings
 from .database import Base, engine
 from .routers import scheduler
@@ -37,7 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(scheduler.router, prefix="/api/v1/schedule", tags=["schedule"])
+app.include_router(
+    scheduler.router, prefix="/api/v1/schedule", tags=["schedule"]
+)
 
 
 @app.get("/health")

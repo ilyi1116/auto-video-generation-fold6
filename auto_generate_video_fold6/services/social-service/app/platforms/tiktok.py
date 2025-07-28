@@ -67,16 +67,29 @@ async def publish_video(
         video_url = await _get_video_file_url(video_id)
 
         # 上傳影片到 TikTok
-        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
 
         upload_data = {
             "source_info": {"source": "FILE_UPLOAD", "video_url": video_url},
             "post_info": {
                 "title": title or "",
                 "description": description or "",
-                "disable_duet": settings.get("disable_duet", False) if settings else False,
-                "disable_comment": settings.get("disable_comment", False) if settings else False,
-                "disable_stitch": settings.get("disable_stitch", False) if settings else False,
+                "disable_duet": (
+                    settings.get("disable_duet", False) if settings else False
+                ),
+                "disable_comment": (
+                    settings.get("disable_comment", False)
+                    if settings
+                    else False
+                ),
+                "disable_stitch": (
+                    settings.get("disable_stitch", False)
+                    if settings
+                    else False
+                ),
                 "video_cover_timestamp_ms": (
                     settings.get("cover_timestamp", 1000) if settings else 1000
                 ),
@@ -85,7 +98,9 @@ async def publish_video(
 
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                f"{settings.TIKTOK_API_BASE}/share/video/upload/", headers=headers, json=upload_data
+                f"{settings.TIKTOK_API_BASE}/share/video/upload/",
+                headers=headers,
+                json=upload_data,
             ) as response:
                 if response.status == 200:
                     result = await response.json()
@@ -96,7 +111,10 @@ async def publish_video(
                     }
                 else:
                     error_text = await response.text()
-                    return {"success": False, "error": f"TikTok upload failed: {error_text}"}
+                    return {
+                        "success": False,
+                        "error": f"TikTok upload failed: {error_text}",
+                    }
 
     except Exception as e:
         logger.error(f"TikTok publish error: {e}")
@@ -147,7 +165,12 @@ async def get_engagement_metrics(user_id: str, days: int) -> Dict[str, Any]:
         "average_engagement_rate": 7.8,
         "best_performing_time": "20:00-22:00",
         "top_hashtags": ["#fyp", "#viral", "#trending"],
-        "audience_age_groups": {"13-17": 25, "18-24": 45, "25-34": 20, "35+": 10},
+        "audience_age_groups": {
+            "13-17": 25,
+            "18-24": 45,
+            "25-34": 20,
+            "35+": 10,
+        },
     }
 
 
@@ -178,8 +201,12 @@ async def check_api_status() -> str:
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{settings.TIKTOK_API_BASE}/oauth/access_token/") as response:
-                return "healthy" if response.status in [200, 400] else "unhealthy"
+            async with session.get(
+                f"{settings.TIKTOK_API_BASE}/oauth/access_token/"
+            ) as response:
+                return (
+                    "healthy" if response.status in [200, 400] else "unhealthy"
+                )
     except:
         return "unhealthy"
 
@@ -195,4 +222,6 @@ async def _get_video_file_url(video_id: int) -> str:
                 result = await response.json()
                 return result["file_url"]
             else:
-                raise Exception(f"Failed to get video file URL: {response.status}")
+                raise Exception(
+                    f"Failed to get video file URL: {response.status}"
+                )

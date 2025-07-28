@@ -5,13 +5,11 @@ Suno.ai 音樂生成客戶端
 """
 
 import asyncio
-import json
 import logging
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import aiohttp
 
@@ -45,7 +43,9 @@ class MusicGenerationResult:
 class SunoClient:
     """Suno.ai 音樂生成客戶端"""
 
-    def __init__(self, api_key: str = None, base_url: str = "https://api.sunoai.com"):
+    def __init__(
+        self, api_key: str = None, base_url: str = "https://api.sunoai.com"
+    ):
         self.api_key = api_key
         self.base_url = base_url
         self.session = None
@@ -74,7 +74,9 @@ class SunoClient:
         if self.session:
             await self.session.close()
 
-    async def generate_music(self, request: MusicGenerationRequest) -> MusicGenerationResult:
+    async def generate_music(
+        self, request: MusicGenerationRequest
+    ) -> MusicGenerationResult:
         """Generate music using Suno.ai API with cost tracking"""
         start_time = time.time()
 
@@ -128,10 +130,16 @@ class SunoClient:
             return result
 
         except Exception as e:
-            logger.error("Music generation failed", prompt=request.prompt[:50], error=str(e))
+            logger.error(
+                "Music generation failed",
+                prompt=request.prompt[:50],
+                error=str(e),
+            )
             raise
 
-    def _enhance_prompt(self, prompt: str, style: str, mood: str, platform: str) -> str:
+    def _enhance_prompt(
+        self, prompt: str, style: str, mood: str, platform: str
+    ) -> str:
         """Enhance the music generation prompt"""
         enhancements = []
 
@@ -198,7 +206,9 @@ class SunoClient:
                 request_data["lyrics"] = custom_lyrics
 
             # Submit generation request
-            response = await self.session.post(f"{self.base_url}/api/generate", json=request_data)
+            response = await self.session.post(
+                f"{self.base_url}/api/generate", json=request_data
+            )
             response.raise_for_status()
 
             generation_data = await response.json()
@@ -238,7 +248,9 @@ class SunoClient:
 
         while time.time() - start_time < max_wait_time:
             try:
-                response = await self.session.get(f"{self.base_url}/api/get/{job_id}")
+                response = await self.session.get(
+                    f"{self.base_url}/api/get/{job_id}"
+                )
                 response.raise_for_status()
 
                 job_data = await response.json()
@@ -249,7 +261,9 @@ class SunoClient:
                     if music_url:
                         return music_url
                 elif status == "error":
-                    raise Exception(f"Generation failed: {job_data.get('error')}")
+                    raise Exception(
+                        f"Generation failed: {job_data.get('error')}"
+                    )
 
                 await asyncio.sleep(poll_interval)
 
@@ -308,9 +322,13 @@ class SunoClient:
             "total_generations": self.generation_count,
             "total_cost": self.total_cost,
             "average_cost_per_generation": (
-                self.total_cost / self.generation_count if self.generation_count > 0 else 0
+                self.total_cost / self.generation_count
+                if self.generation_count > 0
+                else 0
             ),
-            "generation_history": self.generation_history[-10:],  # Last 10 generations
+            "generation_history": self.generation_history[
+                -10:
+            ],  # Last 10 generations
         }
 
 
@@ -334,7 +352,9 @@ async def main():
             print(f"Music ID: {result['music_id']}")
             print(f"Music URL: {result['music_url']}")
             print(f"Duration: {result['duration_seconds']} seconds")
-            print(f"Generation time: {result['generation_time_seconds']} seconds")
+            print(
+                f"Generation time: {result['generation_time_seconds']} seconds"
+            )
 
         except Exception as e:
             print(f"❌ Music generation failed: {e}")

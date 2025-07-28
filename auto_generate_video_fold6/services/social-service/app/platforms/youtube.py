@@ -37,7 +37,9 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post("https://oauth2.googleapis.com/token", data=data) as response:
+        async with session.post(
+            "https://oauth2.googleapis.com/token", data=data
+        ) as response:
             if response.status == 200:
                 result = await response.json()
                 return {
@@ -65,7 +67,10 @@ async def publish_video(
         # 獲取影片檔案
         video_url = await _get_video_file_url(video_id)
 
-        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
 
         # YouTube 影片 metadata
         video_metadata = {
@@ -76,7 +81,9 @@ async def publish_video(
                 "categoryId": "22",  # People & Blogs
             },
             "status": {
-                "privacyStatus": settings.get("privacy", "public") if settings else "public",
+                "privacyStatus": (
+                    settings.get("privacy", "public") if settings else "public"
+                ),
                 "embeddable": True,
                 "license": "youtube",
             },
@@ -87,7 +94,9 @@ async def publish_video(
 
         async with aiohttp.ClientSession() as session:
             # 初始化上傳
-            async with session.post(upload_url, headers=headers, json=video_metadata) as response:
+            async with session.post(
+                upload_url, headers=headers, json=video_metadata
+            ) as response:
                 if response.status == 200:
                     upload_session_url = response.headers.get("Location")
 
@@ -113,7 +122,10 @@ async def publish_video(
                             }
                 else:
                     error_text = await response.text()
-                    return {"success": False, "error": f"YouTube upload init failed: {error_text}"}
+                    return {
+                        "success": False,
+                        "error": f"YouTube upload init failed: {error_text}",
+                    }
 
     except Exception as e:
         logger.error(f"YouTube publish error: {e}")
@@ -161,8 +173,15 @@ async def get_engagement_metrics(user_id: str, days: int) -> Dict[str, Any]:
         "period_days": days,
         "average_engagement_rate": 7.7,
         "best_performing_time": "19:00-21:00",
-        "top_categories": ["Entertainment", "How-to & Style", "People & Blogs"],
-        "audience_retention": {"average_view_duration": "4:32", "audience_retention_rate": 68.5},
+        "top_categories": [
+            "Entertainment",
+            "How-to & Style",
+            "People & Blogs",
+        ],
+        "audience_retention": {
+            "average_view_duration": "4:32",
+            "audience_retention_rate": 68.5,
+        },
         "traffic_sources": {
             "youtube_search": 35,
             "suggested_videos": 28,
@@ -215,7 +234,9 @@ async def _get_video_file_url(video_id: int) -> str:
                 result = await response.json()
                 return result["file_url"]
             else:
-                raise Exception(f"Failed to get video file URL: {response.status}")
+                raise Exception(
+                    f"Failed to get video file URL: {response.status}"
+                )
 
 
 async def _get_video_file_data(video_url: str) -> bytes:
@@ -226,4 +247,6 @@ async def _get_video_file_data(video_url: str) -> bytes:
             if response.status == 200:
                 return await response.read()
             else:
-                raise Exception(f"Failed to download video file: {response.status}")
+                raise Exception(
+                    f"Failed to download video file: {response.status}"
+                )

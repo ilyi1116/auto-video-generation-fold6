@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 from ..auth import verify_token
 from ..database import get_db
 from ..models import TrendingTopic, ViralContent
-from ..schemas import PlatformType, TrendingTopicResponse, TrendSuggestion, ViralContentResponse
+from ..schemas import (
+    PlatformType,
+    TrendingTopicResponse,
+    TrendSuggestion,
+    ViralContentResponse,
+)
 from ..services import trend_analyzer
 
 router = APIRouter()
@@ -36,7 +41,9 @@ async def get_trending_topics(
 
     # 按趨勢分數排序，優先顯示最新的數據
     trends = (
-        query.order_by(TrendingTopic.trend_score.desc(), TrendingTopic.trend_date.desc())
+        query.order_by(
+            TrendingTopic.trend_score.desc(), TrendingTopic.trend_date.desc()
+        )
         .limit(limit)
         .all()
     )
@@ -57,14 +64,17 @@ async def get_viral_content(
     cutoff_date = datetime.utcnow() - timedelta(days=days)
 
     query = db.query(ViralContent).filter(
-        ViralContent.discovered_at >= cutoff_date, ViralContent.viral_score >= min_viral_score
+        ViralContent.discovered_at >= cutoff_date,
+        ViralContent.viral_score >= min_viral_score,
     )
 
     if platform:
         query = query.filter(ViralContent.platform == platform)
 
     viral_content = (
-        query.order_by(ViralContent.viral_score.desc(), ViralContent.discovered_at.desc())
+        query.order_by(
+            ViralContent.viral_score.desc(), ViralContent.discovered_at.desc()
+        )
         .limit(50)
         .all()
     )
@@ -75,7 +85,9 @@ async def get_viral_content(
 @router.get("/suggestions", response_model=List[TrendSuggestion])
 async def get_trend_suggestions(
     category: Optional[str] = None,
-    platforms: Optional[str] = Query(None, description="Comma-separated platform names"),
+    platforms: Optional[str] = Query(
+        None, description="Comma-separated platform names"
+    ),
     region: str = Query("TW"),
     current_user: dict = Depends(verify_token),
 ):
@@ -96,12 +108,16 @@ async def get_trend_suggestions(
 
 @router.get("/realtime/{platform}")
 async def get_realtime_trends(
-    platform: PlatformType, region: str = Query("TW"), current_user: dict = Depends(verify_token)
+    platform: PlatformType,
+    region: str = Query("TW"),
+    current_user: dict = Depends(verify_token),
 ):
     """獲取實時趨勢數據"""
 
     try:
-        realtime_data = await trend_analyzer.fetch_realtime_trends(platform=platform, region=region)
+        realtime_data = await trend_analyzer.fetch_realtime_trends(
+            platform=platform, region=region
+        )
 
         return {
             "platform": platform,
@@ -111,7 +127,10 @@ async def get_realtime_trends(
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch realtime trends: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch realtime trends: {str(e)}",
+        )
 
 
 @router.get("/categories")
@@ -146,17 +165,25 @@ async def get_trending_hashtags(
         platform=platform, category=category, limit=limit
     )
 
-    return {"platform": platform, "hashtags": hashtags_data, "last_updated": datetime.utcnow()}
+    return {
+        "platform": platform,
+        "hashtags": hashtags_data,
+        "last_updated": datetime.utcnow(),
+    }
 
 
 @router.post("/refresh/{platform}")
 async def refresh_platform_trends(
-    platform: PlatformType, region: str = Query("TW"), current_user: dict = Depends(verify_token)
+    platform: PlatformType,
+    region: str = Query("TW"),
+    current_user: dict = Depends(verify_token),
 ):
     """手動刷新平台趨勢數據"""
 
     try:
-        result = await trend_analyzer.refresh_platform_data(platform=platform, region=region)
+        result = await trend_analyzer.refresh_platform_data(
+            platform=platform, region=region
+        )
 
         return {
             "message": f"Successfully refreshed {platform} trends",
@@ -165,7 +192,9 @@ async def refresh_platform_trends(
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to refresh trends: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to refresh trends: {str(e)}"
+        )
 
 
 @router.get("/performance/{keyword}")
@@ -179,7 +208,9 @@ async def get_keyword_performance(
     """獲取關鍵字表現歷史"""
 
     platform_list = (
-        platforms.split(",") if platforms else ["google", "youtube", "tiktok", "instagram"]
+        platforms.split(",")
+        if platforms
+        else ["google", "youtube", "tiktok", "instagram"]
     )
 
     performance_data = await trend_analyzer.get_keyword_performance_history(

@@ -1,7 +1,6 @@
-import json
 import os
 import sys
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -31,7 +30,12 @@ class TestDownloadAPI:
         """Test listing files with filters"""
         response = client.get(
             "/api/v1/files",
-            params={"file_type": "image", "category": "uploaded", "page": 1, "page_size": 10},
+            params={
+                "file_type": "image",
+                "category": "uploaded",
+                "page": 1,
+                "page_size": 10,
+            },
         )
 
         assert response.status_code == 200
@@ -41,7 +45,9 @@ class TestDownloadAPI:
 
     def test_list_files_with_search(self, client):
         """Test listing files with search"""
-        response = client.get("/api/v1/files", params={"search": "test", "file_type": "image"})
+        response = client.get(
+            "/api/v1/files", params={"search": "test", "file_type": "image"}
+        )
 
         assert response.status_code == 200
         result = response.json()
@@ -70,7 +76,9 @@ class TestDownloadAPI:
 
     def test_serve_file_thumbnail(self, client):
         """Test serving file thumbnail"""
-        response = client.get("/api/v1/serve/nonexistent-file-id", params={"thumbnail": True})
+        response = client.get(
+            "/api/v1/serve/nonexistent-file-id", params={"thumbnail": True}
+        )
 
         assert response.status_code == 404
 
@@ -85,7 +93,10 @@ class TestDownloadAPI:
         """Test updating non-existent file"""
         response = client.put(
             "/api/v1/files/nonexistent-file-id",
-            json={"filename": "new_name.jpg", "description": "Updated description"},
+            json={
+                "filename": "new_name.jpg",
+                "description": "Updated description",
+            },
         )
 
         assert response.status_code == 404
@@ -97,12 +108,16 @@ class TestDownloadAPI:
         response = client.put("/api/v1/files/test-file-id")
 
         # Should fail because no updates provided
-        assert response.status_code in [400, 404]  # 400 for no updates, 404 for not found
+        assert response.status_code in [
+            400,
+            404,
+        ]  # 400 for no updates, 404 for not found
 
     def test_bulk_delete_files(self, client):
         """Test bulk delete files"""
         response = client.post(
-            "/api/v1/files/bulk-delete", json={"file_ids": ["file1", "file2", "file3"]}
+            "/api/v1/files/bulk-delete",
+            json={"file_ids": ["file1", "file2", "file3"]},
         )
 
         assert response.status_code == 200
@@ -192,7 +207,9 @@ class TestDownloadAPIWithData:
         DownloadCRUD.get_download_stats = original_stats
         DownloadCRUD.create_download_record = original_create
 
-    def test_get_file_info_success(self, client, mock_file_crud, mock_download_crud):
+    def test_get_file_info_success(
+        self, client, mock_file_crud, mock_download_crud
+    ):
         """Test getting file info successfully"""
         response = client.get("/api/v1/files/existing-file")
 
@@ -208,7 +225,9 @@ class TestDownloadAPIWithData:
         assert result["image_height"] == 100
 
     @patch("app.routers.download.settings.storage_backend", "local")
-    def test_download_file_success_local(self, client, mock_file_crud, mock_download_crud):
+    def test_download_file_success_local(
+        self, client, mock_file_crud, mock_download_crud
+    ):
         """Test downloading file from local storage"""
         response = client.get("/api/v1/download/existing-file")
 
@@ -216,25 +235,37 @@ class TestDownloadAPIWithData:
         assert response.status_code == 200
 
     @patch("app.routers.download.settings.storage_backend", "s3")
-    def test_download_file_success_s3(self, client, mock_file_crud, mock_download_crud):
+    def test_download_file_success_s3(
+        self, client, mock_file_crud, mock_download_crud
+    ):
         """Test downloading file from S3 (redirect)"""
-        response = client.get("/api/v1/download/existing-file", follow_redirects=False)
+        response = client.get(
+            "/api/v1/download/existing-file", follow_redirects=False
+        )
 
         # Should redirect to public URL
         assert response.status_code == 307  # Redirect
         assert "test.com" in response.headers.get("location", "")
 
-    def test_serve_file_success(self, client, mock_file_crud, mock_download_crud):
+    def test_serve_file_success(
+        self, client, mock_file_crud, mock_download_crud
+    ):
         """Test serving file successfully"""
         with patch("app.routers.download.settings.storage_backend", "s3"):
-            response = client.get("/api/v1/serve/existing-file", follow_redirects=False)
+            response = client.get(
+                "/api/v1/serve/existing-file", follow_redirects=False
+            )
 
             # Should redirect to public URL for S3
             assert response.status_code == 307
 
-    def test_serve_thumbnail_success(self, client, mock_file_crud, mock_download_crud):
+    def test_serve_thumbnail_success(
+        self, client, mock_file_crud, mock_download_crud
+    ):
         """Test serving thumbnail successfully"""
-        response = client.get("/api/v1/serve/existing-file", params={"thumbnail": True})
+        response = client.get(
+            "/api/v1/serve/existing-file", params={"thumbnail": True}
+        )
 
         # Should attempt to serve thumbnail
         assert response.status_code == 200

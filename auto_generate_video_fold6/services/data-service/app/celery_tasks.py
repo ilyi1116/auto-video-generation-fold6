@@ -8,14 +8,18 @@ import soundfile as sf
 import structlog
 from app.celery_app import app
 from app.config import settings
-from app.storage import local_storage, s3_storage
+from app.storage import s3_storage
 
 logger = structlog.get_logger(__name__)
 
 
 @app.task(bind=True)
 def start_preprocessing_task(
-    self, job_id: int, file_id: int, s3_key: str, preprocessing_params: Dict[str, Any]
+    self,
+    job_id: int,
+    file_id: int,
+    s3_key: str,
+    preprocessing_params: Dict[str, Any],
 ):
     """Celery task for audio preprocessing"""
 
@@ -23,7 +27,12 @@ def start_preprocessing_task(
     asyncio.run(update_job_status(job_id, "running", 0))
 
     try:
-        logger.info("Starting audio preprocessing", job_id=job_id, file_id=file_id, s3_key=s3_key)
+        logger.info(
+            "Starting audio preprocessing",
+            job_id=job_id,
+            file_id=file_id,
+            s3_key=s3_key,
+        )
 
         # Download file from S3
         local_filename = f"temp_{job_id}_{file_id}.wav"
@@ -38,8 +47,12 @@ def start_preprocessing_task(
 
         # Apply preprocessing steps
         processed_audio = y
-        target_sr = preprocessing_params.get("target_sample_rate", settings.target_sample_rate)
-        target_channels = preprocessing_params.get("target_channels", settings.target_channels)
+        target_sr = preprocessing_params.get(
+            "target_sample_rate", settings.target_sample_rate
+        )
+        target_channels = preprocessing_params.get(
+            "target_channels", settings.target_channels
+        )
         steps = preprocessing_params.get("preprocessing_steps", [])
 
         step_progress = 40
@@ -47,9 +60,13 @@ def start_preprocessing_task(
 
         for step in steps:
             if step == "resample" and sr != target_sr:
-                processed_audio = librosa.resample(processed_audio, orig_sr=sr, target_sr=target_sr)
+                processed_audio = librosa.resample(
+                    processed_audio, orig_sr=sr, target_sr=target_sr
+                )
                 sr = target_sr
-                logger.info("Audio resampled", job_id=job_id, target_sr=target_sr)
+                logger.info(
+                    "Audio resampled", job_id=job_id, target_sr=target_sr
+                )
 
             elif step == "channel_conversion":
                 if processed_audio.ndim > 1 and target_channels == 1:
@@ -58,7 +75,9 @@ def start_preprocessing_task(
 
             elif step == "silence_removal":
                 # Trim silence from beginning and end
-                processed_audio, _ = librosa.effects.trim(processed_audio, top_db=20)
+                processed_audio, _ = librosa.effects.trim(
+                    processed_audio, top_db=20
+                )
                 logger.info("Silence trimmed", job_id=job_id)
 
             elif step == "normalize":
@@ -114,11 +133,16 @@ def start_preprocessing_task(
     except Exception as e:
         error_message = str(e)
         logger.error(
-            "Audio preprocessing failed", job_id=job_id, file_id=file_id, error=error_message
+            "Audio preprocessing failed",
+            job_id=job_id,
+            file_id=file_id,
+            error=error_message,
         )
 
         # Update job as failed
-        asyncio.run(update_job_status(job_id, "failed", 0, None, error_message))
+        asyncio.run(
+            update_job_status(job_id, "failed", 0, None, error_message)
+        )
 
         # Cleanup temp files if they exist
         try:
@@ -144,7 +168,11 @@ async def update_job_status(
         # Import here to avoid circular imports
         from app.database import database, processing_jobs
 
-        update_data = {"status": status, "progress": progress, "updated_at": datetime.utcnow()}
+        update_data = {
+            "status": status,
+            "progress": progress,
+            "updated_at": datetime.utcnow(),
+        }
 
         if status == "running" and progress == 0:
             update_data["started_at"] = datetime.utcnow()
@@ -158,9 +186,18 @@ async def update_job_status(
         if error_message:
             update_data["error_message"] = error_message
 
-        query = processing_jobs.update().where(processing_jobs.c.id == job_id).values(**update_data)
+        query = (
+            processing_jobs.update()
+            .where(processing_jobs.c.id == job_id)
+            .values(**update_data)
+        )
 
         await database.execute(query)
 
     except Exception as e:
-        logger.error("Failed to update job status", job_id=job_id, status=status, error=str(e))
+        logger.error(
+            "Failed to update job status",
+            job_id=job_id,
+            status=status,
+            error=str(e),
+        )

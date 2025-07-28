@@ -1,14 +1,15 @@
 import logging
-from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-import aiohttp
 
 logger = logging.getLogger(__name__)
 
 
 async def analyze_trend_potential(
-    target: str, analysis_type: str = "keyword", platforms: List[str] = None, region: str = "TW"
+    target: str,
+    analysis_type: str = "keyword",
+    platforms: List[str] = None,
+    region: str = "TW",
 ) -> Dict[str, Any]:
     """分析趨勢潛力"""
 
@@ -49,7 +50,9 @@ async def analyze_trend_potential(
     return analysis_result
 
 
-async def analyze_viral_potential(content_url: str, platform: str = "youtube") -> Dict[str, Any]:
+async def analyze_viral_potential(
+    content_url: str, platform: str = "youtube"
+) -> Dict[str, Any]:
     """分析病毒式傳播潛力"""
 
     return {
@@ -98,8 +101,17 @@ async def analyze_market_opportunity(
             "top_players": 12,
             "market_saturation": "medium",
         },
-        "entry_barriers": ["需要專業知識背景", "初期投資設備成本", "建立觀眾信任需要時間"],
-        "success_factors": ["內容品質一致性", "定期更新頻率", "與觀眾互動程度", "SEO 優化能力"],
+        "entry_barriers": [
+            "需要專業知識背景",
+            "初期投資設備成本",
+            "建立觀眾信任需要時間",
+        ],
+        "success_factors": [
+            "內容品質一致性",
+            "定期更新頻率",
+            "與觀眾互動程度",
+            "SEO 優化能力",
+        ],
         "monetization": {
             "ad_revenue_potential": "high",
             "sponsorship_opportunities": "medium",
@@ -116,7 +128,10 @@ async def analyze_market_opportunity(
 
 
 async def analyze_content_performance_patterns(
-    content_type: str = "video", platform: str = "youtube", category: str = None, days: int = 30
+    content_type: str = "video",
+    platform: str = "youtube",
+    category: str = None,
+    days: int = 30,
 ) -> Dict[str, Any]:
     """分析內容表現模式"""
 
@@ -141,7 +156,11 @@ async def analyze_content_performance_patterns(
                 "share_rate": 8.9,
             },
         ],
-        "optimal_length": {"youtube": "8-12分鐘", "tiktok": "15-30秒", "instagram": "30-60秒"},
+        "optimal_length": {
+            "youtube": "8-12分鐘",
+            "tiktok": "15-30秒",
+            "instagram": "30-60秒",
+        },
         "posting_times": {
             "best_days": ["週三", "週五", "週日"],
             "best_hours": ["19:00-21:00", "12:00-14:00"],
@@ -179,15 +198,42 @@ async def analyze_target_audience(
 
     return {
         "demographics": {
-            "age_distribution": {"13-17": 15, "18-24": 35, "25-34": 30, "35-44": 15, "45+": 5},
+            "age_distribution": {
+                "13-17": 15,
+                "18-24": 35,
+                "25-34": 30,
+                "35-44": 15,
+                "45+": 5,
+            },
             "gender_split": {"male": 58, "female": 42},
-            "geographic_distribution": {"台北": 25, "新北": 18, "台中": 15, "高雄": 12, "其他": 30},
+            "geographic_distribution": {
+                "台北": 25,
+                "新北": 18,
+                "台中": 15,
+                "高雄": 12,
+                "其他": 30,
+            },
         },
-        "interests": ["科技產品", "線上學習", "職業發展", "娛樂內容", "生活技巧"],
+        "interests": [
+            "科技產品",
+            "線上學習",
+            "職業發展",
+            "娛樂內容",
+            "生活技巧",
+        ],
         "behavior": {
             "device_usage": {"mobile": 70, "desktop": 25, "tablet": 5},
-            "viewing_time": {"morning": 20, "afternoon": 30, "evening": 40, "night": 10},
-            "content_discovery": {"search": 45, "recommendations": 35, "social_sharing": 20},
+            "viewing_time": {
+                "morning": 20,
+                "afternoon": 30,
+                "evening": 40,
+                "night": 10,
+            },
+            "content_discovery": {
+                "search": 45,
+                "recommendations": 35,
+                "social_sharing": 20,
+            },
         },
         "content_preferences": {
             "preferred_length": "8-15分鐘",
@@ -235,7 +281,11 @@ async def analyze_seasonal_trends(
             {"period": "1月-2月", "reason": "新年假期"},
             {"period": "4月-5月", "reason": "傳統淡季"},
         ],
-        "yoy_growth": {"2023_vs_2022": 25.5, "2024_vs_2023": 18.2, "trend_direction": "positive"},
+        "yoy_growth": {
+            "2023_vs_2022": 25.5,
+            "2024_vs_2023": 18.2,
+            "trend_direction": "positive",
+        },
         "content_calendar": {
             "1月": "新年目標設定內容",
             "3月": "春季更新產品介紹",

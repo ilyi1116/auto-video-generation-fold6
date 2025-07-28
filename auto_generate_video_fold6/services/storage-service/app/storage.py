@@ -3,14 +3,12 @@ import mimetypes
 import os
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any, BinaryIO, Dict, Optional
+from typing import Any, BinaryIO, Dict
 
 import aiofiles
 import boto3
 import structlog
 from botocore.exceptions import ClientError
-from minio import Minio
-from minio.error import S3Error
 
 from .config import settings
 
@@ -25,32 +23,28 @@ class StorageBackend(ABC):
         self, file_data: BinaryIO, object_key: str, content_type: str = None
     ) -> str:
         """Upload file and return public URL"""
-        pass
 
     @abstractmethod
     async def download_file(self, object_key: str) -> bytes:
         """Download file content"""
-        pass
 
     @abstractmethod
     async def delete_file(self, object_key: str) -> bool:
         """Delete file"""
-        pass
 
     @abstractmethod
     async def file_exists(self, object_key: str) -> bool:
         """Check if file exists"""
-        pass
 
     @abstractmethod
     async def get_file_info(self, object_key: str) -> Dict[str, Any]:
         """Get file metadata"""
-        pass
 
     @abstractmethod
-    async def generate_presigned_url(self, object_key: str, expiration: int = 3600) -> str:
+    async def generate_presigned_url(
+        self, object_key: str, expiration: int = 3600
+    ) -> str:
         """Generate presigned URL for file access"""
-        pass
 
 
 class S3StorageBackend(StorageBackend):
@@ -62,7 +56,11 @@ class S3StorageBackend(StorageBackend):
             aws_access_key_id=settings.s3_access_key_id,
             aws_secret_access_key=settings.s3_secret_access_key,
             region_name=settings.s3_region,
-            endpoint_url=settings.s3_endpoint_url if settings.storage_backend == "minio" else None,
+            endpoint_url=(
+                settings.s3_endpoint_url
+                if settings.storage_backend == "minio"
+                else None
+            ),
         )
         self.bucket_name = settings.s3_bucket_name
 
@@ -85,9 +83,13 @@ class S3StorageBackend(StorageBackend):
                             else {}
                         ),
                     )
-                    logger.info("Created storage bucket", bucket=self.bucket_name)
+                    logger.info(
+                        "Created storage bucket", bucket=self.bucket_name
+                    )
                 except ClientError as create_error:
-                    logger.error("Failed to create bucket", error=str(create_error))
+                    logger.error(
+                        "Failed to create bucket", error=str(create_error)
+                    )
                     raise
             else:
                 logger.error("Failed to check bucket", error=str(e))
@@ -109,19 +111,31 @@ class S3StorageBackend(StorageBackend):
             if settings.use_cdn and settings.cdn_url:
                 return f"{settings.cdn_url}/{object_key}"
             else:
-                return f"{settings.s3_public_url}/{self.bucket_name}/{object_key}"
+                return (
+                    f"{settings.s3_public_url}/{self.bucket_name}/{object_key}"
+                )
 
         except ClientError as e:
-            logger.error("Failed to upload file to S3", error=str(e), object_key=object_key)
+            logger.error(
+                "Failed to upload file to S3",
+                error=str(e),
+                object_key=object_key,
+            )
             raise
 
     async def download_file(self, object_key: str) -> bytes:
         """Download file from S3"""
         try:
-            response = self.client.get_object(Bucket=self.bucket_name, Key=object_key)
+            response = self.client.get_object(
+                Bucket=self.bucket_name, Key=object_key
+            )
             return response["Body"].read()
         except ClientError as e:
-            logger.error("Failed to download file from S3", error=str(e), object_key=object_key)
+            logger.error(
+                "Failed to download file from S3",
+                error=str(e),
+                object_key=object_key,
+            )
             raise
 
     async def delete_file(self, object_key: str) -> bool:
@@ -130,7 +144,11 @@ class S3StorageBackend(StorageBackend):
             self.client.delete_object(Bucket=self.bucket_name, Key=object_key)
             return True
         except ClientError as e:
-            logger.error("Failed to delete file from S3", error=str(e), object_key=object_key)
+            logger.error(
+                "Failed to delete file from S3",
+                error=str(e),
+                object_key=object_key,
+            )
             return False
 
     async def file_exists(self, object_key: str) -> bool:
@@ -144,7 +162,9 @@ class S3StorageBackend(StorageBackend):
     async def get_file_info(self, object_key: str) -> Dict[str, Any]:
         """Get file metadata from S3"""
         try:
-            response = self.client.head_object(Bucket=self.bucket_name, Key=object_key)
+            response = self.client.head_object(
+                Bucket=self.bucket_name, Key=object_key
+            )
             return {
                 "size": response["ContentLength"],
                 "last_modified": response["LastModified"],
@@ -152,10 +172,16 @@ class S3StorageBackend(StorageBackend):
                 "etag": response["ETag"],
             }
         except ClientError as e:
-            logger.error("Failed to get file info from S3", error=str(e), object_key=object_key)
+            logger.error(
+                "Failed to get file info from S3",
+                error=str(e),
+                object_key=object_key,
+            )
             raise
 
-    async def generate_presigned_url(self, object_key: str, expiration: int = 3600) -> str:
+    async def generate_presigned_url(
+        self, object_key: str, expiration: int = 3600
+    ) -> str:
         """Generate presigned URL for file access"""
         try:
             url = self.client.generate_presigned_url(
@@ -165,7 +191,11 @@ class S3StorageBackend(StorageBackend):
             )
             return url
         except ClientError as e:
-            logger.error("Failed to generate presigned URL", error=str(e), object_key=object_key)
+            logger.error(
+                "Failed to generate presigned URL",
+                error=str(e),
+                object_key=object_key,
+            )
             raise
 
 
@@ -199,7 +229,9 @@ class LocalStorageBackend(StorageBackend):
 
         except Exception as e:
             logger.error(
-                "Failed to upload file to local storage", error=str(e), object_key=object_key
+                "Failed to upload file to local storage",
+                error=str(e),
+                object_key=object_key,
             )
             raise
 
@@ -211,7 +243,9 @@ class LocalStorageBackend(StorageBackend):
                 return await f.read()
         except Exception as e:
             logger.error(
-                "Failed to download file from local storage", error=str(e), object_key=object_key
+                "Failed to download file from local storage",
+                error=str(e),
+                object_key=object_key,
             )
             raise
 
@@ -225,7 +259,9 @@ class LocalStorageBackend(StorageBackend):
             return False
         except Exception as e:
             logger.error(
-                "Failed to delete file from local storage", error=str(e), object_key=object_key
+                "Failed to delete file from local storage",
+                error=str(e),
+                object_key=object_key,
             )
             return False
 
@@ -249,11 +285,15 @@ class LocalStorageBackend(StorageBackend):
             }
         except Exception as e:
             logger.error(
-                "Failed to get file info from local storage", error=str(e), object_key=object_key
+                "Failed to get file info from local storage",
+                error=str(e),
+                object_key=object_key,
             )
             raise
 
-    async def generate_presigned_url(self, object_key: str, expiration: int = 3600) -> str:
+    async def generate_presigned_url(
+        self, object_key: str, expiration: int = 3600
+    ) -> str:
         """Generate presigned URL for file access (not applicable for local storage)"""
         return f"/storage/{object_key}"
 
@@ -273,9 +313,13 @@ class StorageManager:
         elif settings.storage_backend == "local":
             return LocalStorageBackend()
         else:
-            raise ValueError(f"Unsupported storage backend: {settings.storage_backend}")
+            raise ValueError(
+                f"Unsupported storage backend: {settings.storage_backend}"
+            )
 
-    def generate_object_key(self, user_id: str, file_type: str, filename: str = None) -> str:
+    def generate_object_key(
+        self, user_id: str, file_type: str, filename: str = None
+    ) -> str:
         """Generate unique object key for file storage"""
         if not filename:
             filename = str(uuid.uuid4())
@@ -324,7 +368,9 @@ class StorageManager:
 
         # Validation
         if not self.validate_file_type(content_type, file_type):
-            raise ValueError(f"File type {content_type} not allowed for {file_type}")
+            raise ValueError(
+                f"File type {content_type} not allowed for {file_type}"
+            )
 
         # Read file data for validation and hashing
         file_data.seek(0)
@@ -332,7 +378,9 @@ class StorageManager:
         file_size = len(file_content)
 
         if not self.validate_file_size(file_size):
-            raise ValueError(f"File size {file_size} exceeds maximum allowed size")
+            raise ValueError(
+                f"File size {file_size} exceeds maximum allowed size"
+            )
 
         # Calculate hash for deduplication
         file_hash = self.calculate_file_hash(file_content)
@@ -342,7 +390,9 @@ class StorageManager:
 
         # Upload to storage backend
         file_data.seek(0)
-        public_url = await self.backend.upload_file(file_data, object_key, content_type)
+        public_url = await self.backend.upload_file(
+            file_data, object_key, content_type
+        )
 
         return {
             "object_key": object_key,
@@ -368,9 +418,13 @@ class StorageManager:
         """Get file metadata"""
         return await self.backend.get_file_info(object_key)
 
-    async def generate_download_url(self, object_key: str, expiration: int = 3600) -> str:
+    async def generate_download_url(
+        self, object_key: str, expiration: int = 3600
+    ) -> str:
         """Generate download URL for file"""
-        return await self.backend.generate_presigned_url(object_key, expiration)
+        return await self.backend.generate_presigned_url(
+            object_key, expiration
+        )
 
 
 # Global storage manager instance

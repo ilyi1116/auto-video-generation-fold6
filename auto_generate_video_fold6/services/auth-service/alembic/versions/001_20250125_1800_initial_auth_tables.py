@@ -42,13 +42,20 @@ def upgrade() -> None:
         sa.Column("location", sa.String(100), nullable=True),
         sa.Column("birth_date", sa.Date(), nullable=True),
         sa.Column("phone_number", sa.String(20), nullable=True),
-        sa.Column("preferred_language", sa.String(10), default="en", nullable=False),
+        sa.Column(
+            "preferred_language", sa.String(10), default="en", nullable=False
+        ),
         sa.Column("timezone", sa.String(50), default="UTC", nullable=False),
-        sa.Column("notification_preferences", sa.JSON(), default={}, nullable=False),
+        sa.Column(
+            "notification_preferences", sa.JSON(), default={}, nullable=False
+        ),
         sa.Column("last_login_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("login_count", sa.Integer(), default=0, nullable=False),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
         sa.Column(
             "updated_at",
@@ -80,15 +87,22 @@ def upgrade() -> None:
             sa.ForeignKey("users.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("session_token", sa.String(255), nullable=False, unique=True),
-        sa.Column("refresh_token", sa.String(255), nullable=False, unique=True),
+        sa.Column(
+            "session_token", sa.String(255), nullable=False, unique=True
+        ),
+        sa.Column(
+            "refresh_token", sa.String(255), nullable=False, unique=True
+        ),
         sa.Column("device_info", sa.JSON(), default={}, nullable=False),
         sa.Column("ip_address", sa.String(45), nullable=True),
         sa.Column("user_agent", sa.String(500), nullable=True),
         sa.Column("is_active", sa.Boolean(), default=True, nullable=False),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
         sa.Column(
             "last_accessed_at",
@@ -100,9 +114,15 @@ def upgrade() -> None:
 
     # Create indexes for user_sessions table
     op.create_index("idx_user_sessions_user_id", "user_sessions", ["user_id"])
-    op.create_index("idx_user_sessions_session_token", "user_sessions", ["session_token"])
-    op.create_index("idx_user_sessions_expires_at", "user_sessions", ["expires_at"])
-    op.create_index("idx_user_sessions_is_active", "user_sessions", ["is_active"])
+    op.create_index(
+        "idx_user_sessions_session_token", "user_sessions", ["session_token"]
+    )
+    op.create_index(
+        "idx_user_sessions_expires_at", "user_sessions", ["expires_at"]
+    )
+    op.create_index(
+        "idx_user_sessions_is_active", "user_sessions", ["is_active"]
+    )
 
     # Create user_roles table
     op.create_table(
@@ -118,7 +138,10 @@ def upgrade() -> None:
         sa.Column("permissions", sa.JSON(), default=[], nullable=False),
         sa.Column("is_active", sa.Boolean(), default=True, nullable=False),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
         sa.Column(
             "updated_at",
@@ -151,10 +174,16 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column(
-            "assigned_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=True
+            "assigned_by",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id"),
+            nullable=True,
         ),
         sa.Column(
-            "assigned_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "assigned_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=True),
         sa.UniqueConstraint("user_id", "role_id", name="unique_user_role"),
@@ -179,14 +208,27 @@ def upgrade() -> None:
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("used_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
     )
 
     # Create indexes for password_reset_tokens table
-    op.create_index("idx_password_reset_tokens_user_id", "password_reset_tokens", ["user_id"])
-    op.create_index("idx_password_reset_tokens_token", "password_reset_tokens", ["token"])
-    op.create_index("idx_password_reset_tokens_expires_at", "password_reset_tokens", ["expires_at"])
+    op.create_index(
+        "idx_password_reset_tokens_user_id",
+        "password_reset_tokens",
+        ["user_id"],
+    )
+    op.create_index(
+        "idx_password_reset_tokens_token", "password_reset_tokens", ["token"]
+    )
+    op.create_index(
+        "idx_password_reset_tokens_expires_at",
+        "password_reset_tokens",
+        ["expires_at"],
+    )
 
     # Create email_verification_tokens table
     op.create_table(
@@ -208,7 +250,10 @@ def upgrade() -> None:
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("verified_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
     )
 
@@ -233,9 +278,14 @@ def upgrade() -> None:
         sa.Column("details", sa.JSON(), default={}, nullable=False),
         sa.Column("ip_address", sa.String(45), nullable=True),
         sa.Column("user_agent", sa.String(500), nullable=True),
-        sa.Column("status", sa.String(20), nullable=False),  # success, failure, error
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+            "status", sa.String(20), nullable=False
+        ),  # success, failure, error
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
         ),
     )
 

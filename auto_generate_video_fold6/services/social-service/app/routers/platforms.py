@@ -1,14 +1,16 @@
 import logging
-from typing import Any, Dict
-from urllib.parse import urlencode
 
-import requests
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
-from ..auth import verify_token
 from ..config import settings
 from ..platforms import instagram, tiktok, youtube
-from ..schemas import OAuthCallback, PlatformAuth, PublishRequest, PublishResponse, TokenResponse
+from ..schemas import (
+    OAuthCallback,
+    PlatformAuth,
+    PublishRequest,
+    PublishResponse,
+    TokenResponse,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -21,17 +23,23 @@ async def get_auth_url(platform: str):
     if platform == "tiktok":
         auth_url = tiktok.get_auth_url()
         return PlatformAuth(
-            platform="tiktok", auth_url=auth_url, client_id=settings.TIKTOK_CLIENT_ID
+            platform="tiktok",
+            auth_url=auth_url,
+            client_id=settings.TIKTOK_CLIENT_ID,
         )
     elif platform == "youtube":
         auth_url = youtube.get_auth_url()
         return PlatformAuth(
-            platform="youtube", auth_url=auth_url, client_id=settings.YOUTUBE_CLIENT_ID
+            platform="youtube",
+            auth_url=auth_url,
+            client_id=settings.YOUTUBE_CLIENT_ID,
         )
     elif platform == "instagram":
         auth_url = instagram.get_auth_url()
         return PlatformAuth(
-            platform="instagram", auth_url=auth_url, client_id=settings.INSTAGRAM_CLIENT_ID
+            platform="instagram",
+            auth_url=auth_url,
+            client_id=settings.INSTAGRAM_CLIENT_ID,
         )
     else:
         raise HTTPException(status_code=400, detail="Unsupported platform")
@@ -55,7 +63,9 @@ async def handle_oauth_callback(platform: str, callback: OAuthCallback):
 
     except Exception as e:
         logger.error(f"OAuth callback error for {platform}: {e}")
-        raise HTTPException(status_code=400, detail=f"Authentication failed: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Authentication failed: {str(e)}"
+        )
 
 
 @router.post("/tiktok/publish", response_model=PublishResponse)
@@ -76,7 +86,9 @@ async def publish_to_tiktok(request: PublishRequest):
 
     except Exception as e:
         logger.error(f"TikTok publish error: {e}")
-        return PublishResponse(success=False, error=f"Failed to publish to TikTok: {str(e)}")
+        return PublishResponse(
+            success=False, error=f"Failed to publish to TikTok: {str(e)}"
+        )
 
 
 @router.post("/youtube/publish", response_model=PublishResponse)
@@ -97,7 +109,9 @@ async def publish_to_youtube(request: PublishRequest):
 
     except Exception as e:
         logger.error(f"YouTube publish error: {e}")
-        return PublishResponse(success=False, error=f"Failed to publish to YouTube: {str(e)}")
+        return PublishResponse(
+            success=False, error=f"Failed to publish to YouTube: {str(e)}"
+        )
 
 
 @router.post("/instagram/publish", response_model=PublishResponse)
@@ -118,7 +132,9 @@ async def publish_to_instagram(request: PublishRequest):
 
     except Exception as e:
         logger.error(f"Instagram publish error: {e}")
-        return PublishResponse(success=False, error=f"Failed to publish to Instagram: {str(e)}")
+        return PublishResponse(
+            success=False, error=f"Failed to publish to Instagram: {str(e)}"
+        )
 
 
 @router.get("/status/{platform}")

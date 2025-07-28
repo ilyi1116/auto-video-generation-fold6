@@ -1,7 +1,6 @@
 import asyncio
 import hashlib
 import time
-from datetime import datetime
 from typing import Any, Dict, Optional
 
 import structlog
@@ -31,7 +30,9 @@ class SynthesisEngine:
 
         # Validate input
         if len(text) > settings.max_text_length:
-            raise ValueError(f"Text too long: {len(text)} > {settings.max_text_length}")
+            raise ValueError(
+                f"Text too long: {len(text)} > {settings.max_text_length}"
+            )
 
         if not text.strip():
             raise ValueError("Text cannot be empty")
@@ -68,7 +69,8 @@ class SynthesisEngine:
 
             # Perform synthesis
             audio_data = await asyncio.wait_for(
-                model.synthesize(text, **synthesis_params), timeout=settings.synthesis_timeout
+                model.synthesize(text, **synthesis_params),
+                timeout=settings.synthesis_timeout,
             )
 
             processing_time = time.time() - start_time
@@ -93,13 +95,22 @@ class SynthesisEngine:
             }
 
         except asyncio.TimeoutError:
-            logger.error("Synthesis timeout", job_id=job_id, timeout=settings.synthesis_timeout)
-            raise RuntimeError(f"Synthesis timed out after {settings.synthesis_timeout} seconds")
+            logger.error(
+                "Synthesis timeout",
+                job_id=job_id,
+                timeout=settings.synthesis_timeout,
+            )
+            raise RuntimeError(
+                f"Synthesis timed out after {settings.synthesis_timeout} seconds"
+            )
 
         except Exception as e:
             processing_time = time.time() - start_time
             logger.error(
-                "Synthesis failed", job_id=job_id, error=str(e), processing_time=processing_time
+                "Synthesis failed",
+                job_id=job_id,
+                error=str(e),
+                processing_time=processing_time,
             )
             raise RuntimeError(f"Synthesis failed: {str(e)}")
 
@@ -117,7 +128,10 @@ class SynthesisEngine:
             raise ValueError("Batch size too large: maximum 10 texts")
 
         logger.info(
-            "Starting batch synthesis", batch_size=len(texts), model_id=model_id, user_id=user_id
+            "Starting batch synthesis",
+            batch_size=len(texts),
+            model_id=model_id,
+            user_id=user_id,
         )
 
         # Create synthesis tasks
@@ -141,11 +155,21 @@ class SynthesisEngine:
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
                     batch_results.append(
-                        {"index": i, "text": texts[i], "error": str(result), "success": False}
+                        {
+                            "index": i,
+                            "text": texts[i],
+                            "error": str(result),
+                            "success": False,
+                        }
                     )
                 else:
                     batch_results.append(
-                        {"index": i, "text": texts[i], "result": result, "success": True}
+                        {
+                            "index": i,
+                            "text": texts[i],
+                            "result": result,
+                            "success": True,
+                        }
                     )
 
             logger.info(

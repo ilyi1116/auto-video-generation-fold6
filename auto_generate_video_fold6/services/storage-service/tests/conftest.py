@@ -2,7 +2,6 @@ import asyncio
 import os
 import sys
 import tempfile
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,7 +12,6 @@ from sqlalchemy.pool import StaticPool
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
 
-from app.config import settings
 from app.database import get_db
 from app.main import app
 from app.models import Base
@@ -27,7 +25,9 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
 
 
 @pytest.fixture(scope="session")
@@ -76,7 +76,9 @@ def mock_storage():
     original_delete = storage_manager.delete_file
     original_validate = storage_manager.validate_file_type
 
-    async def mock_upload_file(file_data, filename, content_type, user_id, file_type, category):
+    async def mock_upload_file(
+        file_data, filename, content_type, user_id, file_type, category
+    ):
         return {
             "object_key": f"test/{user_id}/{filename}",
             "file_size": 1024,

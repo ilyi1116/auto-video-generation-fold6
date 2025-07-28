@@ -1,7 +1,7 @@
 import os
 import sys
 import tempfile
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from PIL import Image
@@ -9,7 +9,12 @@ from PIL import Image
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
 
-from app.processors import AudioProcessor, ImageProcessor, ProcessorManager, VideoProcessor
+from app.processors import (
+    AudioProcessor,
+    ImageProcessor,
+    ProcessorManager,
+    VideoProcessor,
+)
 
 
 class TestImageProcessor:
@@ -50,7 +55,9 @@ class TestImageProcessor:
         input_path = self.create_test_image(size=(2000, 1500))
         output_path = os.path.join(self.temp_dir, "output.jpg")
 
-        result = await self.processor.process(input_path, output_path, max_dimension=800)
+        result = await self.processor.process(
+            input_path, output_path, max_dimension=800
+        )
 
         # Should be resized to fit within 800px
         assert max(result["width"], result["height"]) <= 800
@@ -63,7 +70,10 @@ class TestImageProcessor:
         output_path = os.path.join(self.temp_dir, "output.jpg")
 
         result = await self.processor.process(
-            input_path, output_path, generate_thumbnail=True, thumbnail_size=150
+            input_path,
+            output_path,
+            generate_thumbnail=True,
+            thumbnail_size=150,
         )
 
         assert result["thumbnail_path"] is not None
@@ -147,7 +157,9 @@ class TestAudioProcessor:
         # Mock failed ffmpeg subprocess
         mock_process = MagicMock()
         mock_process.returncode = 1
-        mock_process.communicate = AsyncMock(return_value=(b"", b"Error processing audio"))
+        mock_process.communicate = AsyncMock(
+            return_value=(b"", b"Error processing audio")
+        )
         mock_subprocess.return_value = mock_process
 
         input_path = os.path.join(self.temp_dir, "input.wav")
@@ -226,7 +238,9 @@ class TestVideoProcessor:
                 "codec": "h264",
             }
 
-            with patch.object(self.processor, "_generate_video_thumbnail") as mock_thumb:
+            with patch.object(
+                self.processor, "_generate_video_thumbnail"
+            ) as mock_thumb:
                 mock_thumb.return_value = "thumbnail.jpg"
 
                 result = await self.processor.process(input_path, output_path)
@@ -250,7 +264,9 @@ class TestVideoProcessor:
         input_path = os.path.join(self.temp_dir, "input.mp4")
         output_path = os.path.join(self.temp_dir, "output.mp4")
 
-        result = await self.processor._generate_video_thumbnail(input_path, output_path)
+        result = await self.processor._generate_video_thumbnail(
+            input_path, output_path
+        )
 
         assert result is not None
         assert "thumb.jpg" in result
@@ -328,10 +344,14 @@ class TestProcessorManager:
         """Test processing file with auto-generated output path"""
         with patch.object(self.manager, "get_processor") as mock_get:
             mock_processor = MagicMock()
-            mock_processor.process = AsyncMock(return_value={"processed": True})
+            mock_processor.process = AsyncMock(
+                return_value={"processed": True}
+            )
             mock_get.return_value = mock_processor
 
-            result = await self.manager.process_file("/path/to/input.jpg", "image")
+            result = await self.manager.process_file(
+                "/path/to/input.jpg", "image"
+            )
 
             # Check that processor was called with auto-generated output path
             mock_processor.process.assert_called_once()

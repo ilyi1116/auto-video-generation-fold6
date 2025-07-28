@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 import structlog
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -13,7 +12,9 @@ logger = structlog.get_logger()
 
 class VoiceSynthesisRequest(BaseModel):
     text: str
-    voice_style: str = "natural"  # natural, professional, energetic, calm, enthusiastic
+    voice_style: str = (
+        "natural"  # natural, professional, energetic, calm, enthusiastic
+    )
     language: str = "en"  # en, zh, ja, ko, es, fr, de
     speed: float = 1.0  # 0.5 - 2.0
     pitch: float = 1.0  # 0.5 - 2.0
@@ -39,13 +40,16 @@ class VoiceCloneRequest(BaseModel):
 
 class AudioEnhancementRequest(BaseModel):
     audio_url: str
-    enhancement_type: str = "noise_reduction"  # noise_reduction, normalize, enhance_speech
+    enhancement_type: str = (
+        "noise_reduction"  # noise_reduction, normalize, enhance_speech
+    )
     intensity: float = 0.7
 
 
 @router.post("/synthesize", response_model=VoiceSynthesisResponse)
 async def synthesize_voice(
-    request: VoiceSynthesisRequest, current_user: dict = Depends(get_current_user)
+    request: VoiceSynthesisRequest,
+    current_user: dict = Depends(get_current_user),
 ) -> VoiceSynthesisResponse:
     """Synthesize speech from text"""
     try:
@@ -75,7 +79,9 @@ async def synthesize_voice(
 
 
 @router.post("/clone-voice")
-async def clone_voice(request: VoiceCloneRequest, current_user: dict = Depends(get_current_user)):
+async def clone_voice(
+    request: VoiceCloneRequest, current_user: dict = Depends(get_current_user)
+):
     """Clone voice from sample audio"""
     try:
         logger.info(
@@ -102,7 +108,8 @@ async def clone_voice(request: VoiceCloneRequest, current_user: dict = Depends(g
 
 @router.post("/enhance-audio")
 async def enhance_audio(
-    request: AudioEnhancementRequest, current_user: dict = Depends(get_current_user)
+    request: AudioEnhancementRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     """Enhance audio quality"""
     try:
@@ -129,7 +136,8 @@ async def enhance_audio(
 
 @router.post("/upload-audio")
 async def upload_audio(
-    audio_file: UploadFile = File(...), current_user: dict = Depends(get_current_user)
+    audio_file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
 ):
     """Upload audio file for processing"""
     try:
@@ -177,7 +185,9 @@ async def convert_audio_format(
 
     except Exception as e:
         logger.error("Audio format conversion failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Audio format conversion failed")
+        raise HTTPException(
+            status_code=500, detail="Audio format conversion failed"
+        )
 
 
 @router.get("/supported-voices")
@@ -186,8 +196,14 @@ async def get_supported_voices():
     return {
         "voice_styles": [
             {"name": "natural", "description": "Natural conversational tone"},
-            {"name": "professional", "description": "Business and formal tone"},
-            {"name": "energetic", "description": "High-energy and enthusiastic"},
+            {
+                "name": "professional",
+                "description": "Business and formal tone",
+            },
+            {
+                "name": "energetic",
+                "description": "High-energy and enthusiastic",
+            },
             {"name": "calm", "description": "Soothing and relaxed"},
             {"name": "enthusiastic", "description": "Excited and passionate"},
         ],

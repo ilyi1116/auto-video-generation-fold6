@@ -13,7 +13,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..auth import get_current_user
-from ..social.platforms import PublishRequest, PublishResult, SocialMediaManager
+from ..social.platforms import (
+    PublishRequest,
+    SocialMediaManager,
+)
 
 router = APIRouter()
 logger = structlog.get_logger()
@@ -81,7 +84,9 @@ async def publish_to_social_media(
 
         # Validate platforms
         available_platforms = social_manager.get_available_platforms()
-        invalid_platforms = [p for p in request.platforms if p not in available_platforms]
+        invalid_platforms = [
+            p for p in request.platforms if p not in available_platforms
+        ]
 
         if invalid_platforms:
             raise HTTPException(
@@ -104,7 +109,10 @@ async def publish_to_social_media(
         if request.scheduled_time:
             # Schedule for later publishing
             background_tasks.add_task(
-                _scheduled_publish, publish_request, request.platforms, current_user.get("id")
+                _scheduled_publish,
+                publish_request,
+                request.platforms,
+                current_user.get("id"),
             )
 
             return SocialPublishResponse(
@@ -117,7 +125,9 @@ async def publish_to_social_media(
             )
         else:
             # Publish immediately
-            results = await social_manager.publish_to_all(publish_request, request.platforms)
+            results = await social_manager.publish_to_all(
+                publish_request, request.platforms
+            )
 
             # Format results
             formatted_results = []
@@ -159,12 +169,20 @@ async def publish_to_social_media(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Social media publishing failed", error=str(e), user_id=current_user.get("id"))
-        raise HTTPException(status_code=500, detail=f"Publishing failed: {str(e)}")
+        logger.error(
+            "Social media publishing failed",
+            error=str(e),
+            user_id=current_user.get("id"),
+        )
+        raise HTTPException(
+            status_code=500, detail=f"Publishing failed: {str(e)}"
+        )
 
 
 @router.get("/platforms")
-async def get_available_platforms(current_user: dict = Depends(get_current_user)):
+async def get_available_platforms(
+    current_user: dict = Depends(get_current_user),
+):
     """Get list of available social media platforms"""
     try:
         platforms = social_manager.get_available_platforms()
@@ -174,7 +192,14 @@ async def get_available_platforms(current_user: dict = Depends(get_current_user)
                 "name": "YouTube",
                 "description": "Video sharing platform",
                 "max_duration": 43200,  # 12 hours in seconds
-                "supported_formats": ["mp4", "mov", "avi", "wmv", "flv", "webm"],
+                "supported_formats": [
+                    "mp4",
+                    "mov",
+                    "avi",
+                    "wmv",
+                    "flv",
+                    "webm",
+                ],
                 "max_file_size_mb": 256000,  # 256 GB
                 "recommended_resolution": "1920x1080",
             },
@@ -199,7 +224,11 @@ async def get_available_platforms(current_user: dict = Depends(get_current_user)
         available_info = []
         for platform in platforms:
             info = platform_info.get(
-                platform, {"name": platform.title(), "description": f"{platform.title()} platform"}
+                platform,
+                {
+                    "name": platform.title(),
+                    "description": f"{platform.title()} platform",
+                },
             )
             info["id"] = platform
             info["connected"] = True
@@ -209,11 +238,15 @@ async def get_available_platforms(current_user: dict = Depends(get_current_user)
 
     except Exception as e:
         logger.error("Failed to get platforms", error=str(e))
-        raise HTTPException(status_code=500, detail="Failed to retrieve platforms")
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve platforms"
+        )
 
 
 @router.get("/platforms/health")
-async def check_platform_health(current_user: dict = Depends(get_current_user)):
+async def check_platform_health(
+    current_user: dict = Depends(get_current_user),
+):
     """Check health status of all connected platforms"""
     try:
         health_results = await social_manager.health_check_all()
@@ -240,9 +273,13 @@ async def check_platform_health(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail="Health check failed")
 
 
-@router.get("/stats/{platform}/{platform_id}", response_model=PlatformStatsResponse)
+@router.get(
+    "/stats/{platform}/{platform_id}", response_model=PlatformStatsResponse
+)
 async def get_video_stats(
-    platform: str, platform_id: str, current_user: dict = Depends(get_current_user)
+    platform: str,
+    platform_id: str,
+    current_user: dict = Depends(get_current_user),
 ):
     """Get video statistics from specific platform"""
     try:
@@ -252,25 +289,37 @@ async def get_video_stats(
             raise HTTPException(status_code=400, detail=stats["error"])
 
         return PlatformStatsResponse(
-            platform=platform, platform_id=platform_id, stats=stats, retrieved_at=datetime.utcnow()
+            platform=platform,
+            platform_id=platform_id,
+            stats=stats,
+            retrieved_at=datetime.utcnow(),
         )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(
-            "Failed to get video stats", error=str(e), platform=platform, platform_id=platform_id
+            "Failed to get video stats",
+            error=str(e),
+            platform=platform,
+            platform_id=platform_id,
         )
-        raise HTTPException(status_code=500, detail="Failed to retrieve video statistics")
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve video statistics"
+        )
 
 
 @router.delete("/videos/{platform}/{platform_id}")
 async def delete_video_from_platform(
-    platform: str, platform_id: str, current_user: dict = Depends(get_current_user)
+    platform: str,
+    platform_id: str,
+    current_user: dict = Depends(get_current_user),
 ):
     """Delete video from specific platform"""
     try:
-        success = await social_manager.delete_from_platform(platform, platform_id)
+        success = await social_manager.delete_from_platform(
+            platform, platform_id
+        )
 
         if success:
             logger.info(
@@ -285,19 +334,26 @@ async def delete_video_from_platform(
                 "platform_id": platform_id,
             }
         else:
-            raise HTTPException(status_code=400, detail="Failed to delete video")
+            raise HTTPException(
+                status_code=400, detail="Failed to delete video"
+            )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(
-            "Video deletion failed", error=str(e), platform=platform, platform_id=platform_id
+            "Video deletion failed",
+            error=str(e),
+            platform=platform,
+            platform_id=platform_id,
         )
         raise HTTPException(status_code=500, detail="Video deletion failed")
 
 
 @router.get("/templates/{platform}")
-async def get_platform_templates(platform: str, current_user: dict = Depends(get_current_user)):
+async def get_platform_templates(
+    platform: str, current_user: dict = Depends(get_current_user)
+):
     """Get platform-specific content templates and best practices"""
 
     templates = {
@@ -314,14 +370,30 @@ async def get_platform_templates(platform: str, current_user: dict = Depends(get
                         "Call to Action",
                     ],
                     "recommended_length": "8-12 minutes",
-                    "tags_suggestions": ["tutorial", "howto", "education", "learning"],
+                    "tags_suggestions": [
+                        "tutorial",
+                        "howto",
+                        "education",
+                        "learning",
+                    ],
                 },
                 {
                     "name": "Review",
                     "description": "Product or service review",
-                    "structure": ["Introduction", "Overview", "Pros/Cons", "Demo", "Conclusion"],
+                    "structure": [
+                        "Introduction",
+                        "Overview",
+                        "Pros/Cons",
+                        "Demo",
+                        "Conclusion",
+                    ],
                     "recommended_length": "5-10 minutes",
-                    "tags_suggestions": ["review", "honest", "opinion", "recommendation"],
+                    "tags_suggestions": [
+                        "review",
+                        "honest",
+                        "opinion",
+                        "recommendation",
+                    ],
                 },
             ],
             "best_practices": {
@@ -336,16 +408,29 @@ async def get_platform_templates(platform: str, current_user: dict = Depends(get
                 {
                     "name": "Hook & Reveal",
                     "description": "Quick hook with surprising reveal",
-                    "structure": ["Strong Hook (0-3s)", "Build tension", "Reveal/Payoff"],
+                    "structure": [
+                        "Strong Hook (0-3s)",
+                        "Build tension",
+                        "Reveal/Payoff",
+                    ],
                     "recommended_length": "15-30 seconds",
                     "tags_suggestions": ["trending", "viral", "fyp", "foryou"],
                 },
                 {
                     "name": "Tutorial Quick",
                     "description": "Fast-paced tutorial",
-                    "structure": ["Problem statement", "Quick solution", "Result"],
+                    "structure": [
+                        "Problem statement",
+                        "Quick solution",
+                        "Result",
+                    ],
                     "recommended_length": "30-60 seconds",
-                    "tags_suggestions": ["lifehack", "tutorial", "tips", "howto"],
+                    "tags_suggestions": [
+                        "lifehack",
+                        "tutorial",
+                        "tips",
+                        "howto",
+                    ],
                 },
             ],
             "best_practices": {
@@ -360,16 +445,30 @@ async def get_platform_templates(platform: str, current_user: dict = Depends(get
                 {
                     "name": "Reels Showcase",
                     "description": "Product or lifestyle showcase",
-                    "structure": ["Eye-catching opener", "Feature highlights", "Final shot"],
+                    "structure": [
+                        "Eye-catching opener",
+                        "Feature highlights",
+                        "Final shot",
+                    ],
                     "recommended_length": "15-30 seconds",
-                    "tags_suggestions": ["reels", "instagram", "lifestyle", "showcase"],
+                    "tags_suggestions": [
+                        "reels",
+                        "instagram",
+                        "lifestyle",
+                        "showcase",
+                    ],
                 },
                 {
                     "name": "Behind the Scenes",
                     "description": "Process or behind-the-scenes content",
                     "structure": ["Setup", "Process", "Final result"],
                     "recommended_length": "30-60 seconds",
-                    "tags_suggestions": ["bts", "process", "creation", "behindthescenes"],
+                    "tags_suggestions": [
+                        "bts",
+                        "process",
+                        "creation",
+                        "behindthescenes",
+                    ],
                 },
             ],
             "best_practices": {
@@ -382,7 +481,10 @@ async def get_platform_templates(platform: str, current_user: dict = Depends(get
     }
 
     if platform not in templates:
-        raise HTTPException(status_code=404, detail=f"Templates not found for platform: {platform}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Templates not found for platform: {platform}",
+        )
 
     return templates[platform]
 
@@ -396,10 +498,14 @@ async def schedule_publication(
     """Schedule video publication for later"""
     try:
         if not request.scheduled_time:
-            raise HTTPException(status_code=400, detail="scheduled_time is required")
+            raise HTTPException(
+                status_code=400, detail="scheduled_time is required"
+            )
 
         if request.scheduled_time <= datetime.utcnow():
-            raise HTTPException(status_code=400, detail="scheduled_time must be in the future")
+            raise HTTPException(
+                status_code=400, detail="scheduled_time must be in the future"
+            )
 
         # Store scheduled publication (in production, this would use a job queue)
         background_tasks.add_task(
@@ -433,11 +539,17 @@ async def schedule_publication(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Scheduling failed", error=str(e), user_id=current_user.get("id"))
-        raise HTTPException(status_code=500, detail="Failed to schedule publication")
+        logger.error(
+            "Scheduling failed", error=str(e), user_id=current_user.get("id")
+        )
+        raise HTTPException(
+            status_code=500, detail="Failed to schedule publication"
+        )
 
 
-async def _scheduled_publish(request: PublishRequest, platforms: List[str], user_id: str):
+async def _scheduled_publish(
+    request: PublishRequest, platforms: List[str], user_id: str
+):
     """Execute scheduled publication (background task)"""
     try:
         # In production, this would be handled by a proper job queue like Celery
@@ -461,4 +573,6 @@ async def _scheduled_publish(request: PublishRequest, platforms: List[str], user
         )
 
     except Exception as e:
-        logger.error("Scheduled publication failed", error=str(e), user_id=user_id)
+        logger.error(
+            "Scheduled publication failed", error=str(e), user_id=user_id
+        )

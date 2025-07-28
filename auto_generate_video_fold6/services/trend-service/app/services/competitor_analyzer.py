@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List
 
-import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,12 @@ async def analyze_competitor(
         ],
         "engagement_rate": 7.3,
         "posting_frequency": "每週2-3支影片",
-        "content_themes": ["技術教學 (40%)", "工具評測 (25%)", "產業趨勢 (20%)", "問答互動 (15%)"],
+        "content_themes": [
+            "技術教學 (40%)",
+            "工具評測 (25%)",
+            "產業趨勢 (20%)",
+            "問答互動 (15%)",
+        ],
         "insights": [
             f"{competitor} 專注於技術教學內容，觀眾互動率較高",
             "影片長度通常在10-20分鐘之間",
@@ -61,7 +65,12 @@ async def analyze_competitor(
                 "audience_analysis": {
                     "subscriber_growth": "月成長5-8%",
                     "audience_retention": "平均68%",
-                    "demographics": {"18-24": 30, "25-34": 45, "35-44": 20, "45+": 5},
+                    "demographics": {
+                        "18-24": 30,
+                        "25-34": 45,
+                        "35-44": 20,
+                        "45+": 5,
+                    },
                 },
                 "seo_analysis": {
                     "keyword_targeting": ["AI教學", "程式設計", "科技趨勢"],
@@ -123,9 +132,21 @@ async def analyze_competitor_gaps(
             "案例研究深度分析",
         ],
         "audience_segments": [
-            {"segment": "初學者", "coverage": "60%", "opportunity": "基礎入門內容仍有空間"},
-            {"segment": "進階用戶", "coverage": "85%", "opportunity": "市場較飽和"},
-            {"segment": "企業用戶", "coverage": "30%", "opportunity": "高價值目標群體"},
+            {
+                "segment": "初學者",
+                "coverage": "60%",
+                "opportunity": "基礎入門內容仍有空間",
+            },
+            {
+                "segment": "進階用戶",
+                "coverage": "85%",
+                "opportunity": "市場較飽和",
+            },
+            {
+                "segment": "企業用戶",
+                "coverage": "30%",
+                "opportunity": "高價值目標群體",
+            },
         ],
         "recommendations": [
             "專注於AI倫理等冷門但重要的主題",
@@ -177,7 +198,12 @@ async def track_competitor_performance(
             "觀眾互動積極",
             "技術深度適中",
         ],
-        "weaknesses": ["內容形式較單一", "缺乏爭議性話題", "國際化程度不足", "變現管道有限"],
+        "weaknesses": [
+            "內容形式較單一",
+            "缺乏爭議性話題",
+            "國際化程度不足",
+            "變現管道有限",
+        ],
         "trend_analysis": {
             "rising_topics": ["AI倫理", "量子計算", "區塊鏈應用"],
             "declining_topics": ["基礎程式語言教學"],
@@ -187,7 +213,9 @@ async def track_competitor_performance(
 
 
 async def benchmark_against_competitors(
-    your_metrics: Dict[str, Any], competitor_list: List[str], platform: str = "youtube"
+    your_metrics: Dict[str, Any],
+    competitor_list: List[str],
+    platform: str = "youtube",
 ) -> Dict[str, Any]:
     """與競爭對手進行基準比較"""
 

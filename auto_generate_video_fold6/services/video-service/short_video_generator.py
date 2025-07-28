@@ -3,20 +3,12 @@
 類似抖音平台的短影音生成系統
 """
 
-import asyncio
-import base64
-import io
-import json
 import logging
 import os
-import subprocess
-import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
-import aiohttp
-import numpy as np
 from moviepy.editor import *
 from PIL import Image, ImageDraw, ImageFont
 
@@ -38,7 +30,11 @@ class ShortVideoGenerator:
                 "duration": 30,
                 "aspect_ratio": "9:16",
                 "style": "clean",
-                "effects": ["slide_transition", "highlight_text", "fact_callout"],
+                "effects": [
+                    "slide_transition",
+                    "highlight_text",
+                    "fact_callout",
+                ],
             },
             "entertainment": {
                 "duration": 45,
@@ -67,19 +63,27 @@ class ShortVideoGenerator:
             work_dir = await self._create_work_directory(keyword)
 
             # 2. 生成視覺素材
-            visual_assets = await self._generate_visual_assets(keyword, category, work_dir)
+            visual_assets = await self._generate_visual_assets(
+                keyword, category, work_dir
+            )
 
             # 3. 生成音頻
             audio_file = await self._generate_audio(script, work_dir)
 
             # 4. 創建影片場景
-            scenes = await self._create_video_scenes(visual_assets, script, category)
+            scenes = await self._create_video_scenes(
+                visual_assets, script, category
+            )
 
             # 5. 組裝最終影片
-            final_video = await self._assemble_video(scenes, audio_file, work_dir, category)
+            final_video = await self._assemble_video(
+                scenes, audio_file, work_dir, category
+            )
 
             # 6. 添加短影音特效
-            enhanced_video = await self._add_tiktok_effects(final_video, keyword, work_dir)
+            enhanced_video = await self._add_tiktok_effects(
+                final_video, keyword, work_dir
+            )
 
             return {
                 "status": "success",
@@ -106,14 +110,22 @@ class ShortVideoGenerator:
         work_dir.mkdir(parents=True, exist_ok=True)
         return work_dir
 
-    async def _generate_visual_assets(self, keyword: str, category: str, work_dir: Path) -> Dict:
+    async def _generate_visual_assets(
+        self, keyword: str, category: str, work_dir: Path
+    ) -> Dict:
         """生成視覺素材"""
         try:
-            assets = {"background_images": [], "overlay_graphics": [], "text_animations": []}
+            assets = {
+                "background_images": [],
+                "overlay_graphics": [],
+                "text_animations": [],
+            }
 
             # 1. 背景圖片（模擬 AI 生成）
             for i in range(3):
-                bg_image = await self._create_background_image(keyword, i, work_dir)
+                bg_image = await self._create_background_image(
+                    keyword, i, work_dir
+                )
                 assets["background_images"].append(bg_image)
 
             # 2. 文字覆蓋層
@@ -121,7 +133,9 @@ class ShortVideoGenerator:
             assets["overlay_graphics"].append(text_overlay)
 
             # 3. 趨勢圖標和特效
-            trending_graphics = await self._create_trending_graphics(keyword, work_dir)
+            trending_graphics = await self._create_trending_graphics(
+                keyword, work_dir
+            )
             assets["overlay_graphics"].extend(trending_graphics)
 
             return assets
@@ -130,7 +144,9 @@ class ShortVideoGenerator:
             logger.error(f"生成視覺素材失敗: {e}")
             return {}
 
-    async def _create_background_image(self, keyword: str, index: int, work_dir: Path) -> str:
+    async def _create_background_image(
+        self, keyword: str, index: int, work_dir: Path
+    ) -> str:
         """創建背景圖片"""
         try:
             # 創建漸層背景（模擬 AI 生成的圖片）
@@ -146,7 +162,9 @@ class ShortVideoGenerator:
                 "default": [(100, 150, 200), (150, 200, 255)],
             }
 
-            colors = color_schemes.get(keyword.lower(), color_schemes["default"])
+            colors = color_schemes.get(
+                keyword.lower(), color_schemes["default"]
+            )
 
             # 創建漸層效果
             for y in range(height):
@@ -159,13 +177,21 @@ class ShortVideoGenerator:
             # 添加關鍵字文字
             try:
                 font_size = 120
-                font = ImageFont.truetype("/system/fonts/DroidSansFallback.ttf", font_size)
+                font = ImageFont.truetype(
+                    "/system/fonts/DroidSansFallback.ttf", font_size
+                )
             except:
                 font = ImageFont.load_default()
 
             # 文字位置和樣式
             text_y = height // 2 + (index - 1) * 200
-            draw.text((width // 2, text_y), keyword, font=font, fill=(255, 255, 255), anchor="mm")
+            draw.text(
+                (width // 2, text_y),
+                keyword,
+                font=font,
+                fill=(255, 255, 255),
+                anchor="mm",
+            )
 
             # 保存圖片
             image_path = work_dir / f"bg_{index}.png"
@@ -186,8 +212,12 @@ class ShortVideoGenerator:
             # 主標題
             title_text = f"🔥 {keyword} 正在爆紅！"
             try:
-                title_font = ImageFont.truetype("/system/fonts/DroidSansFallback.ttf", 80)
-                subtitle_font = ImageFont.truetype("/system/fonts/DroidSansFallback.ttf", 60)
+                title_font = ImageFont.truetype(
+                    "/system/fonts/DroidSansFallback.ttf", 80
+                )
+                subtitle_font = ImageFont.truetype(
+                    "/system/fonts/DroidSansFallback.ttf", 60
+                )
             except:
                 title_font = ImageFont.load_default()
                 subtitle_font = ImageFont.load_default()
@@ -238,7 +268,9 @@ class ShortVideoGenerator:
             logger.error(f"創建文字覆蓋層失敗: {e}")
             return ""
 
-    async def _create_trending_graphics(self, keyword: str, work_dir: Path) -> List[str]:
+    async def _create_trending_graphics(
+        self, keyword: str, work_dir: Path
+    ) -> List[str]:
         """創建趨勢圖標"""
         graphics = []
 
@@ -278,7 +310,10 @@ class ShortVideoGenerator:
 
             # 繪製火焰
             draw.polygon(flame_points, fill=(255, 100, 0, 200))
-            draw.polygon([(p[0] - 5, p[1] + 10) for p in flame_points[:4]], fill=(255, 200, 0, 200))
+            draw.polygon(
+                [(p[0] - 5, p[1] + 10) for p in flame_points[:4]],
+                fill=(255, 200, 0, 200),
+            )
 
             flame_path = work_dir / "flame.png"
             flame.save(flame_path)
@@ -324,7 +359,9 @@ class ShortVideoGenerator:
             audio_duration = len(script.split()) * 0.5  # 估算時長
 
             # 使用 moviepy 創建靜音
-            silent_audio = AudioFileClip(None, duration=min(audio_duration, 30))
+            silent_audio = AudioFileClip(
+                None, duration=min(audio_duration, 30)
+            )
             audio_path = work_dir / "audio.wav"
 
             # 這裡實際應該是：
@@ -346,9 +383,9 @@ class ShortVideoGenerator:
         scenes = []
 
         try:
-            duration_per_scene = self.video_templates[category]["duration"] / len(
-                visual_assets["background_images"]
-            )
+            duration_per_scene = self.video_templates[category][
+                "duration"
+            ] / len(visual_assets["background_images"])
 
             for i, bg_image in enumerate(visual_assets["background_images"]):
                 scene = {
@@ -368,7 +405,11 @@ class ShortVideoGenerator:
             return []
 
     async def _assemble_video(
-        self, scenes: List[Dict], audio_file: str, work_dir: Path, category: str
+        self,
+        scenes: List[Dict],
+        audio_file: str,
+        work_dir: Path,
+        category: str,
     ) -> str:
         """組裝影片"""
         try:
@@ -379,16 +420,22 @@ class ShortVideoGenerator:
             for scene in scenes:
                 if scene["background"]:
                     # 載入背景圖片
-                    img_clip = ImageClip(scene["background"], duration=scene["duration"])
+                    img_clip = ImageClip(
+                        scene["background"], duration=scene["duration"]
+                    )
                     img_clip = img_clip.resize(video_size)
 
                     # 添加覆蓋層
                     if scene["overlays"]:
                         for overlay_path in scene["overlays"]:
                             if os.path.exists(overlay_path):
-                                overlay_clip = ImageClip(overlay_path, duration=scene["duration"])
+                                overlay_clip = ImageClip(
+                                    overlay_path, duration=scene["duration"]
+                                )
                                 overlay_clip = overlay_clip.resize(video_size)
-                                img_clip = CompositeVideoClip([img_clip, overlay_clip])
+                                img_clip = CompositeVideoClip(
+                                    [img_clip, overlay_clip]
+                                )
 
                     # 添加特效
                     if "zoom_in" in scene["effects"]:
@@ -408,7 +455,10 @@ class ShortVideoGenerator:
                 # 輸出影片
                 output_path = work_dir / "assembled_video.mp4"
                 final_clip.write_videofile(
-                    str(output_path), fps=30, audio_codec="aac", codec="libx264"
+                    str(output_path),
+                    fps=30,
+                    audio_codec="aac",
+                    codec="libx264",
                 )
 
                 return str(output_path)
@@ -417,7 +467,9 @@ class ShortVideoGenerator:
             logger.error(f"組裝影片失敗: {e}")
             return ""
 
-    async def _add_tiktok_effects(self, video_path: str, keyword: str, work_dir: Path) -> str:
+    async def _add_tiktok_effects(
+        self, video_path: str, keyword: str, work_dir: Path
+    ) -> str:
         """添加短影音特效"""
         try:
             if not video_path or not os.path.exists(video_path):
@@ -427,13 +479,18 @@ class ShortVideoGenerator:
             video = VideoFileClip(video_path)
 
             # 1. 添加開場動畫
-            intro_text = TextClip(f"🔥 {keyword}", fontsize=100, color="white", font="Arial")
+            intro_text = TextClip(
+                f"🔥 {keyword}", fontsize=100, color="white", font="Arial"
+            )
             intro_text = intro_text.set_position("center").set_duration(2)
             intro_text = intro_text.crossfadein(0.5).crossfadeout(0.5)
 
             # 2. 添加結尾 CTA
             outro_text = TextClip(
-                "關注獲取更多熱門內容 👆", fontsize=80, color="yellow", font="Arial"
+                "關注獲取更多熱門內容 👆",
+                fontsize=80,
+                color="yellow",
+                font="Arial",
             )
             outro_text = outro_text.set_position("center").set_duration(2)
             outro_text = outro_text.set_start(video.duration - 2)
@@ -443,11 +500,14 @@ class ShortVideoGenerator:
 
             # 4. 添加趨勢標籤
             hashtag_text = TextClip(
-                f"#{keyword} #熱門 #趨勢", fontsize=60, color="white", font="Arial"
+                f"#{keyword} #熱門 #趨勢",
+                fontsize=60,
+                color="white",
+                font="Arial",
             )
-            hashtag_text = hashtag_text.set_position(("left", "bottom")).set_duration(
-                final_video.duration
-            )
+            hashtag_text = hashtag_text.set_position(
+                ("left", "bottom")
+            ).set_duration(final_video.duration)
 
             final_video = CompositeVideoClip([final_video, hashtag_text])
 

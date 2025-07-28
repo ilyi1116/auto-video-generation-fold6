@@ -13,7 +13,11 @@ from .stable_diffusion_client import (
     ImageGenerationResponse,
     StableDiffusionClient,
 )
-from .suno_client import SunoAIClient, VoiceGenerationRequest, VoiceGenerationResponse
+from .suno_client import (
+    SunoAIClient,
+    VoiceGenerationRequest,
+    VoiceGenerationResponse,
+)
 
 __all__ = [
     # Suno.ai Client

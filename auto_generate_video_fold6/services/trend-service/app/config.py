@@ -9,7 +9,9 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # Database
-    DATABASE_URL: str = "postgresql://auto_video_user:password@postgres:5432/auto_video_db"
+    DATABASE_URL: str = (
+        "postgresql://auto_video_user:password@postgres:5432/auto_video_db"
+    )
 
     # Redis
     REDIS_URL: str = "redis://redis:6379/0"
@@ -19,7 +21,10 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
 
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
 
     # External APIs
     GOOGLE_TRENDS_API_KEY: str = ""

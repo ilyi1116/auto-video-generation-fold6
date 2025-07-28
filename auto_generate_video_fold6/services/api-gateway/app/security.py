@@ -34,7 +34,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["X-XSS-Protection"] = "1; mode=block"
 
             # Referrer Policy
-            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+            response.headers["Referrer-Policy"] = (
+                "strict-origin-when-cross-origin"
+            )
 
             # Permissions Policy
             response.headers["Permissions-Policy"] = (
@@ -89,16 +91,26 @@ def validate_ssl_config():
         import os
 
         if not os.path.exists(settings.ssl_cert_path):
-            logger.error("SSL certificate file not found", path=settings.ssl_cert_path)
-            raise FileNotFoundError(f"SSL certificate not found: {settings.ssl_cert_path}")
+            logger.error(
+                "SSL certificate file not found", path=settings.ssl_cert_path
+            )
+            raise FileNotFoundError(
+                f"SSL certificate not found: {settings.ssl_cert_path}"
+            )
 
         if not os.path.exists(settings.ssl_key_path):
-            logger.error("SSL private key file not found", path=settings.ssl_key_path)
-            raise FileNotFoundError(f"SSL private key not found: {settings.ssl_key_path}")
+            logger.error(
+                "SSL private key file not found", path=settings.ssl_key_path
+            )
+            raise FileNotFoundError(
+                f"SSL private key not found: {settings.ssl_key_path}"
+            )
 
         logger.info("SSL configuration validated successfully")
     else:
-        logger.warning("SSL is disabled - this is not recommended for production")
+        logger.warning(
+            "SSL is disabled - this is not recommended for production"
+        )
 
 
 def get_ssl_context():
@@ -113,7 +125,9 @@ def get_ssl_context():
 
     # Security settings
     context.minimum_version = ssl.TLSVersion.TLSv1_2
-    context.set_ciphers("ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS")
+    context.set_ciphers(
+        "ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS"
+    )
 
     return context
 
@@ -143,7 +157,9 @@ class RateLimitSecurityMiddleware(BaseHTTPMiddleware):
         ]
 
         if any(pattern in path.lower() for pattern in suspicious_patterns):
-            logger.warning("Suspicious request detected", ip=client_ip, path=path)
+            logger.warning(
+                "Suspicious request detected", ip=client_ip, path=path
+            )
             # Increase rate limit penalty for suspicious requests
             await self._increment_penalty(client_ip)
 
@@ -197,6 +213,10 @@ class RateLimitSecurityMiddleware(BaseHTTPMiddleware):
             await self.redis.expire(fail_key, 300)  # 5 minutes
 
             if failures > 5:
-                logger.critical("Multiple auth failures detected", ip=client_ip, failures=failures)
+                logger.critical(
+                    "Multiple auth failures detected",
+                    ip=client_ip,
+                    failures=failures,
+                )
         except Exception as e:
             logger.error("Failed to log auth failure", error=str(e))

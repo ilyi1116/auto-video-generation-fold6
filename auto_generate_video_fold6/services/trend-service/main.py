@@ -7,17 +7,14 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from datetime import datetime
+from typing import Dict, List
 
 import aiohttp
-import pandas as pd
 import redis.asyncio as redis
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pytrends.request import TrendReq
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 
 # 設置日誌
 logging.basicConfig(level=logging.INFO)
@@ -36,7 +33,9 @@ app.add_middleware(
 
 # 配置
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:pass@localhost/db")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", "postgresql+asyncpg://user:pass@localhost/db"
+)
 AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://ai-service:8000")
 VIDEO_SERVICE_URL = os.getenv("VIDEO_SERVICE_URL", "http://video-service:8000")
 
@@ -80,7 +79,9 @@ class TrendCollector:
             "lifestyle": "11",  # 生活風格
         }
 
-    async def get_trending_keywords(self, category: str = "all", geo: str = "TW") -> List[Dict]:
+    async def get_trending_keywords(
+        self, category: str = "all", geo: str = "TW"
+    ) -> List[Dict]:
         """獲取熱門關鍵字"""
         try:
             trending_data = []
@@ -110,7 +111,9 @@ class TrendCollector:
             logger.error(f"獲取熱門關鍵字失敗: {e}")
             return []
 
-    async def _fetch_category_trends(self, category_id: str, geo: str) -> List[Dict]:
+    async def _fetch_category_trends(
+        self, category_id: str, geo: str
+    ) -> List[Dict]:
         """獲取特定類別的趨勢"""
         try:
             # 獲取今日趨勢
@@ -121,7 +124,10 @@ class TrendCollector:
             for idx, keyword in enumerate(trending_searches_df[0][:10]):
                 # 獲取關鍵字詳細數據
                 pytrends.build_payload(
-                    [keyword], cat=int(category_id), timeframe="now 7-d", geo=geo
+                    [keyword],
+                    cat=int(category_id),
+                    timeframe="now 7-d",
+                    geo=geo,
                 )
                 interest_over_time_df = pytrends.interest_over_time()
 
@@ -130,7 +136,9 @@ class TrendCollector:
                     keywords.append(
                         {
                             "keyword": keyword,
-                            "traffic": float(avg_interest) if avg_interest else 0,
+                            "traffic": (
+                                float(avg_interest) if avg_interest else 0
+                            ),
                             "rank": idx + 1,
                             "timestamp": datetime.now().isoformat(),
                             "geo": geo,
@@ -191,7 +199,9 @@ class VideoContentGenerator:
                 "script": script,
                 "visuals": visuals,
                 "audio": audio,
-                "template": self.video_templates.get(category, self.video_templates["lifestyle"]),
+                "template": self.video_templates.get(
+                    category, self.video_templates["lifestyle"]
+                ),
                 "created_at": datetime.now().isoformat(),
             }
 
@@ -208,7 +218,11 @@ class VideoContentGenerator:
 
         except Exception as e:
             logger.error(f"生成短影音失敗: {e}")
-            return {"status": "error", "keyword": keyword_data.get("keyword"), "error": str(e)}
+            return {
+                "status": "error",
+                "keyword": keyword_data.get("keyword"),
+                "error": str(e),
+            }
 
     async def _generate_script(self, keyword: str, category: str) -> str:
         """生成腳本"""
@@ -227,7 +241,9 @@ class VideoContentGenerator:
                 ) as resp:
                     if resp.status == 200:
                         result = await resp.json()
-                        return result.get("script", f"關於 {keyword} 的精彩內容...")
+                        return result.get(
+                            "script", f"關於 {keyword} 的精彩內容..."
+                        )
                     else:
                         return f"探索 {keyword} 的奇妙世界！這個話題正在網路上爆紅..."
 
@@ -235,7 +251,9 @@ class VideoContentGenerator:
             logger.error(f"生成腳本失敗: {e}")
             return f"關於 {keyword} 你不知道的事..."
 
-    async def _generate_visuals(self, keyword: str, category: str) -> List[Dict]:
+    async def _generate_visuals(
+        self, keyword: str, category: str
+    ) -> List[Dict]:
         """生成視覺內容"""
         try:
             async with aiohttp.ClientSession() as session:
@@ -314,7 +332,9 @@ async def get_trending_keywords(category: str = "all", geo: str = "TW"):
 
         # 儲存到 Redis
         cache_key = f"trends:{category}:{geo}"
-        await redis_client.setex(cache_key, 300, json.dumps(keywords))  # 5分鐘快取
+        await redis_client.setex(
+            cache_key, 300, json.dumps(keywords)
+        )  # 5分鐘快取
 
         return {
             "status": "success",
@@ -331,7 +351,9 @@ async def get_trending_keywords(category: str = "all", geo: str = "TW"):
 
 
 @app.post("/api/videos/auto-generate")
-async def auto_generate_videos(background_tasks: BackgroundTasks, limit: int = 5):
+async def auto_generate_videos(
+    background_tasks: BackgroundTasks, limit: int = 5
+):
     """自動生成短影音"""
     try:
         # 獲取熱門關鍵字
@@ -372,7 +394,9 @@ async def generate_video_task(keyword_data: Dict):
 
         # 儲存結果到 Redis
         task_key = f"video_task:{keyword_data['keyword']}"
-        await redis_client.setex(task_key, 3600, json.dumps(result))  # 1小時快取
+        await redis_client.setex(
+            task_key, 3600, json.dumps(result)
+        )  # 1小時快取
 
         logger.info(f"關鍵字 '{keyword_data['keyword']}' 影片生成完成")
 
@@ -433,7 +457,9 @@ async def auto_collection_loop():
                         # 生成影片
                         await generate_video_task(keyword_data)
                         # 標記已生成，避免重複
-                        await redis_client.setex(cache_key, 86400, "1")  # 24小時
+                        await redis_client.setex(
+                            cache_key, 86400, "1"
+                        )  # 24小時
 
             # 等待30分鐘再次執行
             await asyncio.sleep(1800)

@@ -14,7 +14,6 @@ from pydantic import BaseModel
 from ..auth import get_current_user
 from ..video.video_generator import (
     VideoGenerationRequest,
-    VideoGenerationResult,
     video_generation_service,
 )
 
@@ -112,8 +111,14 @@ async def generate_quick_video(
         )
 
     except Exception as e:
-        logger.error("Quick video generation failed", error=str(e), user_id=current_user.get("id"))
-        raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
+        logger.error(
+            "Quick video generation failed",
+            error=str(e),
+            user_id=current_user.get("id"),
+        )
+        raise HTTPException(
+            status_code=500, detail=f"Video generation failed: {str(e)}"
+        )
 
 
 @router.post("/generate/custom", response_model=VideoGenerationResponse)
@@ -155,15 +160,25 @@ async def generate_custom_video(
         )
 
     except Exception as e:
-        logger.error("Custom video generation failed", error=str(e), user_id=current_user.get("id"))
-        raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
+        logger.error(
+            "Custom video generation failed",
+            error=str(e),
+            user_id=current_user.get("id"),
+        )
+        raise HTTPException(
+            status_code=500, detail=f"Video generation failed: {str(e)}"
+        )
 
 
 @router.get("/status/{generation_id}", response_model=VideoStatusResponse)
-async def get_generation_status(generation_id: str, current_user: dict = Depends(get_current_user)):
+async def get_generation_status(
+    generation_id: str, current_user: dict = Depends(get_current_user)
+):
     """Get current status of video generation"""
     try:
-        status = await video_generation_service.get_generation_status(generation_id)
+        status = await video_generation_service.get_generation_status(
+            generation_id
+        )
 
         return VideoStatusResponse(
             generation_id=generation_id,
@@ -179,12 +194,18 @@ async def get_generation_status(generation_id: str, current_user: dict = Depends
         )
 
     except Exception as e:
-        logger.error("Failed to get generation status", error=str(e), generation_id=generation_id)
+        logger.error(
+            "Failed to get generation status",
+            error=str(e),
+            generation_id=generation_id,
+        )
         raise HTTPException(status_code=404, detail="Generation not found")
 
 
 @router.post("/cancel/{generation_id}")
-async def cancel_generation(generation_id: str, current_user: dict = Depends(get_current_user)):
+async def cancel_generation(
+    generation_id: str, current_user: dict = Depends(get_current_user)
+):
     """Cancel ongoing video generation"""
     try:
         # In a real implementation, this would stop the generation process
@@ -196,16 +217,26 @@ async def cancel_generation(generation_id: str, current_user: dict = Depends(get
             user_id=current_user.get("id"),
         )
 
-        return {"message": "Generation cancelled successfully", "generation_id": generation_id}
+        return {
+            "message": "Generation cancelled successfully",
+            "generation_id": generation_id,
+        }
 
     except Exception as e:
-        logger.error("Failed to cancel generation", error=str(e), generation_id=generation_id)
-        raise HTTPException(status_code=500, detail="Failed to cancel generation")
+        logger.error(
+            "Failed to cancel generation",
+            error=str(e),
+            generation_id=generation_id,
+        )
+        raise HTTPException(
+            status_code=500, detail="Failed to cancel generation"
+        )
 
 
 @router.get("/templates")
 async def get_video_templates(
-    platform: Optional[str] = None, current_user: dict = Depends(get_current_user)
+    platform: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
 ):
     """Get available video templates for different platforms"""
 
@@ -253,7 +284,11 @@ async def get_video_templates(
                 "description": "Vertical content for Instagram Stories",
                 "duration": "15-30 seconds",
                 "style": "casual",
-                "recommended_for": ["behind-the-scenes", "daily updates", "quick announcements"],
+                "recommended_for": [
+                    "behind-the-scenes",
+                    "daily updates",
+                    "quick announcements",
+                ],
             },
             {
                 "id": "instagram_reel",
@@ -273,33 +308,51 @@ async def get_video_templates(
 
 
 @router.get("/presets")
-async def get_generation_presets(current_user: dict = Depends(get_current_user)):
+async def get_generation_presets(
+    current_user: dict = Depends(get_current_user),
+):
     """Get preset configurations for different video types"""
 
     presets = {
         "educational": {
-            "voice_settings": {"voice_id": "echo", "speed": 0.9, "emotion": "professional"},
+            "voice_settings": {
+                "voice_id": "echo",
+                "speed": 0.9,
+                "emotion": "professional",
+            },
             "image_style": "clean",
             "include_music": True,
             "music_style": "ambient",
             "include_captions": True,
         },
         "entertainment": {
-            "voice_settings": {"voice_id": "alloy", "speed": 1.1, "emotion": "enthusiastic"},
+            "voice_settings": {
+                "voice_id": "alloy",
+                "speed": 1.1,
+                "emotion": "enthusiastic",
+            },
             "image_style": "vibrant",
             "include_music": True,
             "music_style": "upbeat",
             "include_captions": True,
         },
         "business": {
-            "voice_settings": {"voice_id": "nova", "speed": 1.0, "emotion": "confident"},
+            "voice_settings": {
+                "voice_id": "nova",
+                "speed": 1.0,
+                "emotion": "confident",
+            },
             "image_style": "professional",
             "include_music": True,
             "music_style": "corporate",
             "include_captions": True,
         },
         "storytelling": {
-            "voice_settings": {"voice_id": "shimmer", "speed": 0.95, "emotion": "narrative"},
+            "voice_settings": {
+                "voice_id": "shimmer",
+                "speed": 0.95,
+                "emotion": "narrative",
+            },
             "image_style": "artistic",
             "include_music": True,
             "music_style": "cinematic",
@@ -311,7 +364,9 @@ async def get_generation_presets(current_user: dict = Depends(get_current_user))
 
 
 @router.get("/history")
-async def get_generation_history(limit: int = 20, current_user: dict = Depends(get_current_user)):
+async def get_generation_history(
+    limit: int = 20, current_user: dict = Depends(get_current_user)
+):
     """Get user's video generation history"""
 
     # In a real implementation, this would query the database
@@ -340,6 +395,8 @@ async def cleanup_generation(
 ):
     """Clean up generation data and temporary files"""
 
-    background_tasks.add_task(video_generation_service.cleanup_generation, generation_id)
+    background_tasks.add_task(
+        video_generation_service.cleanup_generation, generation_id
+    )
 
     return {"message": "Cleanup initiated", "generation_id": generation_id}

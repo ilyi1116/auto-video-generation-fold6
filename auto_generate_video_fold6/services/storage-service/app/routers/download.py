@@ -1,9 +1,8 @@
-import os
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from urllib.parse import quote
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -59,7 +58,13 @@ async def list_files(
             )
         else:
             files = await FileCRUD.get_user_files(
-                db, current_user.get("id"), file_type, category, project_id, skip, page_size
+                db,
+                current_user.get("id"),
+                file_type,
+                category,
+                project_id,
+                skip,
+                page_size,
             )
 
         # Get download counts for each file
@@ -91,17 +96,25 @@ async def list_files(
         )
 
     except Exception as e:
-        logger.error("Failed to list files", error=str(e), user_id=current_user.get("id"))
+        logger.error(
+            "Failed to list files",
+            error=str(e),
+            user_id=current_user.get("id"),
+        )
         raise HTTPException(status_code=500, detail="Failed to list files")
 
 
 @router.get("/files/{file_id}")
 async def get_file_info(
-    file_id: str, current_user: dict = Depends(get_current_user), db=Depends(get_db)
+    file_id: str,
+    current_user: dict = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Get detailed file information"""
     try:
-        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
+        file = await FileCRUD.get_file_by_id(
+            db, file_id, current_user.get("id")
+        )
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -158,7 +171,9 @@ async def download_file(
 ):
     """Download file by ID"""
     try:
-        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
+        file = await FileCRUD.get_file_by_id(
+            db, file_id, current_user.get("id")
+        )
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -189,11 +204,19 @@ async def download_file(
                 "Content-Length": str(file.file_size),
             }
 
-            return StreamingResponse(generate(), media_type=file.mime_type, headers=headers)
+            return StreamingResponse(
+                generate(), media_type=file.mime_type, headers=headers
+            )
 
         except Exception as e:
-            logger.error("Failed to retrieve file from storage", error=str(e), file_id=file_id)
-            raise HTTPException(status_code=500, detail="Failed to retrieve file")
+            logger.error(
+                "Failed to retrieve file from storage",
+                error=str(e),
+                file_id=file_id,
+            )
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve file"
+            )
 
     except HTTPException:
         raise
@@ -212,14 +235,18 @@ async def serve_file(
 ):
     """Serve file for viewing (not downloading)"""
     try:
-        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
+        file = await FileCRUD.get_file_by_id(
+            db, file_id, current_user.get("id")
+        )
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
         # For thumbnails
         if thumbnail and file.has_thumbnail and file.thumbnail_path:
             try:
-                thumbnail_data = await storage_manager.download_file(file.thumbnail_path)
+                thumbnail_data = await storage_manager.download_file(
+                    file.thumbnail_path
+                )
 
                 def generate():
                     yield thumbnail_data
@@ -254,11 +281,15 @@ async def serve_file(
 
 @router.delete("/files/{file_id}")
 async def delete_file(
-    file_id: str, current_user: dict = Depends(get_current_user), db=Depends(get_db)
+    file_id: str,
+    current_user: dict = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Delete file"""
     try:
-        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
+        file = await FileCRUD.get_file_by_id(
+            db, file_id, current_user.get("id")
+        )
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -274,14 +305,24 @@ async def delete_file(
                     pass  # Continue even if thumbnail deletion fails
 
         except Exception as e:
-            logger.warning("Failed to delete file from storage", error=str(e), file_id=file_id)
+            logger.warning(
+                "Failed to delete file from storage",
+                error=str(e),
+                file_id=file_id,
+            )
 
         # Delete from database
-        success = await FileCRUD.delete_file(db, file_id, current_user.get("id"))
+        success = await FileCRUD.delete_file(
+            db, file_id, current_user.get("id")
+        )
         if not success:
             raise HTTPException(status_code=404, detail="File not found")
 
-        logger.info("File deleted successfully", file_id=file_id, user_id=current_user.get("id"))
+        logger.info(
+            "File deleted successfully",
+            file_id=file_id,
+            user_id=current_user.get("id"),
+        )
 
         return {"message": "File deleted successfully", "file_id": file_id}
 
@@ -305,7 +346,9 @@ async def update_file(
 ):
     """Update file metadata"""
     try:
-        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
+        file = await FileCRUD.get_file_by_id(
+            db, file_id, current_user.get("id")
+        )
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -325,11 +368,17 @@ async def update_file(
         if not updates:
             raise HTTPException(status_code=400, detail="No updates provided")
 
-        updated_file = await FileCRUD.update_file(db, file_id, current_user.get("id"), updates)
+        updated_file = await FileCRUD.update_file(
+            db, file_id, current_user.get("id"), updates
+        )
         if not updated_file:
             raise HTTPException(status_code=404, detail="File not found")
 
-        return {"message": "File updated successfully", "file_id": file_id, "updates": updates}
+        return {
+            "message": "File updated successfully",
+            "file_id": file_id,
+            "updates": updates,
+        }
 
     except HTTPException:
         raise
@@ -340,7 +389,9 @@ async def update_file(
 
 @router.post("/files/bulk-delete")
 async def bulk_delete_files(
-    file_ids: List[str], current_user: dict = Depends(get_current_user), db=Depends(get_db)
+    file_ids: List[str],
+    current_user: dict = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Delete multiple files"""
     try:
@@ -349,9 +400,13 @@ async def bulk_delete_files(
 
         for file_id in file_ids:
             try:
-                file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
+                file = await FileCRUD.get_file_by_id(
+                    db, file_id, current_user.get("id")
+                )
                 if not file:
-                    failed_files.append({"file_id": file_id, "error": "File not found"})
+                    failed_files.append(
+                        {"file_id": file_id, "error": "File not found"}
+                    )
                     continue
 
                 # Delete from storage
@@ -359,20 +414,31 @@ async def bulk_delete_files(
                     await storage_manager.delete_file(file.object_key)
                     if file.has_thumbnail and file.thumbnail_path:
                         try:
-                            await storage_manager.delete_file(file.thumbnail_path)
+                            await storage_manager.delete_file(
+                                file.thumbnail_path
+                            )
                         except:
                             pass
                 except Exception as e:
                     logger.warning(
-                        "Failed to delete file from storage", error=str(e), file_id=file_id
+                        "Failed to delete file from storage",
+                        error=str(e),
+                        file_id=file_id,
                     )
 
                 # Delete from database
-                success = await FileCRUD.delete_file(db, file_id, current_user.get("id"))
+                success = await FileCRUD.delete_file(
+                    db, file_id, current_user.get("id")
+                )
                 if success:
                     deleted_files.append(file_id)
                 else:
-                    failed_files.append({"file_id": file_id, "error": "Database deletion failed"})
+                    failed_files.append(
+                        {
+                            "file_id": file_id,
+                            "error": "Database deletion failed",
+                        }
+                    )
 
             except Exception as e:
                 failed_files.append({"file_id": file_id, "error": str(e)})

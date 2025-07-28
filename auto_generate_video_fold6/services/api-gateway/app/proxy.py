@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import httpx
 import structlog
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, status
 
 from .config import settings
 
@@ -35,7 +35,8 @@ class ServiceProxy:
 
         if service not in self.service_urls:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Service '{service}' not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Service '{service}' not found",
             )
 
         service_url = self.service_urls[service]
@@ -106,7 +107,12 @@ class ServiceProxy:
             )
 
         except httpx.RequestError as e:
-            logger.error("Service request error", service=service, path=path, error=str(e))
+            logger.error(
+                "Service request error",
+                service=service,
+                path=path,
+                error=str(e),
+            )
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Service '{service}' is unavailable",
@@ -126,13 +132,19 @@ class ServiceProxy:
             return False
 
     async def forward_file_request(
-        self, service: str, path: str, method: str, headers: Dict[str, str] = None, file=None
+        self,
+        service: str,
+        path: str,
+        method: str,
+        headers: Dict[str, str] = None,
+        file=None,
     ) -> Dict[str, Any]:
         """Forward file upload request to internal service"""
 
         if service not in self.service_urls:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Service '{service}' not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Service '{service}' not found",
             )
 
         service_url = self.service_urls[service]
@@ -141,7 +153,12 @@ class ServiceProxy:
         # Prepare headers (remove content-type for multipart)
         request_headers = {}
         if headers:
-            forwarded_headers = ["authorization", "user-agent", "x-forwarded-for", "x-real-ip"]
+            forwarded_headers = [
+                "authorization",
+                "user-agent",
+                "x-forwarded-for",
+                "x-real-ip",
+            ]
             for header in forwarded_headers:
                 if header in headers:
                     request_headers[header] = headers[header]
@@ -152,7 +169,10 @@ class ServiceProxy:
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.request(
-                    method=method, url=full_url, headers=request_headers, files=files
+                    method=method,
+                    url=full_url,
+                    headers=request_headers,
+                    files=files,
                 )
 
                 logger.info(
@@ -198,7 +218,8 @@ class ServiceProxy:
                 error=str(e),
             )
             raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY, detail=f"File upload to '{service}' failed"
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"File upload to '{service}' failed",
             )
 
 

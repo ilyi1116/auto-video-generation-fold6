@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
@@ -18,7 +18,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Social Service", description="社交媒體平台整合服務", version="1.0.0", lifespan=lifespan
+    title="Social Service",
+    description="社交媒體平台整合服務",
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -29,8 +32,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(platforms.router, prefix="/api/v1/platforms", tags=["platforms"])
-app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
+app.include_router(
+    platforms.router, prefix="/api/v1/platforms", tags=["platforms"]
+)
+app.include_router(
+    analytics.router, prefix="/api/v1/analytics", tags=["analytics"]
+)
 
 
 @app.get("/health")

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,7 +13,9 @@ logger = structlog.get_logger()
 
 class ImageGenerationRequest(BaseModel):
     prompt: str
-    style: str = "modern"  # modern, vintage, minimalist, artistic, photorealistic
+    style: str = (
+        "modern"  # modern, vintage, minimalist, artistic, photorealistic
+    )
     aspect_ratio: str = "9:16"  # 9:16, 16:9, 1:1, 4:3
     resolution: str = "1080p"  # 720p, 1080p, 4k
     negative_prompt: Optional[str] = None
@@ -42,7 +44,8 @@ class ImageVariationRequest(BaseModel):
 
 @router.post("/generate", response_model=ImageGenerationResponse)
 async def generate_image(
-    request: ImageGenerationRequest, current_user: dict = Depends(get_current_user)
+    request: ImageGenerationRequest,
+    current_user: dict = Depends(get_current_user),
 ) -> ImageGenerationResponse:
     """Generate image based on text prompt"""
     try:
@@ -75,7 +78,8 @@ async def generate_image(
 
 @router.post("/generate-variations")
 async def generate_variations(
-    request: ImageVariationRequest, current_user: dict = Depends(get_current_user)
+    request: ImageVariationRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     """Generate variations of an existing image"""
     try:
@@ -98,12 +102,16 @@ async def generate_variations(
 
     except Exception as e:
         logger.error("Image variation generation failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Image variation generation failed")
+        raise HTTPException(
+            status_code=500, detail="Image variation generation failed"
+        )
 
 
 @router.post("/upscale")
 async def upscale_image(
-    image_url: str, scale_factor: int = 2, current_user: dict = Depends(get_current_user)
+    image_url: str,
+    scale_factor: int = 2,
+    current_user: dict = Depends(get_current_user),
 ):
     """Upscale image resolution"""
     try:
@@ -115,7 +123,9 @@ async def upscale_image(
         )
 
         image_generator = ImageGenerator()
-        result = await image_generator.upscale_image(image_url=image_url, scale_factor=scale_factor)
+        result = await image_generator.upscale_image(
+            image_url=image_url, scale_factor=scale_factor
+        )
 
         return result
 
@@ -160,10 +170,16 @@ async def get_supported_styles():
             {"name": "vintage", "description": "Retro and nostalgic feel"},
             {"name": "minimalist", "description": "Simple and uncluttered"},
             {"name": "artistic", "description": "Creative and expressive"},
-            {"name": "photorealistic", "description": "Realistic photography style"},
+            {
+                "name": "photorealistic",
+                "description": "Realistic photography style",
+            },
             {"name": "cartoon", "description": "Animated cartoon style"},
             {"name": "anime", "description": "Japanese animation style"},
-            {"name": "cyberpunk", "description": "Futuristic sci-fi aesthetic"},
+            {
+                "name": "cyberpunk",
+                "description": "Futuristic sci-fi aesthetic",
+            },
         ],
         "aspect_ratios": [
             {"ratio": "9:16", "description": "Vertical (Mobile/TikTok)"},

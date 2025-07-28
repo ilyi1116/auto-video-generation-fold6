@@ -89,14 +89,18 @@ class StableDiffusionClient:
                 "User-Agent": "AutoVideoGeneration/1.0",
             }
             timeout = aiohttp.ClientTimeout(total=180)  # 3 minutes timeout
-            self.session = aiohttp.ClientSession(headers=headers, timeout=timeout)
+            self.session = aiohttp.ClientSession(
+                headers=headers, timeout=timeout
+            )
         return self.session
 
     async def health_check(self) -> Dict[str, Any]:
         """Check Stable Diffusion API health status"""
         try:
             session = await self._get_session()
-            async with session.get(f"{self.base_url}/user/account") as response:
+            async with session.get(
+                f"{self.base_url}/user/account"
+            ) as response:
                 if response.status == 200:
                     return {"status": "healthy", "service": "stable-diffusion"}
                 else:
@@ -106,7 +110,11 @@ class StableDiffusionClient:
                         "error": f"HTTP {response.status}",
                     }
         except Exception as e:
-            return {"status": "unhealthy", "service": "stable-diffusion", "error": str(e)}
+            return {
+                "status": "unhealthy",
+                "service": "stable-diffusion",
+                "error": str(e),
+            }
 
     async def generate_image(
         self,
@@ -121,7 +129,9 @@ class StableDiffusionClient:
             session = await self._get_session()
 
             # Get style configuration
-            style_config = self.style_presets.get(style, self.style_presets["modern"])
+            style_config = self.style_presets.get(
+                style, self.style_presets["modern"]
+            )
 
             # Convert aspect ratio to dimensions
             width, height = self._get_dimensions(aspect_ratio)
@@ -148,7 +158,9 @@ class StableDiffusionClient:
                 "sampler": "K_DPM_2_ANCESTRAL",
             }
 
-            logger.info(f"Generating image with Stable Diffusion: {enhanced_prompt[:100]}...")
+            logger.info(
+                f"Generating image with Stable Diffusion: {enhanced_prompt[:100]}..."
+            )
 
             # Submit generation request
             async with session.post(
@@ -158,7 +170,9 @@ class StableDiffusionClient:
 
                 if response.status != 200:
                     error_text = await response.text()
-                    raise Exception(f"Stable Diffusion API error: {response.status} - {error_text}")
+                    raise Exception(
+                        f"Stable Diffusion API error: {response.status} - {error_text}"
+                    )
 
                 result = await response.json()
 
@@ -171,7 +185,9 @@ class StableDiffusionClient:
 
                 # Save image and create thumbnail
                 generation_id = f"sd_{datetime.utcnow().timestamp()}"
-                image_url, thumbnail_url = await self._save_image(image_data, generation_id)
+                image_url, thumbnail_url = await self._save_image(
+                    image_data, generation_id
+                )
 
                 return ImageGenerationResponse(
                     url=image_url,
@@ -189,7 +205,10 @@ class StableDiffusionClient:
             raise Exception(f"Failed to generate image: {str(e)}")
 
     async def generate_image_batch(
-        self, prompts: List[str], style: str = "modern", aspect_ratio: str = "16:9"
+        self,
+        prompts: List[str],
+        style: str = "modern",
+        aspect_ratio: str = "16:9",
     ) -> List[ImageGenerationResponse]:
         """Generate multiple images in batch"""
 
@@ -204,7 +223,9 @@ class StableDiffusionClient:
         results = []
         for i in range(0, len(tasks), 3):  # Process 3 at a time
             batch = tasks[i : i + 3]
-            batch_results = await asyncio.gather(*batch, return_exceptions=True)
+            batch_results = await asyncio.gather(
+                *batch, return_exceptions=True
+            )
 
             for result in batch_results:
                 if isinstance(result, Exception):
@@ -244,13 +265,17 @@ class StableDiffusionClient:
 
         keywords = style_keywords.get(style, "")
         if keywords:
-            enhanced = f"{prompt}, {keywords}, high quality, detailed, sharp focus"
+            enhanced = (
+                f"{prompt}, {keywords}, high quality, detailed, sharp focus"
+            )
         else:
             enhanced = f"{prompt}, high quality, detailed, sharp focus"
 
         return enhanced
 
-    async def _save_image(self, image_data: bytes, generation_id: str) -> Tuple[str, str]:
+    async def _save_image(
+        self, image_data: bytes, generation_id: str
+    ) -> Tuple[str, str]:
         """Save image and create thumbnail, return URLs"""
 
         # Create directories if they don't exist
@@ -281,7 +306,9 @@ class StableDiffusionClient:
         base_url = os.getenv("MEDIA_BASE_URL", "http://localhost:8003")
         image_url = f"{base_url}/media/images/{image_filename}"
         thumbnail_url = (
-            f"{base_url}/media/thumbnails/{thumbnail_filename}" if thumbnail_path else None
+            f"{base_url}/media/thumbnails/{thumbnail_filename}"
+            if thumbnail_path
+            else None
         )
 
         return image_url, thumbnail_url
@@ -297,7 +324,9 @@ class StableDiffusionClient:
             # Download the original image
             async with session.get(image_url) as response:
                 if response.status != 200:
-                    raise Exception(f"Failed to download image: {response.status}")
+                    raise Exception(
+                        f"Failed to download image: {response.status}"
+                    )
 
                 image_data = await response.read()
                 image_b64 = base64.b64encode(image_data).decode()
@@ -309,12 +338,15 @@ class StableDiffusionClient:
             }
 
             async with session.post(
-                f"{self.base_url}/generation/esrgan-v1-x2plus/image-to-image/upscale", json=payload
+                f"{self.base_url}/generation/esrgan-v1-x2plus/image-to-image/upscale",
+                json=payload,
             ) as response:
 
                 if response.status != 200:
                     error_text = await response.text()
-                    raise Exception(f"Upscale API error: {response.status} - {error_text}")
+                    raise Exception(
+                        f"Upscale API error: {response.status} - {error_text}"
+                    )
 
                 result = await response.json()
                 artifact = result["artifacts"][0]
@@ -322,7 +354,9 @@ class StableDiffusionClient:
 
                 # Save upscaled image
                 generation_id = f"upscale_{datetime.utcnow().timestamp()}"
-                upscaled_url, thumbnail_url = await self._save_image(upscaled_data, generation_id)
+                upscaled_url, thumbnail_url = await self._save_image(
+                    upscaled_data, generation_id
+                )
 
                 return ImageGenerationResponse(
                     url=upscaled_url,

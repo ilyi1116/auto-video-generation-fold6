@@ -64,13 +64,21 @@ app = FastAPI(
 
 # Add rate limiting
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, custom_rate_limit_exceeded_handler)
+app.add_exception_handler(
+    RateLimitExceeded, custom_rate_limit_exceeded_handler
+)
 
 # Add middleware
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     TrustedProxyMiddleware,
-    trusted_proxies=["127.0.0.1", "::1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
+    trusted_proxies=[
+        "127.0.0.1",
+        "::1",
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+    ],
 )
 app.add_middleware(LoggingMiddleware)
 

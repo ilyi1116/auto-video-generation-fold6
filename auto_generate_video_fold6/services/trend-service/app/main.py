@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
@@ -35,8 +35,12 @@ app.add_middleware(
 )
 
 app.include_router(trends.router, prefix="/api/v1/trends", tags=["trends"])
-app.include_router(keywords.router, prefix="/api/v1/keywords", tags=["keywords"])
-app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
+app.include_router(
+    keywords.router, prefix="/api/v1/keywords", tags=["keywords"]
+)
+app.include_router(
+    analysis.router, prefix="/api/v1/analysis", tags=["analysis"]
+)
 
 
 @app.get("/health")

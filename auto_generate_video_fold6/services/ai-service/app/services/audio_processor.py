@@ -1,10 +1,7 @@
-import asyncio
-import io
 import os
-import tempfile
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import httpx
 import structlog
@@ -95,7 +92,9 @@ class AudioProcessor:
                 raise Exception("No voice synthesis service available")
 
             # Save audio file
-            audio_url = await self._save_audio(audio_data, audio_id, "synthesis")
+            audio_url = await self._save_audio(
+                audio_data, audio_id, "synthesis"
+            )
 
             # Calculate duration
             duration = await self._get_audio_duration(audio_data)
@@ -116,7 +115,11 @@ class AudioProcessor:
                     "pitch": pitch,
                     "emotion": emotion,
                     "file_size_mb": len(audio_data) / (1024 * 1024),
-                    "service_used": "elevenlabs" if os.getenv("ELEVENLABS_API_KEY") else "openai",
+                    "service_used": (
+                        "elevenlabs"
+                        if os.getenv("ELEVENLABS_API_KEY")
+                        else "openai"
+                    ),
                 },
             }
 
@@ -130,7 +133,9 @@ class AudioProcessor:
             return result
 
         except Exception as e:
-            logger.error("Voice synthesis failed", text=text[:50], error=str(e))
+            logger.error(
+                "Voice synthesis failed", text=text[:50], error=str(e)
+            )
             raise
 
     async def clone_voice(
@@ -153,7 +158,9 @@ class AudioProcessor:
             reference_audio = await self._download_audio(audio_file_url)
 
             # Analyze voice characteristics
-            voice_profile = await self._analyze_voice_characteristics(reference_audio)
+            voice_profile = await self._analyze_voice_characteristics(
+                reference_audio
+            )
 
             # Clone voice using available service
             cloned_audio = await self._clone_with_elevenlabs(
@@ -166,7 +173,9 @@ class AudioProcessor:
 
             # Save cloned audio
             clone_id = str(uuid.uuid4())
-            cloned_url = await self._save_audio(cloned_audio, clone_id, "cloned")
+            cloned_url = await self._save_audio(
+                cloned_audio, clone_id, "cloned"
+            )
 
             duration = await self._get_audio_duration(cloned_audio)
 
@@ -178,11 +187,15 @@ class AudioProcessor:
                 "duration_seconds": duration,
                 "quality": quality,
                 "voice_characteristics": voice_profile,
-                "similarity_score": await self._calculate_similarity(reference_audio, cloned_audio),
+                "similarity_score": await self._calculate_similarity(
+                    reference_audio, cloned_audio
+                ),
                 "status": "completed",
             }
 
-            logger.info("Voice cloning completed", clone_id=clone_id, duration=duration)
+            logger.info(
+                "Voice cloning completed", clone_id=clone_id, duration=duration
+            )
             return result
 
         except Exception as e:
@@ -190,7 +203,10 @@ class AudioProcessor:
             raise
 
     async def enhance_audio(
-        self, audio_url: str, enhancement_type: str = "noise_reduction", intensity: float = 0.7
+        self,
+        audio_url: str,
+        enhancement_type: str = "noise_reduction",
+        intensity: float = 0.7,
     ) -> Dict[str, Any]:
         """Enhance audio quality"""
         try:
@@ -211,7 +227,9 @@ class AudioProcessor:
 
             # Save enhanced audio
             enhance_id = str(uuid.uuid4())
-            enhanced_url = await self._save_audio(enhanced_audio, enhance_id, "enhanced")
+            enhanced_url = await self._save_audio(
+                enhanced_audio, enhance_id, "enhanced"
+            )
 
             # Calculate quality metrics
             quality_improvement = await self._calculate_quality_improvement(
@@ -236,7 +254,9 @@ class AudioProcessor:
             logger.error("Audio enhancement failed", error=str(e))
             raise
 
-    async def upload_audio(self, audio_file: UploadFile, user_id: str) -> Dict[str, Any]:
+    async def upload_audio(
+        self, audio_file: UploadFile, user_id: str
+    ) -> Dict[str, Any]:
         """Upload and process audio file"""
         try:
             logger.info(
@@ -255,13 +275,17 @@ class AudioProcessor:
 
             # Validate file size
             if len(audio_data) > settings.max_file_size_mb * 1024 * 1024:
-                raise Exception(f"File size exceeds {settings.max_file_size_mb}MB limit")
+                raise Exception(
+                    f"File size exceeds {settings.max_file_size_mb}MB limit"
+                )
 
             # Generate upload ID
             upload_id = str(uuid.uuid4())
 
             # Save uploaded file
-            audio_url = await self._save_audio(audio_data, upload_id, "uploaded")
+            audio_url = await self._save_audio(
+                audio_data, upload_id, "uploaded"
+            )
 
             # Analyze audio properties
             audio_info = await self._analyze_audio_properties(audio_data)
@@ -289,7 +313,11 @@ class AudioProcessor:
             return result
 
         except Exception as e:
-            logger.error("Audio upload failed", filename=audio_file.filename, error=str(e))
+            logger.error(
+                "Audio upload failed",
+                filename=audio_file.filename,
+                error=str(e),
+            )
             raise
 
     async def convert_format(
@@ -328,7 +356,9 @@ class AudioProcessor:
                 "status": "completed",
             }
 
-            logger.info("Audio format conversion completed", convert_id=convert_id)
+            logger.info(
+                "Audio format conversion completed", convert_id=convert_id
+            )
             return result
 
         except Exception as e:
@@ -336,7 +366,12 @@ class AudioProcessor:
             raise
 
     async def _synthesize_with_elevenlabs(
-        self, text: str, voice_style: str, language: str, speed: float, emotion: str
+        self,
+        text: str,
+        voice_style: str,
+        language: str,
+        speed: float,
+        emotion: str,
     ) -> bytes:
         """Synthesize voice using ElevenLabs API"""
         api_key = os.getenv("ELEVENLABS_API_KEY")
@@ -384,7 +419,9 @@ class AudioProcessor:
 
         return response.content
 
-    async def _synthesize_with_openai(self, text: str, voice_style: str, speed: float) -> bytes:
+    async def _synthesize_with_openai(
+        self, text: str, voice_style: str, speed: float
+    ) -> bytes:
         """Synthesize voice using OpenAI TTS API"""
         import openai
 
@@ -419,7 +456,11 @@ class AudioProcessor:
         # This would use ElevenLabs voice cloning API
         # For now, use standard synthesis as fallback
         return await self._synthesize_with_elevenlabs(
-            text=target_text, voice_style="natural", language="en", speed=1.0, emotion="neutral"
+            text=target_text,
+            voice_style="natural",
+            language="en",
+            speed=1.0,
+            emotion="neutral",
         )
 
     async def _apply_enhancement(
@@ -428,7 +469,9 @@ class AudioProcessor:
         """Apply audio enhancement (placeholder implementation)"""
         # This would use specialized audio enhancement libraries
         # For now, return original audio
-        logger.info(f"Applied {enhancement_type} enhancement at {intensity} intensity")
+        logger.info(
+            f"Applied {enhancement_type} enhancement at {intensity} intensity"
+        )
         return audio_data
 
     async def _convert_audio_format(
@@ -437,7 +480,9 @@ class AudioProcessor:
         """Convert audio format using FFmpeg or similar"""
         # This would use FFmpeg for actual conversion
         # For now, return original audio
-        logger.info(f"Converted audio to {target_format} format with {quality} quality")
+        logger.info(
+            f"Converted audio to {target_format} format with {quality} quality"
+        )
         return audio_data
 
     async def _download_audio(self, audio_url: str) -> bytes:
@@ -446,7 +491,9 @@ class AudioProcessor:
         response.raise_for_status()
         return response.content
 
-    async def _save_audio(self, audio_data: bytes, audio_id: str, category: str) -> str:
+    async def _save_audio(
+        self, audio_data: bytes, audio_id: str, category: str
+    ) -> str:
         """Save audio to storage and return URL"""
         filename = f"{category}_{audio_id}.mp3"
         storage_path = f"{settings.temp_storage_path}/{filename}"
@@ -464,10 +511,14 @@ class AudioProcessor:
         """Get audio duration in seconds (placeholder implementation)"""
         # This would use librosa or similar to get actual duration
         # For now, estimate based on file size (rough approximation)
-        estimated_duration = len(audio_data) / (44100 * 2 * 2)  # Assume 44.1kHz, 16-bit stereo
+        estimated_duration = len(audio_data) / (
+            44100 * 2 * 2
+        )  # Assume 44.1kHz, 16-bit stereo
         return max(1.0, round(estimated_duration, 2))
 
-    async def _analyze_voice_characteristics(self, audio_data: bytes) -> Dict[str, Any]:
+    async def _analyze_voice_characteristics(
+        self, audio_data: bytes
+    ) -> Dict[str, Any]:
         """Analyze voice characteristics for cloning"""
         # This would use voice analysis libraries
         return {
@@ -479,7 +530,9 @@ class AudioProcessor:
             "breathiness": "low",
         }
 
-    async def _analyze_audio_properties(self, audio_data: bytes) -> Dict[str, Any]:
+    async def _analyze_audio_properties(
+        self, audio_data: bytes
+    ) -> Dict[str, Any]:
         """Analyze audio file properties"""
         # This would use librosa or similar for actual analysis
         return {
@@ -490,7 +543,9 @@ class AudioProcessor:
             "bitrate": 192,
         }
 
-    async def _calculate_similarity(self, reference: bytes, generated: bytes) -> float:
+    async def _calculate_similarity(
+        self, reference: bytes, generated: bytes
+    ) -> float:
         """Calculate similarity score between reference and generated audio"""
         # This would use audio similarity algorithms
         return 0.85  # Placeholder score
@@ -500,7 +555,11 @@ class AudioProcessor:
     ) -> Dict[str, float]:
         """Calculate quality improvement metrics"""
         # This would use audio quality metrics
-        return {"snr_improvement": 3.2, "clarity_score": 0.15, "noise_reduction": 0.8}
+        return {
+            "snr_improvement": 3.2,
+            "clarity_score": 0.15,
+            "noise_reduction": 0.8,
+        }
 
     def _is_valid_audio_file(self, audio_file: UploadFile) -> bool:
         """Check if uploaded file is a valid audio file"""

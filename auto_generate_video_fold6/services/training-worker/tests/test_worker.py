@@ -1,8 +1,7 @@
 import os
 import sys
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-import pytest
 
 # 添加 app 目錄到路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -28,7 +27,8 @@ def test_mock_training_task():
         return {"status": "completed", "accuracy": 0.95}
 
     result = mock_train_model(
-        model_config={"epochs": 10, "batch_size": 32}, data_path="/path/to/training/data"
+        model_config={"epochs": 10, "batch_size": 32},
+        data_path="/path/to/training/data",
     )
 
     assert result["status"] == "completed"

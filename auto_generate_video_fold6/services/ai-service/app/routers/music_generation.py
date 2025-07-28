@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
@@ -52,7 +52,8 @@ class MusicExtensionRequest(BaseModel):
 
 @router.post("/generate", response_model=MusicGenerationResponse)
 async def generate_music(
-    request: MusicGenerationRequest, current_user: dict = Depends(get_current_user)
+    request: MusicGenerationRequest,
+    current_user: dict = Depends(get_current_user),
 ) -> MusicGenerationResponse:
     """Generate background music using AI"""
     try:
@@ -88,7 +89,8 @@ async def generate_music(
 
 @router.post("/variations")
 async def generate_variations(
-    request: MusicVariationRequest, current_user: dict = Depends(get_current_user)
+    request: MusicVariationRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     """Generate variations of existing music"""
     try:
@@ -113,12 +115,15 @@ async def generate_variations(
 
     except Exception as e:
         logger.error("Music variation generation failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Music variation generation failed")
+        raise HTTPException(
+            status_code=500, detail="Music variation generation failed"
+        )
 
 
 @router.post("/extend")
 async def extend_music(
-    request: MusicExtensionRequest, current_user: dict = Depends(get_current_user)
+    request: MusicExtensionRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     """Extend existing music to longer duration"""
     try:

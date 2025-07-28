@@ -14,17 +14,13 @@ import threading
 import time
 import zlib
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
-import aioredis
-import hashring
 import numpy as np
-import redis
 import rediscluster
-from redis.sentinel import Sentinel
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +134,11 @@ class ConsistentHash:
 class MemoryCache:
     """記憶體快取"""
 
-    def __init__(self, max_size: int = 1000, eviction_policy: EvictionPolicy = EvictionPolicy.LRU):
+    def __init__(
+        self,
+        max_size: int = 1000,
+        eviction_policy: EvictionPolicy = EvictionPolicy.LRU,
+    ):
         self.max_size = max_size
         self.eviction_policy = eviction_policy
         self.cache: Dict[str, CacheEntry] = {}
@@ -171,7 +171,13 @@ class MemoryCache:
 
             return entry.value
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None, tags: List[str] = None):
+    def set(
+        self,
+        key: str,
+        value: Any,
+        ttl: Optional[int] = None,
+        tags: List[str] = None,
+    ):
         """設置快取值"""
         with self.lock:
             # 如果快取已滿，執行淘汰策略
@@ -231,7 +237,9 @@ class MemoryCache:
 
         elif self.eviction_policy == EvictionPolicy.LFU:
             # 淘汰訪問次數最少的
-            min_access_key = min(self.cache.keys(), key=lambda k: self.cache[k].access_count)
+            min_access_key = min(
+                self.cache.keys(), key=lambda k: self.cache[k].access_count
+            )
             del self.cache[min_access_key]
             if min_access_key in self.access_order:
                 self.access_order.remove(min_access_key)
@@ -242,7 +250,8 @@ class MemoryCache:
             min_ttl_key = min(
                 self.cache.keys(),
                 key=lambda k: (
-                    self.cache[k].created_at + timedelta(seconds=self.cache[k].ttl or 0)
+                    self.cache[k].created_at
+                    + timedelta(seconds=self.cache[k].ttl or 0)
                 ),
             )
             del self.cache[min_ttl_key]
@@ -261,7 +270,8 @@ class RedisClusterCache:
 
         # 創建 Redis 集群連接
         startup_nodes = [
-            {"host": node.split(":")[0], "port": int(node.split(":")[1])} for node in self.nodes
+            {"host": node.split(":")[0], "port": int(node.split(":")[1])}
+            for node in self.nodes
         ]
 
         self.cluster = rediscluster.RedisCluster(
@@ -283,7 +293,9 @@ class RedisClusterCache:
             if value is not None:
                 self.stats["hits"] += 1
                 # 如果值是序列化的，進行反序列化
-                if isinstance(value, (bytes, str)) and value.startswith(b"pickle:"):
+                if isinstance(value, (bytes, str)) and value.startswith(
+                    b"pickle:"
+                ):
                     return pickle.loads(value[7:])  # 去掉 'pickle:' 前綴
                 return value
             else:
@@ -305,10 +317,14 @@ class RedisClusterCache:
         """設置快取值"""
         try:
             # 序列化複雜對象
-            if serialize and not isinstance(value, (str, int, float, bool, bytes)):
+            if serialize and not isinstance(
+                value, (str, int, float, bool, bytes)
+            ):
                 serialized_value = b"pickle:" + pickle.dumps(value)
                 if compress:
-                    serialized_value = b"compressed:" + zlib.compress(serialized_value)
+                    serialized_value = b"compressed:" + zlib.compress(
+                        serialized_value
+                    )
                 value = serialized_value
 
             if ttl:
@@ -340,7 +356,9 @@ class RedisClusterCache:
             for value in values:
                 if value is not None:
                     self.stats["hits"] += 1
-                    if isinstance(value, (bytes, str)) and value.startswith(b"pickle:"):
+                    if isinstance(value, (bytes, str)) and value.startswith(
+                        b"pickle:"
+                    ):
                         results.append(pickle.loads(value[7:]))
                     else:
                         results.append(value)
@@ -381,7 +399,9 @@ class RedisClusterCache:
     def get_stats(self) -> Dict[str, Any]:
         """獲取統計資訊"""
         total_requests = self.stats["hits"] + self.stats["misses"]
-        hit_ratio = self.stats["hits"] / total_requests if total_requests > 0 else 0
+        hit_ratio = (
+            self.stats["hits"] / total_requests if total_requests > 0 else 0
+        )
 
         return {
             "total_requests": total_requests,
@@ -407,7 +427,11 @@ class IntelligentPreloader:
         timestamp = datetime.utcnow()
 
         if key not in self.access_patterns:
-            self.access_patterns[key] = {"access_times": [], "contexts": [], "frequency": 0}
+            self.access_patterns[key] = {
+                "access_times": [],
+                "contexts": [],
+                "frequency": 0,
+            }
 
         self.access_patterns[key]["access_times"].append(timestamp)
         self.access_patterns[key]["contexts"].append(context or {})
@@ -415,10 +439,12 @@ class IntelligentPreloader:
 
         # 保留最近的 100 次記錄
         if len(self.access_patterns[key]["access_times"]) > 100:
-            self.access_patterns[key]["access_times"] = self.access_patterns[key]["access_times"][
-                -100:
-            ]
-            self.access_patterns[key]["contexts"] = self.access_patterns[key]["contexts"][-100:]
+            self.access_patterns[key]["access_times"] = self.access_patterns[
+                key
+            ]["access_times"][-100:]
+            self.access_patterns[key]["contexts"] = self.access_patterns[key][
+                "contexts"
+            ][-100:]
 
     async def predict_next_access(self, current_key: str) -> List[str]:
         """預測下一個可能訪問的鍵"""
@@ -447,7 +473,9 @@ class IntelligentPreloader:
 
         return [key for key, _ in related_keys[:10]]  # 返回前 10 個
 
-    def _calculate_context_similarity(self, contexts1: List[Dict], contexts2: List[Dict]) -> float:
+    def _calculate_context_similarity(
+        self, contexts1: List[Dict], contexts2: List[Dict]
+    ) -> float:
         """計算上下文相似性"""
         if not contexts1 or not contexts2:
             return 0.0
@@ -478,7 +506,9 @@ class IntelligentPreloader:
             for related_key in related_keys[:5]:  # 限制預載數量
                 if not await self.cache_manager.exists(related_key):
                     # 在後台載入數據
-                    self.executor.submit(self._background_load, related_key, data_loader)
+                    self.executor.submit(
+                        self._background_load, related_key, data_loader
+                    )
 
         except Exception as e:
             logger.error(f"預載錯誤: {e}")
@@ -557,7 +587,9 @@ class DistributedCacheManager:
         if cache_type == CacheType.MEMORY:
             self.cache = MemoryCache(**self.config.get("memory", {}))
         elif cache_type == CacheType.REDIS_CLUSTER:
-            self.cache = RedisClusterCache(self.config.get("redis_cluster", {}))
+            self.cache = RedisClusterCache(
+                self.config.get("redis_cluster", {})
+            )
         elif cache_type == CacheType.MULTI_TIER:
             self.cache = MultiTierCache(self.config.get("multi_tier", {}))
         else:
@@ -590,17 +622,31 @@ class DistributedCacheManager:
         return {
             "cache_type": "redis_cluster",
             "redis_cluster": {
-                "nodes": ["localhost:7000", "localhost:7001", "localhost:7002"],
+                "nodes": [
+                    "localhost:7000",
+                    "localhost:7001",
+                    "localhost:7002",
+                ],
                 "password": None,
                 "decode_responses": True,
             },
             "multi_tier": {
                 "l1_max_size": 1000,
                 "l1_eviction": "lru",
-                "redis": {"nodes": ["localhost:7000", "localhost:7001", "localhost:7002"]},
+                "redis": {
+                    "nodes": [
+                        "localhost:7000",
+                        "localhost:7001",
+                        "localhost:7002",
+                    ]
+                },
             },
             "sharding": {"enabled": False, "nodes": []},
-            "compression": {"enabled": True, "threshold_bytes": 1024, "algorithm": "zlib"},
+            "compression": {
+                "enabled": True,
+                "threshold_bytes": 1024,
+                "algorithm": "zlib",
+            },
             "monitoring": {"enabled": True, "metrics_interval": 60},
         }
 
@@ -624,7 +670,9 @@ class DistributedCacheManager:
             value = await self.cache.get(shard_key)
 
             # 記錄性能指標
-            self.performance_monitor.record_get(time.time() - start_time, value is not None)
+            self.performance_monitor.record_get(
+                time.time() - start_time, value is not None
+            )
 
             return value if value is not None else default
 
@@ -634,7 +682,11 @@ class DistributedCacheManager:
             return default
 
     async def set(
-        self, key: str, value: Any, ttl: Optional[int] = None, tags: List[str] = None
+        self,
+        key: str,
+        value: Any,
+        ttl: Optional[int] = None,
+        tags: List[str] = None,
     ) -> bool:
         """設置快取值"""
         start_time = time.time()
@@ -645,14 +697,18 @@ class DistributedCacheManager:
             # 壓縮大值
             if self.config.get("compression", {}).get("enabled", False):
                 value_size = len(pickle.dumps(value))
-                threshold = self.config.get("compression", {}).get("threshold_bytes", 1024)
+                threshold = self.config.get("compression", {}).get(
+                    "threshold_bytes", 1024
+                )
                 if value_size > threshold:
                     value = self._compress_value(value)
 
             result = await self.cache.set(shard_key, value, ttl)
 
             # 記錄性能指標
-            self.performance_monitor.record_set(time.time() - start_time, result)
+            self.performance_monitor.record_set(
+                time.time() - start_time, result
+            )
 
             return result
 
@@ -685,14 +741,20 @@ class DistributedCacheManager:
             tasks = [self.get(key) for key in keys]
             return await asyncio.gather(*tasks)
 
-    async def mset(self, mapping: Dict[str, Any], ttl: Optional[int] = None) -> bool:
+    async def mset(
+        self, mapping: Dict[str, Any], ttl: Optional[int] = None
+    ) -> bool:
         """批量設置"""
         if hasattr(self.cache, "mset"):
-            shard_mapping = {self._get_shard_key(k): v for k, v in mapping.items()}
+            shard_mapping = {
+                self._get_shard_key(k): v for k, v in mapping.items()
+            }
             return await self.cache.mset(shard_mapping, ttl)
         else:
             # 並發設置
-            tasks = [self.set(key, value, ttl) for key, value in mapping.items()]
+            tasks = [
+                self.set(key, value, ttl) for key, value in mapping.items()
+            ]
             results = await asyncio.gather(*tasks)
             return all(results)
 
@@ -711,7 +773,9 @@ class DistributedCacheManager:
     def _decompress_value(self, compressed_value: bytes) -> Any:
         """解壓縮值"""
         if compressed_value.startswith(b"compressed:"):
-            algorithm = self.config.get("compression", {}).get("algorithm", "zlib")
+            algorithm = self.config.get("compression", {}).get(
+                "algorithm", "zlib"
+            )
             compressed_data = compressed_value[11:]  # 去掉前綴
 
             if algorithm == "zlib":
@@ -727,7 +791,6 @@ class DistributedCacheManager:
         """按標籤失效快取"""
         # 這需要維護標籤到鍵的映射
         # 實現複雜，這裡提供介面
-        pass
 
     def get_stats(self) -> Dict[str, Any]:
         """獲取統計資訊"""
@@ -788,15 +851,25 @@ class CachePerformanceMonitor:
     def get_stats(self) -> Dict[str, Any]:
         """獲取統計資訊"""
         with self.lock:
-            total_requests = self.metrics["total_gets"] + self.metrics["total_sets"]
+            total_requests = (
+                self.metrics["total_gets"] + self.metrics["total_sets"]
+            )
             hit_ratio = (
                 self.metrics["total_hits"] / self.metrics["total_gets"]
                 if self.metrics["total_gets"] > 0
                 else 0
             )
 
-            avg_get_time = np.mean(self.metrics["get_times"]) if self.metrics["get_times"] else 0
-            avg_set_time = np.mean(self.metrics["set_times"]) if self.metrics["set_times"] else 0
+            avg_get_time = (
+                np.mean(self.metrics["get_times"])
+                if self.metrics["get_times"]
+                else 0
+            )
+            avg_set_time = (
+                np.mean(self.metrics["set_times"])
+                if self.metrics["set_times"]
+                else 0
+            )
 
             return {
                 "total_requests": total_requests,
@@ -833,10 +906,15 @@ async def main():
     print(f"用戶數據: {user_data}")
 
     # 批量操作
-    users = {"user:124": {"name": "Alice", "age": 25}, "user:125": {"name": "Bob", "age": 35}}
+    users = {
+        "user:124": {"name": "Alice", "age": 25},
+        "user:125": {"name": "Bob", "age": 35},
+    }
     await cache_manager.mset(users, ttl=3600)
 
-    batch_users = await cache_manager.mget(["user:124", "user:125", "user:126"])
+    batch_users = await cache_manager.mget(
+        ["user:124", "user:125", "user:126"]
+    )
     print(f"批量獲取: {batch_users}")
 
     # 性能統計

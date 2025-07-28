@@ -6,7 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import settings
-from .routers import audio_processing, image_generation, music_generation, text_generation
+from .routers import (
+    audio_processing,
+    image_generation,
+    music_generation,
+    text_generation,
+)
 from .services.ai_manager import AIManager
 
 # Configure structured logging
@@ -16,7 +21,9 @@ structlog.configure(
         structlog.processors.add_log_level,
         structlog.processors.JSONRenderer(),
     ],
-    wrapper_class=structlog.make_filtering_bound_logger(int(settings.log_level.upper())),
+    wrapper_class=structlog.make_filtering_bound_logger(
+        int(settings.log_level.upper())
+    ),
     logger_factory=structlog.PrintLoggerFactory(),
     cache_logger_on_first_use=True,
 )
@@ -61,19 +68,27 @@ app.add_middleware(
 
 # Include routers
 app.include_router(
-    text_generation.router, prefix=f"{settings.api_v1_str}/text", tags=["text-generation"]
+    text_generation.router,
+    prefix=f"{settings.api_v1_str}/text",
+    tags=["text-generation"],
 )
 
 app.include_router(
-    image_generation.router, prefix=f"{settings.api_v1_str}/images", tags=["image-generation"]
+    image_generation.router,
+    prefix=f"{settings.api_v1_str}/images",
+    tags=["image-generation"],
 )
 
 app.include_router(
-    audio_processing.router, prefix=f"{settings.api_v1_str}/audio", tags=["audio-processing"]
+    audio_processing.router,
+    prefix=f"{settings.api_v1_str}/audio",
+    tags=["audio-processing"],
 )
 
 app.include_router(
-    music_generation.router, prefix=f"{settings.api_v1_str}/music", tags=["music-generation"]
+    music_generation.router,
+    prefix=f"{settings.api_v1_str}/music",
+    tags=["music-generation"],
 )
 
 
@@ -114,7 +129,6 @@ async def get_capabilities():
     return ai_manager.get_service_capabilities()
 
 
-from typing import Optional
 
 from fastapi import Depends
 
@@ -135,7 +149,8 @@ class VideoContentRequest(BaseModel):
 
 @app.post(f"{settings.api_v1_str}/video/generate")
 async def generate_video_content(
-    request: VideoContentRequest, current_user: dict = Depends(get_current_user)
+    request: VideoContentRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     """Generate complete video content with all AI services"""
     try:
@@ -160,11 +175,15 @@ async def generate_video_content(
 
     except Exception as e:
         logger.error("Video content generation failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Video content generation failed")
+        raise HTTPException(
+            status_code=500, detail="Video content generation failed"
+        )
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler"""
     logger.error("Unhandled exception", error=str(exc), path=request.url.path)
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    return JSONResponse(
+        status_code=500, content={"detail": "Internal server error"}
+    )

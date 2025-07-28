@@ -60,17 +60,14 @@ class SocialPlatform(ABC):
     @abstractmethod
     async def publish_video(self, request: PublishRequest) -> PublishResult:
         """Publish video to platform"""
-        pass
 
     @abstractmethod
     async def get_video_stats(self, platform_id: str) -> Dict[str, Any]:
         """Get video statistics from platform"""
-        pass
 
     @abstractmethod
     async def delete_video(self, platform_id: str) -> bool:
         """Delete video from platform"""
-        pass
 
     async def health_check(self) -> Dict[str, Any]:
         """Check platform API health"""
@@ -102,10 +99,14 @@ class TikTokClient(SocialPlatform):
             upload_result = await self._upload_video(request.video_url)
 
             if not upload_result.get("success"):
-                raise Exception(f"Video upload failed: {upload_result.get('error')}")
+                raise Exception(
+                    f"Video upload failed: {upload_result.get('error')}"
+                )
 
             # Step 2: Create post
-            post_result = await self._create_post(upload_result["video_id"], request)
+            post_result = await self._create_post(
+                upload_result["video_id"], request
+            )
 
             return PublishResult(
                 platform="tiktok",
@@ -142,9 +143,14 @@ class TikTokClient(SocialPlatform):
 
         # Upload to TikTok
         data = aiohttp.FormData()
-        data.add_field("video", video_data, filename="video.mp4", content_type="video/mp4")
+        data.add_field(
+            "video", video_data, filename="video.mp4", content_type="video/mp4"
+        )
 
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "multipart/form-data"}
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "multipart/form-data",
+        }
 
         async with session.post(
             f"{self.upload_url}/video/upload", data=data, headers=headers
@@ -152,16 +158,22 @@ class TikTokClient(SocialPlatform):
 
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(f"TikTok upload API error: {response.status} - {error_text}")
+                raise Exception(
+                    f"TikTok upload API error: {response.status} - {error_text}"
+                )
 
             result = await response.json()
 
             if result.get("error"):
-                raise Exception(f"TikTok upload error: {result['error']['message']}")
+                raise Exception(
+                    f"TikTok upload error: {result['error']['message']}"
+                )
 
             return {"success": True, "video_id": result["data"]["video_id"]}
 
-    async def _create_post(self, video_id: str, request: PublishRequest) -> Dict[str, Any]:
+    async def _create_post(
+        self, video_id: str, request: PublishRequest
+    ) -> Dict[str, Any]:
         """Create TikTok post"""
 
         session = await self._get_session()
@@ -169,14 +181,21 @@ class TikTokClient(SocialPlatform):
         payload = {
             "video_id": video_id,
             "text": request.description or request.title,
-            "privacy_level": "PUBLIC_TO_EVERYONE" if request.privacy == "public" else "SELF_ONLY",
+            "privacy_level": (
+                "PUBLIC_TO_EVERYONE"
+                if request.privacy == "public"
+                else "SELF_ONLY"
+            ),
             "disable_duet": False,
             "disable_comment": False,
             "disable_stitch": False,
             "video_cover_timestamp_ms": 1000,
         }
 
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
 
         async with session.post(
             f"{self.base_url}/video/publish", json=payload, headers=headers
@@ -184,12 +203,16 @@ class TikTokClient(SocialPlatform):
 
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(f"TikTok publish API error: {response.status} - {error_text}")
+                raise Exception(
+                    f"TikTok publish API error: {response.status} - {error_text}"
+                )
 
             result = await response.json()
 
             if result.get("error"):
-                raise Exception(f"TikTok publish error: {result['error']['message']}")
+                raise Exception(
+                    f"TikTok publish error: {result['error']['message']}"
+                )
 
             return {
                 "video_id": result["data"]["video_id"],
@@ -208,7 +231,9 @@ class TikTokClient(SocialPlatform):
             }
 
             async with session.get(
-                f"{self.base_url}/video/query", params={"video_id": platform_id}, headers=headers
+                f"{self.base_url}/video/query",
+                params={"video_id": platform_id},
+                headers=headers,
             ) as response:
 
                 if response.status != 200:
@@ -245,7 +270,9 @@ class TikTokClient(SocialPlatform):
             }
 
             async with session.delete(
-                f"{self.base_url}/video/delete", params={"video_id": platform_id}, headers=headers
+                f"{self.base_url}/video/delete",
+                params={"video_id": platform_id},
+                headers=headers,
             ) as response:
 
                 return response.status == 200
@@ -291,7 +318,9 @@ class YouTubeClient(SocialPlatform):
                 published_at=datetime.utcnow(),
             )
 
-    async def _upload_video_with_metadata(self, request: PublishRequest) -> Dict[str, Any]:
+    async def _upload_video_with_metadata(
+        self, request: PublishRequest
+    ) -> Dict[str, Any]:
         """Upload video to YouTube with metadata"""
 
         session = await self._get_session()
@@ -304,7 +333,10 @@ class YouTubeClient(SocialPlatform):
             "categoryId": "22",  # People & Blogs
         }
 
-        status = {"privacyStatus": request.privacy, "selfDeclaredMadeForKids": False}
+        status = {
+            "privacyStatus": request.privacy,
+            "selfDeclaredMadeForKids": False,
+        }
 
         metadata = {"snippet": snippet, "status": status}
 
@@ -352,14 +384,18 @@ class YouTubeClient(SocialPlatform):
 
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(f"YouTube upload API error: {response.status} - {error_text}")
+                raise Exception(
+                    f"YouTube upload API error: {response.status} - {error_text}"
+                )
 
             result = await response.json()
 
             return {
                 "video_id": result["id"],
                 "upload_status": result.get("status", {}).get("uploadStatus"),
-                "privacy_status": result.get("status", {}).get("privacyStatus"),
+                "privacy_status": result.get("status", {}).get(
+                    "privacyStatus"
+                ),
             }
 
     async def get_video_stats(self, platform_id: str) -> Dict[str, Any]:
@@ -368,9 +404,15 @@ class YouTubeClient(SocialPlatform):
         try:
             session = await self._get_session()
 
-            params = {"part": "statistics,status", "id": platform_id, "key": self.api_key}
+            params = {
+                "part": "statistics,status",
+                "id": platform_id,
+                "key": self.api_key,
+            }
 
-            async with session.get(f"{self.base_url}/videos", params=params) as response:
+            async with session.get(
+                f"{self.base_url}/videos", params=params
+            ) as response:
                 if response.status != 200:
                     return {"error": f"API error: {response.status}"}
 
@@ -405,7 +447,9 @@ class YouTubeClient(SocialPlatform):
             }
 
             async with session.delete(
-                f"{self.base_url}/videos", params={"id": platform_id}, headers=headers
+                f"{self.base_url}/videos",
+                params={"id": platform_id},
+                headers=headers,
             ) as response:
 
                 return response.status == 204
@@ -441,7 +485,10 @@ class InstagramClient(SocialPlatform):
                 platform_id=result["media_id"],
                 url=result.get("permalink"),
                 published_at=datetime.utcnow(),
-                metadata={"container_id": container_id, "media_id": result["media_id"]},
+                metadata={
+                    "container_id": container_id,
+                    "media_id": result["media_id"],
+                },
             )
 
         except Exception as e:
@@ -460,7 +507,9 @@ class InstagramClient(SocialPlatform):
 
         params = {
             "video_url": request.video_url,
-            "media_type": "REELS" if request.custom_metadata.get("is_reels") else "VIDEO",
+            "media_type": (
+                "REELS" if request.custom_metadata.get("is_reels") else "VIDEO"
+            ),
             "caption": f"{request.title}\n\n{request.description or ''}",
             "access_token": self.api_key,
         }
@@ -475,12 +524,16 @@ class InstagramClient(SocialPlatform):
 
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(f"Instagram media creation error: {response.status} - {error_text}")
+                raise Exception(
+                    f"Instagram media creation error: {response.status} - {error_text}"
+                )
 
             result = await response.json()
 
             if "error" in result:
-                raise Exception(f"Instagram API error: {result['error']['message']}")
+                raise Exception(
+                    f"Instagram API error: {result['error']['message']}"
+                )
 
             return result["id"]
 
@@ -492,17 +545,22 @@ class InstagramClient(SocialPlatform):
         params = {"creation_id": container_id, "access_token": self.api_key}
 
         async with session.post(
-            f"{self.base_url}/{self.business_account_id}/media_publish", params=params
+            f"{self.base_url}/{self.business_account_id}/media_publish",
+            params=params,
         ) as response:
 
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(f"Instagram publish error: {response.status} - {error_text}")
+                raise Exception(
+                    f"Instagram publish error: {response.status} - {error_text}"
+                )
 
             result = await response.json()
 
             if "error" in result:
-                raise Exception(f"Instagram API error: {result['error']['message']}")
+                raise Exception(
+                    f"Instagram API error: {result['error']['message']}"
+                )
 
             # Get media permalink
             media_id = result["id"]
@@ -518,7 +576,9 @@ class InstagramClient(SocialPlatform):
 
             params = {"fields": "permalink", "access_token": self.api_key}
 
-            async with session.get(f"{self.base_url}/{media_id}", params=params) as response:
+            async with session.get(
+                f"{self.base_url}/{media_id}", params=params
+            ) as response:
 
                 if response.status == 200:
                     result = await response.json()
@@ -541,7 +601,9 @@ class InstagramClient(SocialPlatform):
                 "access_token": self.api_key,
             }
 
-            async with session.get(f"{self.base_url}/{platform_id}", params=params) as response:
+            async with session.get(
+                f"{self.base_url}/{platform_id}", params=params
+            ) as response:
 
                 if response.status != 200:
                     return {"error": f"API error: {response.status}"}
@@ -577,7 +639,9 @@ class InstagramClient(SocialPlatform):
 
             params = {"access_token": self.api_key}
 
-            async with session.delete(f"{self.base_url}/{platform_id}", params=params) as response:
+            async with session.delete(
+                f"{self.base_url}/{platform_id}", params=params
+            ) as response:
 
                 return response.status == 200
 
@@ -611,16 +675,22 @@ class SocialMediaManager:
         youtube_oauth_token = os.getenv("YOUTUBE_OAUTH_TOKEN")
 
         if all([youtube_api_key, youtube_oauth_token]):
-            self.platforms["youtube"] = YouTubeClient(youtube_api_key, youtube_oauth_token)
+            self.platforms["youtube"] = YouTubeClient(
+                youtube_api_key, youtube_oauth_token
+            )
 
         # Instagram
         instagram_api_key = os.getenv("INSTAGRAM_API_KEY")
         instagram_business_id = os.getenv("INSTAGRAM_BUSINESS_ACCOUNT_ID")
 
         if all([instagram_api_key, instagram_business_id]):
-            self.platforms["instagram"] = InstagramClient(instagram_api_key, instagram_business_id)
+            self.platforms["instagram"] = InstagramClient(
+                instagram_api_key, instagram_business_id
+            )
 
-    async def publish_to_platform(self, platform: str, request: PublishRequest) -> PublishResult:
+    async def publish_to_platform(
+        self, platform: str, request: PublishRequest
+    ) -> PublishResult:
         """Publish video to specific platform"""
 
         if platform not in self.platforms:
@@ -670,7 +740,9 @@ class SocialMediaManager:
 
         return []
 
-    async def get_platform_stats(self, platform: str, platform_id: str) -> Dict[str, Any]:
+    async def get_platform_stats(
+        self, platform: str, platform_id: str
+    ) -> Dict[str, Any]:
         """Get video statistics from platform"""
 
         if platform not in self.platforms:
@@ -678,7 +750,9 @@ class SocialMediaManager:
 
         return await self.platforms[platform].get_video_stats(platform_id)
 
-    async def delete_from_platform(self, platform: str, platform_id: str) -> bool:
+    async def delete_from_platform(
+        self, platform: str, platform_id: str
+    ) -> bool:
         """Delete video from platform"""
 
         if platform not in self.platforms:

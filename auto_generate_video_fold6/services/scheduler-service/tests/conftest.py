@@ -1,5 +1,4 @@
 import pytest
-from app.config import settings
 from app.database import Base, get_db
 from app.main import app
 from fastapi.testclient import TestClient
@@ -15,7 +14,9 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
 
 
 @pytest.fixture

@@ -1,12 +1,13 @@
 import logging
 from typing import Any, Dict, List
 
-import aiohttp
 
 logger = logging.getLogger(__name__)
 
 
-async def analyze_keyword(keyword: str, platforms: List[str], region: str = "TW") -> Dict[str, Any]:
+async def analyze_keyword(
+    keyword: str, platforms: List[str], region: str = "TW"
+) -> Dict[str, Any]:
     """分析關鍵字"""
 
     # 模擬關鍵字分析數據
@@ -92,7 +93,9 @@ async def get_keyword_suggestions(
     return suggestions
 
 
-async def analyze_keyword_difficulty(keyword: str, platform: str = "google") -> Dict[str, Any]:
+async def analyze_keyword_difficulty(
+    keyword: str, platform: str = "google"
+) -> Dict[str, Any]:
     """分析關鍵字競爭難度"""
 
     return {
@@ -109,7 +112,10 @@ async def analyze_keyword_difficulty(keyword: str, platform: str = "google") -> 
 
 
 async def get_search_volume_trends(
-    keyword: str, platforms: List[str], region: str = "TW", timeframe: str = "12m"
+    keyword: str,
+    platforms: List[str],
+    region: str = "TW",
+    timeframe: str = "12m",
 ) -> Dict[str, Any]:
     """獲取搜尋量趨勢"""
 
@@ -159,7 +165,9 @@ async def compare_keywords(
         )
 
     # 找出最佳機會
-    best_opportunity = max(comparison_table, key=lambda x: x["opportunity_score"])
+    best_opportunity = max(
+        comparison_table, key=lambda x: x["opportunity_score"]
+    )
 
     return {
         "comparison_table": comparison_table,
@@ -211,13 +219,19 @@ async def find_keyword_gaps(
             "程式語言教學競爭激烈但需求大",
             "工具推薦類型內容機會較多",
         ],
-        "priority_list": sorted(gaps, key=lambda x: x["monthly_searches"], reverse=True)[:10],
-        "traffic_potential": sum(gap["monthly_searches"] for gap in gaps) * 0.1,  # 估算10%點擊率
+        "priority_list": sorted(
+            gaps, key=lambda x: x["monthly_searches"], reverse=True
+        )[:10],
+        "traffic_potential": sum(gap["monthly_searches"] for gap in gaps)
+        * 0.1,  # 估算10%點擊率
     }
 
 
 async def generate_content_ideas(
-    keyword: str, content_type: str = "video", platform: str = "youtube", limit: int = 10
+    keyword: str,
+    content_type: str = "video",
+    platform: str = "youtube",
+    limit: int = 10,
 ) -> Dict[str, Any]:
     """基於關鍵字生成內容創意"""
 
@@ -234,7 +248,13 @@ async def generate_content_ideas(
         f"{keyword} 成功案例分享",
     ]
 
-    trending_angles = ["教學導向", "比較分析", "實用技巧", "問題解決", "趨勢分析"]
+    trending_angles = [
+        "教學導向",
+        "比較分析",
+        "實用技巧",
+        "問題解決",
+        "趨勢分析",
+    ]
 
     titles = [
         f"【完整教學】{keyword} 從零開始學會！",
@@ -244,7 +264,13 @@ async def generate_content_ideas(
         f"專家都在用的 {keyword} 技巧",
     ]
 
-    hashtags = [f"#{keyword}", f"#{keyword}教學", f"#{keyword}攻略", "#教學", "#技巧分享"]
+    hashtags = [
+        f"#{keyword}",
+        f"#{keyword}教學",
+        f"#{keyword}攻略",
+        "#教學",
+        "#技巧分享",
+    ]
 
     return {
         "ideas": ideas[:limit],

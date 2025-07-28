@@ -5,10 +5,9 @@ Suno.ai 音樂生成客戶端
 """
 
 import asyncio
-import json
 import logging
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -48,7 +47,9 @@ class MusicGenerationResult:
 class SunoClient:
     """Suno.ai API 客戶端"""
 
-    def __init__(self, api_key: str = None, base_url: str = "https://api.sunoai.com"):
+    def __init__(
+        self, api_key: str = None, base_url: str = "https://api.sunoai.com"
+    ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.session = None
@@ -64,7 +65,10 @@ class SunoClient:
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
             timeout=aiohttp.ClientTimeout(total=300),
         )
         return self
@@ -73,7 +77,9 @@ class SunoClient:
         if self.session:
             await self.session.close()
 
-    async def generate_music(self, request: MusicGenerationRequest) -> MusicGenerationResult:
+    async def generate_music(
+        self, request: MusicGenerationRequest
+    ) -> MusicGenerationResult:
         """生成音樂"""
         if not self.session:
             raise RuntimeError("客戶端未初始化，請使用 async with")
@@ -90,7 +96,9 @@ class SunoClient:
         if request.style:
             data["tags"] = request.style
         if request.duration:
-            data["mv"] = "chirp-v3-5" if request.duration <= 60 else "chirp-v3-0"
+            data["mv"] = (
+                "chirp-v3-5" if request.duration <= 60 else "chirp-v3-0"
+            )
         if request.title:
             data["title"] = request.title
 
@@ -98,11 +106,15 @@ class SunoClient:
 
         try:
             # 發送生成請求
-            async with self.session.post(f"{self.base_url}/api/generate", json=data) as response:
+            async with self.session.post(
+                f"{self.base_url}/api/generate", json=data
+            ) as response:
 
                 if response.status != 200:
                     error_text = await response.text()
-                    logger.error(f"Suno API 錯誤 {response.status}: {error_text}")
+                    logger.error(
+                        f"Suno API 錯誤 {response.status}: {error_text}"
+                    )
 
                     # 記錄失敗的 API 呼叫
                     if self._cost_tracker:
@@ -111,7 +123,10 @@ class SunoClient:
                             model="chirp-v3",
                             operation_type="music_generation",
                             success=False,
-                            metadata={"error": error_text, "status": response.status},
+                            metadata={
+                                "error": error_text,
+                                "status": response.status,
+                            },
                         )
 
                     return MusicGenerationResult(
@@ -126,18 +141,26 @@ class SunoClient:
                 if not generation_id:
                     logger.error("未收到有效的生成 ID")
                     return MusicGenerationResult(
-                        id="", status="failed", error_message="未收到有效的生成 ID"
+                        id="",
+                        status="failed",
+                        error_message="未收到有效的生成 ID",
                     )
 
                 # 輪詢生成狀態
-                return await self._poll_generation_status(generation_id, start_time)
+                return await self._poll_generation_status(
+                    generation_id, start_time
+                )
 
         except asyncio.TimeoutError:
             logger.error("音樂生成請求超時")
-            return MusicGenerationResult(id="", status="timeout", error_message="請求超時")
+            return MusicGenerationResult(
+                id="", status="timeout", error_message="請求超時"
+            )
         except Exception as e:
             logger.error(f"音樂生成失敗: {e}")
-            return MusicGenerationResult(id="", status="error", error_message=str(e))
+            return MusicGenerationResult(
+                id="", status="error", error_message=str(e)
+            )
 
     async def _poll_generation_status(
         self, generation_id: str, start_time: float
@@ -170,7 +193,9 @@ class SunoClient:
                                         success=True,
                                         metadata={
                                             "duration": duration,
-                                            "audio_duration": item.get("duration", 0),
+                                            "audio_duration": item.get(
+                                                "duration", 0
+                                            ),
                                             "title": item.get("title", ""),
                                         },
                                     )
@@ -191,7 +216,9 @@ class SunoClient:
                                 )
 
                             elif status == "error":
-                                error_msg = item.get("error_message", "生成失敗")
+                                error_msg = item.get(
+                                    "error_message", "生成失敗"
+                                )
                                 logger.error(f"音樂生成失敗: {error_msg}")
 
                                 # 記錄失敗的 API 呼叫
@@ -205,11 +232,15 @@ class SunoClient:
                                     )
 
                                 return MusicGenerationResult(
-                                    id=generation_id, status="failed", error_message=error_msg
+                                    id=generation_id,
+                                    status="failed",
+                                    error_message=error_msg,
                                 )
 
                             # 仍在處理中
-                            logger.info(f"音樂生成進行中... (嘗試 {attempt + 1}/{max_attempts})")
+                            logger.info(
+                                f"音樂生成進行中... (嘗試 {attempt + 1}/{max_attempts})"
+                            )
 
                 await asyncio.sleep(5)  # 等待 5 秒後重試
                 attempt += 1
@@ -233,13 +264,17 @@ class SunoClient:
         cost_per_minute = 0.5  # 每分鐘 $0.5 (估算)
         return (duration / 60) * cost_per_minute
 
-    async def get_generation_history(self, limit: int = 50) -> List[MusicGenerationResult]:
+    async def get_generation_history(
+        self, limit: int = 50
+    ) -> List[MusicGenerationResult]:
         """獲取生成歷史"""
         if not self.session:
             raise RuntimeError("客戶端未初始化，請使用 async with")
 
         try:
-            async with self.session.get(f"{self.base_url}/api/get_all") as response:
+            async with self.session.get(
+                f"{self.base_url}/api/get_all"
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     results = []
@@ -252,7 +287,11 @@ class SunoClient:
                                 audio_url=item.get("audio_url"),
                                 video_url=item.get("video_url"),
                                 title=item.get("title"),
-                                tags=item.get("tags", "").split(",") if item.get("tags") else None,
+                                tags=(
+                                    item.get("tags", "").split(",")
+                                    if item.get("tags")
+                                    else None
+                                ),
                                 duration=item.get("duration"),
                                 created_at=item.get("created_at"),
                             )
@@ -337,7 +376,9 @@ async def main():
     if result.status == "completed" and result.audio_url:
         # 下載音頻
         async with SunoClient(api_key=api_key) as client:
-            success = await client.download_audio(result.audio_url, Path("test_music.mp3"))
+            success = await client.download_audio(
+                result.audio_url, Path("test_music.mp3")
+            )
             print(f"下載成功: {success}")
 
 

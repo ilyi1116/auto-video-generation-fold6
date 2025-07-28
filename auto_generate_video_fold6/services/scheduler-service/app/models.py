@@ -1,6 +1,13 @@
-from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
@@ -20,7 +27,9 @@ class ScheduledPost(Base):
 
     # 排程資訊
     scheduled_time = Column(DateTime, nullable=False)
-    status = Column(String(20), default="pending")  # pending, published, failed, cancelled
+    status = Column(
+        String(20), default="pending"
+    )  # pending, published, failed, cancelled
 
     # 內容資訊
     title = Column(String(255))

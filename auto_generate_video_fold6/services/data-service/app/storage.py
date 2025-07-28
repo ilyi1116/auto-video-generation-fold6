@@ -38,11 +38,17 @@ class S3Storage:
                     logger.info("Created S3 bucket", bucket=self.bucket)
                 except ClientError as create_error:
                     logger.error(
-                        "Failed to create S3 bucket", bucket=self.bucket, error=str(create_error)
+                        "Failed to create S3 bucket",
+                        bucket=self.bucket,
+                        error=str(create_error),
                     )
                     raise
             else:
-                logger.error("Error checking S3 bucket", bucket=self.bucket, error=str(e))
+                logger.error(
+                    "Error checking S3 bucket",
+                    bucket=self.bucket,
+                    error=str(e),
+                )
                 raise
 
     async def upload_file(self, file_path: str, s3_key: str) -> str:
@@ -54,13 +60,21 @@ class S3Storage:
             # Generate URL
             url = f"{settings.s3_endpoint}/{self.bucket}/{s3_key}"
 
-            logger.info("File uploaded to S3", file_path=file_path, s3_key=s3_key, url=url)
+            logger.info(
+                "File uploaded to S3",
+                file_path=file_path,
+                s3_key=s3_key,
+                url=url,
+            )
 
             return url
 
         except ClientError as e:
             logger.error(
-                "Failed to upload file to S3", file_path=file_path, s3_key=s3_key, error=str(e)
+                "Failed to upload file to S3",
+                file_path=file_path,
+                s3_key=s3_key,
+                error=str(e),
             )
             raise
 
@@ -73,7 +87,9 @@ class S3Storage:
             # Download file
             self.client.download_file(self.bucket, s3_key, local_path)
 
-            logger.info("File downloaded from S3", s3_key=s3_key, local_path=local_path)
+            logger.info(
+                "File downloaded from S3", s3_key=s3_key, local_path=local_path
+            )
 
             return local_path
 
@@ -95,7 +111,9 @@ class S3Storage:
             return True
 
         except ClientError as e:
-            logger.error("Failed to delete file from S3", s3_key=s3_key, error=str(e))
+            logger.error(
+                "Failed to delete file from S3", s3_key=s3_key, error=str(e)
+            )
             return False
 
     def file_exists(self, s3_key: str) -> bool:
@@ -135,7 +153,11 @@ class LocalStorage:
             logger.info("File deleted locally", file_path=file_path)
             return True
         except OSError as e:
-            logger.error("Failed to delete local file", file_path=file_path, error=str(e))
+            logger.error(
+                "Failed to delete local file",
+                file_path=file_path,
+                error=str(e),
+            )
             return False
 
     def file_exists(self, file_path: str) -> bool:

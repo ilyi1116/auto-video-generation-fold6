@@ -43,7 +43,9 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
                 result = await response.json()
 
                 # 交換短期 token 為長期 token
-                long_lived_token = await _exchange_for_long_lived_token(result["access_token"])
+                long_lived_token = await _exchange_for_long_lived_token(
+                    result["access_token"]
+                )
 
                 return {
                     "access_token": long_lived_token["access_token"],
@@ -52,7 +54,9 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
                 }
             else:
                 error_text = await response.text()
-                raise Exception(f"Instagram token exchange failed: {error_text}")
+                raise Exception(
+                    f"Instagram token exchange failed: {error_text}"
+                )
 
 
 async def _exchange_for_long_lived_token(short_token: str) -> Dict[str, Any]:
@@ -72,7 +76,9 @@ async def _exchange_for_long_lived_token(short_token: str) -> Dict[str, Any]:
                 return await response.json()
             else:
                 error_text = await response.text()
-                raise Exception(f"Long-lived token exchange failed: {error_text}")
+                raise Exception(
+                    f"Long-lived token exchange failed: {error_text}"
+                )
 
 
 async def publish_video(
@@ -112,10 +118,14 @@ async def publish_video(
                     creation_id = result["id"]
 
                     # 發布媒體
-                    publish_data = {"creation_id": creation_id, "access_token": access_token}
+                    publish_data = {
+                        "creation_id": creation_id,
+                        "access_token": access_token,
+                    }
 
                     async with session.post(
-                        f"{settings.INSTAGRAM_API_BASE}/me/media_publish", data=publish_data
+                        f"{settings.INSTAGRAM_API_BASE}/me/media_publish",
+                        data=publish_data,
                     ) as publish_response:
                         if publish_response.status == 200:
                             publish_result = await publish_response.json()
@@ -141,7 +151,10 @@ async def publish_video(
 
     except Exception as e:
         logger.error(f"Instagram publish error: {e}")
-        return {"success": False, "error": f"Instagram publish failed: {str(e)}"}
+        return {
+            "success": False,
+            "error": f"Instagram publish failed: {str(e)}",
+        }
 
 
 async def get_analytics(user_id: str) -> Dict[str, Any]:
@@ -187,11 +200,21 @@ async def get_engagement_metrics(user_id: str, days: int) -> Dict[str, Any]:
         "best_performing_time": "18:00-20:00",
         "top_hashtags": ["#reels", "#viral", "#instagram"],
         "audience_insights": {
-            "age_groups": {"13-17": 15, "18-24": 35, "25-34": 30, "35-44": 15, "45+": 5},
+            "age_groups": {
+                "13-17": 15,
+                "18-24": 35,
+                "25-34": 30,
+                "35-44": 15,
+                "45+": 5,
+            },
             "gender": {"female": 58, "male": 42},
             "top_locations": ["台北", "高雄", "台中"],
         },
-        "story_metrics": {"story_views": 1500, "story_reach": 1200, "story_exits": 120},
+        "story_metrics": {
+            "story_views": 1500,
+            "story_reach": 1200,
+            "story_exits": 120,
+        },
     }
 
 
@@ -227,8 +250,12 @@ async def check_api_status() -> str:
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{settings.INSTAGRAM_API_BASE}/me") as response:
-                return "healthy" if response.status in [200, 401] else "unhealthy"
+            async with session.get(
+                f"{settings.INSTAGRAM_API_BASE}/me"
+            ) as response:
+                return (
+                    "healthy" if response.status in [200, 401] else "unhealthy"
+                )
     except:
         return "unhealthy"
 
@@ -244,4 +271,6 @@ async def _get_video_file_url(video_id: int) -> str:
                 result = await response.json()
                 return result["file_url"]
             else:
-                raise Exception(f"Failed to get video file URL: {response.status}")
+                raise Exception(
+                    f"Failed to get video file URL: {response.status}"
+                )

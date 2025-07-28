@@ -1,6 +1,13 @@
-from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
@@ -12,7 +19,9 @@ class TrendingTopic(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     keyword = Column(String(255), nullable=False, index=True)
-    platform = Column(String(50), nullable=False)  # google, youtube, tiktok, instagram
+    platform = Column(
+        String(50), nullable=False
+    )  # google, youtube, tiktok, instagram
 
     # 趨勢數據
     search_volume = Column(Integer, default=0)
@@ -102,7 +111,9 @@ class TrendAnalysis(Base):
     __tablename__ = "trend_analysis"
 
     id = Column(Integer, primary_key=True, index=True)
-    analysis_type = Column(String(50), nullable=False)  # keyword, topic, content
+    analysis_type = Column(
+        String(50), nullable=False
+    )  # keyword, topic, content
     target = Column(String(255), nullable=False)  # 分析目標
 
     # 分析結果
