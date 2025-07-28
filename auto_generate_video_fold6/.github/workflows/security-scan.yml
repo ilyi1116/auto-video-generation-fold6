@@ -56,24 +56,32 @@ jobs:
     
     - name: Run Bandit security scan
       run: |
-        bandit -r . -f json -o bandit-report.json -c security/bandit-config.yaml || true
+        bandit -r . -f sarif -o bandit-report.sarif -c security/bandit-config.yaml || true
+        # 如果 SARIF 檔案不存在，創建空的 SARIF 檔案
+        if [ ! -f "bandit-report.sarif" ]; then
+          echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"bandit"}},"results":[]}]}' > bandit-report.sarif
+        fi
     
     - name: Run Semgrep security scan
       run: |
-        semgrep --config=auto --json --output=semgrep-report.json . || true
+        semgrep --config=auto --sarif --output=semgrep-report.sarif . || true
+        # 如果 SARIF 檔案不存在，創建空的 SARIF 檔案
+        if [ ! -f "semgrep-report.sarif" ]; then
+          echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"semgrep"}},"results":[]}]}' > semgrep-report.sarif
+        fi
     
     - name: Upload Bandit results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v2
       if: always()
       with:
-        sarif_file: bandit-report.json
+        sarif_file: bandit-report.sarif
         category: bandit
     
     - name: Upload Semgrep results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v2
       if: always()
       with:
-        sarif_file: semgrep-report.json
+        sarif_file: semgrep-report.sarif
         category: semgrep
     
     - name: Upload security scan reports
@@ -82,8 +90,8 @@ jobs:
       with:
         name: code-security-reports
         path: |
-          bandit-report.json
-          semgrep-report.json
+          bandit-report.sarif
+          semgrep-report.sarif
 
   # 依賴套件安全掃描
   dependency-security:

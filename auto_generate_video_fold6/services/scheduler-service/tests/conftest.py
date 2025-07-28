@@ -18,6 +18,7 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @pytest.fixture
 def db_session():
     Base.metadata.create_all(bind=engine)
@@ -28,6 +29,7 @@ def db_session():
         db.close()
         Base.metadata.drop_all(bind=engine)
 
+
 @pytest.fixture
 def client(db_session):
     def override_get_db():
@@ -35,17 +37,19 @@ def client(db_session):
             yield db_session
         finally:
             db_session.close()
-    
+
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
 
 @pytest.fixture
 def auth_headers():
     """模擬認證標頭"""
     # 在實際測試中，這裡應該生成有效的 JWT token
     return {"Authorization": "Bearer test_token"}
+
 
 @pytest.fixture
 def sample_schedule_data():
@@ -57,5 +61,5 @@ def sample_schedule_data():
         "title": "測試影片標題",
         "description": "這是一個測試影片的描述",
         "tags": ["測試", "影片"],
-        "platform_settings": {"disable_comment": False}
+        "platform_settings": {"disable_comment": False},
     }

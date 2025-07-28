@@ -3,16 +3,19 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
+
 class PlatformType(str, Enum):
     TIKTOK = "tiktok"
     YOUTUBE = "youtube"
     INSTAGRAM = "instagram"
+
 
 class PostStatus(str, Enum):
     PENDING = "pending"
     PUBLISHED = "published"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
 
 class SchedulePostRequest(BaseModel):
     video_id: int
@@ -23,6 +26,7 @@ class SchedulePostRequest(BaseModel):
     description: Optional[str] = None
     tags: Optional[List[str]] = []
     platform_settings: Optional[Dict[str, Any]] = {}
+
 
 class SchedulePostResponse(BaseModel):
     id: int
@@ -45,12 +49,14 @@ class SchedulePostResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UpdateScheduleRequest(BaseModel):
     scheduled_time: Optional[datetime] = None
     title: Optional[str] = None
     description: Optional[str] = None
     tags: Optional[List[str]] = None
     platform_settings: Optional[Dict[str, Any]] = None
+
 
 class PlatformAccountRequest(BaseModel):
     platform: PlatformType
@@ -59,6 +65,7 @@ class PlatformAccountRequest(BaseModel):
     access_token: str
     refresh_token: Optional[str] = None
     token_expires_at: Optional[datetime] = None
+
 
 class PlatformAccountResponse(BaseModel):
     id: int
@@ -73,6 +80,7 @@ class PlatformAccountResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class ScheduleListResponse(BaseModel):
     total: int

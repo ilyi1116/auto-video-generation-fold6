@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
+
 class PublishRequest(BaseModel):
     video_id: int
     access_token: str
@@ -10,26 +11,31 @@ class PublishRequest(BaseModel):
     tags: Optional[List[str]] = []
     settings: Optional[Dict[str, Any]] = {}
 
+
 class PublishResponse(BaseModel):
     success: bool
     post_url: Optional[str] = None
     post_id: Optional[str] = None
     error: Optional[str] = None
 
+
 class PlatformAuth(BaseModel):
     platform: str
     auth_url: str
     client_id: str
 
+
 class OAuthCallback(BaseModel):
     code: str
     state: Optional[str] = None
+
 
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: Optional[str] = None
     expires_in: Optional[int] = None
     token_type: str = "Bearer"
+
 
 class PlatformAnalytics(BaseModel):
     platform: str
@@ -39,6 +45,7 @@ class PlatformAnalytics(BaseModel):
     total_comments: int
     engagement_rate: float
     last_updated: datetime
+
 
 class PostAnalytics(BaseModel):
     post_id: str

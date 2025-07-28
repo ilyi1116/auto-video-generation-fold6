@@ -3,16 +3,19 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
+
 class PlatformType(str, Enum):
     GOOGLE = "google"
     YOUTUBE = "youtube"
     TIKTOK = "tiktok"
     INSTAGRAM = "instagram"
 
+
 class CompetitionLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+
 
 class TrendingTopicResponse(BaseModel):
     id: int
@@ -25,9 +28,10 @@ class TrendingTopicResponse(BaseModel):
     tags: Optional[List[str]]
     region: str
     trend_date: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class KeywordResearchResponse(BaseModel):
     id: int
@@ -43,9 +47,10 @@ class KeywordResearchResponse(BaseModel):
     tiktok_hashtag_views: int
     instagram_posts: int
     research_date: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class ViralContentResponse(BaseModel):
     id: int
@@ -67,9 +72,10 @@ class ViralContentResponse(BaseModel):
     emotions: Optional[Dict[str, float]]
     published_at: Optional[datetime]
     discovered_at: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class TrendAnalysisResponse(BaseModel):
     id: int
@@ -84,20 +90,23 @@ class TrendAnalysisResponse(BaseModel):
     predicted_growth: float
     confidence_score: float
     analysis_date: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class KeywordSearchRequest(BaseModel):
     keyword: str
     platforms: Optional[List[PlatformType]] = [PlatformType.GOOGLE]
     region: Optional[str] = "TW"
 
+
 class TrendAnalysisRequest(BaseModel):
     target: str
     analysis_type: str = "keyword"  # keyword, topic, content
     platforms: Optional[List[PlatformType]] = None
     region: Optional[str] = "TW"
+
 
 class TrendSuggestion(BaseModel):
     keyword: str
@@ -109,6 +118,7 @@ class TrendSuggestion(BaseModel):
     hashtags: List[str]
     estimated_reach: int
 
+
 class ViralContentAnalysis(BaseModel):
     content_url: str
     viral_factors: List[str]
@@ -116,6 +126,7 @@ class ViralContentAnalysis(BaseModel):
     recommendations: List[str]
     optimal_timing: str
     target_audience: Dict[str, Any]
+
 
 class CompetitorAnalysis(BaseModel):
     competitor: str

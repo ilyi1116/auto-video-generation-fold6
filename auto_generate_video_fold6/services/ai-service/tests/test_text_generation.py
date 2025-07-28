@@ -36,48 +36,38 @@ class TestTextGeneration:
             "duration": "short",
             "tone": "professional",
             "target_audience": "技術愛好者",
-            "keywords": ["人工智慧", "機器學習", "未來科技"]
+            "keywords": ["人工智慧", "機器學習", "未來科技"],
         }
-        
+
         mock_response = {
             "script": {
                 "title": "2024年人工智慧發展趨勢",
                 "content": "歡迎來到今天的科技趨勢分析。在這個快速發展的數位時代...",
                 "scenes": [
-                    {
-                        "id": 1,
-                        "text": "歡迎來到今天的科技趨勢分析",
-                        "duration": 3,
-                        "type": "intro"
-                    },
+                    {"id": 1, "text": "歡迎來到今天的科技趨勢分析", "duration": 3, "type": "intro"},
                     {
                         "id": 2,
                         "text": "在這個快速發展的數位時代，人工智慧正在改變我們的世界",
                         "duration": 8,
-                        "type": "content"
+                        "type": "content",
                     },
-                    {
-                        "id": 3,
-                        "text": "感謝收看，我們下次見",
-                        "duration": 2,
-                        "type": "outro"
-                    }
+                    {"id": 3, "text": "感謝收看，我們下次見", "duration": 2, "type": "outro"},
                 ],
                 "metadata": {
                     "duration": 13,
                     "word_count": 156,
                     "reading_time": "13秒",
                     "difficulty": "intermediate",
-                    "engagement_score": 8.5
-                }
+                    "engagement_score": 8.5,
+                },
             }
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.generate_script") as mock_generate:
             mock_generate.return_value = mock_response["script"]
 
             response = await client.post("/ai/text/generate-script", json=request_data)
-            
+
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
             assert data["script"]["title"] == mock_response["script"]["title"]
@@ -91,11 +81,11 @@ class TestTextGeneration:
             "topic": "測試主題",
             "platform": "invalid_platform",
             "duration": "short",
-            "tone": "professional"
+            "tone": "professional",
         }
 
         response = await client.post("/ai/text/generate-script", json=request_data)
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
@@ -104,34 +94,27 @@ class TestTextGeneration:
         request_data = {
             "original_script": "這是原始腳本內容",
             "improvement_type": "engagement",
-            "target_metrics": {
-                "engagement_score": 9.0,
-                "readability": "easy"
-            }
+            "target_metrics": {"engagement_score": 9.0, "readability": "easy"},
         }
-        
+
         mock_response = {
             "improved_script": {
                 "title": "改進後的腳本標題",
                 "content": "這是改進後的腳本內容，更具吸引力和互動性",
-                "improvements": [
-                    "增加了引人入勝的開場白",
-                    "添加了互動元素",
-                    "優化了語言表達"
-                ],
+                "improvements": ["增加了引人入勝的開場白", "添加了互動元素", "優化了語言表達"],
                 "metrics": {
                     "engagement_score": 9.2,
                     "readability": "easy",
-                    "improvement_percentage": 15.3
-                }
+                    "improvement_percentage": 15.3,
+                },
             }
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.improve_script") as mock_improve:
             mock_improve.return_value = mock_response["improved_script"]
 
             response = await client.post("/ai/text/improve-script", json=request_data)
-            
+
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
             assert data["improved_script"]["metrics"]["engagement_score"] == 9.2
@@ -142,27 +125,23 @@ class TestTextGeneration:
         """測試文本情感分析"""
         request_data = {
             "text": "這是一個非常好的產品，我很滿意這次的購買體驗！",
-            "language": "zh-TW"
+            "language": "zh-TW",
         }
-        
+
         mock_response = {
             "sentiment": {
                 "label": "positive",
                 "score": 0.92,
                 "confidence": 0.87,
-                "emotions": {
-                    "joy": 0.8,
-                    "satisfaction": 0.9,
-                    "excitement": 0.6
-                }
+                "emotions": {"joy": 0.8, "satisfaction": 0.9, "excitement": 0.6},
             }
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.analyze_sentiment") as mock_analyze:
             mock_analyze.return_value = mock_response["sentiment"]
 
             response = await client.post("/ai/text/analyze-sentiment", json=request_data)
-            
+
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
             assert data["sentiment"]["label"] == "positive"
@@ -174,24 +153,24 @@ class TestTextGeneration:
         request_data = {
             "content": "人工智慧和機器學習正在改變我們的世界",
             "count": 5,
-            "language": "zh-TW"
+            "language": "zh-TW",
         }
-        
+
         mock_response = {
             "keywords": [
                 {"keyword": "人工智慧", "relevance": 0.95, "frequency": 3},
                 {"keyword": "機器學習", "relevance": 0.90, "frequency": 2},
                 {"keyword": "科技創新", "relevance": 0.85, "frequency": 1},
                 {"keyword": "數位轉型", "relevance": 0.80, "frequency": 1},
-                {"keyword": "未來發展", "relevance": 0.75, "frequency": 1}
+                {"keyword": "未來發展", "relevance": 0.75, "frequency": 1},
             ]
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.extract_keywords") as mock_extract:
             mock_extract.return_value = mock_response["keywords"]
 
             response = await client.post("/ai/text/generate-keywords", json=request_data)
-            
+
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
             assert len(data["keywords"]) == 5
@@ -203,24 +182,24 @@ class TestTextGeneration:
         request_data = {
             "text": "這是一段很長的文本內容..." * 100,  # 模擬長文本
             "max_length": 100,
-            "style": "bullet_points"
+            "style": "bullet_points",
         }
-        
+
         mock_response = {
             "summary": {
                 "content": "• 主要重點一\n• 主要重點二\n• 主要重點三",
                 "original_length": 2500,
                 "summary_length": 45,
                 "compression_ratio": 0.018,
-                "key_topics": ["主題一", "主題二", "主題三"]
+                "key_topics": ["主題一", "主題二", "主題三"],
             }
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.summarize_text") as mock_summarize:
             mock_summarize.return_value = mock_response["summary"]
 
             response = await client.post("/ai/text/summarize", json=request_data)
-            
+
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
             assert data["summary"]["compression_ratio"] == 0.018
@@ -229,22 +208,19 @@ class TestTextGeneration:
     def test_text_generator_initialization(self, text_generator):
         """測試文本生成器初始化"""
         assert text_generator is not None
-        assert hasattr(text_generator, 'generate_script')
-        assert hasattr(text_generator, 'improve_script')
-        assert hasattr(text_generator, 'analyze_sentiment')
+        assert hasattr(text_generator, "generate_script")
+        assert hasattr(text_generator, "improve_script")
+        assert hasattr(text_generator, "analyze_sentiment")
 
     @pytest.mark.asyncio
     async def test_text_generator_error_handling(self, text_generator):
         """測試文本生成器錯誤處理"""
         with patch("app.services.text_generator.TextGenerator._call_ai_model") as mock_call:
             mock_call.side_effect = Exception("AI service unavailable")
-            
+
             with pytest.raises(Exception) as exc_info:
-                await text_generator.generate_script({
-                    "topic": "測試主題",
-                    "platform": "youtube"
-                })
-            
+                await text_generator.generate_script({"topic": "測試主題", "platform": "youtube"})
+
             assert "AI service unavailable" in str(exc_info.value)
 
 
@@ -266,53 +242,43 @@ class TestTextGenerationIntegration:
             "topic": "環保科技",
             "platform": "youtube",
             "duration": "medium",
-            "tone": "educational"
+            "tone": "educational",
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.generate_script") as mock_generate:
             mock_generate.return_value = {
                 "title": "環保科技的未來",
                 "content": "初始腳本內容",
-                "scenes": [
-                    {"id": 1, "text": "開場", "duration": 3, "type": "intro"}
-                ]
+                "scenes": [{"id": 1, "text": "開場", "duration": 3, "type": "intro"}],
             }
-            
-            initial_response = await client.post("/ai/text/generate-script", 
-                                               json=initial_request)
+
+            initial_response = await client.post("/ai/text/generate-script", json=initial_request)
             assert initial_response.status_code == status.HTTP_200_OK
             initial_script = initial_response.json()["script"]
 
         # 第二步：改進腳本
         improve_request = {
             "original_script": initial_script["content"],
-            "improvement_type": "engagement"
+            "improvement_type": "engagement",
         }
-        
+
         with patch("app.services.text_generator.TextGenerator.improve_script") as mock_improve:
             mock_improve.return_value = {
                 "title": "環保科技的未來 - 改進版",
                 "content": "改進後的腳本內容",
-                "improvements": ["增加互動性"]
+                "improvements": ["增加互動性"],
             }
-            
-            improve_response = await client.post("/ai/text/improve-script", 
-                                               json=improve_request)
+
+            improve_response = await client.post("/ai/text/improve-script", json=improve_request)
             assert improve_response.status_code == status.HTTP_200_OK
 
         # 第三步：生成關鍵字
-        keyword_request = {
-            "content": initial_script["content"],
-            "count": 5
-        }
-        
+        keyword_request = {"content": initial_script["content"], "count": 5}
+
         with patch("app.services.text_generator.TextGenerator.extract_keywords") as mock_keywords:
-            mock_keywords.return_value = [
-                {"keyword": "環保", "relevance": 0.9}
-            ]
-            
-            keyword_response = await client.post("/ai/text/generate-keywords", 
-                                                json=keyword_request)
+            mock_keywords.return_value = [{"keyword": "環保", "relevance": 0.9}]
+
+            keyword_response = await client.post("/ai/text/generate-keywords", json=keyword_request)
             assert keyword_response.status_code == status.HTTP_200_OK
 
     @pytest.mark.slow
@@ -320,32 +286,20 @@ class TestTextGenerationIntegration:
     async def test_concurrent_text_generation(self, client: AsyncClient):
         """測試並發文本生成請求"""
         import asyncio
-        
+
         requests = [
-            {
-                "topic": f"主題 {i}",
-                "platform": "youtube",
-                "duration": "short",
-                "tone": "casual"
-            }
+            {"topic": f"主題 {i}", "platform": "youtube", "duration": "short", "tone": "casual"}
             for i in range(5)
         ]
-        
+
         with patch("app.services.text_generator.TextGenerator.generate_script") as mock_generate:
-            mock_generate.return_value = {
-                "title": "測試腳本",
-                "content": "測試內容",
-                "scenes": []
-            }
-            
+            mock_generate.return_value = {"title": "測試腳本", "content": "測試內容", "scenes": []}
+
             # 並發執行多個請求
-            tasks = [
-                client.post("/ai/text/generate-script", json=req)
-                for req in requests
-            ]
-            
+            tasks = [client.post("/ai/text/generate-script", json=req) for req in requests]
+
             responses = await asyncio.gather(*tasks)
-            
+
             # 驗證所有請求都成功
             for response in responses:
                 assert response.status_code == status.HTTP_200_OK
