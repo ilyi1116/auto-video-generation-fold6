@@ -10,22 +10,20 @@ This module provides AI service clients for video generation:
 from .suno_client import SunoAIClient, VoiceGenerationRequest, VoiceGenerationResponse
 from .gemini_client import GeminiClient, ScriptScene, ScriptGenerationResponse
 from .stable_diffusion_client import (
-    StableDiffusionClient, 
-    ImageGenerationRequest, 
-    ImageGenerationResponse
+    StableDiffusionClient,
+    ImageGenerationRequest,
+    ImageGenerationResponse,
 )
 
 __all__ = [
     # Suno.ai Client
     "SunoAIClient",
-    "VoiceGenerationRequest", 
+    "VoiceGenerationRequest",
     "VoiceGenerationResponse",
-    
     # Gemini Client
     "GeminiClient",
     "ScriptScene",
     "ScriptGenerationResponse",
-    
     # Stable Diffusion Client
     "StableDiffusionClient",
     "ImageGenerationRequest",

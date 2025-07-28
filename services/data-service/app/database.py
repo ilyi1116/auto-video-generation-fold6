@@ -1,6 +1,18 @@
 import databases
 import sqlalchemy
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, DateTime, Float, Boolean, Text, ForeignKey
+from sqlalchemy import (
+    create_engine,
+    MetaData,
+    Table,
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Float,
+    Boolean,
+    Text,
+    ForeignKey,
+)
 from sqlalchemy.sql import func
 from app.config import settings
 

@@ -27,7 +27,7 @@ def get_user_identifier(request: Request) -> str:
         # In production, decode JWT to get user ID
         # For now, use token as identifier
         return f"user:{token[:10]}"
-    
+
     # Fall back to IP address
     return get_remote_address(request)
 
@@ -36,7 +36,7 @@ def get_user_identifier(request: Request) -> str:
 limiter = Limiter(
     key_func=get_user_identifier,
     storage_uri=settings.redis_url if redis_client else "memory://",
-    default_limits=[f"{settings.rate_limit_per_minute}/minute"]
+    default_limits=[f"{settings.rate_limit_per_minute}/minute"],
 )
 
 
@@ -47,17 +47,17 @@ def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded)
         detail={
             "error": "Rate limit exceeded",
             "message": f"Too many requests. Limit: {exc.detail}",
-            "retry_after": exc.retry_after
-        }
+            "retry_after": exc.retry_after,
+        },
     )
-    
+
     # Log rate limit exceeded
     logger.warning(
         "Rate limit exceeded",
         client_ip=get_remote_address(request),
         user_agent=request.headers.get("user-agent"),
         endpoint=request.url.path,
-        limit=exc.detail
+        limit=exc.detail,
     )
-    
+
     return response

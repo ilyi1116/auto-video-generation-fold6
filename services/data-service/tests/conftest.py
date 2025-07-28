@@ -24,7 +24,7 @@ def client():
 @pytest.fixture
 def mock_auth_service():
     """Mock authentication service responses"""
-    with patch('app.auth.get_current_user') as mock:
+    with patch("app.auth.get_current_user") as mock:
         mock.return_value = 1  # Return user ID 1
         yield mock
 
@@ -32,7 +32,7 @@ def mock_auth_service():
 @pytest.fixture
 def mock_s3_storage():
     """Mock S3 storage operations"""
-    with patch('app.storage.s3_storage') as mock:
+    with patch("app.storage.s3_storage") as mock:
         mock.upload_file = AsyncMock(return_value="http://minio:9000/voice-data/test-file.wav")
         mock.delete_file = AsyncMock(return_value=True)
         mock.file_exists = AsyncMock(return_value=True)
@@ -42,7 +42,7 @@ def mock_s3_storage():
 @pytest.fixture
 def mock_database():
     """Mock database operations"""
-    with patch('app.database.database') as mock:
+    with patch("app.database.database") as mock:
         mock.execute = AsyncMock(return_value=1)  # Return mock ID
         mock.fetch_one = AsyncMock()
         mock.fetch_all = AsyncMock(return_value=[])
@@ -56,5 +56,5 @@ def sample_audio_file():
         "filename": "test_audio.wav",
         "content": b"fake audio content",
         "content_type": "audio/wav",
-        "size": 1024
+        "size": 1024,
     }

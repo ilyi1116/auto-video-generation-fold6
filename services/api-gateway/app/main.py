@@ -18,7 +18,7 @@ structlog.configure(
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -33,9 +33,9 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting API Gateway", service="api-gateway")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down API Gateway")
 
@@ -45,7 +45,7 @@ app = FastAPI(
     version="1.0.0",
     description="API Gateway for voice cloning system",
     openapi_url=f"{settings.api_v1_str}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add rate limiting
@@ -70,11 +70,7 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "api-gateway",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "api-gateway", "version": "1.0.0"}
 
 
 # Root endpoint
@@ -85,7 +81,7 @@ async def root():
         "message": "Voice Cloning API Gateway",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
 
 
@@ -113,10 +109,11 @@ app.include_router(
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
         reload=settings.debug,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )

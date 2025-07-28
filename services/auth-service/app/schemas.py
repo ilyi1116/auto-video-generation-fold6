@@ -13,19 +13,19 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    
-    @validator('password')
+
+    @validator("password")
     def validate_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         return v
-    
-    @validator('username')
+
+    @validator("username")
     def validate_username(cls, v):
         if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
+            raise ValueError("Username must be at least 3 characters long")
         if not v.isalnum():
-            raise ValueError('Username must contain only alphanumeric characters')
+            raise ValueError("Username must contain only alphanumeric characters")
         return v.lower()
 
 
@@ -35,13 +35,13 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     bio: Optional[str] = None
     is_active: Optional[bool] = None
-    
-    @validator('username')
+
+    @validator("username")
     def validate_username(cls, v):
         if v and len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
+            raise ValueError("Username must be at least 3 characters long")
         if v and not v.isalnum():
-            raise ValueError('Username must contain only alphanumeric characters')
+            raise ValueError("Username must contain only alphanumeric characters")
         return v.lower() if v else v
 
 
@@ -53,7 +53,7 @@ class UserInDB(UserBase):
     api_calls_count: int
     last_login: Optional[datetime] = None
     avatar_url: Optional[str] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -81,11 +81,11 @@ class TokenData(BaseModel):
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str
-    
-    @validator('new_password')
+
+    @validator("new_password")
     def validate_new_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         return v
 
 
@@ -96,9 +96,9 @@ class PasswordReset(BaseModel):
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
-    
-    @validator('new_password')
+
+    @validator("new_password")
     def validate_new_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         return v

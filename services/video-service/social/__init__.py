@@ -14,13 +14,13 @@ from .platforms import (
     TikTokClient,
     YouTubeClient,
     InstagramClient,
-    SocialPlatform
+    SocialPlatform,
 )
 
 __all__ = [
     "SocialMediaManager",
     "PublishRequest",
-    "PublishResult", 
+    "PublishResult",
     "TikTokClient",
     "YouTubeClient",
     "InstagramClient",

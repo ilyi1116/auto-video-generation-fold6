@@ -45,10 +45,10 @@ def db_session():
 def client(db_session):
     """Create a test client with overridden dependencies"""
     app.dependency_overrides[get_db] = override_get_db
-    
+
     with TestClient(app) as test_client:
         yield test_client
-    
+
     app.dependency_overrides.clear()
 
 
@@ -59,5 +59,5 @@ def sample_user_data():
         "email": "test@example.com",
         "username": "testuser",
         "password": "testpass123",
-        "full_name": "Test User"
+        "full_name": "Test User",
     }
