@@ -1,0 +1,101 @@
+# Istio Service Mesh Configuration
+# 將系統提升到 Google/Netflix 級別的服務治理
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: auto-video-service-mesh
+spec:
+  values:
+    global:
+      meshID: auto-video-mesh
+      multiCluster:
+        clusterName: auto-video-cluster
+      network: auto-video-network
+    pilot:
+      env:
+        PILOT_TRACE_SAMPLING: 100.0
+        PILOT_ENABLE_WORKLOAD_ENTRY_AUTOREGISTRATION: true
+    
+  components:
+    pilot:
+      k8s:
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+    
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        service:
+          type: LoadBalancer
+          ports:
+          - port: 80
+            targetPort: 8080
+            name: http2
+          - port: 443
+            targetPort: 8443
+            name: https
+        
+    egressGateways:
+    - name: istio-egressgateway
+      enabled: true
+      k8s:
+        service:
+          type: ClusterIP
+
+---
+# 流量治理 - 智能負載均衡
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ai-service-circuit-breaker
+spec:
+  host: ai-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 10
+      http:
+        http1MaxPendingRequests: 10
+        maxRequestsPerConnection: 2
+    circuitBreaker:
+      consecutiveGatewayErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+    loadBalancer:
+      simple: LEAST_CONN
+
+---
+# 金絲雀部署策略
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ai-service-canary
+spec:
+  hosts:
+  - ai-service
+  http:
+  - match:
+    - headers:
+        canary:
+          exact: "true"
+    route:
+    - destination:
+        host: ai-service
+        subset: v2
+      weight: 100
+  - route:
+    - destination:
+        host: ai-service
+        subset: v1
+      weight: 90
+    - destination:
+        host: ai-service
+        subset: v2
+      weight: 10

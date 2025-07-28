@@ -26,6 +26,8 @@ class ProviderType(Enum):
     ELEVENLABS = "elevenlabs"
     ANTHROPIC = "anthropic"
     GOOGLE_VERTEX = "google_vertex"
+    GEMINI = "google"
+    SUNO = "suno"
 
 @dataclass
 class APICallRecord:
@@ -84,6 +86,15 @@ class CostTracker:
             ProviderType.ANTHROPIC.value: {
                 "claude-3-opus": {"input_per_1k": 0.015, "output_per_1k": 0.075},
                 "claude-3-sonnet": {"input_per_1k": 0.003, "output_per_1k": 0.015}
+            },
+            ProviderType.GEMINI.value: {
+                "gemini-pro": {"input_per_1k": 0.0005, "output_per_1k": 0.0015},
+                "gemini-1.5-pro": {"input_per_1k": 0.0035, "output_per_1k": 0.0105},
+                "gemini-1.5-flash": {"input_per_1k": 0.000075, "output_per_1k": 0.0003}
+            },
+            ProviderType.SUNO.value: {
+                "chirp-v3": {"per_minute": 0.5},  # 估算價格
+                "chirp-v3-5": {"per_minute": 0.7}
             }
         }
         
@@ -208,6 +219,11 @@ class CostTracker:
             
         elif operation_type == "voice_synthesis":
             return characters_used * model_rates.get("per_character", 0.00003)
+            
+        elif operation_type == "music_generation":
+            # Suno 音樂生成成本按分鐘計算
+            duration_minutes = tokens_used / 60.0 if tokens_used > 0 else 0.5  # 預設30秒
+            return duration_minutes * model_rates.get("per_minute", 0.5)
             
         else:
             logger.warning(f"未知操作類型: {operation_type}")

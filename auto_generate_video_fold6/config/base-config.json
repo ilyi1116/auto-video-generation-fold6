@@ -67,7 +67,9 @@
     "api_rate_limits": {
       "openai_requests_per_hour": 100,
       "stability_ai_requests_per_hour": 50,
-      "elevenlabs_requests_per_hour": 75
+      "elevenlabs_requests_per_hour": 75,
+      "gemini_requests_per_hour": 120,
+      "suno_requests_per_hour": 20
     },
     "stop_on_budget_exceeded": true,
     "cost_tracking_enabled": true,
@@ -98,10 +100,20 @@
   
   "ai_services": {
     "text_generation": {
-      "provider": "openai",
-      "model": "gpt-3.5-turbo",
-      "max_tokens": 300,
-      "temperature": 0.8,
+      "primary_provider": "openai",
+      "fallback_provider": "gemini",
+      "providers": {
+        "openai": {
+          "model": "gpt-3.5-turbo",
+          "max_tokens": 300,
+          "temperature": 0.8
+        },
+        "gemini": {
+          "model": "gemini-pro",
+          "max_tokens": 300,
+          "temperature": 0.8
+        }
+      },
       "language_style": "conversational",
       "target_audience": "young_adults"
     },
@@ -111,6 +123,13 @@
       "quality": "standard",
       "style": "vivid",
       "size": "1024x1792"
+    },
+    "music_generation": {
+      "provider": "suno",
+      "model": "chirp-v3",
+      "default_duration": 30,
+      "instrumental_only": true,
+      "quality": "standard"
     }
   },
   

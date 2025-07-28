@@ -1,0 +1,435 @@
+name: CI/CD Complete Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # 程式碼品質檢查
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality & Linting
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
+
+    - name: Cache Node dependencies
+      uses: actions/cache@v3
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff black isort mypy bandit safety
+        if [ -f pyproject.toml ]; then pip install -e .; fi
+
+    - name: Install Node dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Python code formatting check
+      run: |
+        black --check --diff .
+        isort --check-only --diff .
+
+    - name: Python linting
+      run: |
+        ruff check .
+        mypy . || true
+
+    - name: Frontend linting
+      run: |
+        cd frontend
+        npm run lint
+
+    - name: Python security scan
+      run: |
+        bandit -r . -f json -o bandit-report.json || true
+        safety check || true
+
+    - name: Upload linting artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: linting-reports
+        path: |
+          bandit-report.json
+          ruff-report.txt
+
+  # 後端測試
+  backend-tests:
+    runs-on: ubuntu-latest
+    name: Backend Tests
+    needs: code-quality
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-asyncio httpx
+        if [ -f pyproject.toml ]; then pip install -e .; fi
+
+    - name: Create test environment
+      run: |
+        mkdir -p data logs monitoring
+        cp .env.example .env
+        echo "REDIS_URL=redis://localhost:6379" >> .env
+
+    - name: Run backend unit tests
+      run: |
+        pytest services/ --cov=services --cov-report=xml --cov-report=html -v
+
+    - name: Run integration tests
+      env:
+        REDIS_URL: redis://localhost:6379
+      run: |
+        pytest tests/integration/ -v || true
+
+    - name: Upload test coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: backend
+        name: backend-coverage
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: backend-test-results
+        path: |
+          htmlcov/
+          .coverage
+          pytest-report.xml
+
+  # 前端測試
+  frontend-tests:
+    runs-on: ubuntu-latest
+    name: Frontend Tests
+    needs: code-quality
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run unit tests
+      run: |
+        cd frontend
+        npm run test:unit -- --coverage --run
+
+    - name: Run component tests
+      run: |
+        cd frontend
+        npm run test:component -- --run || true
+
+    - name: Build application
+      run: |
+        cd frontend
+        npm run build
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        directory: frontend/coverage
+        flags: frontend
+        name: frontend-coverage
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build
+        path: frontend/build/
+
+  # E2E 測試
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: End-to-End Tests
+    needs: [backend-tests, frontend-tests]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        # Python dependencies
+        python -m pip install --upgrade pip
+        if [ -f pyproject.toml ]; then pip install -e .; fi
+        
+        # Node dependencies
+        cd frontend
+        npm ci
+        npx playwright install --with-deps
+
+    - name: Start backend services
+      run: |
+        cp .env.example .env
+        echo "REDIS_URL=redis://localhost:6379" >> .env
+        
+        # Start Redis
+        docker run -d -p 6379:6379 redis:7-alpine
+        
+        # Start backend (mock mode for testing)
+        python -m pytest --setup-only tests/e2e/conftest.py &
+        sleep 10
+
+    - name: Start frontend
+      run: |
+        cd frontend
+        npm run build
+        npm run preview &
+        sleep 5
+
+    - name: Run E2E tests
+      run: |
+        cd frontend
+        npx playwright test --reporter=github
+
+    - name: Upload E2E artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-test-results
+        path: |
+          frontend/test-results/
+          frontend/playwright-report/
+
+  # 安全性掃描
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+    needs: code-quality
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --file=frontend/package.json --sarif-file-output=snyk.sarif
+      continue-on-error: true
+
+    - name: Upload Snyk results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: snyk.sarif
+
+  # Docker 構建測試
+  docker-build:
+    runs-on: ubuntu-latest
+    name: Docker Build Test
+    needs: [backend-tests, frontend-tests]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker images
+      run: |
+        # Build frontend
+        docker build -t auto-video/frontend:test frontend/
+        
+        # Build backend services
+        for service in api-gateway ai-service video-service; do
+          if [ -d "services/$service" ]; then
+            docker build -t auto-video/$service:test services/$service/
+          fi
+        done
+
+    - name: Test Docker Compose
+      run: |
+        cp .env.example .env
+        docker-compose -f docker-compose.standalone.yml config
+        
+        # Test stack startup
+        docker-compose -f docker-compose.standalone.yml up -d --build
+        sleep 30
+        
+        # Basic health checks
+        curl -f http://localhost:8080/health || exit 1
+        
+        # Cleanup
+        docker-compose -f docker-compose.standalone.yml down
+
+  # 效能測試
+  performance-tests:
+    runs-on: ubuntu-latest
+    name: Performance Tests
+    needs: [backend-tests, frontend-tests]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build for production
+      run: |
+        cd frontend
+        npm run build
+
+    - name: Run Lighthouse CI
+      run: |
+        cd frontend
+        npm install -g @lhci/cli
+        lhci autorun || true
+
+    - name: Upload Lighthouse results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: lighthouse-results
+        path: frontend/.lighthouseci/
+
+  # 部署到測試環境
+  deploy-staging:
+    runs-on: ubuntu-latest
+    name: Deploy to Staging
+    needs: [e2e-tests, security-scan, docker-build]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # 這裡加入實際的部署邏輯
+        # 例如: kubectl apply, docker push, 等等
+
+  # 部署到生產環境
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [e2e-tests, security-scan, docker-build, performance-tests]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # 這裡加入實際的部署邏輯
+
+  # 通知
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify Results
+    needs: [deploy-staging, deploy-production]
+    if: always()
+
+    steps:
+    - name: Notify success
+      if: ${{ success() }}
+      run: |
+        echo "✅ CI/CD Pipeline completed successfully!"
+
+    - name: Notify failure
+      if: ${{ failure() }}
+      run: |
+        echo "❌ CI/CD Pipeline failed!"
