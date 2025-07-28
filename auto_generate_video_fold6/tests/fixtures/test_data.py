@@ -14,6 +14,7 @@ import json
 # 用戶測試數據
 # ================================
 
+
 @pytest.fixture
 def sample_user_data():
     """範例用戶數據"""
@@ -25,37 +26,34 @@ def sample_user_data():
         "password": "Test123456!",
         "is_verified": True,
         "created_at": datetime.utcnow().isoformat(),
-        "credits": {
-            "total": 1000,
-            "used": 100,
-            "remaining": 900
-        }
+        "credits": {"total": 1000, "used": 100, "remaining": 900},
     }
+
 
 @pytest.fixture
 def multiple_users_data():
     """多個用戶數據"""
     users = []
     for i in range(5):
-        users.append({
-            "id": str(uuid.uuid4()),
-            "email": f"user{i}@example.com",
-            "username": f"user{i}",
-            "full_name": f"User {i}",
-            "password": "Test123456!",
-            "is_verified": i % 2 == 0,  # 偶數用戶已驗證
-            "created_at": (datetime.utcnow() - timedelta(days=i)).isoformat(),
-            "credits": {
-                "total": 1000 + i * 100,
-                "used": i * 50,
-                "remaining": 1000 + i * 50
+        users.append(
+            {
+                "id": str(uuid.uuid4()),
+                "email": f"user{i}@example.com",
+                "username": f"user{i}",
+                "full_name": f"User {i}",
+                "password": "Test123456!",
+                "is_verified": i % 2 == 0,  # 偶數用戶已驗證
+                "created_at": (datetime.utcnow() - timedelta(days=i)).isoformat(),
+                "credits": {"total": 1000 + i * 100, "used": i * 50, "remaining": 1000 + i * 50},
             }
-        })
+        )
     return users
+
 
 # ================================
 # 專案測試數據
 # ================================
+
 
 @pytest.fixture
 def sample_project_data():
@@ -71,11 +69,12 @@ def sample_project_data():
             "style": "engaging",
             "voice_style": "professional",
             "music": True,
-            "captions": True
+            "captions": True,
         },
         "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
+        "updated_at": datetime.utcnow().isoformat(),
     }
+
 
 @pytest.fixture
 def project_with_assets():
@@ -90,7 +89,7 @@ def project_with_assets():
             "aspect_ratio": "9:16",
             "duration": 60,
             "style": "engaging",
-            "voice_style": "professional"
+            "voice_style": "professional",
         },
         "assets": {
             "script": {
@@ -98,7 +97,7 @@ def project_with_assets():
                 "content": "Welcome to the future of AI! In this video, we'll explore...",
                 "word_count": 150,
                 "estimated_duration": 60,
-                "status": "approved"
+                "status": "approved",
             },
             "images": [
                 {
@@ -106,45 +105,47 @@ def project_with_assets():
                     "url": f"https://storage.example.com/{project_id}/image1.jpg",
                     "prompt": "Modern AI workspace with holographic displays",
                     "style": "modern",
-                    "resolution": "1080p"
+                    "resolution": "1080p",
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "url": f"https://storage.example.com/{project_id}/image2.jpg",
                     "prompt": "Futuristic robot assistant helping with tasks",
                     "style": "cyberpunk",
-                    "resolution": "1080p"
-                }
+                    "resolution": "1080p",
+                },
             ],
             "audio": {
                 "id": str(uuid.uuid4()),
                 "url": f"https://storage.example.com/{project_id}/voice.mp3",
                 "duration": 58.5,
                 "voice_style": "professional",
-                "language": "en"
+                "language": "en",
             },
             "music": {
                 "id": str(uuid.uuid4()),
                 "url": f"https://storage.example.com/{project_id}/background.mp3",
                 "duration": 60,
                 "style": "electronic",
-                "mood": "energetic"
+                "mood": "energetic",
             },
             "video": {
                 "id": str(uuid.uuid4()),
                 "url": f"https://storage.example.com/{project_id}/final.mp4",
                 "duration": 60,
                 "resolution": "1080p",
-                "file_size": 15728640  # 15MB
-            }
+                "file_size": 15728640,  # 15MB
+            },
         },
         "created_at": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
+        "updated_at": datetime.utcnow().isoformat(),
     }
+
 
 # ================================
 # AI 生成測試數據
 # ================================
+
 
 @pytest.fixture
 def script_generation_request():
@@ -155,8 +156,9 @@ def script_generation_request():
         "duration_seconds": 60,
         "target_audience": "professionals",
         "keywords": ["AI", "productivity", "automation", "efficiency"],
-        "tone": "enthusiastic"
+        "tone": "enthusiastic",
     }
+
 
 @pytest.fixture
 def script_generation_response():
@@ -183,12 +185,9 @@ These tools aren't just cool - they're game-changers! Which one will you try fir
         "style": "engaging",
         "status": "generated",
         "generation_time_seconds": 3.2,
-        "metadata": {
-            "model_used": "gpt-4",
-            "temperature": 0.8,
-            "tokens_used": 456
-        }
+        "metadata": {"model_used": "gpt-4", "temperature": 0.8, "tokens_used": 456},
     }
+
 
 @pytest.fixture
 def image_generation_request():
@@ -200,8 +199,9 @@ def image_generation_request():
         "resolution": "1080p",
         "negative_prompt": "blurry, low quality, distorted, dark",
         "guidance_scale": 7.5,
-        "num_inference_steps": 50
+        "num_inference_steps": 50,
     }
+
 
 @pytest.fixture
 def music_generation_request():
@@ -213,12 +213,14 @@ def music_generation_request():
         "instrumental": True,
         "mood": "energetic",
         "tempo": "medium",
-        "tags": ["upbeat", "modern", "tech", "corporate"]
+        "tags": ["upbeat", "modern", "tech", "corporate"],
     }
+
 
 # ================================
 # 趨勢分析測試數據
 # ================================
+
 
 @pytest.fixture
 def trending_keywords_data():
@@ -232,7 +234,7 @@ def trending_keywords_data():
                 "platforms": ["tiktok", "youtube", "instagram"],
                 "engagement_rate": 8.5,
                 "competition": "medium",
-                "suggested_tags": ["AI", "productivity", "tech", "automation"]
+                "suggested_tags": ["AI", "productivity", "tech", "automation"],
             },
             {
                 "keyword": "remote work tips",
@@ -241,7 +243,7 @@ def trending_keywords_data():
                 "platforms": ["youtube", "instagram", "linkedin"],
                 "engagement_rate": 7.2,
                 "competition": "high",
-                "suggested_tags": ["remote", "work", "tips", "productivity"]
+                "suggested_tags": ["remote", "work", "tips", "productivity"],
             },
             {
                 "keyword": "crypto trading",
@@ -250,17 +252,19 @@ def trending_keywords_data():
                 "platforms": ["tiktok", "youtube"],
                 "engagement_rate": 6.8,
                 "competition": "very_high",
-                "suggested_tags": ["crypto", "trading", "bitcoin", "investment"]
-            }
+                "suggested_tags": ["crypto", "trading", "bitcoin", "investment"],
+            },
         ],
         "generated_at": datetime.utcnow().isoformat(),
         "data_sources": ["google_trends", "tiktok_api", "youtube_api"],
-        "update_frequency": "hourly"
+        "update_frequency": "hourly",
     }
+
 
 # ================================
 # 社交媒體測試數據
 # ================================
+
 
 @pytest.fixture
 def social_platforms_data():
@@ -274,7 +278,7 @@ def social_platforms_data():
             "access_token": "encrypted_token_123",
             "permissions": ["upload", "analytics"],
             "followers": 15420,
-            "last_sync": datetime.utcnow().isoformat()
+            "last_sync": datetime.utcnow().isoformat(),
         },
         {
             "platform": "youtube",
@@ -284,7 +288,7 @@ def social_platforms_data():
             "access_token": "encrypted_youtube_token",
             "permissions": ["upload", "analytics", "manage"],
             "subscribers": 8750,
-            "last_sync": datetime.utcnow().isoformat()
+            "last_sync": datetime.utcnow().isoformat(),
         },
         {
             "platform": "instagram",
@@ -294,13 +298,15 @@ def social_platforms_data():
             "access_token": None,
             "permissions": [],
             "followers": 0,
-            "last_sync": None
-        }
+            "last_sync": None,
+        },
     ]
+
 
 # ================================
 # API 回應測試數據
 # ================================
+
 
 @pytest.fixture
 def api_success_response():
@@ -310,8 +316,9 @@ def api_success_response():
         "data": {},
         "message": "Operation completed successfully",
         "timestamp": datetime.utcnow().isoformat(),
-        "request_id": str(uuid.uuid4())
+        "request_id": str(uuid.uuid4()),
     }
+
 
 @pytest.fixture
 def api_error_response():
@@ -320,19 +327,16 @@ def api_error_response():
         "success": False,
         "error": "validation_error",
         "message": "Invalid input data",
-        "details": [
-            {
-                "field": "email",
-                "message": "Invalid email format"
-            }
-        ],
+        "details": [{"field": "email", "message": "Invalid email format"}],
         "timestamp": datetime.utcnow().isoformat(),
-        "request_id": str(uuid.uuid4())
+        "request_id": str(uuid.uuid4()),
     }
+
 
 # ================================
 # 檔案上傳測試數據
 # ================================
+
 
 @pytest.fixture
 def file_upload_data():
@@ -345,7 +349,7 @@ def file_upload_data():
                 "duration": 30.5,
                 "format": "mp3",
                 "sample_rate": 44100,
-                "content_type": "audio/mpeg"
+                "content_type": "audio/mpeg",
             },
             {
                 "filename": "test_music.wav",
@@ -353,8 +357,8 @@ def file_upload_data():
                 "duration": 60.0,
                 "format": "wav",
                 "sample_rate": 48000,
-                "content_type": "audio/wav"
-            }
+                "content_type": "audio/wav",
+            },
         ],
         "video_files": [
             {
@@ -364,23 +368,25 @@ def file_upload_data():
                 "format": "mp4",
                 "resolution": "1920x1080",
                 "fps": 30,
-                "content_type": "video/mp4"
+                "content_type": "video/mp4",
             }
-        ]
+        ],
     }
+
 
 # ================================
 # 數據庫種子數據
 # ================================
 
+
 class TestDataSeeder:
     """測試數據播種器"""
-    
+
     @staticmethod
     def seed_users(db_session, count: int = 10):
         """播種用戶數據"""
         from services.auth_service.app.models import User
-        
+
         users = []
         for i in range(count):
             user = User(
@@ -388,19 +394,19 @@ class TestDataSeeder:
                 username=f"testuser{i}",
                 full_name=f"Test User {i}",
                 password_hash="hashed_password",
-                is_verified=i % 2 == 0
+                is_verified=i % 2 == 0,
             )
             users.append(user)
             db_session.add(user)
-        
+
         db_session.commit()
         return users
-    
+
     @staticmethod
     def seed_projects(db_session, user_id: str, count: int = 5):
         """播種專案數據"""
         from services.data_service.app.models import VideoProject
-        
+
         projects = []
         for i in range(count):
             project = VideoProject(
@@ -408,21 +414,19 @@ class TestDataSeeder:
                 description=f"Description for test project {i}",
                 user_id=user_id,
                 status="draft" if i % 2 == 0 else "completed",
-                settings={
-                    "aspect_ratio": "9:16",
-                    "duration": 60 + i * 10,
-                    "style": "engaging"
-                }
+                settings={"aspect_ratio": "9:16", "duration": 60 + i * 10, "style": "engaging"},
             )
             projects.append(project)
             db_session.add(project)
-        
+
         db_session.commit()
         return projects
+
 
 # ================================
 # 效能測試數據
 # ================================
+
 
 @pytest.fixture
 def performance_test_data():
@@ -434,32 +438,34 @@ def performance_test_data():
                 "endpoint": "/api/v1/ai/text/generate-script",
                 "method": "POST",
                 "payload_size": 500,
-                "expected_response_time": 2000  # ms
+                "expected_response_time": 2000,  # ms
             },
             {
                 "endpoint": "/api/v1/ai/images/generate",
-                "method": "POST", 
+                "method": "POST",
                 "payload_size": 1000,
-                "expected_response_time": 5000  # ms
+                "expected_response_time": 5000,  # ms
             },
             {
                 "endpoint": "/api/v1/projects",
                 "method": "GET",
                 "payload_size": 0,
-                "expected_response_time": 500  # ms
-            }
+                "expected_response_time": 500,  # ms
+            },
         ],
         "stress_test_duration": 300,  # 5 minutes
-        "expected_error_rate": 0.01  # 1%
+        "expected_error_rate": 0.01,  # 1%
     }
+
 
 # ================================
 # Mock 數據生成器
 # ================================
 
+
 class MockDataGenerator:
     """Mock 數據生成器"""
-    
+
     @staticmethod
     def generate_user(overrides: Dict[str, Any] = None) -> Dict[str, Any]:
         """生成用戶數據"""
@@ -469,14 +475,14 @@ class MockDataGenerator:
             "username": "testuser",
             "full_name": "Test User",
             "is_verified": True,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.utcnow().isoformat(),
         }
-        
+
         if overrides:
             data.update(overrides)
-        
+
         return data
-    
+
     @staticmethod
     def generate_project(user_id: str = None, overrides: Dict[str, Any] = None) -> Dict[str, Any]:
         """生成專案數據"""
@@ -486,18 +492,15 @@ class MockDataGenerator:
             "description": "A test project",
             "user_id": user_id or str(uuid.uuid4()),
             "status": "draft",
-            "settings": {
-                "aspect_ratio": "9:16",
-                "duration": 60
-            },
-            "created_at": datetime.utcnow().isoformat()
+            "settings": {"aspect_ratio": "9:16", "duration": 60},
+            "created_at": datetime.utcnow().isoformat(),
         }
-        
+
         if overrides:
             data.update(overrides)
-        
+
         return data
-    
+
     @staticmethod
     def generate_api_response(success: bool = True, data: Any = None) -> Dict[str, Any]:
         """生成 API 回應數據"""
@@ -506,12 +509,12 @@ class MockDataGenerator:
                 "success": True,
                 "data": data or {},
                 "message": "Success",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
         else:
             return {
                 "success": False,
                 "error": "test_error",
                 "message": "Test error message",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }

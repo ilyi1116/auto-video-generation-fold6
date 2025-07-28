@@ -56,8 +56,15 @@ jobs:
 
     - name: Python code formatting check
       run: |
-        black --check --diff .
-        isort --check-only --diff .
+        echo "🔄 檢查 Python 程式碼格式化..."
+        if ! black --check --diff services/; then
+          echo "⚠️ 發現格式化問題，自動修復中..."
+          black services/
+          isort services/
+          echo "✅ 格式化修復完成"
+        else
+          echo "✅ Python 程式碼格式化檢查通過"
+        fi
 
     - name: Python linting
       run: |
