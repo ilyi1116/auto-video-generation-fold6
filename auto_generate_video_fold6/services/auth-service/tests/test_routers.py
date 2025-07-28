@@ -3,13 +3,13 @@
 測試所有認證相關的 API 端點
 """
 
-import pytest
 from unittest.mock import AsyncMock, patch
-from httpx import AsyncClient
-from fastapi import status
 
+import pytest
 from app.main import app
-from app.schemas import UserCreate, Token
+from app.schemas import Token, UserCreate
+from fastapi import status
+from httpx import AsyncClient
 
 
 @pytest.mark.unit

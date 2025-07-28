@@ -6,11 +6,11 @@ AI 服務編排器 - 統一管理多個 AI 服務提供商
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional, Union
+import random
+import time
 from dataclasses import dataclass
 from enum import Enum
-import time
-import random
+from typing import Any, Dict, List, Optional, Union
 
 # 導入各 AI 客戶端
 try:
@@ -22,7 +22,7 @@ except ImportError:
     logging.warning("Gemini 客戶端不可用")
 
 try:
-    from services.music_service.suno_client import SunoClient, MusicGenerationRequest
+    from services.music_service.suno_client import MusicGenerationRequest, SunoClient
 
     SUNO_AVAILABLE = True
 except ImportError:

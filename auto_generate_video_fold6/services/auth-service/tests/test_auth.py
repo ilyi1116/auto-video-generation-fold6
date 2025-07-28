@@ -1,7 +1,7 @@
 import pytest
-from fastapi.testclient import TestClient
 from app import crud, schemas
 from app.security import verify_password
+from fastapi.testclient import TestClient
 
 
 class TestUserRegistration:

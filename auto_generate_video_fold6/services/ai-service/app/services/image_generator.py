@@ -1,12 +1,14 @@
 import asyncio
+import base64
+import io
 import time
 import uuid
-import io
-import base64
-from typing import Dict, List, Optional, Any
-from PIL import Image
+from typing import Any, Dict, List, Optional
+
 import httpx
 import structlog
+from PIL import Image
+
 from ..config import settings
 
 logger = structlog.get_logger()

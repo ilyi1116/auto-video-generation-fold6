@@ -1,14 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
 from typing import List
 
-from .config import settings
-from .database import engine, Base
-from .routers import scheduler
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 from .auth import verify_token
 from .celery_app import celery_app
+from .config import settings
+from .database import Base, engine
+from .routers import scheduler
 
 logger = logging.getLogger(__name__)
 

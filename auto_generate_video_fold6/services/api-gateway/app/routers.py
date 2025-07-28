@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, status, UploadFile, File
-from fastapi.responses import JSONResponse
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 import structlog
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 from .auth import get_current_user, get_optional_user
 from .proxy import proxy
 from .rate_limiter import limiter
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 
 logger = structlog.get_logger()
 

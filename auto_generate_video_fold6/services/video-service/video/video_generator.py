@@ -8,15 +8,16 @@ and the video composition engine.
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
-from pydantic import BaseModel
-from datetime import datetime
-import httpx
 import os
 import uuid
-import structlog
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from .composer import VideoComposer, CompositionResult, FinalRenderResult
+import httpx
+import structlog
+from pydantic import BaseModel
+
+from .composer import CompositionResult, FinalRenderResult, VideoComposer
 
 logger = structlog.get_logger()
 

@@ -1,14 +1,15 @@
 import asyncio
 import time
 import uuid
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
 import structlog
 
-from .text_generator import TextGenerator
-from .image_generator import ImageGenerator
-from .audio_processor import AudioProcessor
-from .suno_client import SunoClient
 from ..config import settings
+from .audio_processor import AudioProcessor
+from .image_generator import ImageGenerator
+from .suno_client import SunoClient
+from .text_generator import TextGenerator
 
 logger = structlog.get_logger()
 

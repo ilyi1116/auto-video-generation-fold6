@@ -1,9 +1,9 @@
-import pytest
 import asyncio
-from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="session")

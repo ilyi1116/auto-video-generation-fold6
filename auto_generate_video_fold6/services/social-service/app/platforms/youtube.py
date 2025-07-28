@@ -1,8 +1,9 @@
-import aiohttp
 import logging
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List
 from urllib.parse import urlencode
+
+import aiohttp
 
 from ..config import settings
 

@@ -1,13 +1,13 @@
+from contextlib import asynccontextmanager
+
+import structlog
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import structlog
-from contextlib import asynccontextmanager
 
 from .config import settings
-from .routers import text_generation, image_generation, audio_processing, music_generation
+from .routers import audio_processing, image_generation, music_generation, text_generation
 from .services.ai_manager import AIManager
-
 
 # Configure structured logging
 structlog.configure(
@@ -114,10 +114,13 @@ async def get_capabilities():
     return ai_manager.get_service_capabilities()
 
 
+from typing import Optional
+
+from fastapi import Depends
+
 # Comprehensive video generation endpoint
 from pydantic import BaseModel
-from typing import Optional
-from fastapi import Depends
+
 from .auth import get_current_user
 
 

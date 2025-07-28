@@ -1,12 +1,13 @@
+from datetime import datetime, timedelta
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import datetime, timedelta
 
-from ..database import get_db
 from ..auth import verify_token
+from ..database import get_db
 from ..models import TrendingTopic, ViralContent
-from ..schemas import TrendingTopicResponse, ViralContentResponse, PlatformType, TrendSuggestion
+from ..schemas import PlatformType, TrendingTopicResponse, TrendSuggestion, ViralContentResponse
 from ..services import trend_analyzer
 
 router = APIRouter()

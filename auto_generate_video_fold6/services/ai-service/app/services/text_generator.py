@@ -1,10 +1,12 @@
 import asyncio
 import time
 import uuid
-from typing import Dict, List, Optional, Any
-import structlog
-import openai
+from typing import Any, Dict, List, Optional
+
 import google.generativeai as genai
+import openai
+import structlog
+
 from ..config import settings
 
 logger = structlog.get_logger()

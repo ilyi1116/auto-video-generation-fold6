@@ -1,20 +1,20 @@
 import databases
 import sqlalchemy
+from app.config import settings
 from sqlalchemy import (
-    create_engine,
-    MetaData,
-    Table,
+    Boolean,
     Column,
-    Integer,
-    String,
     DateTime,
     Float,
-    Boolean,
-    Text,
     ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    create_engine,
 )
 from sqlalchemy.sql import func
-from app.config import settings
 
 # Database connection
 database = databases.Database(settings.database_url)

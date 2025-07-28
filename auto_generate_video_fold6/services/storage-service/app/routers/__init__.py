@@ -1,5 +1,5 @@
 # Storage Service Routers
 
-from . import upload, download
+from . import download, upload
 
 __all__ = ["upload", "download"]

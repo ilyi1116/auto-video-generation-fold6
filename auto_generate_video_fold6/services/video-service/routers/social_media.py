@@ -5,14 +5,15 @@ Provides endpoints for publishing videos to various social media platforms,
 managing platform connections, and retrieving publication statistics.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 import structlog
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from pydantic import BaseModel
 
 from ..auth import get_current_user
-from ..social.platforms import SocialMediaManager, PublishRequest, PublishResult
+from ..social.platforms import PublishRequest, PublishResult, SocialMediaManager
 
 router = APIRouter()
 logger = structlog.get_logger()

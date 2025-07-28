@@ -1,15 +1,15 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, Form
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Optional
-import uuid
-import structlog
 import json
+import uuid
+from typing import Optional
 
-from app.database import database, voice_files
-from app.schemas import VoiceFileCreate, UploadResponse, FileValidationError
-from app.storage import local_storage, s3_storage
+import structlog
 from app.audio_validator import audio_validator
 from app.auth import get_current_user
+from app.database import database, voice_files
+from app.schemas import FileValidationError, UploadResponse, VoiceFileCreate
+from app.storage import local_storage, s3_storage
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()

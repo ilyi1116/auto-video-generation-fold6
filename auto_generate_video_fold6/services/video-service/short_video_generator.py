@@ -4,20 +4,21 @@
 """
 
 import asyncio
-import logging
-from datetime import datetime
-from typing import List, Dict, Any, Optional
+import base64
+import io
 import json
+import logging
 import os
-from pathlib import Path
-import tempfile
 import subprocess
-from PIL import Image, ImageDraw, ImageFont
+import tempfile
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 import numpy as np
 from moviepy.editor import *
-import aiohttp
-import io
-import base64
+from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
 

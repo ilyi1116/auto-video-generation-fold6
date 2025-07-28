@@ -5,14 +5,15 @@ Google Gemini Pro AI 客戶端
 """
 
 import asyncio
-import aiohttp
+import base64
 import json
 import logging
-from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass, asdict
-from pathlib import Path
-import base64
 import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 

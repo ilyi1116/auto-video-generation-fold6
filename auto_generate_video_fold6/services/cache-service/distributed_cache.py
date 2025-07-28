@@ -6,24 +6,25 @@
 """
 
 import asyncio
-import logging
-import json
 import hashlib
-import time
+import json
+import logging
 import pickle
+import threading
+import time
 import zlib
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union, Callable
-from dataclasses import dataclass, asdict
 from enum import Enum
-import redis
-from redis.sentinel import Sentinel
-import rediscluster
+from typing import Any, Callable, Dict, List, Optional, Union
+
 import aioredis
 import hashring
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
-import threading
+import redis
+import rediscluster
+from redis.sentinel import Sentinel
 
 logger = logging.getLogger(__name__)
 

@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ..database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from ..auth import verify_token
+from ..database import get_db
 from ..models import TrendAnalysis
 from ..schemas import (
-    TrendAnalysisResponse,
-    TrendAnalysisRequest,
-    ViralContentAnalysis,
     CompetitorAnalysis,
+    TrendAnalysisRequest,
+    TrendAnalysisResponse,
+    ViralContentAnalysis,
 )
-from ..services import content_analyzer, competitor_analyzer
+from ..services import competitor_analyzer, content_analyzer
 
 router = APIRouter()
 

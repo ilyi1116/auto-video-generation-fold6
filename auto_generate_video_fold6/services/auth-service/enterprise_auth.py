@@ -6,24 +6,25 @@
 """
 
 import asyncio
-import logging
-import json
-import jwt
 import hashlib
+import json
+import logging
 import secrets
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
+
 import aiohttp
+import jwt
 import ldap3
-from ldap3 import Server, Connection, ALL, NTLM
+import psycopg2
+import redis
 import xmltodict
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-import redis
-import psycopg2
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from ldap3 import ALL, NTLM, Connection, Server
 from psycopg2.extras import RealDictCursor
 
 logger = logging.getLogger(__name__)
@@ -229,10 +230,10 @@ class SAMLAuthenticator:
 
     async def generate_auth_request(self, relay_state: Optional[str] = None) -> Dict[str, str]:
         """生成 SAML 認證請求"""
-        import uuid
-        from urllib.parse import quote
         import base64
+        import uuid
         import zlib
+        from urllib.parse import quote
 
         request_id = str(uuid.uuid4())
         issue_instant = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")

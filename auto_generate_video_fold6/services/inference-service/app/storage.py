@@ -1,9 +1,11 @@
 import os
-import aiofiles
 from typing import Optional
+
+import aiofiles
 import boto3
-from botocore.exceptions import ClientError, BotoCoreError
 import structlog
+from botocore.exceptions import BotoCoreError, ClientError
+
 from .config import get_settings
 
 logger = structlog.get_logger()

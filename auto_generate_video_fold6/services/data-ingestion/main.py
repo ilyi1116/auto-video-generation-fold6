@@ -7,14 +7,15 @@ This service handles ingestion of external data for trend analysis and content g
 - Content performance metrics collection
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 import asyncio
 import logging
-from datetime import datetime
 import os
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

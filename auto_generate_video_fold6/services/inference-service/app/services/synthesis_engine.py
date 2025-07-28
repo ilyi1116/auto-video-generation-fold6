@@ -1,12 +1,13 @@
 import asyncio
-import time
 import hashlib
-from typing import Dict, Any, Optional
-import structlog
+import time
 from datetime import datetime
+from typing import Any, Dict, Optional
 
-from .model_manager import model_manager
+import structlog
+
 from ..config import get_settings
+from .model_manager import model_manager
 
 logger = structlog.get_logger()
 settings = get_settings()

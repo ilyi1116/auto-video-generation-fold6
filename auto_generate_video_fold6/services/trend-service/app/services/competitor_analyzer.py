@@ -1,6 +1,7 @@
-import aiohttp
-from typing import Dict, List, Any
 import logging
+from typing import Any, Dict, List
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 

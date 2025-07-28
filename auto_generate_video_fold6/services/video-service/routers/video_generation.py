@@ -5,16 +5,17 @@ Provides endpoints for complete video generation workflow including
 status tracking, preview generation, and final rendering.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 import structlog
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from pydantic import BaseModel
 
 from ..auth import get_current_user
 from ..video.video_generator import (
-    video_generation_service,
     VideoGenerationRequest,
     VideoGenerationResult,
+    video_generation_service,
 )
 
 router = APIRouter()

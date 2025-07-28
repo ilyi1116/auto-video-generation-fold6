@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .database import engine, Base
-from .routers import trends, keywords, analysis
+from .database import Base, engine
+from .routers import analysis, keywords, trends
 
 logger = logging.getLogger(__name__)
 

@@ -3,13 +3,13 @@ AI 文本生成服務測試
 測試腳本生成和文本處理功能
 """
 
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from httpx import AsyncClient
-from fastapi import status
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from app.main import app
 from app.services.text_generator import TextGenerator
+from fastapi import status
+from httpx import AsyncClient
 
 
 @pytest.mark.unit

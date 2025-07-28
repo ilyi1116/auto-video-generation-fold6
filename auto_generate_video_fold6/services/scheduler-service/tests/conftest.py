@@ -1,12 +1,11 @@
 import pytest
+from app.config import settings
+from app.database import Base, get_db
+from app.main import app
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from app.main import app
-from app.database import get_db, Base
-from app.config import settings
 
 # 使用內存資料庫進行測試
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

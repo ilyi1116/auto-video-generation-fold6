@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ..database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from ..auth import verify_token
+from ..database import get_db
 from ..models import KeywordResearch
-from ..schemas import KeywordResearchResponse, KeywordSearchRequest, CompetitionLevel
+from ..schemas import CompetitionLevel, KeywordResearchResponse, KeywordSearchRequest
 from ..services import keyword_analyzer
 
 router = APIRouter()

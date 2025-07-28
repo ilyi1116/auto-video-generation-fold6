@@ -1,9 +1,9 @@
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock
 import json
+from unittest.mock import AsyncMock
 
+import pytest
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 class TestSynthesisEndpoints:

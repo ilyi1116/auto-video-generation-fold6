@@ -4,19 +4,20 @@ Google Trends 關鍵字自動採集服務
 """
 
 import asyncio
-import logging
-from datetime import datetime, timedelta
-from typing import List, Dict, Any
-import aiohttp
 import json
-from pytrends.request import TrendReq
+import logging
+import os
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
+import aiohttp
 import pandas as pd
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
 import redis.asyncio as redis
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pytrends.request import TrendReq
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-import os
 
 # 設置日誌
 logging.basicConfig(level=logging.INFO)

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from typing import Optional, List
+from typing import List, Optional
+
 import structlog
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from ..auth import get_current_user
 from ..services.suno_client import SunoClient

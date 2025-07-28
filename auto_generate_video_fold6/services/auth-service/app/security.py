@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
+
+from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
+
 from .config import settings
 
 # Password hashing

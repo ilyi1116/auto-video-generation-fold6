@@ -1,19 +1,20 @@
-from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, Request
+import asyncio
+import os
+import tempfile
+from typing import Any, Dict, List, Optional
+
+import magic
+import structlog
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
-import tempfile
-import os
-import magic
-import asyncio
-import structlog
 
-from ..database import get_db
-from ..crud import FileCRUD, ProcessingJobCRUD
-from ..storage import storage_manager
-from ..processors import processor_manager
-from ..config import settings
 from ..auth import get_current_user
+from ..config import settings
+from ..crud import FileCRUD, ProcessingJobCRUD
+from ..database import get_db
+from ..processors import processor_manager
+from ..storage import storage_manager
 
 router = APIRouter()
 logger = structlog.get_logger()
@@ -233,9 +234,10 @@ async def upload_from_url(
 ):
     """Upload file from URL"""
     try:
-        import httpx
         import mimetypes
         from urllib.parse import urlparse
+
+        import httpx
 
         logger.info("Uploading file from URL", url=url, user_id=current_user.get("id"))
 
@@ -329,6 +331,7 @@ async def process_file_async(file_id: str, job_id: str):
     """Async file processing task"""
     try:
         from sqlalchemy.ext.asyncio import AsyncSession
+
         from ..database import AsyncSessionLocal
 
         async with AsyncSessionLocal() as db:

@@ -1,14 +1,14 @@
+import asyncio
+import os
+from datetime import datetime
+from typing import Any, Dict
+
 import librosa
 import soundfile as sf
-import os
-from typing import Dict, Any
-import asyncio
 import structlog
-from datetime import datetime
-
 from app.celery_app import app
-from app.storage import s3_storage, local_storage
 from app.config import settings
+from app.storage import local_storage, s3_storage
 
 logger = structlog.get_logger(__name__)
 

@@ -1,15 +1,16 @@
-import os
 import hashlib
 import mimetypes
+import os
 import uuid
-from typing import Optional, Dict, Any, BinaryIO
 from abc import ABC, abstractmethod
+from typing import Any, BinaryIO, Dict, Optional
+
 import aiofiles
 import boto3
+import structlog
 from botocore.exceptions import ClientError
 from minio import Minio
 from minio.error import S3Error
-import structlog
 
 from .config import settings
 

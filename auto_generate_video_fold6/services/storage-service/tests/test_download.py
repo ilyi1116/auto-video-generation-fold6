@@ -1,8 +1,9 @@
-import pytest
 import json
-from unittest.mock import patch, AsyncMock
-import sys
 import os
+import sys
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
@@ -125,9 +126,10 @@ class TestDownloadAPIWithData:
     @pytest.fixture
     def mock_file_crud(self):
         """Mock FileCRUD with sample data"""
+        from datetime import datetime
+
         from app.crud import FileCRUD
         from app.models import StoredFile
-        from datetime import datetime
 
         async def mock_get_file_by_id(db, file_id, user_id=None):
             if file_id == "existing-file":

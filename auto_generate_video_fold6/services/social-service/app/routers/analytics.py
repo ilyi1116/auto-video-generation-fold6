@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
-from typing import List, Optional
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..auth import verify_token
+from ..platforms import instagram, tiktok, youtube
 from ..schemas import PlatformAnalytics, PostAnalytics
-from ..platforms import tiktok, youtube, instagram
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

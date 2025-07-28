@@ -8,25 +8,26 @@ This service orchestrates the video generation process by coordinating:
 - Video composition and rendering
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 import asyncio
-import uuid
 import logging
-from datetime import datetime
 import os
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from .ai.suno_client import SunoAIClient
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, Field
+
 from .ai.gemini_client import GeminiClient
 from .ai.stable_diffusion_client import StableDiffusionClient
-from .video.composer import VideoComposer
-from .models.video_project import VideoProject, VideoStatus
-from .database import get_db_connection
+from .ai.suno_client import SunoAIClient
 from .auth import verify_token
-from .routers import video_generation, social_media
+from .database import get_db_connection
+from .models.video_project import VideoProject, VideoStatus
+from .routers import social_media, video_generation
+from .video.composer import VideoComposer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

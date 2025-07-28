@@ -1,7 +1,8 @@
-import pytest
-from unittest.mock import patch, Mock
-import sys
 import os
+import sys
+from unittest.mock import Mock, patch
+
+import pytest
 
 # 添加 app 目錄到路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

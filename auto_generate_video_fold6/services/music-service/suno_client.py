@@ -5,13 +5,14 @@ Suno.ai 音樂生成客戶端
 """
 
 import asyncio
-import aiohttp
 import json
 import logging
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from pathlib import Path
 import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 

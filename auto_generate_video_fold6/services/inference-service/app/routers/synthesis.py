@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+import asyncio
+import io
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import structlog
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-import structlog
-import asyncio
-from datetime import datetime
-import io
 
 from ..auth import get_current_user
 from ..database import database, synthesis_jobs, voice_models
 from ..services.synthesis_engine import synthesis_engine
-from ..storage import s3_storage, local_storage
+from ..storage import local_storage, s3_storage
 
 logger = structlog.get_logger()
 router = APIRouter()

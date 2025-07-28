@@ -1,12 +1,12 @@
-import boto3
-import aiofiles
 import os
 from pathlib import Path
 from typing import BinaryIO
-import structlog
-from botocore.exceptions import ClientError
 
+import aiofiles
+import boto3
+import structlog
 from app.config import settings
+from botocore.exceptions import ClientError
 
 logger = structlog.get_logger(__name__)
 

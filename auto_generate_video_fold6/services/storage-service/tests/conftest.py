@@ -1,22 +1,22 @@
-import pytest
 import asyncio
-import tempfile
 import os
+import sys
+import tempfile
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-import sys
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
 
-from app.main import app
-from app.database import get_db
-from app.models import Base
 from app.config import settings
-
+from app.database import get_db
+from app.main import app
+from app.models import Base
 
 # Test database setup
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -141,8 +141,9 @@ def test_file():
 @pytest.fixture
 def test_image():
     """Create a test image file"""
-    from PIL import Image
     import io
+
+    from PIL import Image
 
     # Create a simple test image
     img = Image.new("RGB", (100, 100), color="red")

@@ -8,13 +8,13 @@ This module handles integration with social media platforms:
 """
 
 from .platforms import (
-    SocialMediaManager,
+    InstagramClient,
     PublishRequest,
     PublishResult,
+    SocialMediaManager,
+    SocialPlatform,
     TikTokClient,
     YouTubeClient,
-    InstagramClient,
-    SocialPlatform,
 )
 
 __all__ = [

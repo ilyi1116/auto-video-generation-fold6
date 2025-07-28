@@ -1,6 +1,7 @@
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
+import pytest
 
 
 def test_health_check(client):
@@ -193,7 +194,7 @@ def test_invalid_platform_enum(client, auth_headers):
 @pytest.mark.asyncio
 async def test_celery_task_exists():
     """測試 Celery 任務是否正確定義"""
-    from app.tasks import publish_post, check_scheduled_posts, cleanup_old_posts
+    from app.tasks import check_scheduled_posts, cleanup_old_posts, publish_post
 
     # 檢查任務函數存在
     assert publish_post is not None

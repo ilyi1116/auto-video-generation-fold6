@@ -1,7 +1,8 @@
+import structlog
 from fastapi import Request
 from fastapi.responses import Response
 from starlette.middleware.base import BaseHTTPMiddleware
-import structlog
+
 from .config import settings
 
 logger = structlog.get_logger()

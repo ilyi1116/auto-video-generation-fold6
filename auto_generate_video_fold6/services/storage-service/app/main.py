@@ -1,14 +1,14 @@
-from fastapi import FastAPI, Request, HTTPException
+import time
+from contextlib import asynccontextmanager
+
+import structlog
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from contextlib import asynccontextmanager
-import structlog
-import time
 
 from .config import settings
-from .database import init_db, close_db
-from .routers import upload, download
-
+from .database import close_db, init_db
+from .routers import download, upload
 
 # Configure structured logging
 structlog.configure(

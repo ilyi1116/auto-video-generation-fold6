@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict, Any
-import requests
 import logging
+from typing import Any, Dict
 from urllib.parse import urlencode
 
-from ..config import settings
+import requests
+from fastapi import APIRouter, Depends, HTTPException
+
 from ..auth import verify_token
-from ..schemas import PublishRequest, PublishResponse, PlatformAuth, OAuthCallback, TokenResponse
-from ..platforms import tiktok, youtube, instagram
+from ..config import settings
+from ..platforms import instagram, tiktok, youtube
+from ..schemas import OAuthCallback, PlatformAuth, PublishRequest, PublishResponse, TokenResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

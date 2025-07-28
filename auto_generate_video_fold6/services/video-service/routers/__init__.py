@@ -1,5 +1,5 @@
 # Video Service Routers
 
-from . import video_generation, social_media
+from . import social_media, video_generation
 
 __all__ = ["video_generation", "social_media"]
