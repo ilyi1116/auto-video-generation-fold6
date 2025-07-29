@@ -63,6 +63,9 @@ afterEach(() => {
 export const testUtils = {
   // 模擬 API 回應
   mockApiResponse: (data, status = 200) => {
+    if (!global.fetch.mockResolvedValueOnce) {
+      global.fetch = vi.fn();
+    }
     global.fetch.mockResolvedValueOnce({
       ok: status >= 200 && status < 300,
       status,

@@ -4,6 +4,38 @@ version: '3.8'
 # 開發環境專用配置，包含熱重載和開發工具
 
 services:
+  # GraphQL Gateway Service - 統一 API 端點
+  graphql-gateway:
+    build: 
+      context: ./services/graphql-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - VIDEO_SERVICE_URL=http://video-service:8000
+      - AI_SERVICE_URL=http://ai-service:8000
+      - TREND_SERVICE_URL=http://trend-service:8000
+      - STORAGE_SERVICE_URL=http://storage-service:8000
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key}
+    depends_on:
+      - redis
+      - auth-service
+      - video-service
+      - ai-service
+    volumes:
+      - ./services/graphql-gateway:/app
+    networks:
+      - auto-video-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   # Development API Gateway
   api-gateway:
     build:

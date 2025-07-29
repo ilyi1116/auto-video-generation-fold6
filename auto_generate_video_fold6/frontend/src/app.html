@@ -1,32 +1,82 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full">
+<!doctype html>
+<html lang="zh-TW" class="%sveltekit.theme%">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content="Auto Video Generation System - Create viral short videos with AI" />
-		<meta name="robots" content="index, follow" />
 		
-		<!-- Security headers -->
+		<!-- 核心 Meta 標籤 -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="description" content="AI 驅動的自動影片生成平台，支援多平台發布和智能內容創作" />
+		<meta name="keywords" content="AI影片生成,語音合成,自動剪輯,社群媒體,內容創作" />
+		<meta name="author" content="Auto Video Team" />
+		
+		<!-- PWA Meta 標籤 -->
+		<meta name="theme-color" content="#0ea5e9" />
+		<meta name="application-name" content="Auto Video" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="Auto Video" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="msapplication-TileColor" content="#0ea5e9" />
+		<meta name="msapplication-tap-highlight" content="no" />
+		
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="%sveltekit.assets%/manifest.json" />
+		
+		<!-- 預載入關鍵字體 -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+		
+		<!-- SEO Meta 標籤 -->
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="Auto Video - AI 影片生成平台" />
+		<meta property="og:description" content="AI 驅動的自動影片生成平台，支援多平台發布和智能內容創作" />
+		<meta property="og:image" content="%sveltekit.assets%/og-image.png" />
+		<meta property="og:url" content="https://app.autovideo.com" />
+		<meta property="og:site_name" content="Auto Video" />
+		
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Auto Video - AI 影片生成平台" />
+		<meta name="twitter:description" content="AI 驅動的自動影片生成平台，支援多平台發布和智能內容創作" />
+		<meta name="twitter:image" content="%sveltekit.assets%/og-image.png" />
+		
+		<!-- 安全性標頭 -->
 		<meta http-equiv="X-Content-Type-Options" content="nosniff" />
 		<meta http-equiv="X-Frame-Options" content="DENY" />
 		<meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-		
-		<!-- Open Graph / Facebook -->
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content="Auto Video Generation System" />
-		<meta property="og:description" content="Create viral short videos with AI" />
-		<meta property="og:image" content="%sveltekit.assets%/og-image.jpg" />
-		
-		<!-- Twitter -->
-		<meta property="twitter:card" content="summary_large_image" />
-		<meta property="twitter:title" content="Auto Video Generation System" />
-		<meta property="twitter:description" content="Create viral short videos with AI" />
-		<meta property="twitter:image" content="%sveltekit.assets%/og-image.jpg" />
+		<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 		
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover" class="h-full bg-gray-50 dark:bg-gray-900">
-		<div style="display: contents" class="h-full">%sveltekit.body%</div>
+	<body data-sveltekit-preload-data="hover" class="antialiased">
+		<!-- 主要應用程式內容 -->
+		<div id="svelte" style="display: contents">%sveltekit.body%</div>
+		
+		<!-- Service Worker 註冊 -->
+		<script>
+			// PWA 支援檢測和 Service Worker 註冊
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					navigator.serviceWorker.register('/service-worker.js')
+						.then((registration) => {
+							console.log('SW registered: ', registration);
+						})
+						.catch((registrationError) => {
+							console.log('SW registration failed: ', registrationError);
+						});
+				});
+			}
+			
+			// 檢測網路狀態
+			function updateNetworkStatus() {
+				const isOnline = navigator.onLine;
+				document.body.classList.toggle('offline', !isOnline);
+			}
+			
+			window.addEventListener('online', updateNetworkStatus);
+			window.addEventListener('offline', updateNetworkStatus);
+			updateNetworkStatus();
+		</script>
 	</body>
 </html>
