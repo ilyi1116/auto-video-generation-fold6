@@ -1,0 +1,119 @@
+MIT License
+
+Copyright (c) 2024 Auto Video Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Third-Party Licenses
+====================
+
+This project includes third-party software components that are licensed under their own terms:
+
+Python Dependencies:
+-------------------
+- FastAPI: MIT License
+- Uvicorn: BSD License
+- SQLAlchemy: MIT License
+- Pydantic: MIT License
+- Celery: BSD License
+- Redis-py: MIT License
+- And other dependencies listed in requirements.txt
+
+JavaScript/Node.js Dependencies:
+-------------------------------
+- SvelteKit: MIT License  
+- Vite: MIT License
+- Tailwind CSS: MIT License
+- TypeScript: Apache 2.0 License
+- And other dependencies listed in package.json
+
+AI Services:
+-----------
+- OpenAI API: Subject to OpenAI Terms of Service
+- Google Gemini API: Subject to Google Cloud Terms of Service
+- ElevenLabs API: Subject to ElevenLabs Terms of Service
+- Stability AI API: Subject to Stability AI Terms of Service
+
+Docker Images:
+-------------
+- Python: Python Software Foundation License
+- Node.js: MIT License
+- PostgreSQL: PostgreSQL License
+- Redis: BSD License
+- Nginx: BSD-2-Clause License
+
+Monitoring & Observability:
+--------------------------
+- Prometheus: Apache 2.0 License
+- Grafana: AGPL 3.0 License
+- Jaeger: Apache 2.0 License
+
+For complete license information of all dependencies, please refer to:
+- Python: requirements.txt and pip-licenses command output
+- Node.js: package.json and npm list --depth=0 command output
+- Docker: Each base image's respective license
+
+Attribution Requirements:
+========================
+
+When redistributing this software, you must:
+
+1. Include this license file (LICENSE)
+2. Include the copyright notice
+3. Include attribution for third-party components
+4. Respect the terms of all third-party licenses
+
+For commercial use or custom licensing arrangements, please contact:
+business@autovideo.com
+
+Patent Grant:
+============
+
+Subject to the terms and conditions of this license, each contributor hereby 
+grants to you a perpetual, worldwide, non-exclusive, no-charge, royalty-free, 
+irrevocable patent license to make, have made, use, offer to sell, sell, 
+import, and otherwise transfer the work.
+
+Trademark Notice:
+================
+
+"Auto Video" and associated logos are trademarks of Auto Video Team. 
+Use of these trademarks is subject to separate trademark license terms.
+
+Export Control:
+==============
+
+This software may be subject to export control laws and regulations. 
+Users are responsible for complying with all applicable export control 
+laws and regulations when using, distributing, or exporting this software.
+
+Disclaimer:
+==========
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
+
+For questions about licensing, please contact: legal@autovideo.com
