@@ -36,6 +36,32 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Voice Enhancement Service - 進階語音合成與克隆
+  voice-enhancement:
+    build: 
+      context: ./services/voice-enhancement
+      dockerfile: Dockerfile
+    ports:
+      - "8095:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key}
+    depends_on:
+      - redis
+    volumes:
+      - ./services/voice-enhancement:/app
+      - voice_models:/app/voices
+    networks:
+      - auto-video-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Development API Gateway
   api-gateway:
     build:
@@ -397,6 +423,8 @@ volumes:
   minio_dev_data:
     driver: local
   pgadmin_dev_data:
+    driver: local
+  voice_models:
     driver: local
 
 networks:
