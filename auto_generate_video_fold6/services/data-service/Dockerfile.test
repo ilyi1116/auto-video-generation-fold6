@@ -1,0 +1,73 @@
+# 資料服務測試專用 Dockerfile
+# 針對 TDD 工作流程優化
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 安裝系統依賴
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    netcat-openbsd \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 複製依賴檔案
+COPY requirements.txt requirements-dev.txt ./
+
+# 安裝 Python 依賴（包含開發依賴）
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+# 複製應用程式碼
+COPY . .
+
+# 建立測試腳本
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "🧪 執行資料服務 TDD 測試套件..."\n\
+echo ""\n\
+echo "📋 1. 等待依賴服務..."\n\
+while ! nc -z postgres-test 5432; do\n\
+  echo "等待 PostgreSQL..."\n\
+  sleep 1\n\
+done\n\
+while ! nc -z redis-test 6379; do\n\
+  echo "等待 Redis..."\n\
+  sleep 1\n\
+done\n\
+while ! nc -z minio-test 9000; do\n\
+  echo "等待 MinIO..."\n\
+  sleep 1\n\
+done\n\
+echo "✅ 所有依賴服務已就緒"\n\
+echo ""\n\
+echo "📋 2. 初始化測試資料庫..."\n\
+python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"\n\
+echo "✅ 測試資料庫初始化完成"\n\
+echo ""\n\
+echo "📋 3. 執行單元測試..."\n\
+python -m pytest tests/unit/ -v --tb=short || exit 1\n\
+echo ""\n\
+echo "📋 4. 執行整合測試..."\n\
+python -m pytest tests/integration/ -v --tb=short || exit 1\n\
+echo ""\n\
+echo "📋 5. 執行 API 測試..."\n\
+python -m pytest tests/api/ -v --tb=short || exit 1\n\
+echo ""\n\
+echo "📋 6. 檢查測試覆蓋率 (≥90%)..."\n\
+python -m pytest tests/ --cov=app --cov-report=term-missing --cov-report=html --cov-fail-under=90 || exit 1\n\
+echo ""\n\
+echo "📋 7. 程式碼品質檢查..."\n\
+flake8 app/ --max-complexity=10 || exit 1\n\
+echo ""\n\
+echo "✅ 所有資料服務測試通過！"\n\
+' > /app/run-tests.sh && chmod +x /app/run-tests.sh
+
+# 預設執行測試
+CMD ["/app/run-tests.sh"]
+
+# 健康檢查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD python -c "import app; print('Health check passed')" || exit 1
