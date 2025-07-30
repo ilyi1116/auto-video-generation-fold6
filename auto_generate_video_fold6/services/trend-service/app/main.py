@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .database import Base, engine
-from .routers import analysis, keywords, trends
+from .routers import analysis, keywords, trends, entrepreneur
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,9 @@ app.include_router(
 )
 app.include_router(
     analysis.router, prefix="/api/v1/analysis", tags=["analysis"]
+)
+app.include_router(
+    entrepreneur.router, prefix="/api/v1/entrepreneur", tags=["entrepreneur"]
 )
 
 

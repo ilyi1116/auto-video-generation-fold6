@@ -8,6 +8,7 @@
   import ProfileSettings from '$lib/components/settings/ProfileSettings.svelte';
   import SecuritySettings from '$lib/components/settings/SecuritySettings.svelte';
   import NotificationSettings from '$lib/components/settings/NotificationSettings.svelte';
+  import EntrepreneurModeSettings from '$lib/components/settings/EntrepreneurModeSettings.svelte';
   
   import { 
     User, 
@@ -16,7 +17,8 @@
     Eye, 
     Palette, 
     CreditCard,
-    Settings as SettingsIcon
+    Settings as SettingsIcon,
+    Zap
   } from 'lucide-svelte';
 
   let isLoading = true;
@@ -28,7 +30,8 @@
     notifications: {},
     privacy: {},
     appearance: {},
-    billing: {}
+    billing: {},
+    entrepreneurMode: {}
   };
 
   const tabs = [
@@ -37,6 +40,12 @@
       name: 'Profile',
       icon: User,
       description: 'Manage your account information'
+    },
+    {
+      id: 'entrepreneurMode',
+      name: 'Entrepreneur Mode',
+      icon: Zap,
+      description: 'Automated content creation for profit'
     },
     {
       id: 'notifications',
@@ -127,6 +136,36 @@
           billingCycle: 'monthly',
           nextBilling: '2024-02-15',
           paymentMethod: '**** 4242'
+        },
+        entrepreneurMode: {
+          enabled: false,
+          autoTrendsFetch: true,
+          dailyVideoCount: 3,
+          operatingHours: {
+            start: '09:00',
+            end: '18:00',
+            timezone: 'Asia/Taipei'
+          },
+          contentPreferences: {
+            categories: ['technology', 'entertainment', 'lifestyle'],
+            languages: ['zh-TW'],
+            platforms: ['tiktok', 'youtube-shorts'],
+            videoDuration: 30
+          },
+          budget: {
+            dailyLimit: 10.0,
+            monthlyLimit: 300.0,
+            stopOnBudgetExceeded: true
+          },
+          quality: {
+            minimumTrendScore: 0.7,
+            contentQualityThreshold: 0.8
+          },
+          publishing: {
+            autoPublish: false,
+            scheduledPublishing: true,
+            publishingHours: ['10:00', '14:00', '18:00']
+          }
         }
       };
     } catch (error) {
@@ -219,6 +258,22 @@
   function handleDisable2FA() {
     toastStore.info('2FA management feature coming soon!');
   }
+
+  async function handleEntrepreneurModeSave(event) {
+    const entrepreneurData = event.detail;
+    try {
+      isSaving = true;
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      settingsData.entrepreneurMode = { ...settingsData.entrepreneurMode, ...entrepreneurData };
+      toastStore.success('創業者模式設定已更新！');
+    } catch (error) {
+      toastStore.error('Failed to update entrepreneur mode settings');
+    } finally {
+      isSaving = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -270,6 +325,13 @@
             profile={settingsData.profile}
             isLoading={isSaving}
             on:save={handleProfileSave}
+          />
+
+        {:else if activeTab === 'entrepreneurMode'}
+          <EntrepreneurModeSettings
+            entrepreneurSettings={settingsData.entrepreneurMode}
+            isLoading={isSaving}
+            on:save={handleEntrepreneurModeSave}
           />
 
         {:else if activeTab === 'notifications'}

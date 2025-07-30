@@ -26,7 +26,7 @@ from .ai.suno_client import SunoAIClient
 from .auth import verify_token
 from .database import get_db_connection
 from .models.video_project import VideoProject, VideoStatus
-from .routers import social_media, video_generation
+from .routers import social_media, video_generation, entrepreneur_workflows
 from .video.composer import VideoComposer
 
 logging.basicConfig(level=logging.INFO)
@@ -52,6 +52,9 @@ app.include_router(
 )
 app.include_router(
     social_media.router, prefix="/api/v1/social", tags=["social-media"]
+)
+app.include_router(
+    entrepreneur_workflows.router, prefix="/api/v1/entrepreneur", tags=["entrepreneur-workflows"]
 )
 
 security = HTTPBearer()
