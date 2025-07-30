@@ -56,7 +56,7 @@ EXPOSE 8003
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003", "--reload"]
 
 # Stage 4: Production build
-FROM dependencies as production-build
+FROM dependencies as builder
 
 # Copy source code
 COPY . .
@@ -93,8 +93,8 @@ WORKDIR /app
 COPY --from=dependencies /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=dependencies /usr/local/bin /usr/local/bin
 
-# Copy application code from production-build stage
-COPY --from=production-build --chown=appuser:appuser /app .
+# Copy application code from builder stage
+COPY --from=builder --chown=appuser:appuser /app .
 
 # Create storage directories with proper permissions
 RUN mkdir -p storage/images storage/videos storage/previews storage/thumbnails \
