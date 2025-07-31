@@ -199,8 +199,8 @@ async def download_file(
                 yield file_data
 
             headers = {
-                "Content-Disposition": f'attachment; filename="{quote \
-                    (file.original_filename)}"',
+                "Content-Disposition": f'attachment; filename="{quote
+                                                                (file.original_filename)}"',
                 "Content-Type": file.mime_type,
                 "Content-Length": str(file.file_size),
             }

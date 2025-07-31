@@ -324,7 +324,8 @@ Make sure the total duration of all scenes equals {duration} seconds.
         """Generate formatted captions for video"""
 
         prompt = f"""
-Generate video captions for the following narration text. Format as short, readable segments suitable for video overlay.
+Generate video captions for the following narration text. 
+Format as short, readable segments suitable for video overlay.
 
 Narration: "{narration}"
 Style: {style}

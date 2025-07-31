@@ -177,8 +177,8 @@ class StableDiffusionClient:
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(
-                        f"Stable Diffusion API error: {response \
-                            .status} - {error_text}"
+                        f"Stable Diffusion API error: {response
+                                                       .status} - {error_text}"
                     )
 
                 result = await response.json()

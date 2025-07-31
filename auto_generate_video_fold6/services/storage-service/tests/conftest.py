@@ -1,3 +1,6 @@
+from app.models import Base
+from app.main import app
+from app.database import get_db
 import asyncio
 import os
 import sys
@@ -12,9 +15,6 @@ from sqlalchemy.pool import StaticPool
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
 
-from app.database import get_db
-from app.main import app
-from app.models import Base
 
 # Test database setup
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"

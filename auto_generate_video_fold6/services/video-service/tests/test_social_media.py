@@ -1,3 +1,5 @@
+from social.platforms import PublishRequest, PublishResult, SocialMediaManager
+from main import app
 import os
 import sys
 from datetime import datetime, timedelta
@@ -8,9 +10,6 @@ from fastapi.testclient import TestClient
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from main import app
-from social.platforms import PublishRequest, PublishResult, SocialMediaManager
 
 
 class TestSocialMediaAPI:

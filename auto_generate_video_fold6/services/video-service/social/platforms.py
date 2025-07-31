@@ -528,8 +528,8 @@ class InstagramClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"Instagram media creation error: {response \
-                        .status} - {error_text}"
+                    f"Instagram media creation error: {response
+                                                       .status} - {error_text}"
                 )
 
             result = await response.json()

@@ -127,7 +127,7 @@ async def get_search_volume_trends(
         seasonal_factor = 1 + (i % 3) * 0.2  # 模擬季節性變化
         trends.append(
             {
-                "month": f"2024-{12-months+i+1:02d}",
+                "month": f"2024-{12 - months + i + 1:02d}",
                 "volume": int(base_volume * seasonal_factor),
                 "trend_index": 50 + (i * 5) % 100,
             }

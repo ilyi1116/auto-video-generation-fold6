@@ -17,7 +17,6 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
 from dataclasses import dataclass, field
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -568,7 +567,7 @@ class EntrepreneurWorkflowEngine:
             images = []
             for i in range(3):
                 image_url = f"https://generated-images.example \
-                    .com/{keyword}_{i+1}_{result.workflow_id}.jpg"
+                    .com/{keyword}_{i + 1}_{result.workflow_id}.jpg"
                 images.append(image_url)
 
             result.generated_assets.images = images

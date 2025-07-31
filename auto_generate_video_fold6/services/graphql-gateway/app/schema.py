@@ -13,10 +13,7 @@ from .types import (
     User,
     VideoProject,
     AIScript,
-    VoiceSynthesis,
-    ImageGeneration,
     TrendAnalysis,
-    SocialPost,
 )
 
 logger = structlog.get_logger()

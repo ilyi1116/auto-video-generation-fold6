@@ -5,7 +5,6 @@ GraphQL Gateway Service
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-import strawberry
 from strawberry.fastapi import GraphQLRouter
 import structlog
 from prometheus_client import make_asgi_app, Counter, Histogram

@@ -12,14 +12,12 @@
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
+from datetime import datetime
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
-import json
 
 from .platforms import tiktok, youtube, instagram
-from .config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -166,8 +164,8 @@ class EntrepreneurPublisher:
         """多平台批次發布"""
 
         try:
-            request_id = f"batch_{datetime.utcnow().strftime \
-                ('%Y%m%d_%H%M%S')}_{request.user_id}"
+            request_id = f"batch_{datetime.utcnow().strftime
+                                  ('%Y%m%d_%H%M%S')}_{request.user_id}"
 
             batch_result = BatchPublishResult(
                 request_id=request_id,
@@ -447,7 +445,11 @@ class EntrepreneurPublisher:
                 return await client.publish_reel(
                     video_url=content["video_url"],
                     access_token=access_token,
-                    caption=f"{content['title']}\n\n{content['description']}\n\n{' '.join(content['hashtags'])}",
+                    caption=f"{
+                        content['title']}\n\n{
+                        content['description']}\n\n{
+                        ' '.join(
+                            content['hashtags'])}",
                     allow_comments=content.get("allow_comments", True),
                     allow_sharing=content.get("allow_sharing", True),
                 )
@@ -524,8 +526,8 @@ class EntrepreneurPublisher:
         """排程批次發布"""
 
         try:
-            request_id = f"scheduled_{datetime.utcnow().strftime \
-                ('%Y%m%d_%H%M%S')}_{request.user_id}"
+            request_id = f"scheduled_{datetime.utcnow().strftime
+                                      ('%Y%m%d_%H%M%S')}_{request.user_id}"
 
             # 為每個平台創建排程任務
             for platform, scheduled_time in publish_times.items():

@@ -3,12 +3,6 @@ TDD Refactor 階段測試
 確保重構後的程式碼仍然通過所有測試
 """
 
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
-
-from datetime import datetime, timedelta
 from workflow_engine_refactored import (
     VideoWorkflowEngine,
     VideoWorkflowRequest,
@@ -19,6 +13,11 @@ from workflow_engine_refactored import (
     WorkflowIdGenerator,
     CompletionTimeEstimator,
 )
+from datetime import datetime
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 
 
 # 重用 Green 階段的測試框架
@@ -56,8 +55,8 @@ class RefactorTest:
             pass  # 正確拋出異常
         except Exception as e:
             raise AssertionError(
-                f"Expected {exception_type.__name__}, but got {type(e \
-                    ).__name__}: {e}"
+                f"Expected {exception_type.__name__}, but got {type(e
+                                                                    ).__name__}: {e}"
             )
 
     def run_test(self, test_func, test_name):

@@ -6,10 +6,9 @@ TDD 測試：影片生成工作流程核心功能
 """
 
 import asyncio
-import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import Dict, Optional
+from unittest.mock import patch
 
 import pytest
 from pydantic import BaseModel

@@ -428,7 +428,8 @@ class VideoComposer:
     ) -> str:
         """Build FFmpeg filter complex for video composition"""
 
-        # This is a simplified version - real implementation would be much more complex
+        # This is a simplified version - real implementation would be much more
+        # complex
         filter_parts = []
 
         # Scale and process images
@@ -563,8 +564,8 @@ class VideoComposer:
         return {
             "duration": float(format_info.get("duration", 0)),
             "file_size": int(format_info.get("size", 0)),
-            "resolution": f"{video_stream.get('width', 0 \
-                )}x{video_stream.get('height', 0)}",
+            "resolution": f"{video_stream.get('width', 0
+                                              )}x{video_stream.get('height', 0)}",
             "format": format_info.get("format_name", "mp4").split(",")[0],
         }
 

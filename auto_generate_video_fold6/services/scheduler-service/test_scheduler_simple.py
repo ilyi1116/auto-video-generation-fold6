@@ -4,20 +4,19 @@
 直接測試排程管理器的核心功能
 """
 
-import sys
-import asyncio
-from datetime import datetime, timedelta
-from pathlib import Path
-
-# 添加服務路徑
-sys.path.insert(0, str(Path(__file__).parent / "app"))
-
 from app.entrepreneur_scheduler import (
     EntrepreneurScheduler,
     SchedulerConfig,
     TaskStatus,
     ScheduledTask,
 )
+import sys
+import asyncio
+from datetime import datetime
+from pathlib import Path
+
+# 添加服務路徑
+sys.path.insert(0, str(Path(__file__).parent / "app"))
 
 
 async def test_scheduler_basic_functionality():

@@ -413,7 +413,8 @@ class TestVideoGenerationService:
             request
         )
 
-        # Should be more than base time due to long length, ultra quality, and music
+        # Should be more than base time due to long length, ultra quality, and
+        # music
         assert estimated_time.total_seconds() > 300  # More than 5 minutes
 
     @pytest.mark.asyncio

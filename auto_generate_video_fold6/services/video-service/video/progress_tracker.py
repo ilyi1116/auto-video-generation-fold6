@@ -4,7 +4,6 @@
 TDD Green 階段：最小實作讓測試通過
 """
 
-from typing import Dict
 from datetime import datetime
 
 

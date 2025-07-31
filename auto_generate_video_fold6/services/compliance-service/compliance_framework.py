@@ -168,8 +168,8 @@ class GDPRCompliance:
 
         if not is_valid:
             logger.warning(
-                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for \
-                    k, v in validations.items() if not v]}"
+                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for
+                                                               k, v in validations.items() if not v]}"
             )
 
         return is_valid
@@ -195,13 +195,11 @@ class GDPRCompliance:
                     subject_id
                 ),
                 "recipients": await self._get_data_recipients(subject_id),
-                "third_country_transfers": await self \
-                    ._get_third_country_transfers(
+                "third_country_transfers": await self._get_third_country_transfers(
                     subject_id
                 ),
                 "data_source": await self._get_data_source(subject_id),
-                "automated_decision_making": await self \
-                    ._get_automated_decisions(
+                "automated_decision_making": await self._get_automated_decisions(
                     subject_id
                 ),
                 "generated_at": datetime.utcnow().isoformat(),
@@ -904,8 +902,7 @@ class ComplianceFramework:
             "timestamp": datetime.utcnow().isoformat(),
             "retention_policy_check": await self._check_retention_policies(),
             "consent_validity_check": await self._check_consent_validity(),
-            "data_classification_check": await self \
-                ._check_data_classification(),
+            "data_classification_check": await self._check_data_classification(),
             "access_control_check": await self._check_access_controls(),
         }
 

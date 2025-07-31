@@ -4,14 +4,6 @@ TDD Refactor 階段驗證測試
 確保重構後的程式碼功能完全相同
 """
 
-import sys
-import asyncio
-from datetime import datetime, timedelta
-from pathlib import Path
-
-# 添加服務路徑
-sys.path.insert(0, str(Path(__file__).parent / "app"))
-
 from app.entrepreneur_scheduler_refactored import (
     EntrepreneurScheduler,
     SchedulerConfig,
@@ -19,9 +11,15 @@ from app.entrepreneur_scheduler_refactored import (
     ScheduledTask,
     MockVideoServiceClient,
     StatisticsManager,
-    TaskExecutor,
     create_entrepreneur_scheduler,
 )
+import sys
+import asyncio
+from datetime import datetime, timedelta
+from pathlib import Path
+
+# 添加服務路徑
+sys.path.insert(0, str(Path(__file__).parent / "app"))
 
 
 async def test_refactored_basic_functionality():

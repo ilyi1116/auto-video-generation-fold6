@@ -15,7 +15,6 @@ from ..entrepreneur_publisher import (
     EntrepreneurPublisher,
     PublishRequest,
     Platform,
-    PublishStatus,
 )
 
 logger = logging.getLogger(__name__)

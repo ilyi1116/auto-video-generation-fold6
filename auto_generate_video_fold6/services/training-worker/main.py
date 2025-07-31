@@ -205,8 +205,8 @@ def train_voice_model(self, task_data: Dict[str, Any]):
 
     except Exception as e:
         logger.error(
-            f"Training failed for task {task_data.get('task_id', \
-                'unknown')}: {str(e)}"
+            f"Training failed for task {task_data.get('task_id',
+                                                      'unknown')}: {str(e)}"
         )
 
         task.status = TrainingStatus.FAILED

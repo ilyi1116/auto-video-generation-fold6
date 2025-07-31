@@ -1,3 +1,4 @@
+from app.storage import LocalStorageBackend, S3StorageBackend, StorageManager
 import os
 import sys
 import tempfile
@@ -7,8 +8,6 @@ import pytest
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
-
-from app.storage import LocalStorageBackend, S3StorageBackend, StorageManager
 
 
 class TestLocalStorageBackend:

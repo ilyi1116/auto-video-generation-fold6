@@ -199,8 +199,8 @@ async def upload_multiple_files(
         if len(files) > settings.max_upload_files:
             raise HTTPException(
                 status_code=400,
-                detail=f"Too many files. Maximum allowed: {settings \
-                    .max_upload_files}",
+                detail=f"Too many files. Maximum allowed: {settings
+                                                           .max_upload_files}",
             )
 
         uploaded_files = []

@@ -8,7 +8,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .workflow_engine import VideoWorkflowRequest
+    pass
 
 
 class WorkflowTimeEstimator:

@@ -8,10 +8,9 @@ import asyncio
 import uuid
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Any, List
+from typing import Dict, Optional, Any
 from enum import Enum
 from dataclasses import dataclass, field
-import json
 import aiohttp
 
 logger = logging.getLogger(__name__)
@@ -215,8 +214,8 @@ class EntrepreneurScheduler:
             if task.retry_count < self.config.retry_attempts:
                 task.retry_count += 1
                 logger.warning(
-                    f"任務執行失敗，準備重試 ({task.retry_count}/{self.config \
-                        .retry_attempts}): {e}"
+                    f"任務執行失敗，準備重試 ({task.retry_count}/{self.config
+                                                       .retry_attempts}): {e}"
                 )
                 # 延遲後重試
                 await asyncio.sleep(self.config.retry_delay_minutes * 60)
@@ -253,7 +252,7 @@ class EntrepreneurScheduler:
                             "success": False,
                             "error": f"API 回應錯誤: {response.status}",
                         }
-        except ConnectionError as e:
+        except ConnectionError:
             raise ConnectionError("服務不可用")
         except Exception as e:
             raise Exception(f"API 呼叫失敗: {str(e)}")
@@ -316,8 +315,8 @@ class EntrepreneurScheduler:
             "config": {
                 "daily_video_limit": self.config.daily_video_limit,
                 "daily_budget_limit": self.config.daily_budget_limit,
-                "work_hours": f"{self.config.work_hours_start}-{self \
-                    .config.work_hours_end}",
+                "work_hours": f"{self.config.work_hours_start}-{self
+                                                                .config.work_hours_end}",
             },
         }
 

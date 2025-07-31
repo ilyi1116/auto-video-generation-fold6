@@ -8,7 +8,7 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, Any, Optional, List, Callable, Union
+from typing import Dict, Any, Optional, List, Callable
 import time
 
 from base_service import (
@@ -126,7 +126,7 @@ class WorkflowStep(ABC):
         for observer in self._observers:
             try:
                 observer(result)
-            except Exception as e:
+            except Exception:
                 # 觀察者錯誤不應影響主流程
                 pass
 
@@ -141,7 +141,6 @@ class WorkflowStep(ABC):
     @abstractmethod
     async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
         """執行步驟邏輯（子類實作）"""
-        pass
 
     async def execute(self, context: WorkflowContext) -> StepResult:
         """執行步驟"""

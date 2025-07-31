@@ -1,3 +1,9 @@
+from app.processors import (
+    AudioProcessor,
+    ImageProcessor,
+    ProcessorManager,
+    VideoProcessor,
+)
 import os
 import sys
 import tempfile
@@ -8,13 +14,6 @@ from PIL import Image
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
-
-from app.processors import (
-    AudioProcessor,
-    ImageProcessor,
-    ProcessorManager,
-    VideoProcessor,
-)
 
 
 class TestImageProcessor:

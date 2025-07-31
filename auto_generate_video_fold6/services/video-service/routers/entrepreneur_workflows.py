@@ -16,8 +16,6 @@ from ..video.entrepreneur_workflow_engine import (
     EntrepreneurWorkflowEngine,
     EntrepreneurWorkflowConfig,
     EntrepreneurWorkflowRequest,
-    WorkflowStatus,
-    WorkflowStage,
 )
 
 logger = logging.getLogger(__name__)
@@ -435,7 +433,7 @@ async def create_batch_workflows(
             batch_request.tags.append(
                 f"batch_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
             )
-            batch_request.tags.append(f"batch_item_{i+1}")
+            batch_request.tags.append(f"batch_item_{i + 1}")
 
             # 轉換配置
             config = EntrepreneurWorkflowConfig(

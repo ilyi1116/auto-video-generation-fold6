@@ -4,14 +4,10 @@ Voice Cloning Service
 """
 
 import io
-import os
 import numpy as np
-import torch
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import structlog
 from resemblyzer import VoiceEncoder, preprocess_wav
-from encoder import inference as encoder_inference
-from encoder.params_model import model_embedding_size as speaker_embedding_size
 import librosa
 import soundfile as sf
 from pathlib import Path
@@ -102,10 +98,10 @@ class VoiceCloner:
                     embedding = self._extract_voice_embedding(processed_audio)
                     embeddings.append(embedding)
 
-                    logger.info(f"處理樣本 {i+1}/{len(audio_samples)} 完成")
+                    logger.info(f"處理樣本 {i + 1}/{len(audio_samples)} 完成")
 
                 except Exception as e:
-                    logger.warning(f"處理樣本 {i+1} 失敗", error=str(e))
+                    logger.warning(f"處理樣本 {i + 1} 失敗", error=str(e))
                     continue
 
             if len(embeddings) < self.min_samples_for_cloning:

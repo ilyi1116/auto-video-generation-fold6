@@ -31,8 +31,7 @@ async def verify_token_with_auth_service(token: str) -> dict:
 
         except httpx.RequestError as e:
             logger.error(
-                "Failed to verify token with auth service",
-                error=str(e)
+                "Failed to verify token with auth service", error=str(e)
             )
             return None
 
@@ -41,9 +40,7 @@ def verify_token_locally(token: str) -> dict:
     """Verify JWT token locally (fallback)"""
     try:
         payload = jwt.decode(
-            token,
-            settings.jwt_secret_key,
-            algorithms=[settings.jwt_algorithm]
+            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
         )
         email: str = payload.get("sub")
         if email is None:

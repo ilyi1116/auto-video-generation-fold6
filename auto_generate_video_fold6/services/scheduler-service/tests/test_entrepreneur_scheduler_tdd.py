@@ -12,9 +12,8 @@ TDD Red 階段: 創業者排程管理器測試
 """
 
 import pytest
-import asyncio
 from datetime import datetime, timedelta
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, patch
 
 # 這些 import 會失敗，因為我們還沒實作 - 這就是 TDD Red 階段
 from services.scheduler_service.app.entrepreneur_scheduler import (

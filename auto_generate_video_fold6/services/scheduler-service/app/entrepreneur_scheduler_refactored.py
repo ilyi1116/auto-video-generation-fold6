@@ -16,8 +16,6 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional, Any, List, Callable
 from enum import Enum
 from dataclasses import dataclass, field
-from contextlib import asynccontextmanager
-import json
 import aiohttp
 from abc import ABC, abstractmethod
 
@@ -200,12 +198,10 @@ class ServiceClient(ABC):
         self, config: Dict[str, Any]
     ) -> Dict[str, Any]:
         """呼叫影片生成服務"""
-        pass
 
     @abstractmethod
     async def health_check(self) -> bool:
         """健康檢查"""
-        pass
 
 
 class VideoServiceClient(ServiceClient):

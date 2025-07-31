@@ -3,9 +3,10 @@
 專注於影片生成工作流程的核心測試
 """
 
+from workflow_engine import VideoWorkflowRequest
+import os
 import sys
-import traceback
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 # 簡單的測試框架實現
@@ -63,12 +64,8 @@ class SimpleTest:
 
 
 # 直接匯入避免其他模組的依賴問題
-import sys
-import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
-
-from workflow_engine import VideoWorkflowRequest, VideoWorkflowResult
 
 
 # TDD 測試函數 - 這些應該會失敗，因為相關類別還不存在

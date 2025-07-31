@@ -160,8 +160,8 @@ async def publish_to_social_media(
 
             return SocialPublishResponse(
                 success=successful > 0,
-                message=f"Published to {successful}/{len(request \
-                    .platforms)} platforms successfully",
+                message=f"Published to {successful}/{len(request
+                                                         .platforms)} platforms successfully",
                 results=formatted_results,
                 total_platforms=len(request.platforms),
                 successful_publishes=successful,
@@ -557,7 +557,8 @@ async def _scheduled_publish(
 ):
     """Execute scheduled publication (background task)"""
     try:
-        # In production, this would be handled by a proper job queue like Celery
+        # In production, this would be handled by a proper job queue like
+        # Celery
         import asyncio
 
         # Wait until scheduled time

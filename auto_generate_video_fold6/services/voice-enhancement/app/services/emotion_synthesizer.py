@@ -5,8 +5,7 @@ Emotion-aware Speech Synthesis
 
 import io
 import numpy as np
-import torch
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import structlog
 from TTS.api import TTS
 from speechemotionrecognition import SpeechEmotionRecognition

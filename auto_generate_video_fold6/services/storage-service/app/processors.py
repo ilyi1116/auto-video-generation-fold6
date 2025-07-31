@@ -288,7 +288,11 @@ class VideoProcessor(FileProcessor):
                 "-r",
                 str(target_fps),
                 "-vf",
-                f"scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2",
+                (
+                    f"scale={target_width}:{target_height}:"
+                    f"force_original_aspect_ratio=decrease,"
+                    f"pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2"
+                ),
                 "-preset",
                 "medium",
                 "-crf",

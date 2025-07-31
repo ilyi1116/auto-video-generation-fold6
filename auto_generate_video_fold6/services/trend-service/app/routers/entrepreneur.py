@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 import asyncio
 import logging
 
@@ -10,8 +10,6 @@ from pydantic import BaseModel
 from ..auth import verify_token
 from ..database import get_db
 from ..models import TrendingTopic
-from ..services import trend_analyzer
-from ..schemas import PlatformType
 
 logger = logging.getLogger(__name__)
 

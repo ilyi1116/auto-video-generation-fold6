@@ -5,20 +5,18 @@ Docker 環境驗證測試
 遵循 CLAUDE.md 中的 Docker 驗證要求
 """
 
-import os
-import sys
-import time
-import subprocess
-import json
-from pathlib import Path
-
-# 添加模組路徑
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
-
 from workflow_engine_refactored import (
     VideoWorkflowEngine,
     VideoWorkflowRequest,
 )
+import os
+import sys
+import time
+import subprocess
+from pathlib import Path
+
+# 添加模組路徑
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 
 
 class DockerValidationTest:
@@ -174,7 +172,7 @@ def test_container_health_check_simulation():
     """測試：模擬容器健康檢查"""
     try:
         # 模擬健康檢查端點
-        engine = VideoWorkflowEngine()
+        VideoWorkflowEngine()
 
         # 創建簡單的健康檢查響應
         health_status = {

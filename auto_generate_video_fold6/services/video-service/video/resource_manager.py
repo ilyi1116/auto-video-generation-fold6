@@ -6,7 +6,6 @@ TDD Green 階段：最小實作讓測試通過
 
 import os
 import tempfile
-from typing import List
 
 
 class ResourceManager:

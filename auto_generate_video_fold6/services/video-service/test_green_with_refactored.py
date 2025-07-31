@@ -3,23 +3,22 @@
 驗證重構沒有破壞原有功能
 """
 
+from resource_manager import ResourceManager
+from time_estimator import WorkflowTimeEstimator
+from progress_tracker import ProgressTracker
+from pipeline_executor import PipelineExecutor
+from workflow_engine_refactored import (
+    VideoWorkflowEngine,
+    VideoWorkflowRequest,
+)
+from datetime import datetime, timedelta
 import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 
-from datetime import datetime, timedelta
 
 # 使用重構後的實作
-from workflow_engine_refactored import (
-    VideoWorkflowEngine,
-    VideoWorkflowRequest,
-    VideoWorkflowResult,
-)
-from pipeline_executor import PipelineExecutor
-from progress_tracker import ProgressTracker
-from time_estimator import WorkflowTimeEstimator
-from resource_manager import ResourceManager
 
 
 # 簡單的測試框架
@@ -265,8 +264,8 @@ def test_should_cleanup_resources_after_workflow_completion():
     )
 
     # 記錄初始狀態
-    initial_temp_files = resource_manager.count_temporary_files()
-    initial_memory_usage = resource_manager.get_memory_usage()
+    resource_manager.count_temporary_files()
+    resource_manager.get_memory_usage()
 
     # 執行工作流程
     engine.execute_workflow(workflow_result.workflow_id)

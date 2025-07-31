@@ -5,7 +5,7 @@ Voice Cloning API Router
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Dict
 import structlog
 
 from ..auth import get_current_user
@@ -101,13 +101,13 @@ async def create_voice_profile(
         for i, audio_file in enumerate(audio_files):
             if not audio_file.content_type.startswith("audio/"):
                 raise HTTPException(
-                    status_code=400, detail=f"文件 {i+1} 不是有效的音訊格式"
+                    status_code=400, detail=f"文件 {i + 1} 不是有效的音訊格式"
                 )
 
             # 讀取音訊數據
             audio_data = await audio_file.read()
             if len(audio_data) == 0:
-                raise HTTPException(status_code=400, detail=f"文件 {i+1} 為空")
+                raise HTTPException(status_code=400, detail=f"文件 {i + 1} 為空")
 
             audio_samples.append(audio_data)
 

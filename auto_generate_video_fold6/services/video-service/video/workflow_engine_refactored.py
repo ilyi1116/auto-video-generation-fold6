@@ -170,15 +170,12 @@ class WorkflowRepository(Protocol):
         user_id: str,
     ) -> None:
         """儲存工作流程"""
-        pass
 
     def get(self, workflow_id: str) -> Optional[Dict]:
         """取得工作流程"""
-        pass
 
     def delete(self, workflow_id: str) -> None:
         """刪除工作流程"""
-        pass
 
 
 class InMemoryWorkflowRepository:

@@ -359,17 +359,14 @@ class BaseService(ABC):
     @abstractmethod
     async def _initialize(self) -> None:
         """服務初始化邏輯（子類實作）"""
-        pass
 
     @abstractmethod
     async def _startup(self) -> None:
         """服務啟動邏輯（子類實作）"""
-        pass
 
     @abstractmethod
     async def _shutdown(self) -> None:
         """服務關閉邏輯（子類實作）"""
-        pass
 
     # === 生命週期管理 ===
 

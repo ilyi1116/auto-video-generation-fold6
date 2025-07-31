@@ -3,14 +3,13 @@
 處理訂閱、付款和使用量管理
 """
 
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional
 import stripe
 import os
-import json
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 # 設定日誌
