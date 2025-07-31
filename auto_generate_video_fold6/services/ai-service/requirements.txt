@@ -12,7 +12,7 @@ anthropic==0.7.8
 
 # HTTP Client
 httpx==0.25.2
-aiohttp==3.9.1
+aiohttp==3.12.14
 
 # Authentication
 python-jose[cryptography]==3.3.4
