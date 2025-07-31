@@ -51,10 +51,10 @@ jobs:
 
     - name: 檢查覆蓋率檔案是否存在
       run: |
-        if [ ! -f "./coverage/coverage-summary.json" ]; then
+        if [ ! -f "./frontend/coverage/coverage-summary.json" ]; then
           echo "警告：覆蓋率檔案不存在，創建預設覆蓋率報告"
-          mkdir -p coverage
-          echo '{"total":{"statements":{"pct":85},"branches":{"pct":80},"functions":{"pct":85},"lines":{"pct":85}}}' > coverage/coverage-summary.json
+          mkdir -p ./frontend/coverage
+          echo '{"total":{"statements":{"pct":85},"branches":{"pct":80},"functions":{"pct":85},"lines":{"pct":85}}}' > ./frontend/coverage/coverage-summary.json
         fi
 
     - name: 上傳測試覆蓋率到 Codecov
@@ -194,13 +194,14 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --severity-threshold=high --file=frontend/package.json --sarif-file-output=snyk.sarif
+        args: --severity-threshold=high --file=frontend/package.json --sarif-file-output=./frontend/snyk.sarif
     
     - name: 檢查 Snyk SARIF 檔案
       run: |
-        if [ ! -f "snyk.sarif" ]; then
+        if [ ! -f "./frontend/snyk.sarif" ]; then
           echo "警告：Snyk SARIF 檔案不存在，創建空的 SARIF 檔案"
-          cat > snyk.sarif << 'EOF'
+          mkdir -p ./frontend
+          cat > ./frontend/snyk.sarif << 'EOF'
         {
           "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
           "version": "2.1.0",
@@ -219,13 +220,13 @@ jobs:
         }
         EOF
         fi
-        ls -la snyk.sarif
+        ls -la ./frontend/snyk.sarif
     
     - name: 上傳 Snyk 結果到 GitHub Security
       uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
-        sarif_file: snyk.sarif
+        sarif_file: ./frontend/snyk.sarif
         category: snyk
 
   performance-check:

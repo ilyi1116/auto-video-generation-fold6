@@ -36,7 +36,8 @@ jobs:
       - name: Run Snyk security scan
         run: |
           # Create empty SARIF file as fallback
-          cat > snyk.sarif << 'EOF'
+          mkdir -p ./frontend
+          cat > ./frontend/snyk.sarif << 'EOF'
           {
             "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
             "version": "2.1.0",
@@ -57,7 +58,7 @@ jobs:
           # Try to run Snyk if token is available
           if [ -n "${{ secrets.SNYK_TOKEN }}" ]; then
             echo "Running Snyk security scan..."
-            npx snyk test --sarif-file-output=snyk.sarif || echo "Snyk scan completed with issues"
+            npx snyk test --sarif-file-output=./frontend/snyk.sarif || echo "Snyk scan completed with issues"
           else
             echo "SNYK_TOKEN not configured, using empty SARIF file"
           fi
@@ -65,9 +66,10 @@ jobs:
       
       - name: Verify Snyk SARIF file exists
         run: |
-          if [ ! -f "snyk.sarif" ]; then
+          if [ ! -f "./frontend/snyk.sarif" ]; then
             echo "Warning: Snyk SARIF file does not exist, creating empty SARIF file"
-            cat > snyk.sarif << 'EOF'
+            mkdir -p ./frontend
+            cat > ./frontend/snyk.sarif << 'EOF'
           {
             "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
             "version": "2.1.0",
@@ -86,13 +88,13 @@ jobs:
           }
           EOF
           fi
-          ls -la snyk.sarif
+          ls -la ./frontend/snyk.sarif
       
       - name: Upload Snyk results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: snyk.sarif
+          sarif_file: ./frontend/snyk.sarif
       
       - name: Run Python code quality checks
         run: |
