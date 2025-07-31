@@ -294,7 +294,7 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
@@ -307,8 +307,15 @@ jobs:
         args: --file=frontend/package.json --sarif-file-output=snyk.sarif
       continue-on-error: true
 
+    - name: Check Snyk SARIF file
+      run: |
+        if [ ! -f "snyk.sarif" ]; then
+          echo "Warning: Snyk SARIF file does not exist, creating empty SARIF file"
+          echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"snyk"}},"results":[]}]}' > snyk.sarif
+        fi
+
     - name: Upload Snyk results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: snyk.sarif
