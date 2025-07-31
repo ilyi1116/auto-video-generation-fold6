@@ -361,7 +361,7 @@ class TestSocialMediaIntegration:
 
             result = await manager.publish_to_platform("tiktok", request)
 
-            assert result.success == True
+            assert result.success  is True
             assert result.platform == "tiktok"
             assert result.platform_id == "tiktok123"
 

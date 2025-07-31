@@ -349,7 +349,8 @@ class ExperimentTracker:
     ) -> str:
         """啟動 A/B 測試"""
         test_id = f"ab_test_{model_a.model_id}_{model_b
-                                                .model_id}_{int(datetime.utcnow().timestamp())}"
+                                                .model_id}_{int \
+                                                    (datetime.utcnow().timestamp())}"
 
         ab_test = {
             "id": test_id,

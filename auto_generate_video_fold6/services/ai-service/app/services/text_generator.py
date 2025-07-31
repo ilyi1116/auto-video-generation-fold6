@@ -382,7 +382,8 @@ OPTIMIZATION GUIDELINES:
 - Maintain the core message and hook
 - Preserve the most engaging elements
 - {'Remove redundant points, combine ideas, use more concise \
-    language' if action == 'shorten' else 'Add supporting details, examples, or elaboration on key points'}
+    language' if action == 'shorten' else 'Add supporting details, \
+        examples, or elaboration on key points'}
 - Keep the natural flow and transitions
 - Maintain call-to-action
 

@@ -200,7 +200,8 @@ async def download_file(
 
             headers = {
                 "Content-Disposition": f'attachment; filename="{quote
-                                                                (file.original_filename)}"',
+                                                                (file \
+                                                                    .original_filename)}"',
                 "Content-Type": file.mime_type,
                 "Content-Length": str(file.file_size),
             }

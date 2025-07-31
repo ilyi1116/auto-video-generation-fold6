@@ -143,7 +143,8 @@ class FileProcessingJob(Base):
 
     def __repr__(self):
         return f"<FileProcessingJob(id={self.id}, job_type={self
-                                                            .job_type}, status={self.status})>"
+                                                             \
+                                                                .job_type}, status={self.status})>"
 
 
 class FileDownload(Base):

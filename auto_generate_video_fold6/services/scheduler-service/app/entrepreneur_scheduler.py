@@ -316,7 +316,8 @@ class EntrepreneurScheduler:
                 "daily_video_limit": self.config.daily_video_limit,
                 "daily_budget_limit": self.config.daily_budget_limit,
                 "work_hours": f"{self.config.work_hours_start}-{self
-                                                                .config.work_hours_end}",
+                                                                 \
+                                                                    .config.work_hours_end}",
             },
         }
 

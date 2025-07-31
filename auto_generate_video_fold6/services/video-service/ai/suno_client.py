@@ -173,7 +173,8 @@ class SunoAIClient:
                     elif status == "failed":
                         raise Exception(
                             f"Voice generation failed: {result.get
-                                                        ('error', 'Unknown error')}"
+                                                        ('error', \
+                                                            'Unknown error')}"
                         )
                     elif status in ["queued", "processing"]:
                         # Check timeout

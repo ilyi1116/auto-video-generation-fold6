@@ -44,7 +44,7 @@ async def schedule_post(
                 PlatformAccount.id == request.platform_account_id,
                 PlatformAccount.user_id == current_user["user_id"],
                 PlatformAccount.platform == request.platform,
-                PlatformAccount.is_active == True,
+                PlatformAccount.is_active  is True,
             )
             .first()
         )
@@ -306,7 +306,7 @@ async def get_platform_accounts(
         db.query(PlatformAccount)
         .filter(
             PlatformAccount.user_id == current_user["user_id"],
-            PlatformAccount.is_active == True,
+            PlatformAccount.is_active  is True,
         )
         .all()
     )

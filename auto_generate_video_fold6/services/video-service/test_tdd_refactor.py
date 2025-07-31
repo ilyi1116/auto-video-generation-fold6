@@ -56,7 +56,8 @@ class RefactorTest:
         except Exception as e:
             raise AssertionError(
                 f"Expected {exception_type.__name__}, but got {type(e
-                                                                    ).__name__}: {e}"
+                                                                    ) \
+                                                                        .__name__}: {e}"
             )
 
     def run_test(self, test_func, test_name):

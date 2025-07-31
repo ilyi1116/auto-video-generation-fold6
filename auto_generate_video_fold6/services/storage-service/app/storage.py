@@ -335,7 +335,8 @@ class StorageManager:
         now = datetime.utcnow()
 
         object_key = f"{user_id}/{file_type}/{now.year:04d}/{now
-                                                             .month:02d}/{safe_filename}"
+                                                              \
+                                                                 .month:02d}/{safe_filename}"
         return object_key
 
     def calculate_file_hash(self, file_data: bytes) -> str:

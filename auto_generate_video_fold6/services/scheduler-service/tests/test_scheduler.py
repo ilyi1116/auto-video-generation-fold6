@@ -141,7 +141,7 @@ def test_connect_platform_account(mock_verify_token, client, auth_headers):
     data = response.json()
     assert data["platform"] == account_data["platform"]
     assert data["platform_user_id"] == account_data["platform_user_id"]
-    assert data["is_active"] == True
+    assert data["is_active"]  is True
 
 
 @patch("app.auth.verify_token")

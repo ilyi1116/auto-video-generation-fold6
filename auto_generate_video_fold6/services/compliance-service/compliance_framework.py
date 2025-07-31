@@ -169,7 +169,8 @@ class GDPRCompliance:
         if not is_valid:
             logger.warning(
                 f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for
-                                                               k, v in validations.items() if not v]}"
+                                                               k, v \
+                                                                   in validations.items() if not v]}"
             )
 
         return is_valid
