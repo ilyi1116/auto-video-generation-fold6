@@ -200,8 +200,26 @@ jobs:
       run: |
         if [ ! -f "snyk.sarif" ]; then
           echo "警告：Snyk SARIF 檔案不存在，創建空的 SARIF 檔案"
-          echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"snyk"}},"results":[]}]}' > snyk.sarif
+          cat > snyk.sarif << 'EOF'
+        {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "snyk",
+                  "version": "1.0.0",
+                  "informationUri": "https://snyk.io"
+                }
+              },
+              "results": []
+            }
+          ]
+        }
+        EOF
         fi
+        ls -la snyk.sarif
     
     - name: 上傳 Snyk 結果到 GitHub Security
       uses: github/codeql-action/upload-sarif@v3

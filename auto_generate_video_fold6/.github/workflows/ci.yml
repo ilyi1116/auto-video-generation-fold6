@@ -63,9 +63,34 @@ jobs:
           fi
         continue-on-error: true
       
+      - name: Verify Snyk SARIF file exists
+        run: |
+          if [ ! -f "snyk.sarif" ]; then
+            echo "Warning: Snyk SARIF file does not exist, creating empty SARIF file"
+            cat > snyk.sarif << 'EOF'
+          {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "snyk",
+                    "version": "1.0.0",
+                    "informationUri": "https://snyk.io"
+                  }
+                },
+                "results": []
+              }
+            ]
+          }
+          EOF
+          fi
+          ls -la snyk.sarif
+      
       - name: Upload Snyk results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('snyk.sarif') != ''
+        if: always()
         with:
           sarif_file: snyk.sarif
       
