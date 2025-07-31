@@ -10,14 +10,19 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    libpq-dev \
-    gcc \
-    g++ \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies with optimizations
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libpq-dev \
+        gcc \
+        g++ \
+        libc6-dev \
+        curl \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -31,8 +36,13 @@ FROM base as dependencies
 # Copy requirements files
 COPY requirements.txt requirements-dev.txt ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies with optimizations
+RUN set -ex \
+    && pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir --compile -r requirements.txt \
+    && pip cache purge \
+    && find /usr/local/lib/python3.11 -name '*.pyc' -delete \
+    && find /usr/local/lib/python3.11 -name '*.pyo' -delete
 
 # Stage 3: Development environment
 FROM dependencies as development
@@ -75,13 +85,18 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ENVIRONMENT=production
 
-# Install runtime system dependencies only
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    libpq5 \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+# Install minimal runtime dependencies
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libpq5 \
+        curl \
+        ca-certificates \
+        tini \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && useradd --create-home --shell /bin/bash --user-group appuser
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -110,11 +125,18 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8003
 
-# Production command with optimized settings
+# Use tini as init system for proper signal handling
+ENTRYPOINT ["tini", "--"]
+
+# Production command with optimized settings for video processing
 CMD ["python", "-m", "uvicorn", "main:app", \
      "--host", "0.0.0.0", \
      "--port", "8003", \
      "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--max-requests", "500", \
+     "--max-requests-jitter", "50", \
+     "--timeout-keep-alive", "5", \
      "--access-log", \
      "--log-level", "info"]
 

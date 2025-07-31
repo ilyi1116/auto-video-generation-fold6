@@ -20,6 +20,7 @@ from pythonjsonlogger import jsonlogger
 request_id_context: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
 user_id_context: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
 trace_id_context: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
+correlation_id_context: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
 
 
 class LogLevel(Enum):
@@ -47,6 +48,95 @@ class EventType(Enum):
 
 @dataclass
 class LogEvent:
+    """日誌事件數據結構"""
+    
+    timestamp: str
+    level: str
+    service: str
+    message: str
+    event_type: Optional[str] = None
+    request_id: Optional[str] = None
+    user_id: Optional[str] = None
+    trace_id: Optional[str] = None
+    correlation_id: Optional[str] = None
+    duration_ms: Optional[float] = None
+    status_code: Optional[int] = None
+    method: Optional[str] = None
+    path: Optional[str] = None
+    exception: Optional[str] = None
+    stack_trace: Optional[str] = None
+    additional_fields: Optional[Dict[str, Any]] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """轉換為字典格式"""
+        result = asdict(self)
+        if self.additional_fields:
+            result.update(self.additional_fields)
+        return result
+
+
+# Structlog 處理器和配置
+def add_context_processor(logger, method_name, event_dict):
+    """添加上下文信息到日誌事件"""
+    # 添加關聯ID
+    if correlation_id_context.get():
+        event_dict["correlation_id"] = correlation_id_context.get()
+    
+    # 添加請求ID
+    if request_id_context.get():
+        event_dict["request_id"] = request_id_context.get()
+    
+    # 添加用戶ID
+    if user_id_context.get():
+        event_dict["user_id"] = user_id_context.get()
+    
+    # 添加追踪ID
+    if trace_id_context.get():
+        event_dict["trace_id"] = trace_id_context.get()
+    
+    return event_dict
+
+
+def timestamp_processor(logger, method_name, event_dict):
+    """添加時間戳"""
+    event_dict["timestamp"] = datetime.now(timezone.utc).isoformat()
+    return event_dict
+
+
+def exception_processor(logger, method_name, event_dict):
+    """處理異常信息"""
+    if "exception" in event_dict:
+        exc = event_dict["exception"]
+        if isinstance(exc, Exception):
+            event_dict["exception"] = str(exc)
+            event_dict["exception_type"] = exc.__class__.__name__
+            event_dict["stack_trace"] = traceback.format_exc()
+    return event_dict
+
+
+# 配置 structlog
+structlog.configure(
+    processors=[
+        timestamp_processor,
+        add_context_processor,
+        exception_processor,
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer()
+    ],
+    context_class=dict,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
+
+@dataclass
+class StructuredLogger:
     """結構化日誌事件"""
 
     timestamp: str
@@ -57,6 +147,7 @@ class LogEvent:
     request_id: Optional[str] = None
     user_id: Optional[str] = None
     trace_id: Optional[str] = None
+    correlation_id: Optional[str] = None
     span_id: Optional[str] = None
     session_id: Optional[str] = None
     ip_address: Optional[str] = None
@@ -158,6 +249,8 @@ class StructuredLogger:
             event_dict["user_id"] = user_id_context.get()
         if trace_id_context.get():
             event_dict["trace_id"] = trace_id_context.get()
+        if correlation_id_context.get():
+            event_dict["correlation_id"] = correlation_id_context.get()
 
         return event_dict
 
@@ -174,6 +267,7 @@ class StructuredLogger:
             request_id=request_id_context.get(),
             user_id=user_id_context.get(),
             trace_id=trace_id_context.get(),
+            correlation_id=correlation_id_context.get(),
             **kwargs,
         )
 
@@ -344,10 +438,11 @@ def get_logger(
 class LogContext:
     """日誌上下文管理器"""
 
-    def __init__(self, request_id: str = None, user_id: str = None, trace_id: str = None):
+    def __init__(self, request_id: str = None, user_id: str = None, trace_id: str = None, correlation_id: str = None):
         self.request_id = request_id
         self.user_id = user_id
         self.trace_id = trace_id
+        self.correlation_id = correlation_id
         self.tokens = []
 
     def __enter__(self):
@@ -357,6 +452,8 @@ class LogContext:
             self.tokens.append(user_id_context.set(self.user_id))
         if self.trace_id:
             self.tokens.append(trace_id_context.set(self.trace_id))
+        if self.correlation_id:
+            self.tokens.append(correlation_id_context.set(self.correlation_id))
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -143,10 +143,14 @@ class OpenTelemetryMiddleware:
                 span.set_attribute("user.id", user_id)
                 baggage.set_baggage("user.id", user_id)
 
-            # 添加請求 ID
+            # 添加請求 ID 和關聯 ID
             request_id = request.headers.get("x-request-id") or self._generate_request_id()
+            correlation_id = request.headers.get("x-correlation-id") or self._generate_correlation_id()
+            
             span.set_attribute("request.id", request_id)
+            span.set_attribute("correlation.id", correlation_id)
             baggage.set_baggage("request.id", request_id)
+            baggage.set_baggage("correlation.id", correlation_id)
 
             start_time = time.time()
 
@@ -173,6 +177,7 @@ class OpenTelemetryMiddleware:
                 response.headers["x-trace-id"] = format(span.get_span_context().trace_id, "032x")
                 response.headers["x-span-id"] = format(span.get_span_context().span_id, "016x")
                 response.headers["x-request-id"] = request_id
+                response.headers["x-correlation-id"] = correlation_id
 
                 return response
 
@@ -208,7 +213,11 @@ class OpenTelemetryMiddleware:
     def _generate_request_id(self) -> str:
         """生成請求 ID"""
         import uuid
-
+        return str(uuid.uuid4())
+    
+    def _generate_correlation_id(self) -> str:
+        """生成關聯 ID"""
+        import uuid
         return str(uuid.uuid4())
 
     def create_span(self, name: str, attributes: Dict[str, Any] = None) -> trace.Span:
