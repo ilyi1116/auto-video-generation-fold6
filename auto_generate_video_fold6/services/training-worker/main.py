@@ -135,7 +135,10 @@ def train_voice_model(self, task_data: Dict[str, Any]):
                 state=TrainingStatus.TRAINING,
                 meta={
                     "progress": int(progress),
-                    "status": f"Training epoch {epoch + 1}/{model_config.get('epochs', 100)}",
+                    "status": (
+                        f"Training epoch {epoch + 1}/"
+                        f"{model_config.get('epochs', 100)}"
+                    ),
                     "current_step": "training",
                     "epoch": epoch + 1,
                     "total_epochs": model_config.get("epochs", 100),
@@ -202,7 +205,8 @@ def train_voice_model(self, task_data: Dict[str, Any]):
 
     except Exception as e:
         logger.error(
-            f"Training failed for task {task_data.get('task_id', 'unknown')}: {str(e)}"
+            f"Training failed for task {task_data.get('task_id', \
+                'unknown')}: {str(e)}"
         )
 
         task.status = TrainingStatus.FAILED

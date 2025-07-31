@@ -13,9 +13,7 @@ logger = structlog.get_logger()
 
 class MusicGenerationRequest(BaseModel):
     prompt: str
-    style: str = (
-        "background"  # background, energetic, cinematic, acoustic, corporate, hip_hop, jazz
-    )
+    style: str = "background"  # background, energetic, cinematic, acoustic, corporate, hip_hop, jazz
     duration_seconds: int = 30  # 15-300 seconds
     instrumental: bool = True
     mood: str = "neutral"  # upbeat, calm, dramatic, energetic, peaceful

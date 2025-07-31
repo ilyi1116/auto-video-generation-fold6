@@ -99,7 +99,8 @@ class StoredFile(Base):
     project_id = Column(String, index=True)
 
     def __repr__(self):
-        return f"<StoredFile(id={self.id}, filename={self.filename}, file_type={self.file_type})>"
+        return f"<StoredFile(id={self.id}, filename={self.filename}, \
+            file_type={self.file_type})>"
 
 
 class FileProcessingJob(Base):
@@ -141,7 +142,8 @@ class FileProcessingJob(Base):
     completed_at = Column(DateTime(timezone=True))
 
     def __repr__(self):
-        return f"<FileProcessingJob(id={self.id}, job_type={self.job_type}, status={self.status})>"
+        return f"<FileProcessingJob(id={self.id}, job_type={self \
+            .job_type}, status={self.status})>"
 
 
 class FileDownload(Base):

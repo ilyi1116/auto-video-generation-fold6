@@ -101,7 +101,8 @@ class SynthesisEngine:
                 timeout=settings.synthesis_timeout,
             )
             raise RuntimeError(
-                f"Synthesis timed out after {settings.synthesis_timeout} seconds"
+                f"Synthesis timed out after {settings.synthesis_timeout} "
+                "seconds"
             )
 
         except Exception as e:

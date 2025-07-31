@@ -16,7 +16,8 @@ def get_auth_url() -> str:
     params = {
         "client_id": settings.YOUTUBE_CLIENT_ID,
         "redirect_uri": "http://localhost:3000/auth/youtube/callback",
-        "scope": "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
+        "scope": "https://www.googleapis.com/auth/youtube.upload \
+            https://www.googleapis.com/auth/youtube.readonly",
         "response_type": "code",
         "access_type": "offline",
         "state": "random_state_string",
@@ -112,13 +113,15 @@ async def publish_video(
                             return {
                                 "success": True,
                                 "post_id": video_youtube_id,
-                                "post_url": f"https://www.youtube.com/watch?v={video_youtube_id}",
+                                "post_url": f"https://www.youtube \
+                                    .com/watch?v={video_youtube_id}",
                             }
                         else:
                             error_text = await upload_response.text()
                             return {
                                 "success": False,
-                                "error": f"YouTube video upload failed: {error_text}",
+                                "error": f"YouTube video upload \
+                                    failed: {error_text}",
                             }
                 else:
                     error_text = await response.text()
@@ -219,7 +222,7 @@ async def check_api_status() -> str:
                 f"{settings.YOUTUBE_API_BASE}/videos?part=id&chart=mostPopular&maxResults=1"
             ) as response:
                 return "healthy" if response.status == 200 else "unhealthy"
-    except:
+    except Exception:
         return "unhealthy"
 
 

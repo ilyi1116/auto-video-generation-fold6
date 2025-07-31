@@ -1,7 +1,8 @@
 """
 Data Ingestion Service
 
-This service handles ingestion of external data for trend analysis and content generation:
+This service handles ingestion of external data for trend analysis and
+content generation:
 - Social media trend monitoring
 - Keyword analysis and tracking
 - Content performance metrics collection

@@ -296,7 +296,8 @@ class AutoScaler:
         if current_metrics["cpu_usage"] > policy["target_cpu"]:
             return {
                 "action": "scale_up",
-                "reason": f"CPU 使用率 {current_metrics['cpu_usage']}% > {policy['target_cpu']}%",
+                "reason": f"CPU 使用率 {current_metrics['cpu_usage']}% > \
+                    {policy['target_cpu']}%",
                 "suggested_replicas": min(
                     current_metrics["current_replicas"] + 1,
                     policy["max_replicas"],
@@ -347,7 +348,8 @@ class ExperimentTracker:
         duration_hours: int = 24,
     ) -> str:
         """啟動 A/B 測試"""
-        test_id = f"ab_test_{model_a.model_id}_{model_b.model_id}_{int(datetime.utcnow().timestamp())}"
+        test_id = f"ab_test_{model_a.model_id}_{model_b \
+            .model_id}_{int(datetime.utcnow().timestamp())}"
 
         ab_test = {
             "id": test_id,
@@ -439,11 +441,13 @@ class MLOpsPipeline:
         """模型安全檢查"""
         # 模擬安全檢查邏輯
         checks = {
-            "performance_regression": model_version.performance_metrics.accuracy
+            "performance_regression": model_version \
+                .performance_metrics.accuracy
             > 0.9,
             "latency_acceptable": model_version.performance_metrics.latency_p95
             < 200,
-            "cost_reasonable": model_version.performance_metrics.cost_per_request
+            "cost_reasonable": model_version.performance_metrics \
+                .cost_per_request
             < 0.01,
             "error_rate_low": model_version.performance_metrics.error_rate
             < 0.05,
@@ -512,7 +516,8 @@ class MLOpsPipeline:
     ):
         """路由指定百分比的流量到新模型"""
         logger.info(
-            f"路由 {percentage}% 流量到 {model_version.model_id}:{model_version.version}"
+            f"路由 {percentage}% 流量到 {model_version \
+                .model_id}:{model_version.version}"
         )
         # 實際實現會更新 Istio VirtualService 配置
 
@@ -524,7 +529,8 @@ class MLOpsPipeline:
 
         health_ok = error_rate < 0.01 and latency < 100
         logger.info(
-            f"金絲雀健康檢查: 錯誤率={error_rate:.3f}, 延遲={latency:.1f}ms, 健康={health_ok}"
+            f"金絲雀健康檢查: 錯誤率={error_rate:.3f}, 延遲={latency:.1f}ms, \
+                健康={health_ok}"
         )
         return health_ok
 

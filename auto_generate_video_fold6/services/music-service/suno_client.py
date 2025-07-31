@@ -132,7 +132,8 @@ class SunoClient:
                     return MusicGenerationResult(
                         id="",
                         status="failed",
-                        error_message=f"API 錯誤: {response.status} - {error_text}",
+                        error_message=f"API 錯誤: {response.status} - \
+                            {error_text}",
                     )
 
                 result_data = await response.json()

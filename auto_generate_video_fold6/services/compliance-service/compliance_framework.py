@@ -168,7 +168,8 @@ class GDPRCompliance:
 
         if not is_valid:
             logger.warning(
-                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for k, v in validations.items() if not v]}"
+                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for \
+                    k, v in validations.items() if not v]}"
             )
 
         return is_valid
@@ -194,11 +195,13 @@ class GDPRCompliance:
                     subject_id
                 ),
                 "recipients": await self._get_data_recipients(subject_id),
-                "third_country_transfers": await self._get_third_country_transfers(
+                "third_country_transfers": await self \
+                    ._get_third_country_transfers(
                     subject_id
                 ),
                 "data_source": await self._get_data_source(subject_id),
-                "automated_decision_making": await self._get_automated_decisions(
+                "automated_decision_making": await self \
+                    ._get_automated_decisions(
                     subject_id
                 ),
                 "generated_at": datetime.utcnow().isoformat(),
@@ -468,8 +471,9 @@ class AuditLogger:
             with conn.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO compliance_audit_log 
-                    (event_id, event_type, user_id, resource, action, timestamp,
+                    INSERT INTO compliance_audit_log
+                    (
+                        event_id, event_type, user_id, resource, action, timestamp,
                      ip_address, user_agent, success, risk_level, compliance_tags, metadata)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
@@ -517,7 +521,7 @@ class AuditLogger:
 
                 alert_message = f"""
                 高風險合規事件警報
-                
+
                 事件ID: {event.event_id}
                 事件類型: {event.event_type}
                 用戶ID: {event.user_id}
@@ -526,7 +530,7 @@ class AuditLogger:
                 風險等級: {event.risk_level}
                 時間: {event.timestamp}
                 合規標準: {', '.join(event.compliance_tags)}
-                
+
                 請立即檢查並採取適當措施。
                 """
 
@@ -900,7 +904,8 @@ class ComplianceFramework:
             "timestamp": datetime.utcnow().isoformat(),
             "retention_policy_check": await self._check_retention_policies(),
             "consent_validity_check": await self._check_consent_validity(),
-            "data_classification_check": await self._check_data_classification(),
+            "data_classification_check": await self \
+                ._check_data_classification(),
             "access_control_check": await self._check_access_controls(),
         }
 

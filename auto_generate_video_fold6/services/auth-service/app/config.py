@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     # Database
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://auto_video_user:your_secure_password_here@postgres:5432/auto_video_db",
+        "postgresql://auto_video_user:your_secure_password_here@"
+        "postgres:5432/auto_video_db",
     )
 
     # JWT Configuration

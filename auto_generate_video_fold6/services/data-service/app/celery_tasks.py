@@ -150,7 +150,7 @@ def start_preprocessing_task(
                 os.remove(local_path)
             if "processed_path" in locals() and os.path.exists(processed_path):
                 os.remove(processed_path)
-        except:
+        except Exception:
             pass
 
         raise

@@ -107,7 +107,8 @@ async def publish_video(
                     return {
                         "success": True,
                         "post_id": result["data"]["share_id"],
-                        "post_url": f"https://www.tiktok.com/@user/video/{result['data']['share_id']}",
+                        "post_url": f"https://www.tiktok \
+                            .com/@user/video/{result['data']['share_id']}",
                     }
                 else:
                     error_text = await response.text()
@@ -207,7 +208,7 @@ async def check_api_status() -> str:
                 return (
                     "healthy" if response.status in [200, 400] else "unhealthy"
                 )
-    except:
+    except Exception:
         return "unhealthy"
 
 

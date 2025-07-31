@@ -2,7 +2,8 @@
 Complete Video Generation Service
 
 This module orchestrates the entire video generation process by integrating
-all AI services (script generation, image generation, voice synthesis, music generation)
+all AI services (
+    script generation, image generation, voice synthesis, music generation)
 and the video composition engine.
 """
 
@@ -300,7 +301,8 @@ class VideoGenerationService:
                         image_urls.append(result["image_url"])
                     else:
                         logger.warning(
-                            f"Image generation failed for scene {i}: {response.text}"
+                            f"Image generation failed for scene {i}: \
+                                {response.text}"
                         )
                         # Use a placeholder or default image
                         image_urls.append(self._get_placeholder_image())

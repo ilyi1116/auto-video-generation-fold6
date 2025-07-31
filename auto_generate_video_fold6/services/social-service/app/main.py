@@ -39,7 +39,9 @@ app.include_router(
     analytics.router, prefix="/api/v1/analytics", tags=["analytics"]
 )
 app.include_router(
-    entrepreneur_publishing.router, prefix="/api/v1/entrepreneur", tags=["entrepreneur-publishing"]
+    entrepreneur_publishing.router,
+    prefix="/api/v1/entrepreneur",
+    tags=["entrepreneur-publishing"],
 )
 
 

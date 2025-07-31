@@ -99,7 +99,8 @@ class GeminiClient:
             )
 
             logger.info(
-                f"Generating script with Gemini Pro: theme='{theme}', duration={duration}s"
+                f"Generating script with Gemini Pro: theme='{theme}', \
+                    duration={duration}s"
             )
 
             # Generate script using Gemini Pro
@@ -145,9 +146,12 @@ class GeminiClient:
         """Create detailed prompt for script generation"""
 
         platform_specs = {
-            "youtube": "YouTube video format with engaging hook, detailed content, and strong call-to-action",
-            "tiktok": "TikTok short-form content with quick hook, trending elements, and viral potential",
-            "instagram": "Instagram Reels format with visual appeal and hashtag optimization",
+            "youtube": "YouTube video format with engaging hook, \
+                detailed content, and strong call-to-action",
+            "tiktok": "TikTok short-form content with quick hook, \
+                trending elements, and viral potential",
+            "instagram": "Instagram Reels format with visual appeal \
+                and hashtag optimization",
         }
 
         platform_desc = platform_specs.get(platform, platform_specs["youtube"])
@@ -267,7 +271,8 @@ Make sure the total duration of all scenes equals {duration} seconds.
         except json.JSONDecodeError as e:
             # Fallback: create simple structure from text
             logger.warning(
-                f"Failed to parse JSON response, creating fallback structure: {e}"
+                f"Failed to parse JSON response, creating fallback \
+                    structure: {e}"
             )
             return self._create_fallback_script(response_text)
         except Exception as e:
@@ -305,7 +310,8 @@ Make sure the total duration of all scenes equals {duration} seconds.
                     "type": scene_type,
                     "duration": 60.0 / scene_count,  # Distribute evenly
                     "narration": scene_text,
-                    "visual": f"Visual representation of: {scene_text[:100]}...",
+                    "visual": f"Visual representation of: \
+                        {scene_text[:100]}...",
                     "keywords": ["generic", "content", "scene"],
                 }
             )
@@ -330,7 +336,8 @@ Requirements:
 - Format as a JSON array of caption segments
 
 Example format:
-["Hello everyone!", "Welcome to our channel", "Today we're discussing...", "Amazing technology trends"]
+["Hello everyone!", "Welcome to our channel", "Today we're discussing \
+    ...", "Amazing technology trends"]
 
 Please provide only the JSON array of caption segments.
 """
@@ -353,7 +360,7 @@ Please provide only the JSON array of caption segments.
                 # Fallback: split narration into chunks
                 words = narration.split()
                 return [
-                    " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
+                    " ".join(words[i: i + 5]) for i in range(0, len(words), 5)
                 ]
 
         except Exception as e:
@@ -361,7 +368,7 @@ Please provide only the JSON array of caption segments.
             # Fallback: simple word chunking
             words = narration.split()
             return [
-                " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
+                " ".join(words[i: i + 5]) for i in range(0, len(words), 5)
             ]
 
     async def close(self):

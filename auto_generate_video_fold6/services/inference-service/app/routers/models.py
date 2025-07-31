@@ -285,7 +285,8 @@ async def clear_model_cache(current_user: dict = Depends(get_current_user)):
         stats_before = await model_manager.get_cache_stats()
 
         # Clear cache by recreating the model manager
-        # This is a simple approach - in production you might want a more sophisticated method
+        # This is a simple approach - in production you might want a more
+        # sophisticated method
         model_manager.model_cache.clear()
         model_manager.cache_timestamps.clear()
 

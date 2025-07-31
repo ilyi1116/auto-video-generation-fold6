@@ -8,9 +8,11 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+
 class EnhancementRequest(BaseModel):
     audio_url: str
     enhancement_type: str = "denoise"
+
 
 @router.post("/enhance")
 async def enhance_audio(request: EnhancementRequest):

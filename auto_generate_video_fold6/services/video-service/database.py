@@ -270,7 +270,7 @@ async def run_migrations():
                 """,
                 3: """
                     -- Add analytics columns
-                    ALTER TABLE video_projects 
+                    ALTER TABLE video_projects
                     ADD COLUMN IF NOT EXISTS processing_time INTEGER DEFAULT 0,
                     ADD COLUMN IF NOT EXISTS file_size BIGINT DEFAULT 0;
                 """,
@@ -284,7 +284,8 @@ async def run_migrations():
                     async with conn.transaction():
                         await conn.execute(sql)
                         await conn.execute(
-                            "INSERT INTO schema_migrations (version) VALUES ($1)",
+                            "INSERT INTO schema_migrations (version) \
+                                VALUES ($1)",
                             version,
                         )
 
@@ -311,8 +312,8 @@ async def cleanup_old_data(days: int = 30):
             # Delete old failed/cancelled projects
             result = await conn.execute(
                 """
-                DELETE FROM video_projects 
-                WHERE status IN ('failed', 'cancelled') 
+                DELETE FROM video_projects
+                WHERE status IN ('failed', 'cancelled')
                 AND created_at < NOW() - INTERVAL '%s days'
             """,
                 days,

@@ -145,5 +145,8 @@ if __name__ == "__main__":
         ssl_certfile=settings.ssl_cert_path if settings.ssl_enabled else None,
         ssl_keyfile=settings.ssl_key_path if settings.ssl_enabled else None,
         ssl_ca_certs=None,
-        ssl_ciphers="ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS",
+        ssl_ciphers=(
+            "ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:"
+            "!aNULL:!MD5:!DSS"
+        ),
     )

@@ -243,7 +243,7 @@ class SAMLAuthenticator:
 
         # 構建 SAML AuthnRequest
         authn_request = f"""
-        <samlp:AuthnRequest 
+        <samlp:AuthnRequest
             xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
             xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
             ID="{request_id}"
@@ -253,7 +253,7 @@ class SAMLAuthenticator:
             AssertionConsumerServiceURL="{self.sp_acs_url}"
             ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">
             <saml:Issuer>{self.sp_entity_id}</saml:Issuer>
-            <samlp:NameIDPolicy 
+            <samlp:NameIDPolicy
                 Format="urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"
                 AllowCreate="true"/>
         </samlp:AuthnRequest>
@@ -763,9 +763,11 @@ class EnterpriseAuthManager:
                 # 插入或更新用戶資訊
                 cursor.execute(
                     """
-                    INSERT INTO users (user_id, username, email, full_name, department, 
-                                     roles, groups, attributes, provider, is_active, 
-                                     last_login, created_at, updated_at)
+                    INSERT INTO users (
+                        user_id, username, email, full_name, department,
+                        roles, groups, attributes, provider, is_active,
+                        last_login, created_at, updated_at
+                    )
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (user_id) DO UPDATE SET
                         username = EXCLUDED.username,
@@ -777,7 +779,7 @@ class EnterpriseAuthManager:
                         attributes = EXCLUDED.attributes,
                         last_login = EXCLUDED.last_login,
                         updated_at = EXCLUDED.updated_at
-                """,
+                    """,
                     (
                         user.user_id,
                         user.username,

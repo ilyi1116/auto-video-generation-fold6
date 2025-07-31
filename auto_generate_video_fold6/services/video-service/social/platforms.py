@@ -159,7 +159,8 @@ class TikTokClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"TikTok upload API error: {response.status} - {error_text}"
+                    f"TikTok upload API error: {response.status} - \
+                        {error_text}"
                 )
 
             result = await response.json()
@@ -204,7 +205,8 @@ class TikTokClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"TikTok publish API error: {response.status} - {error_text}"
+                    f"TikTok publish API error: {response.status} - \
+                        {error_text}"
                 )
 
             result = await response.json()
@@ -385,7 +387,8 @@ class YouTubeClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"YouTube upload API error: {response.status} - {error_text}"
+                    f"YouTube upload API error: {response.status} - \
+                        {error_text}"
                 )
 
             result = await response.json()
@@ -525,7 +528,8 @@ class InstagramClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"Instagram media creation error: {response.status} - {error_text}"
+                    f"Instagram media creation error: {response \
+                        .status} - {error_text}"
                 )
 
             result = await response.json()
@@ -552,7 +556,8 @@ class InstagramClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"Instagram publish error: {response.status} - {error_text}"
+                    f"Instagram publish error: {response.status} - \
+                        {error_text}"
                 )
 
             result = await response.json()
@@ -597,7 +602,8 @@ class InstagramClient(SocialPlatform):
             session = await self._get_session()
 
             params = {
-                "fields": "insights.metric(reach,impressions,video_views,likes,comments,shares,saves)",
+                "fields": "insights.metric(reach,impressions \
+                    ,video_views,likes,comments,shares,saves)",
                 "access_token": self.api_key,
             }
 

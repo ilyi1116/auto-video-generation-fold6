@@ -77,7 +77,9 @@ class Settings(BaseSettings):
     hsts_max_age: int = int(os.getenv("HSTS_MAX_AGE", "31536000"))
     csp_policy: str = os.getenv(
         "CSP_POLICY",
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'",
     )
 
     # SSL Configuration

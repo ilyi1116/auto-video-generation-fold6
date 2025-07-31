@@ -297,7 +297,9 @@ async def get_synthesis_audio(
             io.BytesIO(mock_audio),
             media_type="audio/wav",
             headers={
-                "Content-Disposition": f"attachment; filename=synthesis_{job_id}.wav"
+                "Content-Disposition": (
+                    f"attachment; filename=synthesis_{job_id}.wav"
+                )
             },
         )
 

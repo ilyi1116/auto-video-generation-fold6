@@ -255,7 +255,8 @@ async def check_user_permissions(
                     has_permission = result.get("allowed", False)
 
                     logger.debug(
-                        f"Permission check for {user_id}: {resource}.{action} = {has_permission}"
+                        f"Permission check for {user_id}: {resource} \
+                            .{action} = {has_permission}"
                     )
                     return has_permission
                 else:

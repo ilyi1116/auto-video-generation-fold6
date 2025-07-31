@@ -180,7 +180,7 @@ class ShortVideoGenerator:
                 font = ImageFont.truetype(
                     "/system/fonts/DroidSansFallback.ttf", font_size
                 )
-            except:
+            except Exception:
                 font = ImageFont.load_default()
 
             # 文字位置和樣式
@@ -218,7 +218,7 @@ class ShortVideoGenerator:
                 subtitle_font = ImageFont.truetype(
                     "/system/fonts/DroidSansFallback.ttf", 60
                 )
-            except:
+            except Exception:
                 title_font = ImageFont.load_default()
                 subtitle_font = ImageFont.load_default()
 

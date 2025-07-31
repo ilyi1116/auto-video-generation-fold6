@@ -458,11 +458,14 @@ class ImageGenerator:
     def _enhance_prompt(self, prompt: str, style: str) -> str:
         """Enhance prompt with style-specific keywords"""
         style_enhancements = {
-            "modern": "clean, minimalist, contemporary, sleek design, high quality",
+            "modern": "clean, minimalist, contemporary, sleek design, \
+                high quality",
             "vintage": "retro, nostalgic, classic, aged, warm tones",
             "minimalist": "simple, clean lines, negative space, uncluttered",
-            "artistic": "creative, expressive, painterly, artistic interpretation",
-            "photorealistic": "photorealistic, highly detailed, professional photography",
+            "artistic": "creative, expressive, painterly, artistic \
+                interpretation",
+            "photorealistic": "photorealistic, highly detailed, \
+                professional photography",
             "cartoon": "cartoon style, animated, colorful, stylized",
             "anime": "anime style, manga, japanese animation",
             "cyberpunk": "cyberpunk, neon, futuristic, dystopian, high tech",

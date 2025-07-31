@@ -295,12 +295,14 @@ class TextGenerator:
         """Build prompt for script generation"""
         keyword_text = ", ".join(keywords) if keywords else ""
 
-        return f"""Create an engaging video script for social media platforms like TikTok and YouTube Shorts.
+        return f"""Create an engaging video script for social media \
+            platforms like TikTok and YouTube Shorts.
 
 REQUIREMENTS:
 - Topic: {topic}
 - Style: {style}
-- Target Duration: {duration_seconds} seconds (approximately {duration_seconds * 2.5} words)
+- Target Duration: {duration_seconds} seconds (
+    approximately {duration_seconds * 2.5} words)
 - Target Audience: {target_audience}
 - Tone: {tone}
 {f'- Include Keywords: {keyword_text}' if keyword_text else ''}
@@ -316,10 +318,11 @@ SCRIPT GUIDELINES:
 STYLE CHARACTERISTICS:
 - Engaging: Use storytelling, personal examples, emotional hooks
 - Informative: Focus on facts, statistics, educational value
-- Humorous: Include light humor, wordplay, relatable situations  
+- Humorous: Include light humor, wordplay, relatable situations
 - Professional: Use formal language, expert positioning
 
-Please write ONLY the script content, no additional formatting or explanations."""
+Please write ONLY the script content, no additional formatting or \
+    explanations."""
 
     def _build_title_prompt(
         self,
@@ -331,7 +334,8 @@ Please write ONLY the script content, no additional formatting or explanations."
         """Build prompt for title generation"""
         keyword_text = ", ".join(target_keywords) if target_keywords else ""
 
-        return f"""Generate 8 compelling video titles based on this script content:
+        return f"""Generate 8 compelling video titles based on this \
+            script content:
 
 SCRIPT CONTENT:
 {script_content[:500]}...
@@ -363,27 +367,30 @@ Format your response as a numbered list:
             action = "expand"
             difference = target_duration - current_duration
 
-        return f"""Optimize this video script to better match the target duration while maintaining engagement and key messages.
+        return f"""Optimize this video script to better match the \
+            target duration while maintaining engagement and key messages.
 
 CURRENT SCRIPT:
 {script_content}
 
 OPTIMIZATION TASK:
 - Current Duration: {current_duration} seconds
-- Target Duration: {target_duration} seconds  
+- Target Duration: {target_duration} seconds
 - Action Needed: {action} by approximately {difference} seconds
 
 OPTIMIZATION GUIDELINES:
 - Maintain the core message and hook
 - Preserve the most engaging elements
-- {'Remove redundant points, combine ideas, use more concise language' if action == 'shorten' else 'Add supporting details, examples, or elaboration on key points'}
+- {'Remove redundant points, combine ideas, use more concise \
+    language' if action == 'shorten' else 'Add supporting details, examples, or elaboration on key points'}
 - Keep the natural flow and transitions
 - Maintain call-to-action
 
 Please provide ONLY the optimized script content."""
 
     def _estimate_reading_time(self, text: str) -> int:
-        """Estimate reading time in seconds (assuming ~150 words per minute for speech)"""
+        """Estimate reading time in seconds (assuming ~150 words per \
+            minute for speech)"""
         words = len(text.split())
         # Average speaking pace for social media: 2.5 words per second
         return int(words / 2.5)
@@ -498,7 +505,8 @@ Please provide ONLY the optimized script content."""
 
         if original_sentences != optimized_sentences:
             changes.append(
-                f"Sentence count changed from {original_sentences} to {optimized_sentences}"
+                f"Sentence count changed from {original_sentences} to \
+                    {optimized_sentences}"
             )
 
         return changes

@@ -91,7 +91,8 @@ async def publish_to_social_media(
         if invalid_platforms:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid platforms: {invalid_platforms}. Available: {available_platforms}",
+                detail=f"Invalid platforms: {invalid_platforms}. \
+                    Available: {available_platforms}",
             )
 
         # Create publish request
@@ -159,7 +160,8 @@ async def publish_to_social_media(
 
             return SocialPublishResponse(
                 success=successful > 0,
-                message=f"Published to {successful}/{len(request.platforms)} platforms successfully",
+                message=f"Published to {successful}/{len(request \
+                    .platforms)} platforms successfully",
                 results=formatted_results,
                 total_platforms=len(request.platforms),
                 successful_publishes=successful,
@@ -398,8 +400,10 @@ async def get_platform_templates(
             ],
             "best_practices": {
                 "title": "Keep titles under 60 characters, include keywords",
-                "description": "Use first 125 characters effectively, include CTAs",
-                "thumbnails": "Use bright colors, clear text, emotional expressions",
+                "description": "Use first 125 characters effectively, \
+                    include CTAs",
+                "thumbnails": "Use bright colors, clear text, \
+                    emotional expressions",
                 "timing": "Upload consistently, consider timezone",
             },
         },
@@ -507,7 +511,8 @@ async def schedule_publication(
                 status_code=400, detail="scheduled_time must be in the future"
             )
 
-        # Store scheduled publication (in production, this would use a job queue)
+        # Store scheduled publication
+        # (in production, this would use a job queue)
         background_tasks.add_task(
             _scheduled_publish,
             PublishRequest(

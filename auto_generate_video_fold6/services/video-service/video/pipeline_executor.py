@@ -5,12 +5,11 @@ TDD Green 階段：最小實作讓測試通過
 """
 
 from typing import List, Dict, Any
-from datetime import datetime
 
 
 class PipelineResult:
     """管道執行結果 - 最小實作"""
-    
+
     def __init__(self, status: str, generated_assets: Dict[str, Any]):
         self.status = status
         self.generated_assets = generated_assets
@@ -18,8 +17,10 @@ class PipelineResult:
 
 class PipelineExecutor:
     """管道執行器 - 最小實作"""
-    
-    def execute_pipeline(self, workflow_id: str, stages: List[str]) -> PipelineResult:
+
+    def execute_pipeline(
+        self, workflow_id: str, stages: List[str]
+    ) -> PipelineResult:
         """執行管道 - 最小實作讓測試通過"""
         # 模擬各階段執行
         generated_assets = {
@@ -27,11 +28,10 @@ class PipelineExecutor:
             "thumbnail_url": f"https://example.com/thumb_{workflow_id}.jpg",
             "scene_images": [
                 f"https://example.com/scene1_{workflow_id}.jpg",
-                f"https://example.com/scene2_{workflow_id}.jpg"
-            ]
+                f"https://example.com/scene2_{workflow_id}.jpg",
+            ],
         }
-        
+
         return PipelineResult(
-            status="completed",
-            generated_assets=generated_assets
+            status="completed", generated_assets=generated_assets
         )

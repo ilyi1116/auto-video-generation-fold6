@@ -72,7 +72,8 @@ async def upload_file(
         if file.size > settings.max_file_size_mb * 1024 * 1024:
             raise HTTPException(
                 status_code=413,
-                detail=f"File size exceeds maximum allowed size of {settings.max_file_size_mb}MB",
+                detail=f"File size exceeds maximum allowed size of \
+                    {settings.max_file_size_mb}MB",
             )
 
         # Read file content
@@ -85,7 +86,8 @@ async def upload_file(
         if not storage_manager.validate_file_type(mime_type, file_type):
             raise HTTPException(
                 status_code=400,
-                detail=f"File type {mime_type} not allowed for {file_type} files",
+                detail=f"File type {mime_type} not allowed for \
+                    {file_type} files",
             )
 
         # Upload to storage
@@ -197,7 +199,8 @@ async def upload_multiple_files(
         if len(files) > settings.max_upload_files:
             raise HTTPException(
                 status_code=400,
-                detail=f"Too many files. Maximum allowed: {settings.max_upload_files}",
+                detail=f"Too many files. Maximum allowed: {settings \
+                    .max_upload_files}",
             )
 
         uploaded_files = []
@@ -278,7 +281,8 @@ async def upload_from_url(
             if not storage_manager.validate_file_type(mime_type, file_type):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"File type {mime_type} not allowed for {file_type} files",
+                    detail=f"File type {mime_type} not allowed for \
+                        {file_type} files",
                 )
 
             # Validate file size
@@ -479,7 +483,7 @@ async def process_file_async(file_id: str, job_id: str):
                     os.unlink(temp_file_path)
                     if os.path.exists(output_path):
                         os.unlink(output_path)
-                except:
+                except Exception:
                     pass
 
     except Exception as e:

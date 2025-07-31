@@ -199,7 +199,8 @@ async def download_file(
                 yield file_data
 
             headers = {
-                "Content-Disposition": f'attachment; filename="{quote(file.original_filename)}"',
+                "Content-Disposition": f'attachment; filename="{quote \
+                    (file.original_filename)}"',
                 "Content-Type": file.mime_type,
                 "Content-Length": str(file.file_size),
             }
@@ -301,7 +302,7 @@ async def delete_file(
             if file.has_thumbnail and file.thumbnail_path:
                 try:
                     await storage_manager.delete_file(file.thumbnail_path)
-                except:
+                except Exception:
                     pass  # Continue even if thumbnail deletion fails
 
         except Exception as e:
@@ -417,7 +418,7 @@ async def bulk_delete_files(
                             await storage_manager.delete_file(
                                 file.thumbnail_path
                             )
-                        except:
+                        except Exception:
                             pass
                 except Exception as e:
                     logger.warning(

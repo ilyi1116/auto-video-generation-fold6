@@ -13,7 +13,8 @@ logger = structlog.get_logger()
 
 
 class AudioProcessor:
-    """AI-powered audio processing service for voice synthesis and enhancement"""
+    """AI-powered audio processing service for voice synthesis and \
+        enhancement"""
 
     def __init__(self):
         self.elevenlabs_client = None

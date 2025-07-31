@@ -181,7 +181,8 @@ class GeminiClient:
                         safety_ratings=[],
                         usage_metadata={},
                         success=False,
-                        error_message=f"API 錯誤: {response.status} - {error_text}",
+                        error_message=f"API 錯誤: {response.status} - \
+                            {error_text}",
                     )
 
                 result_data = await response.json()
@@ -475,7 +476,7 @@ async def analyze_trends(content: str, api_key: str = None) -> Dict[str, Any]:
 {{
     "viral_potential": 數字,
     "target_audience": "描述",
-    "best_timing": "時間建議", 
+    "best_timing": "時間建議",
     "recommended_platforms": ["平台1", "平台2"],
     "improvements": ["建議1", "建議2"]
 }}

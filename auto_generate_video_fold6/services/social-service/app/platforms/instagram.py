@@ -134,19 +134,22 @@ async def publish_video(
                             return {
                                 "success": True,
                                 "post_id": media_id,
-                                "post_url": f"https://www.instagram.com/p/{media_id}/",
+                                "post_url": f"https://www.instagram \
+                                    .com/p/{media_id}/",
                             }
                         else:
                             error_text = await publish_response.text()
                             return {
                                 "success": False,
-                                "error": f"Instagram publish failed: {error_text}",
+                                "error": f"Instagram publish failed: \
+                                    {error_text}",
                             }
                 else:
                     error_text = await response.text()
                     return {
                         "success": False,
-                        "error": f"Instagram container creation failed: {error_text}",
+                        "error": f"Instagram container creation \
+                            failed: {error_text}",
                     }
 
     except Exception as e:
@@ -256,7 +259,7 @@ async def check_api_status() -> str:
                 return (
                     "healthy" if response.status in [200, 401] else "unhealthy"
                 )
-    except:
+    except Exception:
         return "unhealthy"
 
 

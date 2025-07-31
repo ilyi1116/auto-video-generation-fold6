@@ -56,7 +56,8 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app
 app = FastAPI(
     title="Storage Service",
-    description="File upload, storage, and management service for AI video generation platform",
+    description="File upload, storage, and management service for AI \
+        video generation platform",
     version="1.0.0",
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,

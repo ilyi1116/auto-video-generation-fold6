@@ -39,7 +39,10 @@ async def start_processing(
     if file_record.status != "pending":
         raise HTTPException(
             status_code=400,
-            detail=f"File is not ready for processing. Current status: {file_record.status}",
+            detail=(
+                f"File is not ready for processing. "
+                f"Current status: {file_record.status}"
+            ),
         )
 
     # Check for existing processing job

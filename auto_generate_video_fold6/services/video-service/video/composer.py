@@ -193,7 +193,8 @@ class VideoComposer:
         try:
             logger.info(f"Starting final render: {composition_id}")
 
-            # Load composition data (in real implementation, this would be from database)
+            # Load composition data
+            # (in real implementation, this would be from database)
             composition_data = await self._load_composition_data(
                 composition_id
             )
@@ -562,7 +563,8 @@ class VideoComposer:
         return {
             "duration": float(format_info.get("duration", 0)),
             "file_size": int(format_info.get("size", 0)),
-            "resolution": f"{video_stream.get('width', 0)}x{video_stream.get('height', 0)}",
+            "resolution": f"{video_stream.get('width', 0 \
+                )}x{video_stream.get('height', 0)}",
             "format": format_info.get("format_name", "mp4").split(",")[0],
         }
 

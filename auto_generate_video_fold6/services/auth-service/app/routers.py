@@ -141,7 +141,9 @@ def request_password_reset(
     if not user:
         # Don't reveal if email exists or not
         return {
-            "message": "If the email exists, a password reset link has been sent"
+            "message": (
+                "If the email exists, a password reset link has been sent"
+            )
         }
 
     reset_token = security.create_password_reset_token(user.email)

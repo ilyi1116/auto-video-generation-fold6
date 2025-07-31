@@ -55,27 +55,32 @@ class StableDiffusionClient:
             "modern": {
                 "style_preset": "photographic",
                 "cfg_scale": 7.5,
-                "negative_prompt": "blurry, low quality, distorted, ugly, bad anatomy",
+                "negative_prompt": "blurry, low quality, distorted, \
+                    ugly, bad anatomy",
             },
             "cinematic": {
                 "style_preset": "cinematic",
                 "cfg_scale": 8.0,
-                "negative_prompt": "cartoon, anime, low quality, blurry, text, watermark",
+                "negative_prompt": "cartoon, anime, low quality, \
+                    blurry, text, watermark",
             },
             "artistic": {
                 "style_preset": "enhance",
                 "cfg_scale": 7.0,
-                "negative_prompt": "photorealistic, photograph, low quality, blurry",
+                "negative_prompt": "photorealistic, photograph, low \
+                    quality, blurry",
             },
             "minimal": {
                 "style_preset": "digital-art",
                 "cfg_scale": 6.5,
-                "negative_prompt": "cluttered, busy, complex, low quality, blurry",
+                "negative_prompt": "cluttered, busy, complex, low \
+                    quality, blurry",
             },
             "vibrant": {
                 "style_preset": "fantasy-art",
                 "cfg_scale": 8.5,
-                "negative_prompt": "dull, muted, monochrome, low quality, blurry",
+                "negative_prompt": "dull, muted, monochrome, low \
+                    quality, blurry",
             },
         }
 
@@ -159,7 +164,8 @@ class StableDiffusionClient:
             }
 
             logger.info(
-                f"Generating image with Stable Diffusion: {enhanced_prompt[:100]}..."
+                f"Generating image with Stable Diffusion: \
+                    {enhanced_prompt[:100]}..."
             )
 
             # Submit generation request
@@ -171,7 +177,8 @@ class StableDiffusionClient:
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(
-                        f"Stable Diffusion API error: {response.status} - {error_text}"
+                        f"Stable Diffusion API error: {response \
+                            .status} - {error_text}"
                     )
 
                 result = await response.json()
@@ -222,7 +229,7 @@ class StableDiffusionClient:
         # Execute all tasks concurrently with some delay to avoid rate limits
         results = []
         for i in range(0, len(tasks), 3):  # Process 3 at a time
-            batch = tasks[i : i + 3]
+            batch = tasks[i: i + 3]
             batch_results = await asyncio.gather(
                 *batch, return_exceptions=True
             )
@@ -257,8 +264,10 @@ class StableDiffusionClient:
 
         style_keywords = {
             "modern": "modern, clean, professional, high-tech, sleek design",
-            "cinematic": "cinematic lighting, dramatic, film-like, movie scene, professional cinematography",
-            "artistic": "artistic, creative, expressive, painterly, artistic composition",
+            "cinematic": "cinematic lighting, dramatic, film-like, \
+                movie scene, professional cinematography",
+            "artistic": "artistic, creative, expressive, painterly, \
+                artistic composition",
             "minimal": "minimal, simple, clean lines, uncluttered, geometric",
             "vibrant": "vibrant colors, dynamic, energetic, bold, striking",
         }

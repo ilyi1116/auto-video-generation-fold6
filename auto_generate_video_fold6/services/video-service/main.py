@@ -54,7 +54,9 @@ app.include_router(
     social_media.router, prefix="/api/v1/social", tags=["social-media"]
 )
 app.include_router(
-    entrepreneur_workflows.router, prefix="/api/v1/entrepreneur", tags=["entrepreneur-workflows"]
+    entrepreneur_workflows.router,
+    prefix="/api/v1/entrepreneur",
+    tags=["entrepreneur-workflows"],
 )
 
 security = HTTPBearer()
@@ -370,7 +372,7 @@ async def generate_video_pipeline(
             )
             project.error_message = str(e)
             await project.save(db)
-        except:
+        except Exception:
             pass
 
 

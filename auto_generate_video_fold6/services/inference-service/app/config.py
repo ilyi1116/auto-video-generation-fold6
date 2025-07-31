@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     # Database
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://voiceclone_user:your_secure_password_here@postgres:5432/voiceclone_db",
+        "postgresql://voiceclone_user:your_secure_password_here@"
+        "postgres:5432/voiceclone_db",
     )
 
     # Redis

@@ -8,9 +8,11 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+
 class SynthesisRequest(BaseModel):
     text: str
     voice: str = "default"
+
 
 @router.post("/text-to-speech")
 async def synthesize_speech(request: SynthesisRequest):

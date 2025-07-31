@@ -17,7 +17,11 @@ from .composer import (
 )
 
 # TDD 實作的新功能
-from .workflow_engine import VideoWorkflowEngine, VideoWorkflowRequest, VideoWorkflowResult
+from .workflow_engine import (
+    VideoWorkflowEngine,
+    VideoWorkflowRequest,
+    VideoWorkflowResult,
+)
 from .pipeline_executor import PipelineExecutor, PipelineResult
 from .progress_tracker import ProgressTracker, ProgressStatus
 from .time_estimator import WorkflowTimeEstimator
@@ -32,12 +36,12 @@ __all__ = [
     "FinalRenderResult",
     # TDD 新功能
     "VideoWorkflowEngine",
-    "VideoWorkflowRequest", 
+    "VideoWorkflowRequest",
     "VideoWorkflowResult",
     "PipelineExecutor",
     "PipelineResult",
     "ProgressTracker",
     "ProgressStatus",
     "WorkflowTimeEstimator",
-    "ResourceManager"
+    "ResourceManager",
 ]

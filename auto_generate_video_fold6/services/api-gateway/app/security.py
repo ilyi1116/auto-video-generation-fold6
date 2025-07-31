@@ -18,7 +18,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             # HSTS (HTTP Strict Transport Security)
             if settings.ssl_enabled:
                 response.headers["Strict-Transport-Security"] = (
-                    f"max-age={settings.hsts_max_age}; includeSubDomains; preload"
+                    f"max-age={settings.hsts_max_age}; "
+                    "includeSubDomains; preload"
                 )
 
             # Content Security Policy

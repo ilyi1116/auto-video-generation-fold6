@@ -86,7 +86,8 @@ def sample_script_response():
     return ScriptGenerationResponse(
         content="Full script content here...",
         scenes=scenes,
-        narration_text="Welcome to our technology overview. AI is transforming how we work. Thank you for watching.",
+        narration_text="Welcome to our technology overview. AI is \
+            transforming how we work. Thank you for watching.",
         total_duration=60.0,
         theme="Technology trends in 2024",
         style="modern",
