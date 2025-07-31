@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { apiClient } from '$lib/api/client.js';
+  import { apiClient } from '$lib/api/client';
   import MusicGenerator from '$lib/components/ai/music/MusicGenerator.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import Badge from '$lib/components/ui/Badge.svelte';

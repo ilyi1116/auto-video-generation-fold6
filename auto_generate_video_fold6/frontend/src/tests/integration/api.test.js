@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { waitFor } from '@testing-library/svelte';
-import { apiClient, setAuthToken, clearAuthToken } from '../../lib/api/client.js';
+import { apiClient, setAuthToken, clearAuthToken } from '../../lib/api/client';
 
 // Mock fetch
 global.fetch = vi.fn();
