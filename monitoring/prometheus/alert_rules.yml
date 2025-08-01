@@ -1,0 +1,252 @@
+# Prometheus 告警規則 - Auto Video Generation System
+# Phase 5: 監控告警系統
+
+groups:
+  # ===========================================
+  # 基礎設施告警
+  # ===========================================
+  - name: infrastructure
+    rules:
+      # 服務停機告警
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      # 高 CPU 使用率
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      # 高記憶體使用率
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      # 磁碟空間不足
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 1m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "Disk space is low on {{ $labels.instance }}"
+          description: "Disk space is below 10% on {{ $labels.instance }} filesystem {{ $labels.mountpoint }}"
+
+  # ===========================================
+  # 資料庫告警
+  # ===========================================
+  - name: database
+    rules:
+      # PostgreSQL 連接數過高
+      - alert: PostgreSQLTooManyConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "PostgreSQL has too many connections"
+          description: "PostgreSQL connections usage is above 80%"
+
+      # PostgreSQL 長時間查詢
+      - alert: PostgreSQLLongRunningQuery
+        expr: pg_stat_activity_max_tx_duration > 300
+        for: 1m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "PostgreSQL long running query detected"
+          description: "A query has been running for more than 5 minutes"
+
+      # Redis 記憶體使用率過高
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory usage is above 90%"
+
+      # Redis 連接被拒絕
+      - alert: RedisRejectedConnections
+        expr: increase(redis_rejected_connections_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Redis is rejecting connections"
+          description: "Redis has rejected connections in the last 5 minutes"
+
+  # ===========================================
+  # 應用程式告警
+  # ===========================================
+  - name: application
+    rules:
+      # HTTP 錯誤率過高
+      - alert: HighHTTPErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High HTTP error rate for {{ $labels.service }}"
+          description: "HTTP error rate is above 5% for {{ $labels.service }}"
+
+      # HTTP 回應時間過慢
+      - alert: HighHTTPLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High HTTP latency for {{ $labels.service }}"
+          description: "95th percentile latency is above 1 second for {{ $labels.service }}"
+
+      # 佇列長度過長
+      - alert: CeleryQueueTooLong
+        expr: celery_queue_length > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Celery queue is too long"
+          description: "Celery queue {{ $labels.queue }} has more than 100 tasks"
+
+      # Worker 處理失敗率過高
+      - alert: CeleryHighFailureRate
+        expr: |
+          (
+            sum(rate(celery_task_failed_total[5m])) by (queue)
+            /
+            sum(rate(celery_task_sent_total[5m])) by (queue)
+          ) * 100 > 10
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High Celery task failure rate"
+          description: "Task failure rate is above 10% for queue {{ $labels.queue }}"
+
+  # ===========================================
+  # AI 服務告警
+  # ===========================================
+  - name: ai_services
+    rules:
+      # AI API 回應時間過慢
+      - alert: AIServiceSlowResponse
+        expr: histogram_quantile(0.95, sum(rate(ai_request_duration_seconds_bucket[5m])) by (le, service)) > 30
+        for: 3m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "AI service {{ $labels.service }} is responding slowly"
+          description: "95th percentile response time is above 30 seconds for {{ $labels.service }}"
+
+      # AI API 配額耗盡
+      - alert: AIAPIQuotaExhausted
+        expr: ai_api_quota_remaining < 1000
+        for: 1m
+        labels:
+          severity: critical
+          team: ai
+        annotations:
+          summary: "AI API quota is running low"
+          description: "API quota for {{ $labels.provider }} is below 1000 requests"
+
+      # GPU 使用率過高
+      - alert: GPUHighUtilization
+        expr: nvidia_smi_utilization_gpu > 95
+        for: 10m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "GPU utilization is high"
+          description: "GPU {{ $labels.uuid }} utilization is above 95% for more than 10 minutes"
+
+  # ===========================================
+  # 儲存系統告警
+  # ===========================================
+  - name: storage
+    rules:
+      # MinIO 儲存空間不足
+      - alert: MinIOStorageLow
+        expr: minio_cluster_capacity_usable_free_bytes / minio_cluster_capacity_usable_total_bytes * 100 < 20
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "MinIO storage space is low"
+          description: "Available storage space is below 20%"
+
+      # MinIO 節點離線
+      - alert: MinIONodeOffline
+        expr: minio_cluster_nodes_offline_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "MinIO node is offline"
+          description: "{{ $value }} MinIO nodes are offline"
+
+  # ===========================================
+  # 安全性告警
+  # ===========================================
+  - name: security
+    rules:
+      # 異常登入嘗試
+      - alert: HighFailedLoginAttempts
+        expr: increase(auth_failed_login_attempts_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High number of failed login attempts"
+          description: "More than 10 failed login attempts in the last 5 minutes from {{ $labels.ip }}"
+
+      # JWT 令牌異常
+      - alert: HighJWTTokenRejections
+        expr: increase(auth_jwt_token_rejected_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High number of JWT token rejections"
+          description: "More than 5 JWT tokens were rejected in the last 5 minutes"

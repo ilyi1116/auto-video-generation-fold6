@@ -112,16 +112,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install common test dependencies
-          pip install pytest pytest-asyncio pytest-cov httpx faker
-          
-          # Install service-specific dependencies
-          if [ -f services/auth-service/requirements.txt ]; then
-            pip install -r services/auth-service/requirements.txt
-          fi
-          if [ -f services/video-service/requirements.txt ]; then
-            pip install -r services/video-service/requirements.txt
-          fi
+          # Install from unified pyproject.toml
+          pip install -e .
+          pip install -e ".[test,dev]"
 
       - name: Run tests
         env:
@@ -252,7 +245,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create .env file
-        run: cp .env.example .env
+        run: cp .env.template .env
 
       - name: Start services
         run: |

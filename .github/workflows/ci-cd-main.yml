@@ -88,7 +88,8 @@ jobs:
       if: steps.changes.outputs.backend == 'true'
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
+        pip install -e .
+        pip install -e ".[dev,test]"
 
     - name: 🧹 Python Code Formatting (Black)
       if: steps.changes.outputs.backend == 'true'
@@ -226,7 +227,8 @@ jobs:
     - name: 📦 Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
+        pip install -e .
+        pip install -e ".[dev,test]"
 
     - name: 🗄️ Setup Test Database
       env:
@@ -382,8 +384,8 @@ jobs:
     - name: 🏗️ Build and Push Image
       uses: docker/build-push-action@v5
       with:
-        context: .
-        file: ./auto_generate_video_fold6/${{ matrix.service }}/Dockerfile
+        context: ./services/${{ matrix.service }}
+        file: ./services/${{ matrix.service }}/Dockerfile
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
