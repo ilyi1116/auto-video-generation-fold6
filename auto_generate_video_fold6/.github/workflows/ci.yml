@@ -33,21 +33,12 @@ jobs:
           bandit -r services/ -f json -o bandit-report.json || true
         continue-on-error: true
       
-      - name: Run Snyk security scan
-        if: ${{ secrets.SNYK_TOKEN != '' }}
+      - name: Run Snyk security scan or create fallback
         run: |
-          echo "Running Snyk security scan with token..."
+          echo "Preparing Snyk security scan..."
           mkdir -p ./frontend
-          npx snyk test --sarif-file-output=./frontend/snyk.sarif || echo "Snyk scan completed"
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      - name: Create empty Snyk report
-        if: ${{ secrets.SNYK_TOKEN == '' }}
-        run: |
-          echo "Snyk token not found, creating empty SARIF file."
-          mkdir -p ./frontend
+          
+          # Create default empty SARIF file first
           cat > ./frontend/snyk.sarif << 'EOF'
           {
             "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
@@ -65,6 +56,15 @@ jobs:
             ]
           }
           EOF
+          
+          # Try to run Snyk scan if token is available
+          if [ -n "$SNYK_TOKEN" ]; then
+            echo "Running Snyk security scan with token..."
+            npx snyk test --sarif-file-output=./frontend/snyk.sarif || echo "Snyk scan completed with issues or no token"
+          else
+            echo "Snyk token not configured, using empty SARIF file"
+          fi
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
