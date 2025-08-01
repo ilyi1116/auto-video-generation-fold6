@@ -1,0 +1,497 @@
+# Auto Video Generation System - 主要 CI/CD 流水線
+# 整合 Phase 2 資料庫系統和 Phase 3 部署策略
+
+name: 🚀 CI/CD Main Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # ===========================================
+  # 程式碼品質檢查
+  # ===========================================
+  code-quality:
+    name: 🔍 Code Quality Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.changes.outputs.should-deploy }}
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 🔍 Detect Changes
+      id: changes
+      uses: dorny/paths-filter@v2
+      with:
+        filters: |
+          backend:
+            - 'auto_generate_video_fold6/**'
+            - 'scripts/**'
+            - 'requirements*.txt'
+            - 'alembic/**'
+            - 'alembic.ini'
+          frontend:
+            - 'frontend/**'
+            - 'package*.json'
+          docker:
+            - 'docker-compose*.yml'
+            - '**/Dockerfile*'
+          k8s:
+            - 'k8s/**'
+          should-deploy:
+            - 'auto_generate_video_fold6/**'
+            - 'frontend/**'
+            - 'docker-compose*.yml'
+            - 'k8s/**'
+
+    - name: 🐍 Setup Python
+      if: steps.changes.outputs.backend == 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: 📦 Install Python Dependencies
+      if: steps.changes.outputs.backend == 'true'
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: 🧹 Python Code Formatting (Black)
+      if: steps.changes.outputs.backend == 'true'
+      run: |
+        black --check --diff auto_generate_video_fold6/ scripts/
+
+    - name: 🔍 Python Linting (Flake8)
+      if: steps.changes.outputs.backend == 'true'
+      run: |
+        flake8 auto_generate_video_fold6/ scripts/ --max-line-length=100 --ignore=E203,W503
+
+    - name: 🔒 Python Security Check (Bandit)
+      if: steps.changes.outputs.backend == 'true'
+      run: |
+        bandit -r auto_generate_video_fold6/ -f json -o bandit-report.json || true
+        bandit -r auto_generate_video_fold6/ --severity-level medium --confidence-level high
+
+    - name: 🧪 Python Type Checking (MyPy)
+      if: steps.changes.outputs.backend == 'true'
+      run: |
+        mypy auto_generate_video_fold6/ --ignore-missing-imports --show-error-codes
+
+    - name: 🟢 Setup Node.js
+      if: steps.changes.outputs.frontend == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
+
+    - name: 📦 Install Frontend Dependencies
+      if: steps.changes.outputs.frontend == 'true'
+      working-directory: frontend
+      run: npm ci
+
+    - name: 🧹 Frontend Code Formatting (Prettier)
+      if: steps.changes.outputs.frontend == 'true'
+      working-directory: frontend
+      run: npm run format:check
+
+    - name: 🔍 Frontend Linting (ESLint)
+      if: steps.changes.outputs.frontend == 'true'
+      working-directory: frontend
+      run: npm run lint
+
+    - name: 🧪 Frontend Type Checking
+      if: steps.changes.outputs.frontend == 'true'
+      working-directory: frontend
+      run: npm run type-check
+
+  # ===========================================
+  # 安全性掃描
+  # ===========================================
+  security-scan:
+    name: 🛡️ Security Scanning
+    runs-on: ubuntu-latest
+    needs: code-quality
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🔍 Run Snyk Security Scan
+      uses: snyk/actions/python@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high --file=requirements.txt
+
+    - name: 📊 Upload Snyk Results to GitHub
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: snyk.sarif
+
+    - name: 🐳 Run Trivy Container Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: 📊 Upload Trivy Results to GitHub
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # ===========================================
+  # 單元測試與整合測試
+  # ===========================================
+  backend-tests:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    if: needs.code-quality.outputs.should-deploy == 'true' && (inputs.skip_tests != true)
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_auto_video_generation
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: 🗄️ Setup Test Database
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_auto_video_generation
+        REDIS_URL: redis://localhost:6379/0
+      run: |
+        # 執行 Phase 2 資料庫遷移
+        python scripts/db-migration-manager.py create-db --env=test
+        alembic upgrade head
+
+    - name: 🧪 Run Unit Tests
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_auto_video_generation
+        REDIS_URL: redis://localhost:6379/0
+        TESTING: true
+      run: |
+        pytest tests/ -v --cov=auto_generate_video_fold6 --cov-report=xml --cov-report=html
+
+    - name: 📊 Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: backend
+        name: backend-coverage
+
+  frontend-tests:
+    name: 🧪 Frontend Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    if: needs.code-quality.outputs.should-deploy == 'true' && (inputs.skip_tests != true)
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
+
+    - name: 📦 Install Dependencies
+      working-directory: frontend
+      run: npm ci
+
+    - name: 🏗️ Build Frontend
+      working-directory: frontend
+      run: npm run build
+
+    - name: 🧪 Run Unit Tests
+      working-directory: frontend
+      run: npm run test:coverage
+
+    - name: 📊 Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./frontend/coverage
+        flags: frontend
+        name: frontend-coverage
+
+  # ===========================================
+  # E2E 整合測試
+  # ===========================================
+  e2e-tests:
+    name: 🔄 E2E Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    if: needs.code-quality.outputs.should-deploy == 'true' && (inputs.skip_tests != true)
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Build and Start Services
+      run: |
+        cp .env.template .env
+        docker-compose -f docker-compose.unified.yml up -d postgres redis minio
+        
+        # 等待服務準備完成
+        timeout 60 bash -c 'until docker-compose -f docker-compose.unified.yml exec -T postgres pg_isready -U postgres; do sleep 2; done'
+        
+        # 執行資料庫遷移
+        docker-compose -f docker-compose.unified.yml up migrations
+        
+        # 啟動應用服務
+        docker-compose -f docker-compose.unified.yml up -d
+
+    - name: 🧪 Run E2E Tests
+      run: |
+        # 等待服務完全啟動
+        sleep 30
+        
+        # 檢查服務健康狀態
+        curl -f http://localhost:8000/health || exit 1
+        curl -f http://localhost:3000/ || exit 1
+        
+        # 執行 E2E 測試 (如果有的話)
+        if [ -f "tests/e2e/run_tests.py" ]; then
+          python tests/e2e/run_tests.py
+        fi
+
+    - name: 📋 Collect Service Logs
+      if: failure()
+      run: |
+        docker-compose -f docker-compose.unified.yml logs > e2e-logs.txt
+
+    - name: 📤 Upload E2E Artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-failure-logs
+        path: e2e-logs.txt
+
+  # ===========================================
+  # 容器映像構建
+  # ===========================================
+  build-images:
+    name: 🐳 Build Container Images
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    if: needs.code-quality.outputs.should-deploy == 'true'
+
+    strategy:
+      matrix:
+        service: [api-gateway, auth-service, video-service, ai-service, frontend]
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 🔐 Login to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📋 Extract Metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: 🏗️ Build and Push Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./auto_generate_video_fold6/${{ matrix.service }}/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  # ===========================================
+  # 自動部署
+  # ===========================================
+  deploy:
+    name: 🚀 Deploy to Environment
+    runs-on: ubuntu-latest
+    needs: [build-images, e2e-tests]
+    if: |
+      needs.code-quality.outputs.should-deploy == 'true' && (
+        (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+        (github.ref == 'refs/heads/develop' && github.event_name == 'push') ||
+        github.event_name == 'workflow_dispatch'
+      )
+
+    environment: 
+      name: ${{ 
+        github.event_name == 'workflow_dispatch' && inputs.environment ||
+        github.ref == 'refs/heads/main' && 'production' ||
+        github.ref == 'refs/heads/develop' && 'staging' ||
+        'development'
+      }}
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🎯 Determine Environment
+      id: env
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          echo "environment=staging" >> $GITHUB_OUTPUT
+        else
+          echo "environment=development" >> $GITHUB_OUTPUT
+        fi
+
+    - name: 🔧 Setup Environment Configuration
+      run: |
+        cp .env.template .env
+        # 根據環境設定對應的環境變數
+        sed -i "s/ENVIRONMENT=development/ENVIRONMENT=${{ steps.env.outputs.environment }}/g" .env
+
+    - name: 🐳 Deploy with Docker Compose
+      if: steps.env.outputs.environment != 'production'
+      run: |
+        chmod +x scripts/deploy-unified.sh
+        ./scripts/deploy-unified.sh docker ${{ steps.env.outputs.environment }}
+
+    - name: ☸️ Deploy to Kubernetes
+      if: steps.env.outputs.environment == 'production'
+      run: |
+        # 設置 kubectl 配置 (需要在 GitHub Secrets 中設定)
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        
+        # 更新映像標籤
+        export IMAGE_TAG="${{ github.sha }}"
+        envsubst < k8s/unified-deployment.yaml | kubectl apply -f -
+        
+        # 等待部署完成
+        kubectl rollout status deployment/api-gateway -n auto-video-generation
+        kubectl rollout status deployment/auth-service -n auto-video-generation
+        kubectl rollout status deployment/video-service -n auto-video-generation
+
+    - name: 🔍 Post-deployment Health Check
+      run: |
+        sleep 30
+        
+        # 根據環境執行健康檢查
+        if [ "${{ steps.env.outputs.environment }}" = "production" ]; then
+          kubectl get pods -n auto-video-generation
+          # 檢查生產環境 API
+          # curl -f https://api.yourdomain.com/health
+        else
+          # 檢查本地部署
+          curl -f http://localhost:8000/health
+        fi
+
+  # ===========================================
+  # 部署通知
+  # ===========================================
+  notify:
+    name: 📢 Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always()
+
+    steps:
+    - name: 📢 Success Notification
+      if: needs.deploy.result == 'success'
+      run: |
+        echo "🎉 部署成功完成！"
+        echo "環境: ${{ needs.deploy.outputs.environment || 'staging' }}"
+        echo "提交: ${{ github.sha }}"
+        echo "分支: ${{ github.ref_name }}"
+
+    - name: ❌ Failure Notification
+      if: needs.deploy.result == 'failure'
+      run: |
+        echo "❌ 部署失敗！"
+        echo "請檢查部署日誌並進行故障排除"
+        exit 1
