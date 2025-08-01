@@ -14,7 +14,9 @@ async def verify_token(token: str) -> dict:
     """Verify JWT token with auth service"""
     try:
         # First try to decode locally
-        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(
+            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+        )
         return payload
     except JWTError:
         # If local verification fails, check with auth service
@@ -40,7 +42,9 @@ async def verify_token(token: str) -> dict:
             )
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
     """Get current authenticated user"""
     try:
         token = credentials.credentials
@@ -49,7 +53,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         user_id = payload.get("sub")
         if user_id is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
             )
 
         return {
@@ -59,11 +64,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         }
     except ValueError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user ID in token"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid user ID in token",
         )
 
 
-async def get_optional_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+async def get_optional_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
     """Get current user if authenticated, otherwise return None"""
     try:
         return await get_current_user(credentials)

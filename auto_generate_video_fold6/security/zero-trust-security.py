@@ -109,7 +109,9 @@ class DeviceFingerprinter:
 
         return device_id
 
-    async def _store_device_info(self, device_id: str, fingerprint_data: Dict[str, Any]):
+    async def _store_device_info(
+        self, device_id: str, fingerprint_data: Dict[str, Any]
+    ):
         """存儲設備資訊"""
         device_info = {
             "fingerprint": fingerprint_data,
@@ -123,9 +125,13 @@ class DeviceFingerprinter:
         if existing_info:
             existing_data = json.loads(existing_info)
             device_info["first_seen"] = existing_data["first_seen"]
-            device_info["trust_score"] = min(existing_data["trust_score"] + 0.1, 1.0)
+            device_info["trust_score"] = min(
+                existing_data["trust_score"] + 0.1, 1.0
+            )
 
-        self.redis_client.setex(f"device:{device_id}", timedelta(days=90), json.dumps(device_info))
+        self.redis_client.setex(
+            f"device:{device_id}", timedelta(days=90), json.dumps(device_info)
+        )
 
     async def get_device_trust_score(self, device_id: str) -> float:
         """獲取設備信任分數"""
@@ -143,27 +149,40 @@ class BehaviorAnalyzer:
         self.redis_client = redis.Redis(host="localhost", port=6379, db=4)
         self.behavior_models = {}
 
-    async def analyze_behavior(self, user_id: str, action: str, context: SecurityContext) -> float:
+    async def analyze_behavior(
+        self, user_id: str, action: str, context: SecurityContext
+    ) -> float:
         """分析用戶行為並返回風險分數"""
 
         # 獲取用戶歷史行為
         behavior_history = await self._get_user_behavior_history(user_id)
 
         # 時間分析
-        time_risk = await self._analyze_time_patterns(user_id, context.timestamp)
+        time_risk = await self._analyze_time_patterns(
+            user_id, context.timestamp
+        )
 
         # 地理位置分析
-        location_risk = await self._analyze_location_patterns(user_id, context.location)
+        location_risk = await self._analyze_location_patterns(
+            user_id, context.location
+        )
 
         # 頻率分析
-        frequency_risk = await self._analyze_frequency_patterns(user_id, action)
+        frequency_risk = await self._analyze_frequency_patterns(
+            user_id, action
+        )
 
         # 設備分析
-        device_risk = await self._analyze_device_patterns(user_id, context.device_id)
+        device_risk = await self._analyze_device_patterns(
+            user_id, context.device_id
+        )
 
         # 綜合風險評估
         total_risk = (
-            time_risk * 0.2 + location_risk * 0.3 + frequency_risk * 0.3 + device_risk * 0.2
+            time_risk * 0.2
+            + location_risk * 0.3
+            + frequency_risk * 0.3
+            + device_risk * 0.2
         )
 
         # 記錄當前行為
@@ -172,14 +191,20 @@ class BehaviorAnalyzer:
         logger.info(f"用戶 {user_id} 行為風險分析: {total_risk:.3f}")
         return min(total_risk, 1.0)
 
-    async def _get_user_behavior_history(self, user_id: str) -> List[Dict[str, Any]]:
+    async def _get_user_behavior_history(
+        self, user_id: str
+    ) -> List[Dict[str, Any]]:
         """獲取用戶行為歷史"""
         history_key = f"behavior_history:{user_id}"
-        history_data = self.redis_client.lrange(history_key, 0, 100)  # 最近100條
+        history_data = self.redis_client.lrange(
+            history_key, 0, 100
+        )  # 最近100條
 
         return [json.loads(item) for item in history_data]
 
-    async def _analyze_time_patterns(self, user_id: str, current_time: datetime) -> float:
+    async def _analyze_time_patterns(
+        self, user_id: str, current_time: datetime
+    ) -> float:
         """分析時間模式異常"""
         # 獲取用戶常用時間段
         history = await self._get_user_behavior_history(user_id)
@@ -224,7 +249,9 @@ class BehaviorAnalyzer:
         else:
             return 0.7  # 新地點，高風險
 
-    async def _analyze_frequency_patterns(self, user_id: str, action: str) -> float:
+    async def _analyze_frequency_patterns(
+        self, user_id: str, action: str
+    ) -> float:
         """分析操作頻率異常"""
         # 檢查最近1小時內的同類操作次數
         recent_actions = []
@@ -250,11 +277,15 @@ class BehaviorAnalyzer:
 
         return min(frequency_risk, 1.0)
 
-    async def _analyze_device_patterns(self, user_id: str, device_id: str) -> float:
+    async def _analyze_device_patterns(
+        self, user_id: str, device_id: str
+    ) -> float:
         """分析設備使用模式"""
         # 檢查用戶是否經常使用此設備
         history = await self._get_user_behavior_history(user_id)
-        device_usage = sum(1 for record in history if record.get("device_id") == device_id)
+        device_usage = sum(
+            1 for record in history if record.get("device_id") == device_id
+        )
 
         if device_usage > 10:
             return 0.1  # 常用設備，低風險
@@ -264,7 +295,11 @@ class BehaviorAnalyzer:
             return 0.6  # 新設備，高風險
 
     async def _record_behavior(
-        self, user_id: str, action: str, context: SecurityContext, risk_score: float
+        self,
+        user_id: str,
+        action: str,
+        context: SecurityContext,
+        risk_score: float,
     ):
         """記錄用戶行為"""
         behavior_record = {
@@ -290,25 +325,36 @@ class RiskEngine:
         self.device_fingerprinter = DeviceFingerprinter()
         self.threat_intelligence = ThreatIntelligence()
 
-    async def assess_risk(self, user_id: str, action: str, context: SecurityContext) -> float:
+    async def assess_risk(
+        self, user_id: str, action: str, context: SecurityContext
+    ) -> float:
         """綜合風險評估"""
 
         # 行為風險
-        behavior_risk = await self.behavior_analyzer.analyze_behavior(user_id, action, context)
+        behavior_risk = await self.behavior_analyzer.analyze_behavior(
+            user_id, action, context
+        )
 
         # 設備風險
-        device_trust = await self.device_fingerprinter.get_device_trust_score(context.device_id)
+        device_trust = await self.device_fingerprinter.get_device_trust_score(
+            context.device_id
+        )
         device_risk = 1.0 - device_trust
 
         # 威脅情報風險
-        threat_risk = await self.threat_intelligence.check_ip_reputation(context.ip_address)
+        threat_risk = await self.threat_intelligence.check_ip_reputation(
+            context.ip_address
+        )
 
         # 會話風險
         session_risk = await self._assess_session_risk(context.session_id)
 
         # 綜合風險計算
         total_risk = (
-            behavior_risk * 0.4 + device_risk * 0.2 + threat_risk * 0.3 + session_risk * 0.1
+            behavior_risk * 0.4
+            + device_risk * 0.2
+            + threat_risk * 0.3
+            + session_risk * 0.1
         )
 
         logger.info(
@@ -366,7 +412,9 @@ class ThreatIntelligence:
         reputation_score = await self._query_threat_intelligence(ip_address)
 
         # 緩存結果
-        self.redis_client.setex(reputation_key, timedelta(hours=1), str(reputation_score))
+        self.redis_client.setex(
+            reputation_key, timedelta(hours=1), str(reputation_score)
+        )
 
         return reputation_score
 
@@ -388,7 +436,9 @@ class ThreatIntelligence:
                         # 模擬 API 調用（實際需要 API 密鑰）
                         # response = await client.get(source.format(ip=ip_address))
                         # 模擬響應
-                        simulated_score = 0.1 if ip_address.startswith("192.168.") else 0.0
+                        simulated_score = (
+                            0.1 if ip_address.startswith("192.168.") else 0.0
+                        )
                         risk_scores.append(simulated_score)
                     except Exception as e:
                         logger.warning(f"威脅情報查詢失敗: {e}")
@@ -439,12 +489,19 @@ class PolicyEngine:
         )
 
     async def evaluate_access(
-        self, user_id: str, resource: str, action: str, context: SecurityContext
+        self,
+        user_id: str,
+        resource: str,
+        action: str,
+        context: SecurityContext,
     ) -> Dict[str, Any]:
         """評估訪問權限"""
 
         if resource not in self.policies:
-            return {"allowed": False, "reason": f"未定義資源 {resource} 的訪問策略"}
+            return {
+                "allowed": False,
+                "reason": f"未定義資源 {resource} 的訪問策略",
+            }
 
         policy = self.policies[resource]
 
@@ -470,9 +527,14 @@ class PolicyEngine:
             }
 
         # 檢查額外條件
-        condition_check = await self._check_policy_conditions(user_id, policy, context)
+        condition_check = await self._check_policy_conditions(
+            user_id, policy, context
+        )
         if not condition_check["passed"]:
-            return {"allowed": False, "reason": f"策略條件檢查失敗: {condition_check['reason']}"}
+            return {
+                "allowed": False,
+                "reason": f"策略條件檢查失敗: {condition_check['reason']}",
+            }
 
         return {
             "allowed": True,
@@ -501,8 +563,13 @@ class PolicyEngine:
                     return {"passed": False, "reason": "需要多因素認證"}
 
             elif condition == "ip_whitelist":
-                if value and not await self._check_ip_whitelist(user_id, context.ip_address):
-                    return {"passed": False, "reason": f"IP {context.ip_address} 不在白名單中"}
+                if value and not await self._check_ip_whitelist(
+                    user_id, context.ip_address
+                ):
+                    return {
+                        "passed": False,
+                        "reason": f"IP {context.ip_address} 不在白名單中",
+                    }
 
         return {"passed": True, "reason": "所有條件檢查通過"}
 
@@ -536,7 +603,11 @@ class ZeroTrustGateway:
         self.audit_logger = AuditLogger()
 
     async def authenticate_and_authorize(
-        self, token: str, resource: str, action: str, request_data: Dict[str, Any]
+        self,
+        token: str,
+        resource: str,
+        action: str,
+        request_data: Dict[str, Any],
     ) -> Dict[str, Any]:
         """零信任認證和授權"""
 
@@ -549,7 +620,9 @@ class ZeroTrustGateway:
             user_id = token_data["user_id"]
 
             # 2. 生成設備指紋
-            device_id = await self.device_fingerprinter.generate_fingerprint(request_data)
+            device_id = await self.device_fingerprinter.generate_fingerprint(
+                request_data
+            )
 
             # 3. 構建安全上下文
             context = SecurityContext(
@@ -558,14 +631,18 @@ class ZeroTrustGateway:
                 ip_address=request_data.get("ip_address", ""),
                 user_agent=request_data.get("user_agent", ""),
                 location=request_data.get("location"),
-                trust_level=await self._calculate_trust_level(user_id, device_id),
+                trust_level=await self._calculate_trust_level(
+                    user_id, device_id
+                ),
                 risk_score=0.0,  # 將在風險評估中計算
                 session_id=token_data["session_id"],
                 timestamp=datetime.utcnow(),
             )
 
             # 4. 風險評估
-            context.risk_score = await self.risk_engine.assess_risk(user_id, action, context)
+            context.risk_score = await self.risk_engine.assess_risk(
+                user_id, action, context
+            )
 
             # 5. 策略評估
             access_decision = await self.policy_engine.evaluate_access(
@@ -593,7 +670,9 @@ class ZeroTrustGateway:
         """驗證 JWT 令牌"""
         try:
             # 實際實現中應該使用適當的密鑰和算法
-            decoded = jwt.decode(token, "your-secret-key", algorithms=["HS256"])
+            decoded = jwt.decode(
+                token, "your-secret-key", algorithms=["HS256"]
+            )
 
             # 檢查令牌是否被撤銷
             if await self._is_token_revoked(token):
@@ -616,14 +695,18 @@ class ZeroTrustGateway:
         revoked_key = f"revoked_token:{token_hash}"
         return self.redis_client.exists(revoked_key)
 
-    async def _calculate_trust_level(self, user_id: str, device_id: str) -> TrustLevel:
+    async def _calculate_trust_level(
+        self, user_id: str, device_id: str
+    ) -> TrustLevel:
         """計算用戶信任等級"""
 
         # 獲取用戶基礎信任分數
         user_trust = await self._get_user_trust_score(user_id)
 
         # 獲取設備信任分數
-        device_trust = await self.device_fingerprinter.get_device_trust_score(device_id)
+        device_trust = await self.device_fingerprinter.get_device_trust_score(
+            device_id
+        )
 
         # 綜合信任分數
         combined_trust = (user_trust + device_trust) / 2
@@ -654,7 +737,12 @@ class AuditLogger:
         self.redis_client = redis.Redis(host="localhost", port=6379, db=6)
 
     async def log_access_attempt(
-        self, user_id: str, resource: str, action: str, context: SecurityContext, success: bool
+        self,
+        user_id: str,
+        resource: str,
+        action: str,
+        context: SecurityContext,
+        success: bool,
     ):
         """記錄訪問嘗試"""
 
@@ -667,7 +755,10 @@ class AuditLogger:
             risk_level=self._determine_risk_level(context.risk_score),
             context=context,
             timestamp=datetime.utcnow(),
-            metadata={"success": success, "trust_level": context.trust_level.name},
+            metadata={
+                "success": success,
+                "trust_level": context.trust_level.name,
+            },
         )
 
         # 記錄到審計日誌
@@ -746,7 +837,10 @@ async def main():
 
     # 零信任認證
     result = await gateway.authenticate_and_authorize(
-        token=token, resource="video_generation", action="create", request_data=request_data
+        token=token,
+        resource="video_generation",
+        action="create",
+        request_data=request_data,
     )
 
     if result["authorized"]:

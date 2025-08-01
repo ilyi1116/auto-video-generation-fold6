@@ -36,7 +36,6 @@ class TestAuthRouters:
             patch("app.crud.get_user_by_email") as mock_get_email,
             patch("app.crud.get_user_by_username") as mock_get_username,
         ):
-
             mock_get_email.return_value = None
             mock_get_username.return_value = None
             mock_create.return_value = {
@@ -91,7 +90,6 @@ class TestAuthRouters:
             patch("app.security.create_access_token") as mock_token,
             patch("app.security.create_refresh_token") as mock_refresh,
         ):
-
             mock_get_user.return_value = {
                 "id": 1,
                 "email": "testuser@example.com",
@@ -123,7 +121,6 @@ class TestAuthRouters:
             patch("app.crud.get_user_by_email") as mock_get_user,
             patch("app.security.verify_password") as mock_verify,
         ):
-
             mock_get_user.return_value = {
                 "id": 1,
                 "email": "testuser@example.com",
@@ -149,7 +146,6 @@ class TestAuthRouters:
             patch("app.crud.get_user_by_email") as mock_get_user,
             patch("app.security.verify_password") as mock_verify,
         ):
-
             mock_get_user.return_value = {
                 "id": 1,
                 "email": "inactive@example.com",
@@ -172,7 +168,6 @@ class TestAuthRouters:
             patch("app.crud.get_user") as mock_get_user,
             patch("app.security.create_access_token") as mock_token,
         ):
-
             mock_verify.return_value = {"user_id": 1}
             mock_get_user.return_value = {
                 "id": 1,
@@ -239,7 +234,6 @@ class TestAuthRouters:
             patch("app.dependencies.get_current_user") as mock_get_current,
             patch("app.crud.invalidate_user_tokens") as mock_invalidate,
         ):
-
             mock_get_current.return_value = {"id": 1}
             mock_invalidate.return_value = True
 
@@ -262,7 +256,6 @@ class TestAuthRouters:
             patch("app.security.verify_password") as mock_verify,
             patch("app.crud.update_user_password") as mock_update,
         ):
-
             mock_get_current.return_value = {
                 "id": 1,
                 "hashed_password": "hashed_old_password",
@@ -292,7 +285,6 @@ class TestAuthRouters:
             patch("app.dependencies.get_current_user") as mock_get_current,
             patch("app.security.verify_password") as mock_verify,
         ):
-
             mock_get_current.return_value = {
                 "id": 1,
                 "hashed_password": "hashed_old_password",

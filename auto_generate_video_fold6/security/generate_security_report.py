@@ -22,7 +22,13 @@ class SecurityReportGenerator:
 
     def __init__(self):
         self.findings = []
-        self.summary = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+        self.summary = {
+            "CRITICAL": 0,
+            "HIGH": 0,
+            "MEDIUM": 0,
+            "LOW": 0,
+            "UNKNOWN": 0,
+        }
         self.scanner_results = {}
 
     def process_bandit_report(self, file_path: str):
@@ -35,7 +41,9 @@ class SecurityReportGenerator:
                 finding = {
                     "id": f"bandit_{result.get('test_id')}_{result.get('line_number')}",
                     "scanner": "bandit",
-                    "severity": result.get("issue_severity", "UNKNOWN").upper(),
+                    "severity": result.get(
+                        "issue_severity", "UNKNOWN"
+                    ).upper(),
                     "confidence": result.get("issue_confidence", "UNKNOWN"),
                     "title": result.get("issue_text", ""),
                     "description": result.get("issue_text", ""),
@@ -98,7 +106,11 @@ class SecurityReportGenerator:
                 data = json.load(f)
 
             # Safety 報告可能是列表格式
-            vulnerabilities = data if isinstance(data, list) else data.get("vulnerabilities", [])
+            vulnerabilities = (
+                data
+                if isinstance(data, list)
+                else data.get("vulnerabilities", [])
+            )
 
             for vuln in vulnerabilities:
                 finding = {
@@ -148,7 +160,9 @@ class SecurityReportGenerator:
                     "line_number": 0,
                     "rule_id": vuln_id,
                     "remediation": f"Update to version {vuln.get('fixAvailable', {}).get('version', 'latest')}",
-                    "cve_id": vuln.get("cves", [None])[0] if vuln.get("cves") else None,
+                    "cve_id": vuln.get("cves", [None])[0]
+                    if vuln.get("cves")
+                    else None,
                     "created_at": datetime.now().isoformat(),
                 }
                 self.findings.append(finding)
@@ -160,7 +174,9 @@ class SecurityReportGenerator:
             }
 
         except Exception as e:
-            logger.error(f"Failed to process npm audit report {file_path}: {e}")
+            logger.error(
+                f"Failed to process npm audit report {file_path}: {e}"
+            )
 
     def process_trivy_report(self, file_path: str):
         """處理 Trivy 報告"""
@@ -214,12 +230,16 @@ class SecurityReportGenerator:
                     finding = {
                         "id": f"trivy_config_{misconfig.get('ID')}_{misconfig.get('CauseMetadata', {}).get('StartLine', 0)}",
                         "scanner": "trivy_config",
-                        "severity": misconfig.get("Severity", "UNKNOWN").upper(),
+                        "severity": misconfig.get(
+                            "Severity", "UNKNOWN"
+                        ).upper(),
                         "confidence": "HIGH",
                         "title": f"Configuration issue: {misconfig.get('Title', '')}",
                         "description": misconfig.get("Description", ""),
                         "file_path": result.get("Target", ""),
-                        "line_number": misconfig.get("CauseMetadata", {}).get("StartLine", 0),
+                        "line_number": misconfig.get("CauseMetadata", {}).get(
+                            "StartLine", 0
+                        ),
                         "rule_id": misconfig.get("ID", ""),
                         "remediation": misconfig.get("Resolution", ""),
                         "created_at": datetime.now().isoformat(),
@@ -261,8 +281,12 @@ class SecurityReportGenerator:
                     line_number = 0
 
                     if locations:
-                        physical_location = locations[0].get("physicalLocation", {})
-                        artifact_location = physical_location.get("artifactLocation", {})
+                        physical_location = locations[0].get(
+                            "physicalLocation", {}
+                        )
+                        artifact_location = physical_location.get(
+                            "artifactLocation", {}
+                        )
                         file_path = artifact_location.get("uri", "")
 
                         region = physical_location.get("region", {})
@@ -289,7 +313,9 @@ class SecurityReportGenerator:
                     self._update_summary(finding["severity"])
 
             self.scanner_results[scanner_name] = {
-                "total_findings": sum(len(run.get("results", [])) for run in runs),
+                "total_findings": sum(
+                    len(run.get("results", [])) for run in runs
+                ),
                 "status": "completed",
             }
 
@@ -314,7 +340,9 @@ class SecurityReportGenerator:
                         logger.info(f"Processing Bandit report: {file_path}")
                         self.process_bandit_report(str(file_path))
 
-                    elif "semgrep" in file_name and file_name.endswith(".json"):
+                    elif "semgrep" in file_name and file_name.endswith(
+                        ".json"
+                    ):
                         logger.info(f"Processing Semgrep report: {file_path}")
                         self.process_semgrep_report(str(file_path))
 
@@ -322,8 +350,12 @@ class SecurityReportGenerator:
                         logger.info(f"Processing Safety report: {file_path}")
                         self.process_safety_report(str(file_path))
 
-                    elif "npm-audit" in file_name and file_name.endswith(".json"):
-                        logger.info(f"Processing npm audit report: {file_path}")
+                    elif "npm-audit" in file_name and file_name.endswith(
+                        ".json"
+                    ):
+                        logger.info(
+                            f"Processing npm audit report: {file_path}"
+                        )
                         self.process_npm_audit_report(str(file_path))
 
                     elif "trivy" in file_name and file_name.endswith(".json"):
@@ -331,7 +363,9 @@ class SecurityReportGenerator:
                         self.process_trivy_report(str(file_path))
 
                     elif file_name.endswith(".sarif"):
-                        scanner_name = self._extract_scanner_name_from_sarif(file_name)
+                        scanner_name = self._extract_scanner_name_from_sarif(
+                            file_name
+                        )
                         logger.info(
                             f"Processing SARIF report: {file_path} (scanner: {scanner_name})"
                         )
@@ -357,7 +391,12 @@ class SecurityReportGenerator:
 
         return report
 
-    def save_report(self, report: Dict[str, Any], output_path: str, format_type: str = "json"):
+    def save_report(
+        self,
+        report: Dict[str, Any],
+        output_path: str,
+        format_type: str = "json",
+    ):
         """儲存報告到檔案"""
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -392,7 +431,12 @@ class SecurityReportGenerator:
 
     def _map_sarif_severity(self, level: str) -> str:
         """映射 SARIF 嚴重程度"""
-        mapping = {"error": "HIGH", "warning": "MEDIUM", "note": "LOW", "info": "LOW"}
+        mapping = {
+            "error": "HIGH",
+            "warning": "MEDIUM",
+            "note": "LOW",
+            "info": "LOW",
+        }
         return mapping.get(level.lower(), "UNKNOWN")
 
     def _extract_scanner_name_from_sarif(self, file_name: str) -> str:
@@ -416,7 +460,9 @@ class SecurityReportGenerator:
         high_count = self.summary.get("HIGH", 0)
 
         if critical_count > 0:
-            recommendations.append(f"🚨 立即修復 {critical_count} 個關鍵安全問題")
+            recommendations.append(
+                f"🚨 立即修復 {critical_count} 個關鍵安全問題"
+            )
 
         if high_count > 0:
             recommendations.append(f"⚠️ 優先修復 {high_count} 個高風險安全問題")
@@ -427,7 +473,10 @@ class SecurityReportGenerator:
             scanner = finding["scanner"]
             scanner_counts[scanner] = scanner_counts.get(scanner, 0) + 1
 
-        if scanner_counts.get("trivy_secrets", 0) > 0 or scanner_counts.get("gitleaks", 0) > 0:
+        if (
+            scanner_counts.get("trivy_secrets", 0) > 0
+            or scanner_counts.get("gitleaks", 0) > 0
+        ):
             recommendations.append("🔑 檢查並移除程式碼中的硬編碼密鑰")
 
         if scanner_counts.get("bandit", 0) > 0:
@@ -477,7 +526,11 @@ class SecurityReportGenerator:
             "critical_findings": critical_count,
             "high_findings": high_count,
             "remediation_priority": (
-                "immediate" if critical_count > 0 else "high" if high_count > 0 else "normal"
+                "immediate"
+                if critical_count > 0
+                else "high"
+                if high_count > 0
+                else "normal"
             ),
         }
 
@@ -485,24 +538,24 @@ class SecurityReportGenerator:
         """生成 Markdown 格式報告"""
         markdown = f"""# Security Scan Report
 
-**Generated:** {report['metadata']['generated_at']}  
-**Total Scanners:** {report['metadata']['total_scanners']}  
-**Total Findings:** {report['metadata']['total_findings']}
+**Generated:** {report["metadata"]["generated_at"]}  
+**Total Scanners:** {report["metadata"]["total_scanners"]}  
+**Total Findings:** {report["metadata"]["total_findings"]}
 
 ## Summary
 
 | Severity | Count |
 |----------|-------|
-| Critical | {report['summary']['CRITICAL']} |
-| High     | {report['summary']['HIGH']} |
-| Medium   | {report['summary']['MEDIUM']} |
-| Low      | {report['summary']['LOW']} |
+| Critical | {report["summary"]["CRITICAL"]} |
+| High     | {report["summary"]["HIGH"]} |
+| Medium   | {report["summary"]["MEDIUM"]} |
+| Low      | {report["summary"]["LOW"]} |
 
 ## Risk Assessment
 
-**Risk Level:** {report['risk_assessment']['risk_level']}  
-**Risk Score:** {report['risk_assessment']['risk_score']}/10  
-**Remediation Priority:** {report['risk_assessment']['remediation_priority']}
+**Risk Level:** {report["risk_assessment"]["risk_level"]}  
+**Risk Score:** {report["risk_assessment"]["risk_score"]}/10  
+**Remediation Priority:** {report["risk_assessment"]["remediation_priority"]}
 
 ## Recommendations
 
@@ -514,24 +567,28 @@ class SecurityReportGenerator:
         markdown += "\n## Scanner Results\n\n"
 
         for scanner, result in report["scanner_results"].items():
-            markdown += (
-                f"- **{scanner}**: {result['total_findings']} findings ({result['status']})\n"
-            )
+            markdown += f"- **{scanner}**: {result['total_findings']} findings ({result['status']})\n"
 
         if report["summary"]["CRITICAL"] > 0 or report["summary"]["HIGH"] > 0:
             markdown += "\n## Critical and High Severity Findings\n\n"
 
             for finding in report["findings"]:
                 if finding["severity"] in ["CRITICAL", "HIGH"]:
-                    markdown += f"### {finding['severity']}: {finding['title']}\n\n"
+                    markdown += (
+                        f"### {finding['severity']}: {finding['title']}\n\n"
+                    )
                     markdown += f"**File:** `{finding['file_path']}`  \n"
                     markdown += f"**Line:** {finding['line_number']}  \n"
                     markdown += f"**Scanner:** {finding['scanner']}  \n"
                     markdown += f"**Rule:** {finding['rule_id']}  \n"
-                    markdown += f"**Description:** {finding['description']}  \n"
+                    markdown += (
+                        f"**Description:** {finding['description']}  \n"
+                    )
 
                     if finding["remediation"]:
-                        markdown += f"**Remediation:** {finding['remediation']}  \n"
+                        markdown += (
+                            f"**Remediation:** {finding['remediation']}  \n"
+                        )
 
                     markdown += "\n---\n\n"
 
@@ -539,13 +596,20 @@ class SecurityReportGenerator:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate comprehensive security report")
+    parser = argparse.ArgumentParser(
+        description="Generate comprehensive security report"
+    )
     parser.add_argument(
-        "--input-dir", required=True, help="Directory containing security scan reports"
+        "--input-dir",
+        required=True,
+        help="Directory containing security scan reports",
     )
     parser.add_argument("--output", required=True, help="Output file path")
     parser.add_argument(
-        "--format", choices=["json", "yaml", "markdown"], default="json", help="Output format"
+        "--format",
+        choices=["json", "yaml", "markdown"],
+        default="json",
+        help="Output format",
     )
 
     args = parser.parse_args()

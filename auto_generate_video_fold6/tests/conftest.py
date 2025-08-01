@@ -75,11 +75,23 @@ def mock_config_manager():
                     "batch_size": 2,
                     "platforms": ["tiktok", "instagram"],
                 },
-                "cost_control": {"daily_budget_usd": 10.0, "stop_on_budget_exceeded": True},
+                "cost_control": {
+                    "daily_budget_usd": 10.0,
+                    "stop_on_budget_exceeded": True,
+                },
                 "ai_services": {
-                    "text_generation": {"provider": "openai", "model": "gpt-3.5-turbo"},
-                    "image_generation": {"provider": "stability", "model": "stable-diffusion-xl"},
-                    "voice_synthesis": {"provider": "elevenlabs", "voice_id": "test-voice"},
+                    "text_generation": {
+                        "provider": "openai",
+                        "model": "gpt-3.5-turbo",
+                    },
+                    "image_generation": {
+                        "provider": "stability",
+                        "model": "stable-diffusion-xl",
+                    },
+                    "voice_synthesis": {
+                        "provider": "elevenlabs",
+                        "voice_id": "test-voice",
+                    },
                 },
             }
 
@@ -114,7 +126,9 @@ def mock_cost_tracker():
             self.total_cost = 0.0
             self.calls = []
 
-        async def track_api_call(self, provider, model, operation_type, **kwargs):
+        async def track_api_call(
+            self, provider, model, operation_type, **kwargs
+        ):
             cost = 0.1  # 固定測試成本
             self.total_cost += cost
             self.calls.append(
@@ -189,8 +203,12 @@ def mock_openai_client():
             self.chat.completions = MagicMock()
             self.chat.completions.create = AsyncMock(
                 return_value=MagicMock(
-                    choices=[MagicMock(message=MagicMock(content="測試生成的內容"))],
-                    usage=MagicMock(prompt_tokens=10, completion_tokens=20, total_tokens=30),
+                    choices=[
+                        MagicMock(message=MagicMock(content="測試生成的內容"))
+                    ],
+                    usage=MagicMock(
+                        prompt_tokens=10, completion_tokens=20, total_tokens=30
+                    ),
                 )
             )
 
@@ -205,7 +223,11 @@ def sample_video_data():
         "description": "這是一個測試影片的描述",
         "script": "這是測試影片腳本內容",
         "platforms": ["tiktok", "instagram"],
-        "style": {"theme": "technology", "tone": "professional", "duration": 60},
+        "style": {
+            "theme": "technology",
+            "tone": "professional",
+            "duration": 60,
+        },
         "generated_content": {
             "images": ["image1.jpg", "image2.jpg"],
             "audio": "audio.mp3",
@@ -272,10 +294,14 @@ def mock_http_client():
             self.responses[url] = MockResponse(response_data, status_code)
 
         async def get(self, url, **kwargs):
-            return self.responses.get(url, MockResponse({"error": "Not mocked"}, 404))
+            return self.responses.get(
+                url, MockResponse({"error": "Not mocked"}, 404)
+            )
 
         async def post(self, url, **kwargs):
-            return self.responses.get(url, MockResponse({"success": True}, 200))
+            return self.responses.get(
+                url, MockResponse({"success": True}, 200)
+            )
 
         async def __aenter__(self):
             return self
@@ -346,5 +372,15 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_addoption(parser):
     """添加命令行選項"""
-    parser.addoption("--runslow", action="store_true", default=False, help="執行標記為 slow 的測試")
-    parser.addoption("--runintegration", action="store_true", default=False, help="執行整合測試")
+    parser.addoption(
+        "--runslow",
+        action="store_true",
+        default=False,
+        help="執行標記為 slow 的測試",
+    )
+    parser.addoption(
+        "--runintegration",
+        action="store_true",
+        default=False,
+        help="執行整合測試",
+    )

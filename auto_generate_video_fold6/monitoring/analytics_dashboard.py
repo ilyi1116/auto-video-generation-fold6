@@ -50,12 +50,23 @@ class AnalyticsDashboard:
                 # 標題
                 html.Div(
                     [
-                        html.H1("🎬 Auto Video Generation 分析儀表板", className="dashboard-title"),
-                        html.P("實時監控和數據分析", className="dashboard-subtitle"),
+                        html.H1(
+                            "🎬 Auto Video Generation 分析儀表板",
+                            className="dashboard-title",
+                        ),
+                        html.P(
+                            "實時監控和數據分析",
+                            className="dashboard-subtitle",
+                        ),
                         html.Div(
                             [
-                                html.Span("最後更新: ", className="update-label"),
-                                html.Span(id="last-update-time", className="update-time"),
+                                html.Span(
+                                    "最後更新: ", className="update-label"
+                                ),
+                                html.Span(
+                                    id="last-update-time",
+                                    className="update-time",
+                                ),
                             ],
                             className="update-info",
                         ),
@@ -67,16 +78,30 @@ class AnalyticsDashboard:
                     [
                         html.Div(
                             [
-                                html.Label("時間範圍:", className="control-label"),
+                                html.Label(
+                                    "時間範圍:", className="control-label"
+                                ),
                                 dcc.Dropdown(
                                     id="time-range-dropdown",
                                     options=[
                                         {"label": "今天", "value": "today"},
-                                        {"label": "昨天", "value": "yesterday"},
+                                        {
+                                            "label": "昨天",
+                                            "value": "yesterday",
+                                        },
                                         {"label": "過去7天", "value": "7days"},
-                                        {"label": "過去30天", "value": "30days"},
-                                        {"label": "本月", "value": "this_month"},
-                                        {"label": "上月", "value": "last_month"},
+                                        {
+                                            "label": "過去30天",
+                                            "value": "30days",
+                                        },
+                                        {
+                                            "label": "本月",
+                                            "value": "this_month",
+                                        },
+                                        {
+                                            "label": "上月",
+                                            "value": "last_month",
+                                        },
                                     ],
                                     value="7days",
                                     className="control-dropdown",
@@ -86,14 +111,25 @@ class AnalyticsDashboard:
                         ),
                         html.Div(
                             [
-                                html.Label("數據類型:", className="control-label"),
+                                html.Label(
+                                    "數據類型:", className="control-label"
+                                ),
                                 dcc.Dropdown(
                                     id="data-type-dropdown",
                                     options=[
                                         {"label": "成本分析", "value": "cost"},
-                                        {"label": "生成統計", "value": "generation"},
-                                        {"label": "效能指標", "value": "performance"},
-                                        {"label": "錯誤分析", "value": "errors"},
+                                        {
+                                            "label": "生成統計",
+                                            "value": "generation",
+                                        },
+                                        {
+                                            "label": "效能指標",
+                                            "value": "performance",
+                                        },
+                                        {
+                                            "label": "錯誤分析",
+                                            "value": "errors",
+                                        },
                                     ],
                                     value="cost",
                                     className="control-dropdown",
@@ -104,10 +140,14 @@ class AnalyticsDashboard:
                         html.Div(
                             [
                                 html.Button(
-                                    "刷新數據", id="refresh-button", className="refresh-button"
+                                    "刷新數據",
+                                    id="refresh-button",
+                                    className="refresh-button",
                                 ),
                                 html.Button(
-                                    "匯出報告", id="export-button", className="export-button"
+                                    "匯出報告",
+                                    id="export-button",
+                                    className="export-button",
                                 ),
                             ],
                             className="button-group",
@@ -123,14 +163,23 @@ class AnalyticsDashboard:
                 # 主要圖表區域
                 html.Div(
                     [
-                        html.Div([dcc.Graph(id="main-chart")], className="chart-container"),
-                        html.Div([dcc.Graph(id="secondary-chart")], className="chart-container"),
+                        html.Div(
+                            [dcc.Graph(id="main-chart")],
+                            className="chart-container",
+                        ),
+                        html.Div(
+                            [dcc.Graph(id="secondary-chart")],
+                            className="chart-container",
+                        ),
                     ],
                     className="charts-section",
                 ),
                 # 詳細數據表格
                 html.Div(
-                    [html.H3("詳細數據", className="section-title"), html.Div(id="data-table")],
+                    [
+                        html.H3("詳細數據", className="section-title"),
+                        html.Div(id="data-table"),
+                    ],
                     className="table-section",
                 ),
                 # 隱藏的 div 用於存儲數據
@@ -221,7 +270,10 @@ class AnalyticsDashboard:
         """設置回調函數"""
 
         @self.app.callback(
-            [Output("data-store", "children"), Output("last-update-time", "children")],
+            [
+                Output("data-store", "children"),
+                Output("last-update-time", "children"),
+            ],
             [
                 Input("time-range-dropdown", "value"),
                 Input("data-type-dropdown", "value"),
@@ -237,7 +289,10 @@ class AnalyticsDashboard:
                 logger.error(f"獲取數據失敗: {e}")
                 return [json.dumps({}), "獲取失敗"]
 
-        @self.app.callback(Output("metrics-cards", "children"), [Input("data-store", "children")])
+        @self.app.callback(
+            Output("metrics-cards", "children"),
+            [Input("data-store", "children")],
+        )
         def update_metrics_cards(data_json):
             """更新指標卡片"""
             try:
@@ -249,7 +304,10 @@ class AnalyticsDashboard:
 
         @self.app.callback(
             Output("main-chart", "figure"),
-            [Input("data-store", "children"), Input("data-type-dropdown", "value")],
+            [
+                Input("data-store", "children"),
+                Input("data-type-dropdown", "value"),
+            ],
         )
         def update_main_chart(data_json, data_type):
             """更新主圖表"""
@@ -262,7 +320,10 @@ class AnalyticsDashboard:
 
         @self.app.callback(
             Output("secondary-chart", "figure"),
-            [Input("data-store", "children"), Input("data-type-dropdown", "value")],
+            [
+                Input("data-store", "children"),
+                Input("data-type-dropdown", "value"),
+            ],
         )
         def update_secondary_chart(data_json, data_type):
             """更新次圖表"""
@@ -273,7 +334,9 @@ class AnalyticsDashboard:
                 logger.error(f"更新次圖表失敗: {e}")
                 return go.Figure()
 
-        @self.app.callback(Output("data-table", "children"), [Input("data-store", "children")])
+        @self.app.callback(
+            Output("data-table", "children"), [Input("data-store", "children")]
+        )
         def update_data_table(data_json):
             """更新數據表格"""
             try:
@@ -283,7 +346,9 @@ class AnalyticsDashboard:
                 logger.error(f"更新數據表格失敗: {e}")
                 return html.P("數據載入失敗")
 
-    async def _fetch_data(self, time_range: str, data_type: str) -> Dict[str, Any]:
+    async def _fetch_data(
+        self, time_range: str, data_type: str
+    ) -> Dict[str, Any]:
         """獲取數據"""
         end_date = date.today()
 
@@ -305,7 +370,9 @@ class AnalyticsDashboard:
                 end_date = date(end_date.year, 1, 1) - timedelta(days=1)
             else:
                 start_date = date(end_date.year, end_date.month - 1, 1)
-                end_date = date(end_date.year, end_date.month, 1) - timedelta(days=1)
+                end_date = date(end_date.year, end_date.month, 1) - timedelta(
+                    days=1
+                )
         else:
             start_date = end_date - timedelta(days=7)
 
@@ -321,7 +388,9 @@ class AnalyticsDashboard:
         else:
             return {}
 
-    async def _fetch_cost_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
+    async def _fetch_cost_data(
+        self, start_date: date, end_date: date
+    ) -> Dict[str, Any]:
         """獲取成本數據"""
         if not self.cost_tracker:
             return self._get_mock_cost_data(start_date, end_date)
@@ -332,7 +401,10 @@ class AnalyticsDashboard:
                 summary = await self.cost_tracker.get_daily_summary(start_date)
                 return {
                     "type": "cost",
-                    "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+                    "period": {
+                        "start": start_date.isoformat(),
+                        "end": end_date.isoformat(),
+                    },
                     "total_cost": summary.total_cost,
                     "api_calls": summary.api_calls_count,
                     "providers": summary.providers_breakdown,
@@ -350,20 +422,31 @@ class AnalyticsDashboard:
                 weekly_report = await self.cost_tracker.get_weekly_report()
                 return {
                     "type": "cost",
-                    "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+                    "period": {
+                        "start": start_date.isoformat(),
+                        "end": end_date.isoformat(),
+                    },
                     "total_cost": weekly_report["total_cost"],
                     "api_calls": weekly_report["total_calls"],
                     "average_daily": weekly_report["average_daily_cost"],
                     "daily_data": [
-                        {"date": date_str, "cost": stats["cost"], "calls": stats["calls"]}
-                        for date_str, stats in weekly_report["daily_stats"].items()
+                        {
+                            "date": date_str,
+                            "cost": stats["cost"],
+                            "calls": stats["calls"],
+                        }
+                        for date_str, stats in weekly_report[
+                            "daily_stats"
+                        ].items()
                     ],
                 }
         except Exception as e:
             logger.error(f"獲取成本數據失敗: {e}")
             return self._get_mock_cost_data(start_date, end_date)
 
-    def _get_mock_cost_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
+    def _get_mock_cost_data(
+        self, start_date: date, end_date: date
+    ) -> Dict[str, Any]:
         """獲取模擬成本數據"""
         import random
 
@@ -377,7 +460,11 @@ class AnalyticsDashboard:
             daily_calls = random.randint(30, 80)
 
             daily_data.append(
-                {"date": current_date.isoformat(), "cost": daily_cost, "calls": daily_calls}
+                {
+                    "date": current_date.isoformat(),
+                    "cost": daily_cost,
+                    "calls": daily_calls,
+                }
             )
 
             total_cost += daily_cost
@@ -386,7 +473,10 @@ class AnalyticsDashboard:
 
         return {
             "type": "cost",
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat(),
+            },
             "total_cost": total_cost,
             "api_calls": total_calls,
             "providers": {
@@ -402,7 +492,9 @@ class AnalyticsDashboard:
             "daily_data": daily_data,
         }
 
-    async def _fetch_generation_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
+    async def _fetch_generation_data(
+        self, start_date: date, end_date: date
+    ) -> Dict[str, Any]:
         """獲取生成數據（模擬）"""
         import random
 
@@ -420,7 +512,9 @@ class AnalyticsDashboard:
                     "date": current_date.isoformat(),
                     "videos": videos,
                     "success": success,
-                    "success_rate": (success / videos) * 100 if videos > 0 else 0,
+                    "success_rate": (success / videos) * 100
+                    if videos > 0
+                    else 0,
                 }
             )
 
@@ -430,10 +524,15 @@ class AnalyticsDashboard:
 
         return {
             "type": "generation",
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat(),
+            },
             "total_videos": total_videos,
             "total_success": total_success,
-            "success_rate": (total_success / total_videos) * 100 if total_videos > 0 else 0,
+            "success_rate": (total_success / total_videos) * 100
+            if total_videos > 0
+            else 0,
             "platforms": {
                 "TikTok": int(total_videos * 0.45),
                 "Instagram": int(total_videos * 0.35),
@@ -442,7 +541,9 @@ class AnalyticsDashboard:
             "daily_data": daily_data,
         }
 
-    async def _fetch_performance_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
+    async def _fetch_performance_data(
+        self, start_date: date, end_date: date
+    ) -> Dict[str, Any]:
         """獲取效能數據（模擬）"""
         import random
 
@@ -463,20 +564,30 @@ class AnalyticsDashboard:
 
         return {
             "type": "performance",
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat(),
+            },
             "daily_data": daily_data,
         }
 
-    async def _fetch_error_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
+    async def _fetch_error_data(
+        self, start_date: date, end_date: date
+    ) -> Dict[str, Any]:
         """獲取錯誤數據（模擬）"""
         import random
 
         error_types = ["API錯誤", "網路超時", "資源不足", "配置錯誤", "其他"]
-        error_data = {error_type: random.randint(0, 10) for error_type in error_types}
+        error_data = {
+            error_type: random.randint(0, 10) for error_type in error_types
+        }
 
         return {
             "type": "errors",
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat(),
+            },
             "total_errors": sum(error_data.values()),
             "error_types": error_data,
         }
@@ -493,14 +604,20 @@ class AnalyticsDashboard:
             cards = [
                 html.Div(
                     [
-                        html.Div(f"${data.get('total_cost', 0):.2f}", className="metric-value"),
+                        html.Div(
+                            f"${data.get('total_cost', 0):.2f}",
+                            className="metric-value",
+                        ),
                         html.Div("總成本", className="metric-label"),
                     ],
                     className="metric-card",
                 ),
                 html.Div(
                     [
-                        html.Div(str(data.get("api_calls", 0)), className="metric-value"),
+                        html.Div(
+                            str(data.get("api_calls", 0)),
+                            className="metric-value",
+                        ),
                         html.Div("API 呼叫次數", className="metric-label"),
                     ],
                     className="metric-card",
@@ -521,21 +638,30 @@ class AnalyticsDashboard:
             cards = [
                 html.Div(
                     [
-                        html.Div(str(data.get("total_videos", 0)), className="metric-value"),
+                        html.Div(
+                            str(data.get("total_videos", 0)),
+                            className="metric-value",
+                        ),
                         html.Div("總影片數", className="metric-label"),
                     ],
                     className="metric-card",
                 ),
                 html.Div(
                     [
-                        html.Div(f"{data.get('success_rate', 0):.1f}%", className="metric-value"),
+                        html.Div(
+                            f"{data.get('success_rate', 0):.1f}%",
+                            className="metric-value",
+                        ),
                         html.Div("成功率", className="metric-label"),
                     ],
                     className="metric-card",
                 ),
                 html.Div(
                     [
-                        html.Div(str(data.get("total_success", 0)), className="metric-value"),
+                        html.Div(
+                            str(data.get("total_success", 0)),
+                            className="metric-value",
+                        ),
                         html.Div("成功生成", className="metric-label"),
                     ],
                     className="metric-card",
@@ -544,10 +670,14 @@ class AnalyticsDashboard:
 
         return cards
 
-    def _create_main_chart(self, data: Dict[str, Any], data_type: str) -> go.Figure:
+    def _create_main_chart(
+        self, data: Dict[str, Any], data_type: str
+    ) -> go.Figure:
         """創建主圖表"""
         if not data:
-            return go.Figure().add_annotation(text="無數據", x=0.5, y=0.5, showarrow=False)
+            return go.Figure().add_annotation(
+                text="無數據", x=0.5, y=0.5, showarrow=False
+            )
 
         if data_type == "cost":
             # 成本趨勢圖
@@ -594,10 +724,14 @@ class AnalyticsDashboard:
 
         return go.Figure()
 
-    def _create_secondary_chart(self, data: Dict[str, Any], data_type: str) -> go.Figure:
+    def _create_secondary_chart(
+        self, data: Dict[str, Any], data_type: str
+    ) -> go.Figure:
         """創建次圖表"""
         if not data:
-            return go.Figure().add_annotation(text="無數據", x=0.5, y=0.5, showarrow=False)
+            return go.Figure().add_annotation(
+                text="無數據", x=0.5, y=0.5, showarrow=False
+            )
 
         if data_type == "cost":
             # 供應商分布圖
@@ -626,7 +760,9 @@ class AnalyticsDashboard:
             error_types = data.get("error_types", {})
             if error_types:
                 fig = px.bar(
-                    x=list(error_types.keys()), y=list(error_types.values()), title="錯誤類型分布"
+                    x=list(error_types.keys()),
+                    y=list(error_types.values()),
+                    title="錯誤類型分布",
                 )
                 return fig
 
@@ -647,12 +783,19 @@ class AnalyticsDashboard:
         # 創建表格
         table_header = [html.Thead([html.Tr([html.Th(h) for h in headers])])]
         table_body = [
-            html.Tbody([html.Tr([html.Td(row.get(h, "")) for h in headers]) for row in daily_data])
+            html.Tbody(
+                [
+                    html.Tr([html.Td(row.get(h, "")) for h in headers])
+                    for row in daily_data
+                ]
+            )
         ]
 
         return html.Table(table_header + table_body, className="table")
 
-    def run(self, host: str = "127.0.0.1", port: int = 8050, debug: bool = False):
+    def run(
+        self, host: str = "127.0.0.1", port: int = 8050, debug: bool = False
+    ):
         """運行儀表板"""
         logger.info(f"啟動分析儀表板: http://{host}:{port}")
         self.app.run_server(host=host, port=port, debug=debug)

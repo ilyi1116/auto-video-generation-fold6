@@ -107,7 +107,9 @@ async def create_voice_profile(
             # 讀取音訊數據
             audio_data = await audio_file.read()
             if len(audio_data) == 0:
-                raise HTTPException(status_code=400, detail=f"文件 {i + 1} 為空")
+                raise HTTPException(
+                    status_code=400, detail=f"文件 {i + 1} 為空"
+                )
 
             audio_samples.append(audio_data)
 

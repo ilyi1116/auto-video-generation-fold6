@@ -7,7 +7,11 @@ This module provides AI service clients for video generation:
 - Stable Diffusion for image generation and visual content
 """
 
-from .suno_client import SunoAIClient, VoiceGenerationRequest, VoiceGenerationResponse
+from .suno_client import (
+    SunoAIClient,
+    VoiceGenerationRequest,
+    VoiceGenerationResponse,
+)
 from .gemini_client import GeminiClient, ScriptScene, ScriptGenerationResponse
 from .stable_diffusion_client import (
     StableDiffusionClient,

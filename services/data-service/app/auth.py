@@ -12,7 +12,8 @@ async def get_current_user(token: str) -> int:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{AUTH_SERVICE_URL}/api/v1/me", headers={"Authorization": f"Bearer {token}"}
+                f"{AUTH_SERVICE_URL}/api/v1/me",
+                headers={"Authorization": f"Bearer {token}"},
             )
 
             if response.status_code == 200:
@@ -23,13 +24,21 @@ async def get_current_user(token: str) -> int:
             elif response.status_code == 403:
                 raise HTTPException(status_code=403, detail="Token required")
             else:
-                raise HTTPException(status_code=401, detail="Authentication failed")
+                raise HTTPException(
+                    status_code=401, detail="Authentication failed"
+                )
 
     except httpx.RequestError as e:
         logger.error("Failed to verify token with auth service", error=str(e))
-        raise HTTPException(status_code=503, detail="Authentication service unavailable")
+        raise HTTPException(
+            status_code=503, detail="Authentication service unavailable"
+        )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Unexpected error during token verification", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal authentication error")
+        logger.error(
+            "Unexpected error during token verification", error=str(e)
+        )
+        raise HTTPException(
+            status_code=500, detail="Internal authentication error"
+        )

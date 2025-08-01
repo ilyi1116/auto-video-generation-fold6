@@ -21,7 +21,9 @@ class AudioValidator:
         self.min_duration = settings.min_duration
         self.max_duration = settings.max_duration
 
-    async def validate_file_upload(self, file_path: str, original_filename: str) -> Dict[str, Any]:
+    async def validate_file_upload(
+        self, file_path: str, original_filename: str
+    ) -> Dict[str, Any]:
         """
         Comprehensive file validation
         Returns metadata dict or raises FileValidationError
@@ -29,14 +31,19 @@ class AudioValidator:
         try:
             # Check file exists
             if not os.path.exists(file_path):
-                raise FileValidationError(error="File not found", details={"file_path": file_path})
+                raise FileValidationError(
+                    error="File not found", details={"file_path": file_path}
+                )
 
             # Check file size
             file_size = os.path.getsize(file_path)
             if file_size > self.max_file_size:
                 raise FileValidationError(
                     error="File too large",
-                    details={"file_size": file_size, "max_size": self.max_file_size},
+                    details={
+                        "file_size": file_size,
+                        "max_size": self.max_file_size,
+                    },
                 )
 
             # Check file format by extension
@@ -44,7 +51,10 @@ class AudioValidator:
             if file_extension not in self.allowed_formats:
                 raise FileValidationError(
                     error="Unsupported file format",
-                    details={"format": file_extension, "allowed_formats": self.allowed_formats},
+                    details={
+                        "format": file_extension,
+                        "allowed_formats": self.allowed_formats,
+                    },
                 )
 
             # Validate MIME type
@@ -69,7 +79,11 @@ class AudioValidator:
                 "validation_passed": True,
             }
 
-            logger.info("File validation successful", filename=original_filename, metadata=metadata)
+            logger.info(
+                "File validation successful",
+                filename=original_filename,
+                metadata=metadata,
+            )
 
             return metadata
 
@@ -77,9 +91,13 @@ class AudioValidator:
             raise
         except Exception as e:
             logger.error(
-                "Unexpected error during file validation", filename=original_filename, error=str(e)
+                "Unexpected error during file validation",
+                filename=original_filename,
+                error=str(e),
             )
-            raise FileValidationError(error="Validation failed", details={"error": str(e)})
+            raise FileValidationError(
+                error="Validation failed", details={"error": str(e)}
+            )
 
     async def _analyze_audio(self, file_path: str) -> Dict[str, Any]:
         """Analyze audio file properties using librosa"""
@@ -93,12 +111,18 @@ class AudioValidator:
 
             # Audio quality analysis
             rms_energy = float(librosa.feature.rms(y=y).mean())
-            spectral_centroid = float(librosa.feature.spectral_centroid(y=y, sr=sr).mean())
-            zero_crossing_rate = float(librosa.feature.zero_crossing_rate(y).mean())
+            spectral_centroid = float(
+                librosa.feature.spectral_centroid(y=y, sr=sr).mean()
+            )
+            zero_crossing_rate = float(
+                librosa.feature.zero_crossing_rate(y).mean()
+            )
 
             # Silence detection
             silence_threshold = 0.01
-            silence_ratio = float((librosa.util.normalize(y) < silence_threshold).mean())
+            silence_ratio = float(
+                (librosa.util.normalize(y) < silence_threshold).mean()
+            )
 
             return {
                 "duration": duration,
@@ -113,7 +137,9 @@ class AudioValidator:
 
         except Exception as e:
             logger.warning(
-                "Audio analysis failed, using basic file info", file_path=file_path, error=str(e)
+                "Audio analysis failed, using basic file info",
+                file_path=file_path,
+                error=str(e),
             )
 
             # Fallback to basic file info
@@ -134,30 +160,40 @@ class AudioValidator:
                     error=str(fallback_error),
                 )
                 raise FileValidationError(
-                    error="Unable to analyze audio file", details={"error": str(fallback_error)}
+                    error="Unable to analyze audio file",
+                    details={"error": str(fallback_error)},
                 )
 
-    def _validate_audio_properties(self, audio_metadata: Dict[str, Any]) -> None:
+    def _validate_audio_properties(
+        self, audio_metadata: Dict[str, Any]
+    ) -> None:
         """Validate audio properties against requirements"""
         duration = audio_metadata.get("duration", 0)
 
         if duration < self.min_duration:
             raise FileValidationError(
                 error="Audio too short",
-                details={"duration": duration, "min_duration": self.min_duration},
+                details={
+                    "duration": duration,
+                    "min_duration": self.min_duration,
+                },
             )
 
         if duration > self.max_duration:
             raise FileValidationError(
                 error="Audio too long",
-                details={"duration": duration, "max_duration": self.max_duration},
+                details={
+                    "duration": duration,
+                    "max_duration": self.max_duration,
+                },
             )
 
         # Check for excessive silence
         silence_ratio = audio_metadata.get("silence_ratio", 0)
         if silence_ratio > 0.8:  # More than 80% silence
             raise FileValidationError(
-                error="Audio contains too much silence", details={"silence_ratio": silence_ratio}
+                error="Audio contains too much silence",
+                details={"silence_ratio": silence_ratio},
             )
 
         # Check for very low energy (likely corrupt or empty)
@@ -189,8 +225,12 @@ class AudioValidator:
         self, audio_metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Determine optimal preprocessing parameters based on audio analysis"""
-        current_sr = audio_metadata.get("sample_rate", settings.target_sample_rate)
-        current_channels = audio_metadata.get("channels", settings.target_channels)
+        current_sr = audio_metadata.get(
+            "sample_rate", settings.target_sample_rate
+        )
+        current_channels = audio_metadata.get(
+            "channels", settings.target_channels
+        )
 
         # Determine if resampling is needed
         needs_resampling = current_sr != settings.target_sample_rate
@@ -221,7 +261,8 @@ class AudioValidator:
             "preprocessing_steps": preprocessing_steps,
             "needs_resampling": needs_resampling,
             "needs_channel_conversion": needs_channel_conversion,
-            "estimated_processing_time": len(preprocessing_steps) * 2,  # rough estimate in seconds
+            "estimated_processing_time": len(preprocessing_steps)
+            * 2,  # rough estimate in seconds
         }
 
 

@@ -86,7 +86,12 @@ class PerformanceBenchmark:
                 "acceptable": 500,
                 "poor": 1000,
             },
-            "throughput_rps": {"excellent": 1000, "good": 500, "acceptable": 200, "poor": 100},
+            "throughput_rps": {
+                "excellent": 1000,
+                "good": 500,
+                "acceptable": 200,
+                "poor": 100,
+            },
             "error_rate": {
                 "excellent": 0.001,  # 0.1%
                 "good": 0.01,  # 1%
@@ -99,7 +104,12 @@ class PerformanceBenchmark:
                 "acceptable": 0.7,  # 70%
                 "poor": 0.9,  # 90%
             },
-            "memory_usage_mb": {"excellent": 512, "good": 1024, "acceptable": 2048, "poor": 4096},
+            "memory_usage_mb": {
+                "excellent": 512,
+                "good": 1024,
+                "acceptable": 2048,
+                "poor": 4096,
+            },
         }
 
     def _load_config(self, config_file: str) -> Dict[str, Any]:
@@ -157,7 +167,9 @@ class PerformanceBenchmark:
                 "total_duration_seconds": time.time() - start_time,
                 "overall_grade": overall_grade,
                 "recommendations": recommendations,
-                "industry_comparison": self._generate_industry_comparison(benchmark_results),
+                "industry_comparison": self._generate_industry_comparison(
+                    benchmark_results
+                ),
             }
         )
 
@@ -177,14 +189,22 @@ class PerformanceBenchmark:
             results = {}
 
             for endpoint in endpoints:
-                endpoint_results = await self._test_endpoint_performance(endpoint)
+                endpoint_results = await self._test_endpoint_performance(
+                    endpoint
+                )
                 results[endpoint] = endpoint_results
 
             # 計算平均性能指標
-            avg_response_time = np.mean([r["avg_response_time_ms"] for r in results.values()])
-            avg_throughput = np.mean([r["throughput_rps"] for r in results.values()])
+            avg_response_time = np.mean(
+                [r["avg_response_time_ms"] for r in results.values()]
+            )
+            avg_throughput = np.mean(
+                [r["throughput_rps"] for r in results.values()]
+            )
 
-            grade = self._grade_metric("api_response_time_ms", avg_response_time)
+            grade = self._grade_metric(
+                "api_response_time_ms", avg_response_time
+            )
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -192,11 +212,17 @@ class PerformanceBenchmark:
                 "avg_response_time_ms": avg_response_time,
                 "avg_throughput_rps": avg_throughput,
                 "grade": grade,
-                "status": "PASS" if grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_load_testing(self) -> Dict[str, Any]:
         """負載測試基準"""
@@ -223,22 +249,34 @@ class PerformanceBenchmark:
             best_throughput = max([r.throughput_rps for r in results.values()])
             avg_error_rate = np.mean([r.error_rate for r in results.values()])
 
-            throughput_grade = self._grade_metric("throughput_rps", best_throughput)
+            throughput_grade = self._grade_metric(
+                "throughput_rps", best_throughput
+            )
             error_rate_grade = self._grade_metric("error_rate", avg_error_rate)
 
-            overall_grade = self._combine_grades([throughput_grade, error_rate_grade])
+            overall_grade = self._combine_grades(
+                [throughput_grade, error_rate_grade]
+            )
 
             return {
                 "duration_seconds": time.time() - start_time,
-                "load_test_results": {k: asdict(v) for k, v in results.items()},
+                "load_test_results": {
+                    k: asdict(v) for k, v in results.items()
+                },
                 "best_throughput_rps": best_throughput,
                 "avg_error_rate": avg_error_rate,
                 "grade": overall_grade,
-                "status": "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if overall_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_database_performance(self) -> Dict[str, Any]:
         """資料庫性能基準測試"""
@@ -254,10 +292,12 @@ class PerformanceBenchmark:
 
             # 組合評估
             db_grade = self._grade_metric(
-                "api_response_time_ms", pg_results.get("avg_query_time_ms", 999)
+                "api_response_time_ms",
+                pg_results.get("avg_query_time_ms", 999),
             )
             cache_grade = self._grade_metric(
-                "api_response_time_ms", redis_results.get("avg_access_time_ms", 999)
+                "api_response_time_ms",
+                redis_results.get("avg_access_time_ms", 999),
             )
 
             overall_grade = self._combine_grades([db_grade, cache_grade])
@@ -267,11 +307,17 @@ class PerformanceBenchmark:
                 "postgresql": pg_results,
                 "redis": redis_results,
                 "grade": overall_grade,
-                "status": "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if overall_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_cache_performance(self) -> Dict[str, Any]:
         """快取性能基準測試"""
@@ -290,10 +336,12 @@ class PerformanceBenchmark:
 
             # 綜合評估
             read_grade = self._grade_metric(
-                "api_response_time_ms", cache_results.get("avg_read_time_ms", 999)
+                "api_response_time_ms",
+                cache_results.get("avg_read_time_ms", 999),
             )
             write_grade = self._grade_metric(
-                "api_response_time_ms", cache_results.get("avg_write_time_ms", 999)
+                "api_response_time_ms",
+                cache_results.get("avg_write_time_ms", 999),
             )
 
             overall_grade = self._combine_grades([read_grade, write_grade])
@@ -304,11 +352,17 @@ class PerformanceBenchmark:
                 "hit_ratio": hit_ratio_results,
                 "consistency": consistency_results,
                 "grade": overall_grade,
-                "status": "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if overall_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_resource_utilization(self) -> Dict[str, Any]:
         """資源利用率基準測試"""
@@ -336,9 +390,13 @@ class PerformanceBenchmark:
                 memory_samples.append(memory_info.used / (1024**3))  # GB
 
                 if disk_io:
-                    disk_io_samples.append(disk_io.read_bytes + disk_io.write_bytes)
+                    disk_io_samples.append(
+                        disk_io.read_bytes + disk_io.write_bytes
+                    )
                 if network_io:
-                    network_io_samples.append(network_io.bytes_sent + network_io.bytes_recv)
+                    network_io_samples.append(
+                        network_io.bytes_sent + network_io.bytes_recv
+                    )
 
                 await asyncio.sleep(sample_interval)
 
@@ -350,7 +408,9 @@ class PerformanceBenchmark:
 
             # 評級
             cpu_grade = self._grade_metric("cpu_usage", avg_cpu / 100)
-            memory_grade = self._grade_metric("memory_usage_mb", avg_memory_gb * 1024)
+            memory_grade = self._grade_metric(
+                "memory_usage_mb", avg_memory_gb * 1024
+            )
 
             overall_grade = self._combine_grades([cpu_grade, memory_grade])
 
@@ -367,11 +427,17 @@ class PerformanceBenchmark:
                     "samples": len(memory_samples),
                 },
                 "grade": overall_grade,
-                "status": "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if overall_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_concurrent_processing(self) -> Dict[str, Any]:
         """併發處理性能基準測試"""
@@ -388,10 +454,16 @@ class PerformanceBenchmark:
                 results[f"concurrency_{level}"] = level_results
 
             # 找出最佳性能點
-            best_throughput = max([r["throughput_rps"] for r in results.values()])
-            optimal_concurrency = max(results.keys(), key=lambda k: results[k]["throughput_rps"])
+            best_throughput = max(
+                [r["throughput_rps"] for r in results.values()]
+            )
+            optimal_concurrency = max(
+                results.keys(), key=lambda k: results[k]["throughput_rps"]
+            )
 
-            throughput_grade = self._grade_metric("throughput_rps", best_throughput)
+            throughput_grade = self._grade_metric(
+                "throughput_rps", best_throughput
+            )
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -400,12 +472,18 @@ class PerformanceBenchmark:
                 "optimal_concurrency": optimal_concurrency,
                 "grade": throughput_grade,
                 "status": (
-                    "PASS" if throughput_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
+                    "PASS"
+                    if throughput_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
                 ),
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_ai_services(self) -> Dict[str, Any]:
         """AI 服務性能基準測試"""
@@ -423,11 +501,15 @@ class PerformanceBenchmark:
 
             results = {}
             for service in ai_services:
-                service_results = await self._test_ai_service_performance(service)
+                service_results = await self._test_ai_service_performance(
+                    service
+                )
                 results[service] = service_results
 
             # 計算平均處理時間
-            avg_processing_time = np.mean([r["avg_processing_time_ms"] for r in results.values()])
+            avg_processing_time = np.mean(
+                [r["avg_processing_time_ms"] for r in results.values()]
+            )
 
             # AI 服務有特殊的性能標準
             ai_grade = self._grade_ai_service_performance(avg_processing_time)
@@ -437,11 +519,17 @@ class PerformanceBenchmark:
                 "ai_service_results": results,
                 "avg_processing_time_ms": avg_processing_time,
                 "grade": ai_grade,
-                "status": "PASS" if ai_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if ai_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_file_io(self) -> Dict[str, Any]:
         """檔案 I/O 性能基準測試"""
@@ -458,11 +546,17 @@ class PerformanceBenchmark:
                 results[f"{size_mb}MB"] = size_results
 
             # 計算平均吞吐量
-            avg_read_throughput = np.mean([r["read_throughput_mbps"] for r in results.values()])
-            avg_write_throughput = np.mean([r["write_throughput_mbps"] for r in results.values()])
+            avg_read_throughput = np.mean(
+                [r["read_throughput_mbps"] for r in results.values()]
+            )
+            avg_write_throughput = np.mean(
+                [r["write_throughput_mbps"] for r in results.values()]
+            )
 
             # 檔案 I/O 評級
-            io_grade = self._grade_file_io_performance(avg_read_throughput, avg_write_throughput)
+            io_grade = self._grade_file_io_performance(
+                avg_read_throughput, avg_write_throughput
+            )
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -470,11 +564,17 @@ class PerformanceBenchmark:
                 "avg_read_throughput_mbps": avg_read_throughput,
                 "avg_write_throughput_mbps": avg_write_throughput,
                 "grade": io_grade,
-                "status": "PASS" if io_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if io_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_network_performance(self) -> Dict[str, Any]:
         """網路性能基準測試"""
@@ -490,20 +590,30 @@ class PerformanceBenchmark:
             latency_grade = self._grade_metric(
                 "api_response_time_ms", latency_results["avg_latency_ms"]
             )
-            bandwidth_grade = self._grade_network_bandwidth(bandwidth_results["throughput_mbps"])
+            bandwidth_grade = self._grade_network_bandwidth(
+                bandwidth_results["throughput_mbps"]
+            )
 
-            overall_grade = self._combine_grades([latency_grade, bandwidth_grade])
+            overall_grade = self._combine_grades(
+                [latency_grade, bandwidth_grade]
+            )
 
             return {
                 "duration_seconds": time.time() - start_time,
                 "latency": latency_results,
                 "bandwidth": bandwidth_results,
                 "grade": overall_grade,
-                "status": "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT",
+                "status": "PASS"
+                if overall_grade in ["excellent", "good"]
+                else "NEEDS_IMPROVEMENT",
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     async def _benchmark_scalability(self) -> Dict[str, Any]:
         """可擴展性基準測試"""
@@ -528,7 +638,9 @@ class PerformanceBenchmark:
                 )
 
             # 分析可擴展性特徵
-            scalability_analysis = self._analyze_scalability_curve(scalability_data)
+            scalability_analysis = self._analyze_scalability_curve(
+                scalability_data
+            )
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -543,10 +655,16 @@ class PerformanceBenchmark:
             }
 
         except Exception as e:
-            return {"duration_seconds": time.time() - start_time, "error": str(e), "status": "FAIL"}
+            return {
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+                "status": "FAIL",
+            }
 
     # 輔助測試方法（簡化實現）
-    async def _test_endpoint_performance(self, endpoint: str) -> Dict[str, Any]:
+    async def _test_endpoint_performance(
+        self, endpoint: str
+    ) -> Dict[str, Any]:
         """測試單個端點性能"""
         # 模擬實現
         return {
@@ -633,7 +751,9 @@ class PerformanceBenchmark:
             "error_rate": 0.005 * (level / 100),  # 隨併發增加錯誤率略增
         }
 
-    async def _test_ai_service_performance(self, service: str) -> Dict[str, Any]:
+    async def _test_ai_service_performance(
+        self, service: str
+    ) -> Dict[str, Any]:
         """測試 AI 服務性能"""
         # 不同 AI 服務有不同的基準處理時間
         base_times = {
@@ -646,7 +766,9 @@ class PerformanceBenchmark:
         base_time = base_times.get(service, 5000)
 
         return {
-            "avg_processing_time_ms": np.random.normal(base_time, base_time * 0.2),
+            "avg_processing_time_ms": np.random.normal(
+                base_time, base_time * 0.2
+            ),
             "success_rate": 0.95,
             "queue_length": np.random.randint(0, 10),
             "cost_per_request": np.random.uniform(0.01, 0.1),
@@ -659,7 +781,9 @@ class PerformanceBenchmark:
 
         return {
             "read_throughput_mbps": np.random.normal(base_throughput, 20),
-            "write_throughput_mbps": np.random.normal(base_throughput * 0.8, 15),
+            "write_throughput_mbps": np.random.normal(
+                base_throughput * 0.8, 15
+            ),
             "read_latency_ms": np.random.normal(10, 3),
             "write_latency_ms": np.random.normal(15, 5),
         }
@@ -684,7 +808,9 @@ class PerformanceBenchmark:
     async def _test_scalability_point(self, load: int) -> Dict[str, Any]:
         """測試特定負載點的性能"""
         # 模擬系統在不同負載下的性能
-        throughput_degradation = max(0, 1 - (load / 1000))  # 負載增加時吞吐量衰減
+        throughput_degradation = max(
+            0, 1 - (load / 1000)
+        )  # 負載增加時吞吐量衰減
         response_time_increase = 1 + (load / 200)  # 負載增加時響應時間增加
 
         return {
@@ -787,7 +913,9 @@ class PerformanceBenchmark:
         else:
             return "poor"
 
-    def _grade_file_io_performance(self, read_mbps: float, write_mbps: float) -> str:
+    def _grade_file_io_performance(
+        self, read_mbps: float, write_mbps: float
+    ) -> str:
         """檔案 I/O 性能評級"""
         avg_throughput = (read_mbps + write_mbps) / 2
 
@@ -813,7 +941,13 @@ class PerformanceBenchmark:
 
     def _combine_grades(self, grades: List[str]) -> str:
         """組合多個評級"""
-        grade_scores = {"excellent": 4, "good": 3, "acceptable": 2, "poor": 1, "unknown": 0}
+        grade_scores = {
+            "excellent": 4,
+            "good": 3,
+            "acceptable": 2,
+            "poor": 1,
+            "unknown": 0,
+        }
 
         scores = [grade_scores.get(grade, 0) for grade in grades]
         avg_score = sum(scores) / len(scores) if scores else 0
@@ -842,7 +976,10 @@ class PerformanceBenchmark:
 
         # 基於結果生成建議
         for category, result in results.items():
-            if isinstance(result, dict) and result.get("grade") in ["acceptable", "poor"]:
+            if isinstance(result, dict) and result.get("grade") in [
+                "acceptable",
+                "poor",
+            ]:
                 if category == "api_performance":
                     recommendations.append("考慮實施 API 快取和響應壓縮")
                 elif category == "load_testing":
@@ -859,7 +996,9 @@ class PerformanceBenchmark:
 
         return recommendations
 
-    def _generate_industry_comparison(self, results: Dict[str, Any]) -> Dict[str, str]:
+    def _generate_industry_comparison(
+        self, results: Dict[str, Any]
+    ) -> Dict[str, str]:
         """生成業界比較"""
         overall_grade = results.get("overall_grade", "unknown")
 
@@ -873,9 +1012,12 @@ class PerformanceBenchmark:
         return {
             "grade": overall_grade,
             "comparison": comparisons.get(overall_grade, "無法評估"),
-            "percentile": {"excellent": 95, "good": 80, "acceptable": 60, "poor": 30}.get(
-                overall_grade, 0
-            ),
+            "percentile": {
+                "excellent": 95,
+                "good": 80,
+                "acceptable": 60,
+                "poor": 30,
+            }.get(overall_grade, 0),
         }
 
     async def _generate_performance_report(self, results: Dict[str, Any]):
@@ -886,7 +1028,8 @@ class PerformanceBenchmark:
 
         # 生成 JSON 報告
         json_report_path = (
-            report_dir / f"performance_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            report_dir
+            / f"performance_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         with open(json_report_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False, default=str)
@@ -900,8 +1043,12 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="性能基準測試")
-    parser.add_argument("--config", default="config/benchmark-config.json", help="配置檔案路徑")
-    parser.add_argument("--output", default="benchmark-results.json", help="結果輸出檔案")
+    parser.add_argument(
+        "--config", default="config/benchmark-config.json", help="配置檔案路徑"
+    )
+    parser.add_argument(
+        "--output", default="benchmark-results.json", help="結果輸出檔案"
+    )
     parser.add_argument("--verbose", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()
@@ -909,7 +1056,8 @@ async def main():
     # 設置日誌
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(
-        level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=log_level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     # 執行基準測試
@@ -921,9 +1069,9 @@ async def main():
         json.dump(results, f, indent=2, ensure_ascii=False, default=str)
 
     # 輸出摘要
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("📊 性能基準測試結果摘要")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"總體評級: {results.get('overall_grade', 'Unknown')}")
     print(f"測試持續時間: {results.get('total_duration_seconds', 0):.2f} 秒")
 
@@ -935,7 +1083,7 @@ async def main():
     for i, recommendation in enumerate(results.get("recommendations", []), 1):
         print(f"{i}. {recommendation}")
 
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"詳細報告已保存至: {args.output}")
 
     # 根據結果設置退出代碼

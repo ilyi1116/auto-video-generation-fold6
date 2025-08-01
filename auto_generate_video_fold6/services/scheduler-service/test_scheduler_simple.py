@@ -199,7 +199,8 @@ async def test_config_validation():
     # 測試無效限制
     try:
         invalid_config = SchedulerConfig(
-            daily_video_limit=0, daily_budget_limit=-5.0  # 無效限制
+            daily_video_limit=0,
+            daily_budget_limit=-5.0,  # 無效限制
         )
         invalid_config.validate()
         assert False, "應該拋出限制錯誤"

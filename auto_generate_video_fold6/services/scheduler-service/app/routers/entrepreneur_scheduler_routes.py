@@ -316,7 +316,7 @@ async def list_scheduled_tasks(
         # 排序和分頁
         user_tasks.sort(key=lambda x: x["created_at"], reverse=True)
         total = len(user_tasks)
-        tasks = user_tasks[offset: offset + limit]
+        tasks = user_tasks[offset : offset + limit]
 
         return {
             "tasks": tasks,

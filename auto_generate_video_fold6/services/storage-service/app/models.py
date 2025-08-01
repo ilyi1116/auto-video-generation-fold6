@@ -142,9 +142,9 @@ class FileProcessingJob(Base):
     completed_at = Column(DateTime(timezone=True))
 
     def __repr__(self):
-        return f"<FileProcessingJob(id={self.id}, job_type={self
-                                                             \
-                                                                .job_type}, status={self.status})>"
+        return f"<FileProcessingJob(id={self.id}, job_type={
+            self.job_type
+        }, status={self.status})>"
 
 
 class FileDownload(Base):

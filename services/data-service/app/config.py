@@ -4,7 +4,9 @@ from typing import List
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql://voiceclone:voiceclone@postgres:5432/voiceclone"
+    database_url: str = (
+        "postgresql://voiceclone:voiceclone@postgres:5432/voiceclone"
+    )
 
     # Redis
     redis_url: str = "redis://redis:6379/0"
@@ -29,7 +31,10 @@ class Settings(BaseSettings):
 
     # Service settings
     debug: bool = False
-    allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    allowed_origins: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
 
     # Celery
     celery_broker_url: str = "redis://redis:6379/0"

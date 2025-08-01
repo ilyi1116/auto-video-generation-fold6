@@ -15,7 +15,9 @@ from typing import Dict, List, Any, Optional
 import logging
 
 # 設置日誌
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +29,10 @@ class TestRunner:
         self.results = {}
 
     def run_python_tests(
-        self, test_type: str = "all", coverage: bool = True, verbose: bool = True
+        self,
+        test_type: str = "all",
+        coverage: bool = True,
+        verbose: bool = True,
     ) -> Dict[str, Any]:
         """執行 Python 測試"""
         logger.info(f"執行 Python 測試: {test_type}")
@@ -46,7 +51,14 @@ class TestRunner:
 
         # 覆蓋率選項
         if coverage:
-            cmd.extend(["--cov=.", "--cov-report=html", "--cov-report=xml", "--cov-report=term"])
+            cmd.extend(
+                [
+                    "--cov=.",
+                    "--cov-report=html",
+                    "--cov-report=xml",
+                    "--cov-report=term",
+                ]
+            )
 
         # 詳細輸出
         if verbose:
@@ -62,7 +74,11 @@ class TestRunner:
         start_time = time.time()
         try:
             result = subprocess.run(
-                cmd, cwd=self.project_root, capture_output=True, text=True, timeout=300  # 5分鐘超時
+                cmd,
+                cwd=self.project_root,
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5分鐘超時
             )
 
             duration = time.time() - start_time
@@ -123,7 +139,10 @@ class TestRunner:
         if not node_modules.exists():
             logger.info("安裝前端依賴...")
             npm_install = subprocess.run(
-                ["npm", "install"], cwd=frontend_dir, capture_output=True, text=True
+                ["npm", "install"],
+                cwd=frontend_dir,
+                capture_output=True,
+                text=True,
             )
             if npm_install.returncode != 0:
                 return {
@@ -223,7 +242,10 @@ class TestRunner:
 
             # Ruff 檢查
             ruff_result = subprocess.run(
-                ["ruff", "check", "."], cwd=self.project_root, capture_output=True, text=True
+                ["ruff", "check", "."],
+                cwd=self.project_root,
+                capture_output=True,
+                text=True,
             )
             python_results["ruff"] = {
                 "success": ruff_result.returncode == 0,
@@ -238,7 +260,10 @@ class TestRunner:
             frontend_dir = self.project_root / "frontend"
             if frontend_dir.exists():
                 eslint_result = subprocess.run(
-                    ["npm", "run", "lint"], cwd=frontend_dir, capture_output=True, text=True
+                    ["npm", "run", "lint"],
+                    cwd=frontend_dir,
+                    capture_output=True,
+                    text=True,
                 )
                 results["frontend"] = {
                     "eslint": {
@@ -267,7 +292,15 @@ class TestRunner:
 
         # Bandit 安全掃描
         bandit_result = subprocess.run(
-            ["bandit", "-r", ".", "-f", "json", "-o", "test-results/bandit-report.json"],
+            [
+                "bandit",
+                "-r",
+                ".",
+                "-f",
+                "json",
+                "-o",
+                "test-results/bandit-report.json",
+            ],
             cwd=self.project_root,
             capture_output=True,
             text=True,
@@ -280,7 +313,10 @@ class TestRunner:
 
         # Safety 依賴檢查
         safety_result = subprocess.run(
-            ["safety", "check", "--json"], cwd=self.project_root, capture_output=True, text=True
+            ["safety", "check", "--json"],
+            cwd=self.project_root,
+            capture_output=True,
+            text=True,
         )
         results["safety"] = {
             "success": safety_result.returncode == 0,
@@ -290,7 +326,9 @@ class TestRunner:
 
         return {
             "type": "security",
-            "success": all(result.get("success", False) for result in results.values()),
+            "success": all(
+                result.get("success", False) for result in results.values()
+            ),
             "results": results,
         }
 
@@ -311,9 +349,17 @@ class TestRunner:
             if health_result.returncode == 0:
                 try:
                     health_data = json.loads(health_result.stdout)
-                    return {"type": "health_check", "success": True, "data": health_data}
+                    return {
+                        "type": "health_check",
+                        "success": True,
+                        "data": health_data,
+                    }
                 except json.JSONDecodeError:
-                    return {"type": "health_check", "success": True, "output": health_result.stdout}
+                    return {
+                        "type": "health_check",
+                        "success": True,
+                        "output": health_result.stdout,
+                    }
             else:
                 return {
                     "type": "health_check",
@@ -325,7 +371,9 @@ class TestRunner:
         except Exception as e:
             return {"type": "health_check", "success": False, "error": str(e)}
 
-    def generate_report(self, results: List[Dict[str, Any]], format: str = "json") -> str:
+    def generate_report(
+        self, results: List[Dict[str, Any]], format: str = "json"
+    ) -> str:
         """生成測試報告"""
         logger.info(f"生成測試報告: {format}")
 
@@ -390,24 +438,24 @@ class TestRunner:
     <div class="header">
         <h1>🧪 測試報告</h1>
         <p>Auto Video Generation System - 測試執行結果</p>
-        <p>生成時間: {time.strftime('%Y-%m-%d %H:%M:%S')}</p>
+        <p>生成時間: {time.strftime("%Y-%m-%d %H:%M:%S")}</p>
     </div>
     
     <div class="summary">
         <div class="stat">
-            <div class="stat-value">{summary['total_tests']}</div>
+            <div class="stat-value">{summary["total_tests"]}</div>
             <div>總測試數</div>
         </div>
         <div class="stat">
-            <div class="stat-value success">{summary['passed']}</div>
+            <div class="stat-value success">{summary["passed"]}</div>
             <div>通過</div>
         </div>
         <div class="stat">
-            <div class="stat-value failure">{summary['failed']}</div>
+            <div class="stat-value failure">{summary["failed"]}</div>
             <div>失敗</div>
         </div>
         <div class="stat">
-            <div class="stat-value">{summary['duration']:.1f}s</div>
+            <div class="stat-value">{summary["duration"]:.1f}s</div>
             <div>總耗時</div>
         </div>
     </div>
@@ -416,16 +464,22 @@ class TestRunner:
 """
 
         for result in results:
-            status_class = "success" if result.get("success", False) else "failure"
-            badge_class = "status-success" if result.get("success", False) else "status-failure"
+            status_class = (
+                "success" if result.get("success", False) else "failure"
+            )
+            badge_class = (
+                "status-success"
+                if result.get("success", False)
+                else "status-failure"
+            )
             status_text = "通過" if result.get("success", False) else "失敗"
 
             html += f"""
     <div class="test-result">
         <div class="test-header">
             <span class="status-badge {badge_class}">{status_text}</span>
-            <strong>{result.get('type', 'Unknown')} - {result.get('test_type', 'General')}</strong>
-            <span style="float: right;">耗時: {result.get('duration', 0):.1f}s</span>
+            <strong>{result.get("type", "Unknown")} - {result.get("test_type", "General")}</strong>
+            <span style="float: right;">耗時: {result.get("duration", 0):.1f}s</span>
         </div>
         <div class="test-details">
 """
@@ -472,11 +526,18 @@ def main():
         default="all",
         help="前端測試類型",
     )
-    parser.add_argument("--no-coverage", action="store_true", help="跳過覆蓋率收集")
     parser.add_argument(
-        "--report-format", choices=["json", "html"], default="json", help="報告格式"
+        "--no-coverage", action="store_true", help="跳過覆蓋率收集"
     )
-    parser.add_argument("--verbose", "-v", action="store_true", help="詳細輸出")
+    parser.add_argument(
+        "--report-format",
+        choices=["json", "html"],
+        default="json",
+        help="報告格式",
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="詳細輸出"
+    )
 
     args = parser.parse_args()
 
@@ -487,13 +548,17 @@ def main():
         if args.type in ["all", "python"]:
             logger.info("執行 Python 測試...")
             python_result = runner.run_python_tests(
-                test_type=args.python_test_type, coverage=not args.no_coverage, verbose=args.verbose
+                test_type=args.python_test_type,
+                coverage=not args.no_coverage,
+                verbose=args.verbose,
             )
             results.append(python_result)
 
         if args.type in ["all", "frontend"]:
             logger.info("執行前端測試...")
-            frontend_result = runner.run_frontend_tests(test_type=args.frontend_test_type)
+            frontend_result = runner.run_frontend_tests(
+                test_type=args.frontend_test_type
+            )
             results.append(frontend_result)
 
         if args.type in ["all", "lint"]:
@@ -512,7 +577,9 @@ def main():
             results.append(health_result)
 
         # 生成報告
-        report_file = runner.generate_report(results, format=args.report_format)
+        report_file = runner.generate_report(
+            results, format=args.report_format
+        )
         logger.info(f"測試報告已生成: {report_file}")
 
         # 輸出摘要
@@ -525,7 +592,7 @@ def main():
         print(f"   通過: {passed_tests}")
         print(f"   失敗: {failed_tests}")
         print(
-            f"   成功率: {(passed_tests/total_tests)*100:.1f}%"
+            f"   成功率: {(passed_tests / total_tests) * 100:.1f}%"
             if total_tests > 0
             else "   成功率: N/A"
         )

@@ -126,7 +126,7 @@ async def test_publish_to_tiktok_success(mock_publish):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["success"]  is True
+    assert data["success"] is True
     assert data["post_id"] == "tiktok_post_123"
 
 
@@ -148,7 +148,7 @@ async def test_publish_to_tiktok_failure(mock_publish):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["success"]  is False
+    assert data["success"] is False
     assert "Failed to publish to TikTok" in data["error"]
 
 
@@ -176,7 +176,7 @@ async def test_publish_to_youtube_success(mock_publish):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["success"]  is True
+    assert data["success"] is True
     assert data["post_id"] == "youtube_video_456"
 
 
@@ -204,7 +204,7 @@ async def test_publish_to_instagram_success(mock_publish):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["success"]  is True
+    assert data["success"] is True
     assert data["post_id"] == "instagram_post_789"
 
 

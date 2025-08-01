@@ -160,8 +160,7 @@ async def publish_to_social_media(
 
             return SocialPublishResponse(
                 success=successful > 0,
-                message=f"Published to {successful}/{len(request
-                                                         .platforms)} \
+                message=f"Published to {successful}/{len(request.platforms)} \
                                                              platforms successfully",
                 results=formatted_results,
                 total_platforms=len(request.platforms),

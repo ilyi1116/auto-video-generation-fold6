@@ -73,7 +73,9 @@ class PerformanceBenchmark:
 
             request_start = time.time()
             try:
-                async with session.get(f"{self.base_url}{endpoint}", headers=headers) as response:
+                async with session.get(
+                    f"{self.base_url}{endpoint}", headers=headers
+                ) as response:
                     await response.text()
                     request_time = time.time() - request_start
                     response_times.append(request_time)
@@ -122,13 +124,17 @@ class PerformanceBenchmark:
             successful_requests=successful_requests,
             failed_requests=failed_requests,
             duration_seconds=total_time,
-            requests_per_second=total_requests / total_time if total_time > 0 else 0,
+            requests_per_second=total_requests / total_time
+            if total_time > 0
+            else 0,
             average_response_time=avg_response_time,
             min_response_time=min_response_time,
             max_response_time=max_response_time,
             percentile_95=percentile_95,
             percentile_99=percentile_99,
-            error_rate=failed_requests / total_requests if total_requests > 0 else 0,
+            error_rate=failed_requests / total_requests
+            if total_requests > 0
+            else 0,
             timestamp=datetime.now(),
         )
 
@@ -182,12 +188,16 @@ class PerformanceBenchmark:
             failed_requests=failed_queries,
             duration_seconds=total_time,
             requests_per_second=total_queries / total_time,
-            average_response_time=statistics.mean(query_times) if query_times else 0,
+            average_response_time=statistics.mean(query_times)
+            if query_times
+            else 0,
             min_response_time=min(query_times) if query_times else 0,
             max_response_time=max(query_times) if query_times else 0,
             percentile_95=np.percentile(query_times, 95) if query_times else 0,
             percentile_99=np.percentile(query_times, 99) if query_times else 0,
-            error_rate=failed_queries / total_queries if total_queries > 0 else 0,
+            error_rate=failed_queries / total_queries
+            if total_queries > 0
+            else 0,
             timestamp=datetime.now(),
         )
 
@@ -252,12 +262,20 @@ class PerformanceBenchmark:
             failed_requests=failed_operations,
             duration_seconds=total_time,
             requests_per_second=total_operations / total_time,
-            average_response_time=statistics.mean(operation_times) if operation_times else 0,
+            average_response_time=statistics.mean(operation_times)
+            if operation_times
+            else 0,
             min_response_time=min(operation_times) if operation_times else 0,
             max_response_time=max(operation_times) if operation_times else 0,
-            percentile_95=np.percentile(operation_times, 95) if operation_times else 0,
-            percentile_99=np.percentile(operation_times, 99) if operation_times else 0,
-            error_rate=failed_operations / total_operations if total_operations > 0 else 0,
+            percentile_95=np.percentile(operation_times, 95)
+            if operation_times
+            else 0,
+            percentile_99=np.percentile(operation_times, 99)
+            if operation_times
+            else 0,
+            error_rate=failed_operations / total_operations
+            if total_operations > 0
+            else 0,
             timestamp=datetime.now(),
         )
 
@@ -315,7 +333,9 @@ class PerformanceBenchmark:
                 "min": min(cpu_usage) if cpu_usage else 0,
             },
             "memory": {
-                "average": statistics.mean(memory_usage) if memory_usage else 0,
+                "average": statistics.mean(memory_usage)
+                if memory_usage
+                else 0,
                 "max": max(memory_usage) if memory_usage else 0,
                 "min": min(memory_usage) if memory_usage else 0,
             },
@@ -340,7 +360,9 @@ class PerformanceBenchmark:
         print(f"   Failed: {result.failed_requests}")
         print(f"   Duration: {result.duration_seconds:.2f}s")
         print(f"   RPS: {result.requests_per_second:.2f}")
-        print(f"   Avg Response Time: {result.average_response_time * 1000:.2f}ms")
+        print(
+            f"   Avg Response Time: {result.average_response_time * 1000:.2f}ms"
+        )
         print(f"   95th Percentile: {result.percentile_95 * 1000:.2f}ms")
         print(f"   99th Percentile: {result.percentile_99 * 1000:.2f}ms")
         print(f"   Error Rate: {result.error_rate * 100:.2f}%")
@@ -351,7 +373,9 @@ class PerformanceBenchmark:
             "generated_at": datetime.now().isoformat(),
             "test_summary": {
                 "total_tests": len(self.results),
-                "tests_completed": len([r for r in self.results if r.error_rate < 0.05]),
+                "tests_completed": len(
+                    [r for r in self.results if r.error_rate < 0.05]
+                ),
             },
             "results": [],
         }
@@ -365,7 +389,8 @@ class PerformanceBenchmark:
                     "failed_requests": result.failed_requests,
                     "duration_seconds": result.duration_seconds,
                     "requests_per_second": result.requests_per_second,
-                    "average_response_time_ms": result.average_response_time * 1000,
+                    "average_response_time_ms": result.average_response_time
+                    * 1000,
                     "percentile_95_ms": result.percentile_95 * 1000,
                     "percentile_99_ms": result.percentile_99 * 1000,
                     "error_rate_percent": result.error_rate * 100,

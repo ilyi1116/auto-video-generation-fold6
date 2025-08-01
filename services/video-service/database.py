@@ -33,7 +33,9 @@ class DatabaseManager:
 
         return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
-    async def initialize(self, min_connections: int = 5, max_connections: int = 20):
+    async def initialize(
+        self, min_connections: int = 5, max_connections: int = 20
+    ):
         """Initialize database connection pool"""
 
         try:
@@ -70,7 +72,9 @@ class DatabaseManager:
         try:
             async with self.pool.acquire() as conn:
                 # Create extensions if needed
-                await conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+                await conn.execute(
+                    'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+                )
                 await conn.execute('CREATE EXTENSION IF NOT EXISTS "pg_trgm";')
 
                 # Import and create tables
@@ -125,7 +129,11 @@ class DatabaseManager:
                 }
 
         except Exception as e:
-            return {"status": "unhealthy", "database": "postgresql", "error": str(e)}
+            return {
+                "status": "unhealthy",
+                "database": "postgresql",
+                "error": str(e),
+            }
 
 
 # Global database manager instance
@@ -243,7 +251,12 @@ async def run_migrations():
             )
 
             # Get current version
-            current_version = await conn.fetchval("SELECT MAX(version) FROM schema_migrations") or 0
+            current_version = (
+                await conn.fetchval(
+                    "SELECT MAX(version) FROM schema_migrations"
+                )
+                or 0
+            )
 
             # Define migrations
             migrations = {
@@ -273,10 +286,13 @@ async def run_migrations():
                     async with conn.transaction():
                         await conn.execute(sql)
                         await conn.execute(
-                            "INSERT INTO schema_migrations (version) VALUES ($1)", version
+                            "INSERT INTO schema_migrations (version) VALUES ($1)",
+                            version,
                         )
 
-                    logger.info(f"Migration version {version} applied successfully")
+                    logger.info(
+                        f"Migration version {version} applied successfully"
+                    )
 
             logger.info("All migrations completed")
 

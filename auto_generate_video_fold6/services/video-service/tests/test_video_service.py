@@ -195,9 +195,7 @@ class TestAIIntegration:
         with patch.object(client, "_get_session") as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 200
-            mock_session.return_value.get.return_value.__aenter__.return_value = (
-                mock_response
-            )
+            mock_session.return_value.get.return_value.__aenter__.return_value = mock_response
 
             health = await client.health_check()
             assert health["status"] == "healthy"
@@ -255,9 +253,7 @@ class TestAIIntegration:
                     }
                 ]
             }
-            mock_session.return_value.post.return_value.__aenter__.return_value = (
-                mock_response
-            )
+            mock_session.return_value.post.return_value.__aenter__.return_value = mock_response
 
             with patch.object(
                 client,
@@ -306,7 +302,6 @@ class TestVideoComposition:
                     "_upload_media",
                     return_value="http://test.com/preview.mp4",
                 ):
-
                     result = await composer.create_video(
                         script_scenes=sample_script_response.scenes,
                         voice_url="http://test.com/voice.mp3",
@@ -361,7 +356,7 @@ class TestSocialMediaIntegration:
 
             result = await manager.publish_to_platform("tiktok", request)
 
-            assert result.success  is True
+            assert result.success is True
             assert result.platform == "tiktok"
             assert result.platform_id == "tiktok123"
 

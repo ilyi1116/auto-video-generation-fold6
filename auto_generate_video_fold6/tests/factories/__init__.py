@@ -8,14 +8,14 @@ from .script_factory import ScriptFactory, CreateScriptFactory
 from .voice_factory import VoiceCloneFactory, CreateVoiceCloneFactory
 
 __all__ = [
-    'UserFactory',
-    'CreateUserFactory',
-    'ProjectFactory', 
-    'CreateProjectFactory',
-    'VideoFactory',
-    'CreateVideoFactory',
-    'ScriptFactory',
-    'CreateScriptFactory',
-    'VoiceCloneFactory',
-    'CreateVoiceCloneFactory',
+    "UserFactory",
+    "CreateUserFactory",
+    "ProjectFactory",
+    "CreateProjectFactory",
+    "VideoFactory",
+    "CreateVideoFactory",
+    "ScriptFactory",
+    "CreateScriptFactory",
+    "VoiceCloneFactory",
+    "CreateVoiceCloneFactory",
 ]

@@ -160,7 +160,8 @@ async def test_failure_and_retry():
     # 創建會失敗的 Mock 客戶端
     mock_client = MockVideoServiceClient(should_succeed=False, delay=0.05)
     config = SchedulerConfig(
-        retry_attempts=2, retry_delay_minutes=1  # 最小有效值
+        retry_attempts=2,
+        retry_delay_minutes=1,  # 最小有效值
     )
 
     scheduler = EntrepreneurScheduler(config, mock_client)
@@ -196,7 +197,8 @@ async def test_scheduler_lifecycle():
 
     mock_client = MockVideoServiceClient(should_succeed=True, delay=0.1)
     config = SchedulerConfig(
-        check_interval_minutes=1, health_check_interval_minutes=1  # 最小有效值
+        check_interval_minutes=1,
+        health_check_interval_minutes=1,  # 最小有效值
     )
 
     scheduler = EntrepreneurScheduler(config, mock_client)

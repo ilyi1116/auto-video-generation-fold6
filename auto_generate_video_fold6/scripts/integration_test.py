@@ -49,7 +49,9 @@ class ServiceHealth:
 class SystemIntegrationTester:
     """系統整合測試器"""
 
-    def __init__(self, config_file: str = "config/integration-test-config.json"):
+    def __init__(
+        self, config_file: str = "config/integration-test-config.json"
+    ):
         self.config = self._load_config(config_file)
         self.docker_client = docker.from_env()
         self.test_results: List[TestResult] = []
@@ -120,7 +122,9 @@ class SystemIntegrationTester:
             }
         )
 
-        logger.info(f"✅ 系統整合測試完成，狀態: {test_results['overall_status']}")
+        logger.info(
+            f"✅ 系統整合測試完成，狀態: {test_results['overall_status']}"
+        )
         return test_results
 
     async def _test_infrastructure(self) -> Dict[str, Any]:
@@ -131,7 +135,9 @@ class SystemIntegrationTester:
         try:
             # 檢查 Docker 容器狀態
             containers = self.docker_client.containers.list()
-            running_services = [c.name for c in containers if c.status == "running"]
+            running_services = [
+                c.name for c in containers if c.status == "running"
+            ]
 
             # 檢查資料庫連接
             db_status = await self._check_database_connections()
@@ -162,7 +168,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_service_health(self) -> Dict[str, Any]:
         """測試服務健康狀態"""
@@ -174,9 +184,13 @@ class SystemIntegrationTester:
             health_results = {}
 
             # 並發檢查所有服務
-            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=10
+            ) as executor:
                 futures = {
-                    executor.submit(self._check_service_health, service): service
+                    executor.submit(
+                        self._check_service_health, service
+                    ): service
                     for service in services
                 }
 
@@ -185,7 +199,10 @@ class SystemIntegrationTester:
                     try:
                         health_results[service] = future.result()
                     except Exception as e:
-                        health_results[service] = {"status": "unhealthy", "error": str(e)}
+                        health_results[service] = {
+                            "status": "unhealthy",
+                            "error": str(e),
+                        }
 
             # 檢查是否所有核心服務都健康
             healthy_services = [
@@ -204,7 +221,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_api_integration(self) -> Dict[str, Any]:
         """測試 API 整合"""
@@ -213,16 +234,32 @@ class SystemIntegrationTester:
 
         try:
             test_cases = [
-                {"method": "GET", "endpoint": "/health", "expected_status": 200},
-                {"method": "GET", "endpoint": "/api/v1/status", "expected_status": 200},
+                {
+                    "method": "GET",
+                    "endpoint": "/health",
+                    "expected_status": 200,
+                },
+                {
+                    "method": "GET",
+                    "endpoint": "/api/v1/status",
+                    "expected_status": 200,
+                },
                 {
                     "method": "POST",
                     "endpoint": "/api/v1/auth/login",
                     "data": {"username": "test", "password": "test"},
                     "expected_status": [200, 401],
                 },
-                {"method": "GET", "endpoint": "/api/v1/videos", "expected_status": [200, 401]},
-                {"method": "GET", "endpoint": "/api/v1/ai/models", "expected_status": [200, 401]},
+                {
+                    "method": "GET",
+                    "endpoint": "/api/v1/videos",
+                    "expected_status": [200, 401],
+                },
+                {
+                    "method": "GET",
+                    "endpoint": "/api/v1/ai/models",
+                    "expected_status": [200, 401],
+                },
             ]
 
             results = []
@@ -231,7 +268,9 @@ class SystemIntegrationTester:
                 results.append(result)
 
             passed_tests = [r for r in results if r["status"] == "PASS"]
-            overall_pass = len(passed_tests) >= len(test_cases) * 0.8  # 80% 通過率
+            overall_pass = (
+                len(passed_tests) >= len(test_cases) * 0.8
+            )  # 80% 通過率
 
             return {
                 "status": "PASS" if overall_pass else "FAIL",
@@ -243,7 +282,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_authentication_flow(self) -> Dict[str, Any]:
         """測試認證流程"""
@@ -281,7 +324,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_cache_system(self) -> Dict[str, Any]:
         """測試快取系統"""
@@ -319,7 +366,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_backup_recovery(self) -> Dict[str, Any]:
         """測試備份恢復系統"""
@@ -352,7 +403,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_compliance_framework(self) -> Dict[str, Any]:
         """測試合規性框架"""
@@ -370,7 +425,10 @@ class SystemIntegrationTester:
             retention_policy_result = await self._test_retention_policies()
 
             all_compliance_tests_passed = all(
-                [gdpr_result.get("status") == "PASS", audit_logging_result.get("status") == "PASS"]
+                [
+                    gdpr_result.get("status") == "PASS",
+                    audit_logging_result.get("status") == "PASS",
+                ]
             )
 
             return {
@@ -382,7 +440,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_load_performance(self) -> Dict[str, Any]:
         """測試負載性能"""
@@ -395,13 +457,17 @@ class SystemIntegrationTester:
             duration = load_config.get("duration_seconds", 30)
 
             # 執行負載測試
-            performance_metrics = await self._execute_load_test(concurrent_users, duration)
+            performance_metrics = await self._execute_load_test(
+                concurrent_users, duration
+            )
 
             # 評估性能指標
             performance_acceptable = (
                 performance_metrics.get("avg_response_time_ms", 9999) < 500
-                and performance_metrics.get("error_rate", 1.0) < 0.05  # <5% 錯誤率
-                and performance_metrics.get("throughput_rps", 0) > 100  # >100 RPS
+                and performance_metrics.get("error_rate", 1.0)
+                < 0.05  # <5% 錯誤率
+                and performance_metrics.get("throughput_rps", 0)
+                > 100  # >100 RPS
             )
 
             return {
@@ -412,7 +478,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_disaster_recovery(self) -> Dict[str, Any]:
         """測試災難恢復"""
@@ -427,7 +497,9 @@ class SystemIntegrationTester:
             auto_recovery_result = await self._test_auto_recovery()
 
             # 測試數據一致性
-            data_consistency_result = await self._test_data_consistency_after_recovery()
+            data_consistency_result = (
+                await self._test_data_consistency_after_recovery()
+            )
 
             dr_tests_passed = all(
                 [
@@ -445,7 +517,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     async def _test_end_to_end_workflows(self) -> Dict[str, Any]:
         """測試端到端工作流程"""
@@ -454,7 +530,9 @@ class SystemIntegrationTester:
 
         try:
             # 測試影片生成完整流程
-            video_generation_result = await self._test_video_generation_workflow()
+            video_generation_result = (
+                await self._test_video_generation_workflow()
+            )
 
             # 測試用戶註冊到使用的完整流程
             user_journey_result = await self._test_complete_user_journey()
@@ -478,7 +556,11 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
     # 輔助方法實現
     async def _check_database_connections(self) -> Dict[str, bool]:
@@ -536,7 +618,9 @@ class SystemIntegrationTester:
         except Exception as e:
             return {"status": "unhealthy", "error": str(e)}
 
-    async def _execute_api_test(self, test_case: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_api_test(
+        self, test_case: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """執行 API 測試"""
         start_time = time.time()
         try:
@@ -546,9 +630,14 @@ class SystemIntegrationTester:
             if method == "GET":
                 response = requests.get(url, timeout=self.test_timeout)
             elif method == "POST":
-                response = requests.post(url, json=test_case.get("data"), timeout=self.test_timeout)
+                response = requests.post(
+                    url, json=test_case.get("data"), timeout=self.test_timeout
+                )
             else:
-                return {"status": "SKIP", "reason": f"不支持的 HTTP 方法: {method}"}
+                return {
+                    "status": "SKIP",
+                    "reason": f"不支持的 HTTP 方法: {method}",
+                }
 
             expected_status = test_case["expected_status"]
             if isinstance(expected_status, list):
@@ -565,9 +654,15 @@ class SystemIntegrationTester:
             }
 
         except Exception as e:
-            return {"status": "FAIL", "duration_seconds": time.time() - start_time, "error": str(e)}
+            return {
+                "status": "FAIL",
+                "duration_seconds": time.time() - start_time,
+                "error": str(e),
+            }
 
-    def _generate_test_summary(self, test_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_test_summary(
+        self, test_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """生成測試摘要"""
         total_tests = 0
         passed_tests = 0
@@ -650,7 +745,9 @@ class SystemIntegrationTester:
     async def _test_retention_policies(self) -> Dict[str, Any]:
         return {"status": "PASS", "message": "保留政策測試通過"}
 
-    async def _execute_load_test(self, concurrent_users: int, duration: int) -> Dict[str, Any]:
+    async def _execute_load_test(
+        self, concurrent_users: int, duration: int
+    ) -> Dict[str, Any]:
         return {
             "avg_response_time_ms": 150,
             "error_rate": 0.02,
@@ -685,9 +782,13 @@ async def main():
 
     parser = argparse.ArgumentParser(description="系統整合測試")
     parser.add_argument(
-        "--config", default="config/integration-test-config.json", help="配置檔案路徑"
+        "--config",
+        default="config/integration-test-config.json",
+        help="配置檔案路徑",
     )
-    parser.add_argument("--output", default="test-results.json", help="結果輸出檔案")
+    parser.add_argument(
+        "--output", default="test-results.json", help="結果輸出檔案"
+    )
     parser.add_argument("--verbose", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()
@@ -695,7 +796,8 @@ async def main():
     # 設置日誌
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(
-        level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=log_level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     # 執行測試
@@ -708,9 +810,9 @@ async def main():
 
     # 輸出摘要
     summary = results.get("summary", {})
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print("🔍 系統整合測試結果摘要")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"總測試數: {summary.get('total_tests', 0)}")
     print(f"通過測試: {summary.get('passed_tests', 0)}")
     print(f"失敗測試: {summary.get('failed_tests', 0)}")
@@ -718,7 +820,7 @@ async def main():
     print(f"品質等級: {summary.get('quality_grade', 'Unknown')}")
     print(f"整體狀態: {results.get('overall_status', 'Unknown')}")
     print(f"總持續時間: {results.get('total_duration_seconds', 0):.2f} 秒")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     if results.get("overall_status") == "PASS":
         print("✅ 所有整合測試通過！系統已準備好進行生產部署。")

@@ -39,7 +39,9 @@ class CacheManager:
         """獲取快取值"""
         try:
             if self._is_circuit_breaker_open():
-                logger.warning(f"Circuit breaker open, skipping cache get for {key}")
+                logger.warning(
+                    f"Circuit breaker open, skipping cache get for {key}"
+                )
                 return default
 
             value = await self.redis.get(key)
@@ -151,14 +153,19 @@ class CacheManager:
 
     def _is_circuit_breaker_open(self) -> bool:
         """檢查斷路器狀態"""
-        if self.circuit_breaker_failures < self.config.circuit_breaker_threshold:
+        if (
+            self.circuit_breaker_failures
+            < self.config.circuit_breaker_threshold
+        ):
             return False
 
         if self.circuit_breaker_last_failure is None:
             return False
 
         # 30秒後重試
-        return (datetime.now() - self.circuit_breaker_last_failure).seconds < 30
+        return (
+            datetime.now() - self.circuit_breaker_last_failure
+        ).seconds < 30
 
     def _handle_failure(self):
         """處理失敗"""
@@ -254,16 +261,22 @@ def cache_result(ttl: int = 3600, key_prefix: str = None):
     return decorator
 
 
-def _generate_cache_key(func: Callable, prefix: str, args: tuple, kwargs: dict) -> str:
+def _generate_cache_key(
+    func: Callable, prefix: str, args: tuple, kwargs: dict
+) -> str:
     """生成快取鍵"""
     func_name = f"{func.__module__}.{func.__name__}"
 
     # 排除特殊參數
-    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ["cache_manager", "db"]}
+    filtered_kwargs = {
+        k: v for k, v in kwargs.items() if k not in ["cache_manager", "db"]
+    }
 
     # 生成參數雜湊
     args_str = ":".join(str(arg) for arg in args)
-    kwargs_str = ":".join(f"{k}={v}" for k, v in sorted(filtered_kwargs.items()))
+    kwargs_str = ":".join(
+        f"{k}={v}" for k, v in sorted(filtered_kwargs.items())
+    )
 
     content = f"{func_name}:{args_str}:{kwargs_str}"
     hash_key = hashlib.sha256(content.encode()).hexdigest()
@@ -282,7 +295,9 @@ class SessionCache:
 
     async def create_session(self, user_id: int, session_data: dict) -> str:
         """創建用戶會話"""
-        session_id = CacheKeyGenerator.generate_hash(user_id, datetime.now().isoformat())
+        session_id = CacheKeyGenerator.generate_hash(
+            user_id, datetime.now().isoformat()
+        )
         session_key = CacheKeyGenerator.user_session(user_id)
 
         session_info = {
@@ -355,7 +370,9 @@ class ModelCache:
         self.cache = cache_manager
         self.inference_ttl = 3600  # 1小時
 
-    async def cache_inference_result(self, model_id: int, input_data: dict, result: Any) -> bool:
+    async def cache_inference_result(
+        self, model_id: int, input_data: dict, result: Any
+    ) -> bool:
         """快取推論結果"""
         input_hash = CacheKeyGenerator.generate_hash(str(input_data))
         key = CacheKeyGenerator.inference_result(model_id, input_hash)
@@ -369,7 +386,9 @@ class ModelCache:
 
         return await self.cache.set(key, cache_data, self.inference_ttl)
 
-    async def get_cached_inference(self, model_id: int, input_data: dict) -> Optional[Any]:
+    async def get_cached_inference(
+        self, model_id: int, input_data: dict
+    ) -> Optional[Any]:
         """獲取快取的推論結果"""
         input_hash = CacheKeyGenerator.generate_hash(str(input_data))
         key = CacheKeyGenerator.inference_result(model_id, input_hash)
@@ -409,7 +428,9 @@ async def example_usage():
 
     # 使用速率限制
     rate_limit = RateLimitCache(cache_manager)
-    allowed, count = await rate_limit.check_rate_limit(123, "api/upload", 10, 60)
+    allowed, count = await rate_limit.check_rate_limit(
+        123, "api/upload", 10, 60
+    )
     print(f"允許請求: {allowed}, 當前計數: {count}")
 
 

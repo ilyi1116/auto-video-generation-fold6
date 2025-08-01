@@ -103,7 +103,6 @@ async def verify_token_remote(
                 headers=headers,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
-
                 if response.status == 200:
                     result = await response.json()
                     user_id = result.get("user_id")
@@ -158,7 +157,6 @@ async def get_user_info(token: str) -> Optional[Dict[str, Any]]:
                 headers=headers,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
-
                 if response.status == 200:
                     user_info = await response.json()
                     logger.debug(
@@ -249,7 +247,6 @@ async def check_user_permissions(
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
-
                 if response.status == 200:
                     result = await response.json()
                     has_permission = result.get("allowed", False)

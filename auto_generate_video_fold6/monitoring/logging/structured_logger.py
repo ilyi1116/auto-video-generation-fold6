@@ -17,10 +17,18 @@ import structlog
 from pythonjsonlogger import jsonlogger
 
 # 上下文變數，用於追蹤請求
-request_id_context: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
-user_id_context: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
-trace_id_context: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
-correlation_id_context: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
+request_id_context: ContextVar[Optional[str]] = ContextVar(
+    "request_id", default=None
+)
+user_id_context: ContextVar[Optional[str]] = ContextVar(
+    "user_id", default=None
+)
+trace_id_context: ContextVar[Optional[str]] = ContextVar(
+    "trace_id", default=None
+)
+correlation_id_context: ContextVar[Optional[str]] = ContextVar(
+    "correlation_id", default=None
+)
 
 
 class LogLevel(Enum):
@@ -49,7 +57,7 @@ class EventType(Enum):
 @dataclass
 class LogEvent:
     """日誌事件數據結構"""
-    
+
     timestamp: str
     level: str
     service: str
@@ -66,7 +74,7 @@ class LogEvent:
     exception: Optional[str] = None
     stack_trace: Optional[str] = None
     additional_fields: Optional[Dict[str, Any]] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """轉換為字典格式"""
         result = asdict(self)
@@ -81,19 +89,19 @@ def add_context_processor(logger, method_name, event_dict):
     # 添加關聯ID
     if correlation_id_context.get():
         event_dict["correlation_id"] = correlation_id_context.get()
-    
+
     # 添加請求ID
     if request_id_context.get():
         event_dict["request_id"] = request_id_context.get()
-    
+
     # 添加用戶ID
     if user_id_context.get():
         event_dict["user_id"] = user_id_context.get()
-    
+
     # 添加追踪ID
     if trace_id_context.get():
         event_dict["trace_id"] = trace_id_context.get()
-    
+
     return event_dict
 
 
@@ -126,7 +134,7 @@ structlog.configure(
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -198,7 +206,8 @@ class StructuredLogger:
             )
         else:
             formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
             )
 
         # 控制台處理器
@@ -271,29 +280,49 @@ class StructuredLogger:
             **kwargs,
         )
 
-    def debug(self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs):
+    def debug(
+        self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs
+    ):
         """記錄 DEBUG 級別日誌"""
-        event = self._create_log_event(LogLevel.DEBUG, event_type, message, **kwargs)
+        event = self._create_log_event(
+            LogLevel.DEBUG, event_type, message, **kwargs
+        )
         self.struct_logger.debug(message, **event.to_dict())
 
-    def info(self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs):
+    def info(
+        self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs
+    ):
         """記錄 INFO 級別日誌"""
-        event = self._create_log_event(LogLevel.INFO, event_type, message, **kwargs)
+        event = self._create_log_event(
+            LogLevel.INFO, event_type, message, **kwargs
+        )
         self.struct_logger.info(message, **event.to_dict())
 
-    def warning(self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs):
+    def warning(
+        self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs
+    ):
         """記錄 WARNING 級別日誌"""
-        event = self._create_log_event(LogLevel.WARNING, event_type, message, **kwargs)
+        event = self._create_log_event(
+            LogLevel.WARNING, event_type, message, **kwargs
+        )
         self.struct_logger.warning(message, **event.to_dict())
 
-    def error(self, message: str, event_type: EventType = EventType.ERROR, **kwargs):
+    def error(
+        self, message: str, event_type: EventType = EventType.ERROR, **kwargs
+    ):
         """記錄 ERROR 級別日誌"""
-        event = self._create_log_event(LogLevel.ERROR, event_type, message, **kwargs)
+        event = self._create_log_event(
+            LogLevel.ERROR, event_type, message, **kwargs
+        )
         self.struct_logger.error(message, **event.to_dict())
 
-    def critical(self, message: str, event_type: EventType = EventType.ERROR, **kwargs):
+    def critical(
+        self, message: str, event_type: EventType = EventType.ERROR, **kwargs
+    ):
         """記錄 CRITICAL 級別日誌"""
-        event = self._create_log_event(LogLevel.CRITICAL, event_type, message, **kwargs)
+        event = self._create_log_event(
+            LogLevel.CRITICAL, event_type, message, **kwargs
+        )
         self.struct_logger.critical(message, **event.to_dict())
 
     def log_request(
@@ -319,7 +348,9 @@ class StructuredLogger:
             **kwargs,
         )
 
-    def log_error(self, error: Exception, context: Dict[str, Any] = None, **kwargs):
+    def log_error(
+        self, error: Exception, context: Dict[str, Any] = None, **kwargs
+    ):
         """記錄錯誤"""
         error_details = {
             "type": type(error).__name__,
@@ -354,15 +385,25 @@ class StructuredLogger:
             "resource": resource,
         }
 
-        level = LogLevel.WARNING if severity in ["low", "medium"] else LogLevel.ERROR
+        level = (
+            LogLevel.WARNING
+            if severity in ["low", "medium"]
+            else LogLevel.ERROR
+        )
 
         if level == LogLevel.ERROR:
             self.error(
-                event_description, event_type=EventType.SECURITY, extra=security_data, **kwargs
+                event_description,
+                event_type=EventType.SECURITY,
+                extra=security_data,
+                **kwargs,
             )
         else:
             self.warning(
-                event_description, event_type=EventType.SECURITY, extra=security_data, **kwargs
+                event_description,
+                event_type=EventType.SECURITY,
+                extra=security_data,
+                **kwargs,
             )
 
     def log_performance(
@@ -385,11 +426,23 @@ class StructuredLogger:
         message = f"Performance: {operation} took {duration_ms:.2f}ms"
 
         if level == LogLevel.WARNING:
-            self.warning(message, event_type=EventType.PERFORMANCE, extra=perf_data, **kwargs)
+            self.warning(
+                message,
+                event_type=EventType.PERFORMANCE,
+                extra=perf_data,
+                **kwargs,
+            )
         else:
-            self.info(message, event_type=EventType.PERFORMANCE, extra=perf_data, **kwargs)
+            self.info(
+                message,
+                event_type=EventType.PERFORMANCE,
+                extra=perf_data,
+                **kwargs,
+            )
 
-    def log_business_event(self, event_name: str, metrics: Dict[str, Any], **kwargs):
+    def log_business_event(
+        self, event_name: str, metrics: Dict[str, Any], **kwargs
+    ):
         """記錄業務事件"""
         self.info(
             f"Business event: {event_name}",
@@ -407,10 +460,17 @@ class StructuredLogger:
         **kwargs,
     ):
         """記錄審計事件"""
-        audit_data = {"action": action, "resource": resource, "details": details or {}}
+        audit_data = {
+            "action": action,
+            "resource": resource,
+            "details": details or {},
+        }
 
         self.info(
-            f"Audit: {action} on {resource}", event_type=EventType.AUDIT, extra=audit_data, **kwargs
+            f"Audit: {action} on {resource}",
+            event_type=EventType.AUDIT,
+            extra=audit_data,
+            **kwargs,
         )
 
 
@@ -419,7 +479,10 @@ _global_loggers: Dict[str, StructuredLogger] = {}
 
 
 def get_logger(
-    service_name: str, version: str = "1.0.0", environment: str = None, **kwargs
+    service_name: str,
+    version: str = "1.0.0",
+    environment: str = None,
+    **kwargs,
 ) -> StructuredLogger:
     """獲取或創建日誌記錄器"""
     environment = environment or os.getenv("ENVIRONMENT", "production")
@@ -428,7 +491,10 @@ def get_logger(
 
     if logger_key not in _global_loggers:
         _global_loggers[logger_key] = StructuredLogger(
-            service_name=service_name, version=version, environment=environment, **kwargs
+            service_name=service_name,
+            version=version,
+            environment=environment,
+            **kwargs,
         )
 
     return _global_loggers[logger_key]
@@ -438,7 +504,13 @@ def get_logger(
 class LogContext:
     """日誌上下文管理器"""
 
-    def __init__(self, request_id: str = None, user_id: str = None, trace_id: str = None, correlation_id: str = None):
+    def __init__(
+        self,
+        request_id: str = None,
+        user_id: str = None,
+        trace_id: str = None,
+        correlation_id: str = None,
+    ):
         self.request_id = request_id
         self.user_id = user_id
         self.trace_id = trace_id
@@ -463,7 +535,9 @@ class LogContext:
 
 # 裝飾器
 def log_function_call(
-    logger: StructuredLogger = None, include_args: bool = False, include_result: bool = False
+    logger: StructuredLogger = None,
+    include_args: bool = False,
+    include_result: bool = False,
 ):
     """函數調用日誌裝飾器"""
 
@@ -494,7 +568,9 @@ def log_function_call(
                 if include_result:
                     log_data["result"] = str(result)
 
-                logger.debug(f"Function completed: {func_name}", extra=log_data)
+                logger.debug(
+                    f"Function completed: {func_name}", extra=log_data
+                )
                 return result
 
             except Exception as e:
@@ -530,7 +606,9 @@ def log_function_call(
                 if include_result:
                     log_data["result"] = str(result)
 
-                logger.debug(f"Function completed: {func_name}", extra=log_data)
+                logger.debug(
+                    f"Function completed: {func_name}", extra=log_data
+                )
                 return result
 
             except Exception as e:

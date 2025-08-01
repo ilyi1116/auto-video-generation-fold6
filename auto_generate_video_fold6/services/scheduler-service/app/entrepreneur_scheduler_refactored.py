@@ -293,9 +293,9 @@ class StatisticsManager:
     def update_stats(self, task: ScheduledTask):
         """更新統計數據"""
         if task.status == TaskStatus.COMPLETED:
-            self.daily_stats[
-                "videos_generated"
-            ] += task.metrics.videos_generated
+            self.daily_stats["videos_generated"] += (
+                task.metrics.videos_generated
+            )
             self.daily_stats["budget_used"] += task.metrics.cost_incurred
             self.daily_stats["tasks_completed"] += 1
             self.daily_stats["total_execution_time"] += (

@@ -122,9 +122,9 @@ def test_dockerfile_exists():
 
         # 基本 Dockerfile 驗證
         assert "FROM" in content, "Dockerfile should contain FROM instruction"
-        assert (
-            "WORKDIR" in content or "RUN" in content
-        ), "Dockerfile should contain basic instructions"
+        assert "WORKDIR" in content or "RUN" in content, (
+            "Dockerfile should contain basic instructions"
+        )
 
         print(f"✅ Dockerfile 存在於: {dockerfile_path}")
     else:

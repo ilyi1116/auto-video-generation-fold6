@@ -247,12 +247,16 @@ class VideoProject(BaseModel):
         )
 
     @classmethod
-    async def get_by_id(cls, db_pool, project_id: str) -> Optional["VideoProject"]:
+    async def get_by_id(
+        cls, db_pool, project_id: str
+    ) -> Optional["VideoProject"]:
         """Get video project by ID"""
 
         try:
             async with db_pool.acquire() as conn:
-                row = await conn.fetchrow("SELECT * FROM video_projects WHERE id = $1", project_id)
+                row = await conn.fetchrow(
+                    "SELECT * FROM video_projects WHERE id = $1", project_id
+                )
 
                 if not row:
                     return None
@@ -292,7 +296,7 @@ class VideoProject(BaseModel):
                 SELECT * FROM video_projects 
                 {where_clause}
                 ORDER BY created_at DESC 
-                LIMIT {param_nums.split(', ')[0]} OFFSET {param_nums.split(', ')[1]}
+                LIMIT {param_nums.split(", ")[0]} OFFSET {param_nums.split(", ")[1]}
                 """
 
                 rows = await conn.fetch(query, *params)
@@ -300,7 +304,9 @@ class VideoProject(BaseModel):
                 return [cls._from_db_row(row) for row in rows]
 
         except Exception as e:
-            logger.error(f"Failed to get video projects for user {user_id}: {str(e)}")
+            logger.error(
+                f"Failed to get video projects for user {user_id}: {str(e)}"
+            )
             return []
 
     @classmethod
@@ -323,10 +329,14 @@ class VideoProject(BaseModel):
             progress=row["progress"],
             error_message=row["error_message"],
             script_content=row["script_content"],
-            script_scenes=json.loads(row["script_scenes"]) if row["script_scenes"] else None,
+            script_scenes=json.loads(row["script_scenes"])
+            if row["script_scenes"]
+            else None,
             voice_url=row["voice_url"],
             music_url=row["music_url"],
-            image_urls=json.loads(row["image_urls"]) if row["image_urls"] else None,
+            image_urls=json.loads(row["image_urls"])
+            if row["image_urls"]
+            else None,
             preview_url=row["preview_url"],
             final_url=row["final_url"],
             thumbnail_url=row["thumbnail_url"],
@@ -340,7 +350,11 @@ class VideoProject(BaseModel):
         )
 
     async def update_status(
-        self, db_pool, status: VideoStatus, progress: int, error_message: Optional[str] = None
+        self,
+        db_pool,
+        status: VideoStatus,
+        progress: int,
+        error_message: Optional[str] = None,
     ):
         """Update project status and progress"""
 
@@ -362,8 +376,12 @@ class VideoProject(BaseModel):
             VideoStatus.RENDERING,
         ]:
             # Rough estimation based on current progress
-            remaining_time = max(0, (100 - progress) * 2)  # 2 seconds per percent
-            self.estimated_completion = datetime.utcnow() + timedelta(seconds=remaining_time)
+            remaining_time = max(
+                0, (100 - progress) * 2
+            )  # 2 seconds per percent
+            self.estimated_completion = datetime.utcnow() + timedelta(
+                seconds=remaining_time
+            )
 
         await self.save(db_pool)
 
@@ -372,7 +390,9 @@ class VideoProject(BaseModel):
 
         try:
             async with db_pool.acquire() as conn:
-                await conn.execute("DELETE FROM video_projects WHERE id = $1", self.id)
+                await conn.execute(
+                    "DELETE FROM video_projects WHERE id = $1", self.id
+                )
 
                 logger.info(f"Deleted video project: {self.id}")
 
@@ -386,13 +406,16 @@ class VideoProject(BaseModel):
         try:
             async with db_pool.acquire() as conn:
                 await conn.execute(
-                    "UPDATE video_projects SET view_count = view_count + 1 WHERE id = $1", self.id
+                    "UPDATE video_projects SET view_count = view_count + 1 WHERE id = $1",
+                    self.id,
                 )
 
                 self.view_count += 1
 
         except Exception as e:
-            logger.error(f"Failed to increment view count for {self.id}: {str(e)}")
+            logger.error(
+                f"Failed to increment view count for {self.id}: {str(e)}"
+            )
 
     async def increment_download_count(self, db_pool):
         """Increment download count"""
@@ -407,7 +430,9 @@ class VideoProject(BaseModel):
                 self.download_count += 1
 
         except Exception as e:
-            logger.error(f"Failed to increment download count for {self.id}: {str(e)}")
+            logger.error(
+                f"Failed to increment download count for {self.id}: {str(e)}"
+            )
 
     async def toggle_like(self, db_pool, increment: bool = True):
         """Toggle like count"""
@@ -446,11 +471,19 @@ class VideoProject(BaseModel):
             "preview_url": self.preview_url,
             "final_url": self.final_url,
             "thumbnail_url": self.thumbnail_url,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "created_at": self.created_at.isoformat()
+            if self.created_at
+            else None,
+            "updated_at": self.updated_at.isoformat()
+            if self.updated_at
+            else None,
+            "completed_at": self.completed_at.isoformat()
+            if self.completed_at
+            else None,
             "estimated_completion": (
-                self.estimated_completion.isoformat() if self.estimated_completion else None
+                self.estimated_completion.isoformat()
+                if self.estimated_completion
+                else None
             ),
             "view_count": self.view_count,
             "download_count": self.download_count,

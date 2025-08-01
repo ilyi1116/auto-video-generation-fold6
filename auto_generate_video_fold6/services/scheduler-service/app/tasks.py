@@ -66,7 +66,7 @@ def publish_post(post_id: int):
             .filter(
                 PlatformAccount.user_id == post.user_id,
                 PlatformAccount.platform == post.platform,
-                PlatformAccount.is_active  is True,
+                PlatformAccount.is_active is True,
             )
             .first()
         )

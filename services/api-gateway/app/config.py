@@ -10,7 +10,10 @@ class Settings(BaseSettings):
 
     # CORS
     allowed_hosts: List[str] = ["localhost", "127.0.0.1"]
-    cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    cors_origins: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
 
     # Logging
     log_level: str = "INFO"

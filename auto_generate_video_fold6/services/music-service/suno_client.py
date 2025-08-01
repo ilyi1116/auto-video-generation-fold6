@@ -109,7 +109,6 @@ class SunoClient:
             async with self.session.post(
                 f"{self.base_url}/api/generate", json=data
             ) as response:
-
                 if response.status != 200:
                     error_text = await response.text()
                     logger.error(

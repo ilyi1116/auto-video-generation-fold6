@@ -38,7 +38,8 @@ except ImportError:
 
 # 設置日誌
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,9 @@ class AutoTrendsVideoGenerator:
             if mode:
                 config_manager.set_mode(mode)
             self.config = self._load_unified_config()
-            logger.info(f"使用統一配置管理器，當前模式: {config_manager.current_mode}")
+            logger.info(
+                f"使用統一配置管理器，當前模式: {config_manager.current_mode}"
+            )
         else:
             self.config = self._load_legacy_config(config_file)
             logger.info("使用傳統配置方式")
@@ -61,7 +64,9 @@ class AutoTrendsVideoGenerator:
         self.services = self._setup_services()
 
         # 設置輸出目錄
-        self.output_dir = Path(self.config.get("output_dir", "./generated_videos"))
+        self.output_dir = Path(
+            self.config.get("output_dir", "./generated_videos")
+        )
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # 影片生成設定
@@ -91,24 +96,38 @@ class AutoTrendsVideoGenerator:
             self.cost_tracker = None
             self.budget_controller = None
 
-        logger.info(f"影片生成器初始化完成，每日限制: {self.video_configs['max_videos_per_run']}")
+        logger.info(
+            f"影片生成器初始化完成，每日限制: {self.video_configs['max_videos_per_run']}"
+        )
 
     def _setup_services(self) -> dict:
         """設置服務配置"""
         if CONFIG_MANAGER_AVAILABLE:
             return {
-                "trend_service": get_config("services.trend_service.url", "http://localhost:8001"),
-                "video_service": get_config("services.video_service.url", "http://localhost:8002"),
-                "ai_service": get_config("services.ai_service.url", "http://localhost:8003"),
+                "trend_service": get_config(
+                    "services.trend_service.url", "http://localhost:8001"
+                ),
+                "video_service": get_config(
+                    "services.video_service.url", "http://localhost:8002"
+                ),
+                "ai_service": get_config(
+                    "services.ai_service.url", "http://localhost:8003"
+                ),
                 "social_service": get_config(
                     "services.social_service.url", "http://localhost:8004"
                 ),
             }
         else:
             return {
-                "trend_service": self.config.get("trend_service_url", "http://localhost:8001"),
-                "video_service": self.config.get("video_service_url", "http://localhost:8002"),
-                "ai_service": self.config.get("ai_service_url", "http://localhost:8003"),
+                "trend_service": self.config.get(
+                    "trend_service_url", "http://localhost:8001"
+                ),
+                "video_service": self.config.get(
+                    "video_service_url", "http://localhost:8002"
+                ),
+                "ai_service": self.config.get(
+                    "ai_service_url", "http://localhost:8003"
+                ),
             }
 
     def _setup_video_configs(self) -> dict:
@@ -116,16 +135,25 @@ class AutoTrendsVideoGenerator:
         if CONFIG_MANAGER_AVAILABLE:
             generation_config = get_config("generation", {})
             return {
-                "max_videos_per_run": generation_config.get("daily_video_limit", 5),
+                "max_videos_per_run": generation_config.get(
+                    "daily_video_limit", 5
+                ),
                 "batch_size": generation_config.get("batch_size", 1),
-                "max_concurrent_jobs": generation_config.get("max_concurrent_jobs", 2),
-                "video_duration": generation_config.get("duration_range", [30, 60])[0],  # 取最小值
+                "max_concurrent_jobs": generation_config.get(
+                    "max_concurrent_jobs", 2
+                ),
+                "video_duration": generation_config.get(
+                    "duration_range", [30, 60]
+                )[0],  # 取最小值
                 "platforms": generation_config.get("platforms", ["tiktok"]),
                 "categories": get_config(
-                    "content.content_categories", ["technology", "entertainment", "lifestyle"]
+                    "content.content_categories",
+                    ["technology", "entertainment", "lifestyle"],
                 ),
                 "languages": [get_config("content.language", "zh-TW")],
-                "quality_preset": generation_config.get("quality_preset", "medium"),
+                "quality_preset": generation_config.get(
+                    "quality_preset", "medium"
+                ),
             }
         else:
             return {
@@ -134,7 +162,9 @@ class AutoTrendsVideoGenerator:
                 "max_concurrent_jobs": 2,
                 "video_duration": self.config.get("video_duration", 30),
                 "platforms": self.config.get("target_platforms", ["tiktok"]),
-                "categories": self.config.get("categories", ["technology", "entertainment"]),
+                "categories": self.config.get(
+                    "categories", ["technology", "entertainment"]
+                ),
                 "languages": self.config.get("languages", ["zh-TW"]),
                 "quality_preset": "medium",
             }
@@ -148,11 +178,17 @@ class AutoTrendsVideoGenerator:
     def _load_unified_config(self) -> dict:
         """載入統一配置"""
         return {
-            "output_dir": get_config("storage.output_dir", "./generated_videos"),
-            "quality_threshold": get_config("generation.quality_threshold", 0.7),
+            "output_dir": get_config(
+                "storage.output_dir", "./generated_videos"
+            ),
+            "quality_threshold": get_config(
+                "generation.quality_threshold", 0.7
+            ),
             "schedule_interval": 1800,  # 默認30分鐘
             "daily_budget": get_config("cost_control.daily_budget_usd", 50.0),
-            "stop_on_budget_exceeded": get_config("cost_control.stop_on_budget_exceeded", True),
+            "stop_on_budget_exceeded": get_config(
+                "cost_control.stop_on_budget_exceeded", True
+            ),
         }
 
     def _load_legacy_config(self, config_file: str) -> dict:
@@ -200,12 +236,18 @@ class AutoTrendsVideoGenerator:
             logger.info(f"找到 {len(trending_keywords)} 個熱門關鍵字")
 
             # 2. 選擇最佳關鍵字
-            selected_keywords = await self._select_best_keywords(trending_keywords)
+            selected_keywords = await self._select_best_keywords(
+                trending_keywords
+            )
 
-            logger.info(f"選擇了 {len(selected_keywords)} 個關鍵字進行影片生成")
+            logger.info(
+                f"選擇了 {len(selected_keywords)} 個關鍵字進行影片生成"
+            )
 
             # 3. 批次生成影片
-            generation_results = await self._batch_generate_videos(selected_keywords)
+            generation_results = await self._batch_generate_videos(
+                selected_keywords
+            )
 
             # 4. 處理結果
             await self._process_results(generation_results)
@@ -228,7 +270,10 @@ class AutoTrendsVideoGenerator:
             # 2. 檢查預算狀態 (使用新的預算控制器)
             if COST_MONITORING_AVAILABLE and self.budget_controller:
                 estimated_cost = self._estimate_batch_cost()
-                can_proceed, message = await self.budget_controller.pre_operation_check(
+                (
+                    can_proceed,
+                    message,
+                ) = await self.budget_controller.pre_operation_check(
                     "batch_generation", estimated_cost
                 )
                 if not can_proceed:
@@ -238,9 +283,13 @@ class AutoTrendsVideoGenerator:
             else:
                 # 舊版預算檢查
                 if CONFIG_MANAGER_AVAILABLE:
-                    daily_budget = get_config("cost_control.daily_budget_usd", 50.0)
+                    daily_budget = get_config(
+                        "cost_control.daily_budget_usd", 50.0
+                    )
                     if self.cost_tracker["daily_cost"] >= daily_budget:
-                        logger.info(f"已達每日預算限制 (${daily_budget})，跳過生成")
+                        logger.info(
+                            f"已達每日預算限制 (${daily_budget})，跳過生成"
+                        )
                         return False
 
             # 3. 檢查每日限制
@@ -278,7 +327,8 @@ class AutoTrendsVideoGenerator:
 
                 estimated_per_video = 0.11  # 保守估計
                 planned_videos = min(
-                    batch_size, max_videos - self.cost_tracker["videos_generated_today"]
+                    batch_size,
+                    max_videos - self.cost_tracker["videos_generated_today"],
                 )
 
                 return max(0, planned_videos * estimated_per_video)
@@ -293,7 +343,11 @@ class AutoTrendsVideoGenerator:
         """檢查服務健康狀態"""
         try:
             healthy_services = 0
-            required_services = ["trend_service", "ai_service", "video_service"]
+            required_services = [
+                "trend_service",
+                "ai_service",
+                "video_service",
+            ]
 
             for service_name in required_services:
                 service_url = self.services.get(service_name)
@@ -310,17 +364,23 @@ class AutoTrendsVideoGenerator:
                                 healthy_services += 1
                                 logger.debug(f"{service_name} 健康狀態正常")
                             else:
-                                logger.warning(f"{service_name} 健康檢查失敗: {resp.status}")
+                                logger.warning(
+                                    f"{service_name} 健康檢查失敗: {resp.status}"
+                                )
 
                 except Exception as e:
                     logger.warning(f"{service_name} 連接失敗: {e}")
 
             # 至少需要2個服務正常運行
             if healthy_services >= 2:
-                logger.info(f"服務健康檢查通過 ({healthy_services}/{len(required_services)})")
+                logger.info(
+                    f"服務健康檢查通過 ({healthy_services}/{len(required_services)})"
+                )
                 return True
             else:
-                logger.error(f"服務健康檢查失敗 ({healthy_services}/{len(required_services)})")
+                logger.error(
+                    f"服務健康檢查失敗 ({healthy_services}/{len(required_services)})"
+                )
                 return False
 
         except Exception as e:
@@ -335,17 +395,23 @@ class AutoTrendsVideoGenerator:
             # 從多個類別獲取關鍵字
             for category in self.video_configs["categories"]:
                 async with aiohttp.ClientSession() as session:
-                    url = f"{self.services['trend_service']}/api/trends/keywords"
+                    url = (
+                        f"{self.services['trend_service']}/api/trends/keywords"
+                    )
                     params = {"category": category, "geo": "TW"}
 
                     async with session.get(url, params=params) as resp:
                         if resp.status == 200:
                             data = await resp.json()
                             keywords = data.get("keywords", [])
-                            logger.info(f"從 {category} 類別獲取到 {len(keywords)} 個關鍵字")
+                            logger.info(
+                                f"從 {category} 類別獲取到 {len(keywords)} 個關鍵字"
+                            )
                             all_keywords.extend(keywords)
                         else:
-                            logger.warning(f"獲取 {category} 類別關鍵字失敗: {resp.status}")
+                            logger.warning(
+                                f"獲取 {category} 類別關鍵字失敗: {resp.status}"
+                            )
 
             return all_keywords
 
@@ -405,7 +471,10 @@ class AutoTrendsVideoGenerator:
 
             # 綜合評分
             final_score = (
-                traffic_score * 0.4 + category_score * 0.3 + length_score * 0.2 + time_score * 0.1
+                traffic_score * 0.4
+                + category_score * 0.3
+                + length_score * 0.2
+                + time_score * 0.1
             )
 
             return final_score
@@ -428,21 +497,35 @@ class AutoTrendsVideoGenerator:
             # 分批處理
             for i in range(0, len(keywords), batch_size):
                 batch = keywords[i : i + batch_size]
-                logger.info(f"處理批次 {i//batch_size + 1}, 包含 {len(batch)} 個關鍵字")
+                logger.info(
+                    f"處理批次 {i // batch_size + 1}, 包含 {len(batch)} 個關鍵字"
+                )
 
                 # 檢查是否達到每日限制
                 if CONFIG_MANAGER_AVAILABLE:
                     daily_limit = get_config("generation.daily_video_limit", 5)
-                    if self.cost_tracker["videos_generated_today"] >= daily_limit:
+                    if (
+                        self.cost_tracker["videos_generated_today"]
+                        >= daily_limit
+                    ):
                         logger.info(f"已達每日限制 ({daily_limit})，停止生成")
                         break
 
                 # 檢查預算限制
                 if CONFIG_MANAGER_AVAILABLE:
-                    daily_budget = get_config("cost_control.daily_budget_usd", 50.0)
-                    stop_on_budget = get_config("cost_control.stop_on_budget_exceeded", True)
-                    if stop_on_budget and self.cost_tracker["daily_cost"] >= daily_budget:
-                        logger.info(f"已達預算限制 (${daily_budget})，停止生成")
+                    daily_budget = get_config(
+                        "cost_control.daily_budget_usd", 50.0
+                    )
+                    stop_on_budget = get_config(
+                        "cost_control.stop_on_budget_exceeded", True
+                    )
+                    if (
+                        stop_on_budget
+                        and self.cost_tracker["daily_cost"] >= daily_budget
+                    ):
+                        logger.info(
+                            f"已達預算限制 (${daily_budget})，停止生成"
+                        )
                         break
 
                 # 批次內並行處理
@@ -459,14 +542,17 @@ class AutoTrendsVideoGenerator:
                         return await task
 
                 batch_results = await asyncio.gather(
-                    *[bounded_task(task) for task in tasks], return_exceptions=True
+                    *[bounded_task(task) for task in tasks],
+                    return_exceptions=True,
                 )
 
                 results.extend(batch_results)
 
                 # 更新成本追蹤
                 successful_count = sum(
-                    1 for r in batch_results if isinstance(r, dict) and r.get("status") == "success"
+                    1
+                    for r in batch_results
+                    if isinstance(r, dict) and r.get("status") == "success"
                 )
                 self.cost_tracker["videos_generated_today"] += successful_count
 
@@ -524,7 +610,9 @@ class AutoTrendsVideoGenerator:
                                 success=True,
                                 metadata={
                                     "keyword": keyword,
-                                    "video_duration": self.video_configs["video_duration"],
+                                    "video_duration": self.video_configs[
+                                        "video_duration"
+                                    ],
                                 },
                             )
 
@@ -538,19 +626,33 @@ class AutoTrendsVideoGenerator:
                                 success=True,
                                 metadata={
                                     "keyword": keyword,
-                                    "language": self.video_configs["languages"][0],
+                                    "language": self.video_configs[
+                                        "languages"
+                                    ][0],
                                 },
                             )
 
-                        return {"keyword": keyword, "status": "success", "result": result}
+                        return {
+                            "keyword": keyword,
+                            "status": "success",
+                            "result": result,
+                        }
                     else:
                         error_msg = f"影片生成失敗: {resp.status}"
                         logger.error(error_msg)
-                        return {"keyword": keyword, "status": "error", "error": error_msg}
+                        return {
+                            "keyword": keyword,
+                            "status": "error",
+                            "error": error_msg,
+                        }
 
         except Exception as e:
             logger.error(f"生成影片 '{keyword_data.get('keyword')}' 失敗: {e}")
-            return {"keyword": keyword_data.get("keyword"), "status": "error", "error": str(e)}
+            return {
+                "keyword": keyword_data.get("keyword"),
+                "status": "error",
+                "error": str(e),
+            }
 
     async def _generate_script(self, keyword_data: dict) -> str:
         """生成影片腳本"""
@@ -583,11 +685,15 @@ class AutoTrendsVideoGenerator:
                                 tokens_used=500,  # 估算值
                                 request_id=f"script_{keyword}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                                 success=True,
-                                metadata={"keyword": keyword, "category": category},
+                                metadata={
+                                    "keyword": keyword,
+                                    "category": category,
+                                },
                             )
 
                         return result.get(
-                            "script", f"探索 {keyword} 的精彩世界！這個話題正在爆紅中..."
+                            "script",
+                            f"探索 {keyword} 的精彩世界！這個話題正在爆紅中...",
                         )
                     else:
                         # 追蹤失敗的 API 呼叫
@@ -598,11 +704,16 @@ class AutoTrendsVideoGenerator:
                                 operation_type="text_generation",
                                 tokens_used=0,
                                 success=False,
-                                metadata={"keyword": keyword, "error": f"HTTP {resp.status}"},
+                                metadata={
+                                    "keyword": keyword,
+                                    "error": f"HTTP {resp.status}",
+                                },
                             )
 
                         # 備用腳本
-                        return self._generate_fallback_script(keyword, category)
+                        return self._generate_fallback_script(
+                            keyword, category
+                        )
 
         except Exception as e:
             logger.error(f"生成腳本失敗: {e}")
@@ -625,7 +736,9 @@ class AutoTrendsVideoGenerator:
         """儲存影片結果"""
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            result_file = self.output_dir / f"{keyword}_{timestamp}_result.json"
+            result_file = (
+                self.output_dir / f"{keyword}_{timestamp}_result.json"
+            )
 
             with open(result_file, "w", encoding="utf-8") as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
@@ -639,9 +752,15 @@ class AutoTrendsVideoGenerator:
         """處理生成結果"""
         try:
             successful = [
-                r for r in results if isinstance(r, dict) and r.get("status") == "success"
+                r
+                for r in results
+                if isinstance(r, dict) and r.get("status") == "success"
             ]
-            failed = [r for r in results if isinstance(r, dict) and r.get("status") == "error"]
+            failed = [
+                r
+                for r in results
+                if isinstance(r, dict) and r.get("status") == "error"
+            ]
             exceptions = [r for r in results if isinstance(r, Exception)]
 
             logger.info(f"生成結果統計:")
@@ -656,9 +775,13 @@ class AutoTrendsVideoGenerator:
                 "successful": len(successful),
                 "failed": len(failed),
                 "exceptions": len(exceptions),
-                "success_rate": len(successful) / len(results) if results else 0,
+                "success_rate": len(successful) / len(results)
+                if results
+                else 0,
                 "successful_keywords": [r["keyword"] for r in successful],
-                "failed_keywords": [r["keyword"] for r in failed if "keyword" in r],
+                "failed_keywords": [
+                    r["keyword"] for r in failed if "keyword" in r
+                ],
             }
 
             summary_file = (
@@ -736,11 +859,15 @@ class AutoTrendsVideoGenerator:
         """獲取成本摘要"""
         return {
             "daily_cost": self.cost_tracker["daily_cost"],
-            "videos_generated_today": self.cost_tracker["videos_generated_today"],
+            "videos_generated_today": self.cost_tracker[
+                "videos_generated_today"
+            ],
             "api_calls_count": self.cost_tracker["api_calls_count"],
             "daily_budget": self.config.get("daily_budget", 50.0),
             "budget_remaining": max(
-                0, self.config.get("daily_budget", 50.0) - self.cost_tracker["daily_cost"]
+                0,
+                self.config.get("daily_budget", 50.0)
+                - self.cost_tracker["daily_cost"],
             ),
             "videos_remaining": max(
                 0,
@@ -752,16 +879,33 @@ class AutoTrendsVideoGenerator:
 
 async def main():
     """主函數"""
-    parser = argparse.ArgumentParser(description="自動 Google Trends 影片生成器")
+    parser = argparse.ArgumentParser(
+        description="自動 Google Trends 影片生成器"
+    )
     parser.add_argument("--config", "-c", help="配置檔案路徑")
     parser.add_argument("--mode", "-m", help="運行模式 (startup/enterprise)")
-    parser.add_argument("--schedule", "-s", action="store_true", help="啟動排程模式")
-    parser.add_argument("--once", "-o", action="store_true", help="執行一次生成")
+    parser.add_argument(
+        "--schedule", "-s", action="store_true", help="啟動排程模式"
+    )
+    parser.add_argument(
+        "--once", "-o", action="store_true", help="執行一次生成"
+    )
     parser.add_argument("--status", action="store_true", help="顯示當前狀態")
-    parser.add_argument("--cost-summary", action="store_true", help="顯示成本摘要")
-    parser.add_argument("--budget-status", action="store_true", help="顯示預算狀態")
-    parser.add_argument("--cost-report", action="store_true", help="生成成本報告")
-    parser.add_argument("--export-costs", type=int, metavar="DAYS", help="匯出指定天數的成本數據")
+    parser.add_argument(
+        "--cost-summary", action="store_true", help="顯示成本摘要"
+    )
+    parser.add_argument(
+        "--budget-status", action="store_true", help="顯示預算狀態"
+    )
+    parser.add_argument(
+        "--cost-report", action="store_true", help="生成成本報告"
+    )
+    parser.add_argument(
+        "--export-costs",
+        type=int,
+        metavar="DAYS",
+        help="匯出指定天數的成本數據",
+    )
 
     args = parser.parse_args()
 
@@ -786,14 +930,20 @@ async def main():
 
     if args.budget_status:
         if COST_MONITORING_AVAILABLE and generator.budget_controller:
-            budget_status = await generator.budget_controller.check_budget_status()
+            budget_status = (
+                await generator.budget_controller.check_budget_status()
+            )
             print("\n=== 預算狀態 ===")
             print(f"當前成本: ${budget_status['current_cost']:.4f}")
             print(f"預算限制: ${budget_status['budget_limit']:.2f}")
             print(f"剩餘預算: ${budget_status['budget_remaining']:.2f}")
             print(f"使用率: {budget_status['usage_percentage']:.1f}%")
-            print(f"超出預算: {'是' if budget_status['is_over_budget'] else '否'}")
-            print(f"可繼續操作: {'是' if budget_status['can_continue'] else '否'}")
+            print(
+                f"超出預算: {'是' if budget_status['is_over_budget'] else '否'}"
+            )
+            print(
+                f"可繼續操作: {'是' if budget_status['can_continue'] else '否'}"
+            )
         else:
             print("成本監控系統不可用")
         return
@@ -812,7 +962,9 @@ async def main():
             if weekly_report["daily_stats"]:
                 print("\n每日統計:")
                 for date_str, stats in weekly_report["daily_stats"].items():
-                    print(f"  {date_str}: ${stats['cost']:.4f} ({stats['calls']} 次呼叫)")
+                    print(
+                        f"  {date_str}: ${stats['cost']:.4f} ({stats['calls']} 次呼叫)"
+                    )
         else:
             print("成本監控系統不可用")
         return
@@ -820,7 +972,9 @@ async def main():
     if args.export_costs:
         if COST_MONITORING_AVAILABLE and generator.cost_tracker:
             print(f"\n=== 匯出 {args.export_costs} 天成本數據 ===")
-            export_file = await generator.cost_tracker.export_cost_data(args.export_costs)
+            export_file = await generator.cost_tracker.export_cost_data(
+                args.export_costs
+            )
             print(f"成本數據已匯出至: {export_file}")
         else:
             print("成本監控系統不可用")

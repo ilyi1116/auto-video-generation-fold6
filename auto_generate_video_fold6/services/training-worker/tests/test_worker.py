@@ -43,10 +43,10 @@ def test_data_path_validation(mock_exists):
     def validate_data_path(path):
         return os.path.exists(path)
 
-    assert validate_data_path("/valid/path")  is True
+    assert validate_data_path("/valid/path") is True
 
     mock_exists.return_value = False
-    assert validate_data_path("/invalid/path")  is False
+    assert validate_data_path("/invalid/path") is False
 
 
 def test_training_config_validation():
@@ -63,7 +63,7 @@ def test_training_config_validation():
         required_keys = ["model_type", "epochs", "batch_size", "learning_rate"]
         return all(key in config for key in required_keys)
 
-    assert validate_config(valid_config)  is True
+    assert validate_config(valid_config) is True
 
     invalid_config = {"model_type": "voice_cloning"}
-    assert validate_config(invalid_config)  is False
+    assert validate_config(invalid_config) is False

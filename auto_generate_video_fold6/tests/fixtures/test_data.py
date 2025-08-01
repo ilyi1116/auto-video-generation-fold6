@@ -43,8 +43,14 @@ def multiple_users_data():
                 "full_name": f"User {i}",
                 "password": "Test123456!",
                 "is_verified": i % 2 == 0,  # 偶數用戶已驗證
-                "created_at": (datetime.utcnow() - timedelta(days=i)).isoformat(),
-                "credits": {"total": 1000 + i * 100, "used": i * 50, "remaining": 1000 + i * 50},
+                "created_at": (
+                    datetime.utcnow() - timedelta(days=i)
+                ).isoformat(),
+                "credits": {
+                    "total": 1000 + i * 100,
+                    "used": i * 50,
+                    "remaining": 1000 + i * 50,
+                },
             }
         )
     return users
@@ -185,7 +191,11 @@ These tools aren't just cool - they're game-changers! Which one will you try fir
         "style": "engaging",
         "status": "generated",
         "generation_time_seconds": 3.2,
-        "metadata": {"model_used": "gpt-4", "temperature": 0.8, "tokens_used": 456},
+        "metadata": {
+            "model_used": "gpt-4",
+            "temperature": 0.8,
+            "tokens_used": 456,
+        },
     }
 
 
@@ -252,7 +262,12 @@ def trending_keywords_data():
                 "platforms": ["tiktok", "youtube"],
                 "engagement_rate": 6.8,
                 "competition": "very_high",
-                "suggested_tags": ["crypto", "trading", "bitcoin", "investment"],
+                "suggested_tags": [
+                    "crypto",
+                    "trading",
+                    "bitcoin",
+                    "investment",
+                ],
             },
         ],
         "generated_at": datetime.utcnow().isoformat(),
@@ -414,7 +429,11 @@ class TestDataSeeder:
                 description=f"Description for test project {i}",
                 user_id=user_id,
                 status="draft" if i % 2 == 0 else "completed",
-                settings={"aspect_ratio": "9:16", "duration": 60 + i * 10, "style": "engaging"},
+                settings={
+                    "aspect_ratio": "9:16",
+                    "duration": 60 + i * 10,
+                    "style": "engaging",
+                },
             )
             projects.append(project)
             db_session.add(project)
@@ -484,7 +503,9 @@ class MockDataGenerator:
         return data
 
     @staticmethod
-    def generate_project(user_id: str = None, overrides: Dict[str, Any] = None) -> Dict[str, Any]:
+    def generate_project(
+        user_id: str = None, overrides: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """生成專案數據"""
         data = {
             "id": str(uuid.uuid4()),
@@ -502,7 +523,9 @@ class MockDataGenerator:
         return data
 
     @staticmethod
-    def generate_api_response(success: bool = True, data: Any = None) -> Dict[str, Any]:
+    def generate_api_response(
+        success: bool = True, data: Any = None
+    ) -> Dict[str, Any]:
         """生成 API 回應數據"""
         if success:
             return {

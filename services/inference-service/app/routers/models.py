@@ -51,12 +51,18 @@ async def get_user_models(
 ):
     """Get user's voice models"""
 
-    query = voice_models.select().where(voice_models.c.user_id == current_user["id"])
+    query = voice_models.select().where(
+        voice_models.c.user_id == current_user["id"]
+    )
 
     if status_filter:
         query = query.where(voice_models.c.status == status_filter)
 
-    query = query.order_by(voice_models.c.created_at.desc()).limit(limit).offset(offset)
+    query = (
+        query.order_by(voice_models.c.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
 
     models = await database.fetch_all(query)
 
@@ -79,17 +85,23 @@ async def get_user_models(
 
 
 @router.get("/models/{model_id}", response_model=VoiceModelResponse)
-async def get_model_details(model_id: int, current_user: dict = Depends(get_current_user)):
+async def get_model_details(
+    model_id: int, current_user: dict = Depends(get_current_user)
+):
     """Get voice model details"""
 
     query = voice_models.select().where(
-        (voice_models.c.id == model_id) & (voice_models.c.user_id == current_user["id"])
+        (voice_models.c.id == model_id)
+        & (voice_models.c.user_id == current_user["id"])
     )
 
     model = await database.fetch_one(query)
 
     if not model:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Voice model not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Voice model not found",
+        )
 
     return VoiceModelResponse(
         id=model["id"],
@@ -107,7 +119,9 @@ async def get_model_details(model_id: int, current_user: dict = Depends(get_curr
 
 
 @router.post("/models/{model_id}/preload")
-async def preload_model(model_id: int, current_user: dict = Depends(get_current_user)):
+async def preload_model(
+    model_id: int, current_user: dict = Depends(get_current_user)
+):
     """Preload model into cache"""
 
     # Verify model ownership and readiness
@@ -121,7 +135,8 @@ async def preload_model(model_id: int, current_user: dict = Depends(get_current_
 
     if not model_result:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Voice model not found or not ready"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Voice model not found or not ready",
         )
 
     try:
@@ -133,12 +148,22 @@ async def preload_model(model_id: int, current_user: dict = Depends(get_current_
 
         await model_manager.preload_model(model_id, model_config)
 
-        logger.info("Model preloaded successfully", model_id=model_id, user_id=current_user["id"])
+        logger.info(
+            "Model preloaded successfully",
+            model_id=model_id,
+            user_id=current_user["id"],
+        )
 
-        return {"message": "Model preloaded successfully", "model_id": model_id, "status": "cached"}
+        return {
+            "message": "Model preloaded successfully",
+            "model_id": model_id,
+            "status": "cached",
+        }
 
     except Exception as e:
-        logger.error("Failed to preload model", model_id=model_id, error=str(e))
+        logger.error(
+            "Failed to preload model", model_id=model_id, error=str(e)
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to preload model: {str(e)}",
@@ -146,18 +171,24 @@ async def preload_model(model_id: int, current_user: dict = Depends(get_current_
 
 
 @router.get("/models/{model_id}/usage", response_model=ModelUsageStats)
-async def get_model_usage_stats(model_id: int, current_user: dict = Depends(get_current_user)):
+async def get_model_usage_stats(
+    model_id: int, current_user: dict = Depends(get_current_user)
+):
     """Get model usage statistics"""
 
     # Verify model ownership
     model_query = voice_models.select().where(
-        (voice_models.c.id == model_id) & (voice_models.c.user_id == current_user["id"])
+        (voice_models.c.id == model_id)
+        & (voice_models.c.user_id == current_user["id"])
     )
 
     model_result = await database.fetch_one(model_query)
 
     if not model_result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Voice model not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Voice model not found",
+        )
 
     # Get usage stats
     stats_query = model_usage_stats.select().where(
@@ -191,7 +222,10 @@ async def get_ready_models(current_user: dict = Depends(get_current_user)):
 
     query = (
         voice_models.select()
-        .where((voice_models.c.user_id == current_user["id"]) & (voice_models.c.status == "ready"))
+        .where(
+            (voice_models.c.user_id == current_user["id"])
+            & (voice_models.c.status == "ready")
+        )
         .order_by(voice_models.c.created_at.desc())
     )
 
@@ -272,5 +306,6 @@ async def clear_model_cache(current_user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error("Failed to clear cache", error=str(e))
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to clear model cache"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to clear model cache",
         )

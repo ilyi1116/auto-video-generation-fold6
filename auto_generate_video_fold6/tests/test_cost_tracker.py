@@ -16,7 +16,10 @@ try:
         APICallRecord,
         DailyCostSummary,
     )
-    from monitoring.budget_controller import BudgetController, get_budget_controller
+    from monitoring.budget_controller import (
+        BudgetController,
+        get_budget_controller,
+    )
 
     COST_MONITORING_AVAILABLE = True
 except ImportError:
@@ -45,7 +48,9 @@ class TestCostTracker:
 
         # 檢查資料庫表是否創建
         with sqlite3.connect(cost_tracker.db_path) as conn:
-            cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
             tables = [row[0] for row in cursor.fetchall()]
             assert "api_calls" in tables
             assert "daily_summaries" in tables
@@ -113,9 +118,14 @@ class TestCostTracker:
     async def test_daily_summary(self, cost_tracker):
         """測試每日摘要功能"""
         # 添加一些測試呼叫
-        await cost_tracker.track_api_call("openai", "gpt-4", "text_generation", tokens_used=500)
         await cost_tracker.track_api_call(
-            "stability_ai", "stable-diffusion-xl", "image_generation", images_generated=2
+            "openai", "gpt-4", "text_generation", tokens_used=500
+        )
+        await cost_tracker.track_api_call(
+            "stability_ai",
+            "stable-diffusion-xl",
+            "image_generation",
+            images_generated=2,
         )
 
         summary = await cost_tracker.get_daily_summary()
@@ -131,7 +141,9 @@ class TestCostTracker:
     async def test_weekly_report(self, cost_tracker):
         """測試週報告功能"""
         # 添加測試數據
-        await cost_tracker.track_api_call("openai", "gpt-4", "text_generation", tokens_used=500)
+        await cost_tracker.track_api_call(
+            "openai", "gpt-4", "text_generation", tokens_used=500
+        )
 
         report = await cost_tracker.get_weekly_report()
 
@@ -145,7 +157,9 @@ class TestCostTracker:
     async def test_budget_status_check(self, cost_tracker):
         """測試預算狀態檢查"""
         # 添加一些成本
-        await cost_tracker.track_api_call("openai", "gpt-4", "text_generation", tokens_used=1000)
+        await cost_tracker.track_api_call(
+            "openai", "gpt-4", "text_generation", tokens_used=1000
+        )
 
         status = await cost_tracker.check_budget_status()
 
@@ -171,9 +185,14 @@ class TestCostTracker:
     async def test_export_cost_data(self, cost_tracker):
         """測試成本數據匯出"""
         # 添加測試數據
-        await cost_tracker.track_api_call("openai", "gpt-4", "text_generation", tokens_used=500)
         await cost_tracker.track_api_call(
-            "stability_ai", "stable-diffusion-xl", "image_generation", images_generated=1
+            "openai", "gpt-4", "text_generation", tokens_used=500
+        )
+        await cost_tracker.track_api_call(
+            "stability_ai",
+            "stable-diffusion-xl",
+            "image_generation",
+            images_generated=1,
         )
 
         export_file = await cost_tracker.export_cost_data(days=7)
@@ -211,7 +230,9 @@ class TestBudgetController:
     @pytest.mark.asyncio
     async def test_budget_decision_normal(self, budget_controller):
         """測試正常預算情況下的決策"""
-        decision = await budget_controller.check_budget_and_decide(estimated_cost=1.0)
+        decision = await budget_controller.check_budget_and_decide(
+            estimated_cost=1.0
+        )
 
         assert decision.can_continue == True
         assert decision.status.value in ["normal", "warning"]
@@ -222,7 +243,9 @@ class TestBudgetController:
     async def test_budget_decision_critical(self, budget_controller):
         """測試臨界預算情況下的決策"""
         # 模擬高預算使用率
-        with patch.object(budget_controller.cost_tracker, "check_budget_status") as mock_status:
+        with patch.object(
+            budget_controller.cost_tracker, "check_budget_status"
+        ) as mock_status:
             mock_status.return_value = {
                 "current_cost": 9.5,
                 "budget_limit": 10.0,
@@ -232,9 +255,14 @@ class TestBudgetController:
                 "can_continue": True,
             }
 
-            decision = await budget_controller.check_budget_and_decide(estimated_cost=1.0)
+            decision = await budget_controller.check_budget_and_decide(
+                estimated_cost=1.0
+            )
 
-            assert decision.can_continue == False or decision.action.value in ["pause", "stop"]
+            assert decision.can_continue == False or decision.action.value in [
+                "pause",
+                "stop",
+            ]
             assert decision.status.value in ["critical", "exceeded"]
 
     @pytest.mark.asyncio
@@ -252,7 +280,9 @@ class TestBudgetController:
     async def test_post_operation_update(self, budget_controller):
         """測試操作後更新"""
         # 這應該不會拋出例外
-        await budget_controller.post_operation_update(actual_cost=1.5, operation_result=True)
+        await budget_controller.post_operation_update(
+            actual_cost=1.5, operation_result=True
+        )
 
         # 驗證成本追蹤器狀態更新
         # 具體驗證邏輯取決於實現
@@ -261,7 +291,9 @@ class TestBudgetController:
     async def test_dynamic_budget_adjustment(self, budget_controller):
         """測試動態預算調整"""
         if budget_controller.config_manager:
-            old_budget = budget_controller.config_manager.get("cost_control.daily_budget_usd", 10.0)
+            old_budget = budget_controller.config_manager.get(
+                "cost_control.daily_budget_usd", 10.0
+            )
 
             result = await budget_controller.adjust_budget_dynamically(
                 new_budget=20.0, reason="測試調整"
@@ -299,7 +331,9 @@ class TestBudgetController:
 class TestCostCalculations:
     """成本計算測試"""
 
-    @pytest.mark.skipif(not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用")
+    @pytest.mark.skipif(
+        not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用"
+    )
     def test_openai_cost_calculation(self, mock_config_manager):
         """測試 OpenAI 成本計算"""
         tracker = CostTracker(mock_config_manager, ":memory:")
@@ -319,7 +353,9 @@ class TestCostCalculations:
         expected_cost = (500 / 1000 * 0.03) + (500 / 1000 * 0.06)
         assert cost == pytest.approx(expected_cost, rel=0.01)
 
-    @pytest.mark.skipif(not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用")
+    @pytest.mark.skipif(
+        not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用"
+    )
     def test_stability_cost_calculation(self, mock_config_manager):
         """測試 Stability AI 成本計算"""
         tracker = CostTracker(mock_config_manager, ":memory:")
@@ -337,7 +373,9 @@ class TestCostCalculations:
         expected_cost = 5 * 0.04
         assert cost == pytest.approx(expected_cost, rel=0.01)
 
-    @pytest.mark.skipif(not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用")
+    @pytest.mark.skipif(
+        not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用"
+    )
     def test_elevenlabs_cost_calculation(self, mock_config_manager):
         """測試 ElevenLabs 成本計算"""
         tracker = CostTracker(mock_config_manager, ":memory:")
@@ -361,9 +399,13 @@ class TestCostCalculations:
 class TestCostMonitoringIntegration:
     """成本監控整合測試"""
 
-    @pytest.mark.skipif(not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用")
+    @pytest.mark.skipif(
+        not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用"
+    )
     @pytest.mark.asyncio
-    async def test_full_cost_tracking_workflow(self, temp_dir, mock_config_manager):
+    async def test_full_cost_tracking_workflow(
+        self, temp_dir, mock_config_manager
+    ):
         """測試完整的成本追蹤工作流程"""
         db_path = temp_dir / "integration_test.db"
 
@@ -374,9 +416,24 @@ class TestCostMonitoringIntegration:
         # 模擬一系列 API 呼叫
         api_calls = [
             ("openai", "gpt-4", "text_generation", {"tokens_used": 800}),
-            ("stability_ai", "stable-diffusion-xl", "image_generation", {"images_generated": 2}),
-            ("elevenlabs", "voice_synthesis", "voice_synthesis", {"characters_used": 1500}),
-            ("openai", "gpt-3.5-turbo", "text_generation", {"tokens_used": 1200}),
+            (
+                "stability_ai",
+                "stable-diffusion-xl",
+                "image_generation",
+                {"images_generated": 2},
+            ),
+            (
+                "elevenlabs",
+                "voice_synthesis",
+                "voice_synthesis",
+                {"characters_used": 1500},
+            ),
+            (
+                "openai",
+                "gpt-3.5-turbo",
+                "text_generation",
+                {"tokens_used": 1200},
+            ),
         ]
 
         total_cost = 0
@@ -389,7 +446,10 @@ class TestCostMonitoringIntegration:
             if can_proceed:
                 # 執行 API 呼叫並追蹤成本
                 cost = await cost_tracker.track_api_call(
-                    provider=provider, model=model, operation_type=operation, **kwargs
+                    provider=provider,
+                    model=model,
+                    operation_type=operation,
+                    **kwargs,
                 )
                 total_cost += cost
 
@@ -406,11 +466,15 @@ class TestCostMonitoringIntegration:
 
         # 檢查預算狀態
         budget_status = await cost_tracker.check_budget_status()
-        assert budget_status["current_cost"] == pytest.approx(total_cost, rel=0.01)
+        assert budget_status["current_cost"] == pytest.approx(
+            total_cost, rel=0.01
+        )
 
         # 獲取預算報告
         budget_report = await budget_controller.get_daily_budget_report()
-        assert budget_report["budget_status"]["current_cost"] == pytest.approx(total_cost, rel=0.01)
+        assert budget_report["budget_status"]["current_cost"] == pytest.approx(
+            total_cost, rel=0.01
+        )
 
         # 清理
         if db_path.exists():
@@ -421,7 +485,9 @@ class TestCostMonitoringIntegration:
 class TestGlobalFunctions:
     """全域函數測試"""
 
-    @pytest.mark.skipif(not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用")
+    @pytest.mark.skipif(
+        not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用"
+    )
     def test_get_cost_tracker(self, mock_config_manager):
         """測試獲取成本追蹤器實例"""
         tracker1 = get_cost_tracker(mock_config_manager)
@@ -430,7 +496,9 @@ class TestGlobalFunctions:
         # 應該返回同一個實例（單例模式）
         assert tracker1 is tracker2
 
-    @pytest.mark.skipif(not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用")
+    @pytest.mark.skipif(
+        not COST_MONITORING_AVAILABLE, reason="成本監控模組不可用"
+    )
     def test_get_budget_controller(self, mock_config_manager):
         """測試獲取預算控制器實例"""
         controller1 = get_budget_controller(mock_config_manager)

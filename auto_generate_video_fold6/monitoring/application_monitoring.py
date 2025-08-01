@@ -57,7 +57,9 @@ class ApplicationMonitoring:
         # 業務指標
         self.business_metrics = {
             "user_registrations": Counter(
-                "user_registrations_total", "Total user registrations", ["service"]
+                "user_registrations_total",
+                "Total user registrations",
+                ["service"],
             ),
             "video_generations": Counter(
                 "video_generations_total",
@@ -70,7 +72,9 @@ class ApplicationMonitoring:
                 ["request_type", "status", "service"],
             ),
             "user_sessions": Gauge(
-                "active_user_sessions", "Number of active user sessions", ["service"]
+                "active_user_sessions",
+                "Number of active user sessions",
+                ["service"],
             ),
             "processing_queue_size": Gauge(
                 "processing_queue_size",
@@ -112,7 +116,9 @@ class ApplicationMonitoring:
         # 設定指標中介軟體
         if self.metrics_middleware:
             app.middleware("http")(self.metrics_middleware)
-            from .middleware.prometheus_middleware import setup_metrics_endpoint
+            from .middleware.prometheus_middleware import (
+                setup_metrics_endpoint,
+            )
 
             setup_metrics_endpoint(app, self.metrics_middleware)
 
@@ -168,7 +174,11 @@ class ApplicationMonitoring:
                     if not result:
                         overall_status = "not_ready"
                 except Exception as e:
-                    checks[name] = {"status": "error", "error": str(e), "timestamp": time.time()}
+                    checks[name] = {
+                        "status": "error",
+                        "error": str(e),
+                        "timestamp": time.time(),
+                    }
                     overall_status = "not_ready"
 
             response = {
@@ -274,10 +284,14 @@ class ApplicationMonitoring:
                 metric.labels(**labels).observe(value)
 
     @asynccontextmanager
-    async def monitor_operation(self, operation_name: str, labels: Dict[str, str] = None):
+    async def monitor_operation(
+        self, operation_name: str, labels: Dict[str, str] = None
+    ):
         """監控操作的上下文管理器"""
         labels = labels or {}
-        labels.update({"operation": operation_name, "service": self.service_name})
+        labels.update(
+            {"operation": operation_name, "service": self.service_name}
+        )
 
         start_time = time.time()
 
@@ -292,9 +306,15 @@ class ApplicationMonitoring:
 
                 # 記錄成功指標
                 duration = time.time() - start_time
-                self.metrics_middleware.record_ai_request(operation_name, "success", duration)
+                self.metrics_middleware.record_ai_request(
+                    operation_name, "success", duration
+                )
 
-                self.logger.info("Operation completed successfully", duration=duration, **labels)
+                self.logger.info(
+                    "Operation completed successfully",
+                    duration=duration,
+                    **labels,
+                )
 
             except Exception as e:
                 # 記錄錯誤
@@ -361,7 +381,9 @@ def create_monitored_app(
 
     # 創建監控實例
     monitoring = ApplicationMonitoring(
-        service_name=service_name, service_version=service_version, environment=environment
+        service_name=service_name,
+        service_version=service_version,
+        environment=environment,
     )
 
     # 設定應用程式監控
@@ -375,13 +397,17 @@ def create_monitored_app(
 
     # 添加 Redis 健康檢查
     if redis_url:
-        monitoring.add_health_check("redis", monitoring.create_redis_health_check(redis_url))
+        monitoring.add_health_check(
+            "redis", monitoring.create_redis_health_check(redis_url)
+        )
 
     return app, monitoring
 
 
 # 裝飾器
-def monitor_endpoint(operation_name: str = None, labels: Dict[str, str] = None):
+def monitor_endpoint(
+    operation_name: str = None, labels: Dict[str, str] = None
+):
     """端點監控裝飾器"""
 
     def decorator(func):

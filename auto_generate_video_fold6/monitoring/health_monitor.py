@@ -94,7 +94,8 @@ class HealthMonitor:
                     data = json.load(f)
 
                 self.services = [
-                    ServiceCheck(**service_data) for service_data in data.get("services", [])
+                    ServiceCheck(**service_data)
+                    for service_data in data.get("services", [])
                 ]
             else:
                 # 使用預設配置
@@ -125,12 +126,24 @@ class HealthMonitor:
                 auto_restart=True,
                 restart_command="bash scripts/start_backend.sh",
             ),
-            ServiceCheck(name="redis", type="tcp", target="localhost:6379", timeout=5, interval=60),
             ServiceCheck(
-                name="disk_space", type="custom", target="check_disk_space", interval=300  # 5分鐘
+                name="redis",
+                type="tcp",
+                target="localhost:6379",
+                timeout=5,
+                interval=60,
             ),
             ServiceCheck(
-                name="memory_usage", type="custom", target="check_memory_usage", interval=60
+                name="disk_space",
+                type="custom",
+                target="check_disk_space",
+                interval=300,  # 5分鐘
+            ),
+            ServiceCheck(
+                name="memory_usage",
+                type="custom",
+                target="check_memory_usage",
+                interval=60,
             ),
         ]
 
@@ -138,7 +151,9 @@ class HealthMonitor:
 
         # 保存預設配置
         try:
-            config_data = {"services": [asdict(service) for service in self.services]}
+            config_data = {
+                "services": [asdict(service) for service in self.services]
+            }
 
             config_path = Path(self.config_file)
             config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -217,7 +232,9 @@ class HealthMonitor:
 
             # 嘗試建立 TCP 連接
             future = asyncio.open_connection(host, port)
-            reader, writer = await asyncio.wait_for(future, timeout=service.timeout)
+            reader, writer = await asyncio.wait_for(
+                future, timeout=service.timeout
+            )
 
             writer.close()
             await writer.wait_closed()
@@ -250,7 +267,9 @@ class HealthMonitor:
                 timestamp=datetime.now(),
             )
 
-    async def _check_custom_service(self, service: ServiceCheck) -> HealthResult:
+    async def _check_custom_service(
+        self, service: ServiceCheck
+    ) -> HealthResult:
         """檢查自定義服務"""
         start_time = time.time()
 
@@ -262,7 +281,9 @@ class HealthMonitor:
             else:
                 # 執行自定義命令
                 process = await asyncio.create_subprocess_shell(
-                    service.target, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                    service.target,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
                 )
 
                 stdout, stderr = await asyncio.wait_for(
@@ -277,7 +298,8 @@ class HealthMonitor:
                 else:
                     status = HealthStatus.CRITICAL
                     message = (
-                        stderr.decode().strip() or f"命令執行失敗 (退出代碼: {process.returncode})"
+                        stderr.decode().strip()
+                        or f"命令執行失敗 (退出代碼: {process.returncode})"
                     )
 
                 return HealthResult(
@@ -306,7 +328,9 @@ class HealthMonitor:
                 timestamp=datetime.now(),
             )
 
-    async def _check_disk_space(self, service: ServiceCheck, start_time: float) -> HealthResult:
+    async def _check_disk_space(
+        self, service: ServiceCheck, start_time: float
+    ) -> HealthResult:
         """檢查磁盤空間"""
         try:
             disk_usage = psutil.disk_usage("/")
@@ -347,7 +371,9 @@ class HealthMonitor:
                 timestamp=datetime.now(),
             )
 
-    async def _check_memory_usage(self, service: ServiceCheck, start_time: float) -> HealthResult:
+    async def _check_memory_usage(
+        self, service: ServiceCheck, start_time: float
+    ) -> HealthResult:
         """檢查記憶體使用"""
         try:
             memory = psutil.virtual_memory()
@@ -409,7 +435,10 @@ class HealthMonitor:
             )
 
         # 重試機制
-        if result.status in [HealthStatus.CRITICAL, HealthStatus.DOWN] and service.retries > 0:
+        if (
+            result.status in [HealthStatus.CRITICAL, HealthStatus.DOWN]
+            and service.retries > 0
+        ):
             for retry in range(service.retries):
                 logger.info(f"重試檢查 {service.name} (第 {retry + 1} 次)")
                 await asyncio.sleep(2)  # 等待2秒再重試
@@ -421,7 +450,10 @@ class HealthMonitor:
                 elif service.type == "custom":
                     retry_result = await self._check_custom_service(service)
 
-                if retry_result.status not in [HealthStatus.CRITICAL, HealthStatus.DOWN]:
+                if retry_result.status not in [
+                    HealthStatus.CRITICAL,
+                    HealthStatus.DOWN,
+                ]:
                     result = retry_result
                     result.message += f" (重試 {retry + 1} 次後成功)"
                     break
@@ -453,7 +485,9 @@ class HealthMonitor:
             if process.returncode == 0:
                 logger.info(f"服務 {service.name} 重啟成功")
             else:
-                logger.error(f"服務 {service.name} 重啟失敗: {stderr.decode()}")
+                logger.error(
+                    f"服務 {service.name} 重啟失敗: {stderr.decode()}"
+                )
 
         except Exception as e:
             logger.error(f"重啟服務 {service.name} 時發生錯誤: {e}")
@@ -469,7 +503,9 @@ class HealthMonitor:
 
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"檢查服務 {self.services[i].name} 時發生錯誤: {result}")
+                logger.error(
+                    f"檢查服務 {self.services[i].name} 時發生錯誤: {result}"
+                )
                 result = HealthResult(
                     service=self.services[i].name,
                     status=HealthStatus.UNKNOWN,
@@ -489,19 +525,27 @@ class HealthMonitor:
             latest_file = self.monitor_dir / "latest_results.json"
             results_data = {
                 "timestamp": datetime.now().isoformat(),
-                "results": {name: result.to_dict() for name, result in self.results.items()},
+                "results": {
+                    name: result.to_dict()
+                    for name, result in self.results.items()
+                },
             }
 
             async with aiofiles.open(latest_file, "w", encoding="utf-8") as f:
-                await f.write(json.dumps(results_data, indent=2, ensure_ascii=False))
+                await f.write(
+                    json.dumps(results_data, indent=2, ensure_ascii=False)
+                )
 
             # 保存歷史記錄
             history_file = (
-                self.monitor_dir / f"health_history_{datetime.now().strftime('%Y%m%d')}.jsonl"
+                self.monitor_dir
+                / f"health_history_{datetime.now().strftime('%Y%m%d')}.jsonl"
             )
 
             async with aiofiles.open(history_file, "a", encoding="utf-8") as f:
-                await f.write(json.dumps(results_data, ensure_ascii=False) + "\n")
+                await f.write(
+                    json.dumps(results_data, ensure_ascii=False) + "\n"
+                )
 
             logger.debug("健康檢查結果已保存")
 
@@ -531,7 +575,9 @@ class HealthMonitor:
         status_counts = {}
         for status in HealthStatus:
             status_counts[status.value] = sum(
-                1 for result in self.results.values() if result.status == status
+                1
+                for result in self.results.values()
+                if result.status == status
             )
 
         return {
@@ -539,7 +585,9 @@ class HealthMonitor:
             "total_services": len(self.services),
             "status_counts": status_counts,
             "last_check": datetime.now().isoformat(),
-            "services": {name: result.to_dict() for name, result in self.results.items()},
+            "services": {
+                name: result.to_dict() for name, result in self.results.items()
+            },
         }
 
     async def run_continuous_monitoring(self):
@@ -560,11 +608,18 @@ class HealthMonitor:
 
                 # 如果有嚴重問題，記錄詳細信息
                 for name, result in self.results.items():
-                    if result.status in [HealthStatus.CRITICAL, HealthStatus.DOWN]:
-                        logger.warning(f"服務 {name} 狀態異常: {result.message}")
+                    if result.status in [
+                        HealthStatus.CRITICAL,
+                        HealthStatus.DOWN,
+                    ]:
+                        logger.warning(
+                            f"服務 {name} 狀態異常: {result.message}"
+                        )
 
                 # 等待下次檢查 (使用最小間隔)
-                min_interval = min(service.interval for service in self.services)
+                min_interval = min(
+                    service.interval for service in self.services
+                )
                 await asyncio.sleep(min_interval)
 
             except Exception as e:

@@ -55,9 +55,9 @@ class RefactorTest:
             pass  # 正確拋出異常
         except Exception as e:
             raise AssertionError(
-                f"Expected {exception_type.__name__}, but got {type(e
-                                                                    ) \
-                                                                        .__name__}: {e}"
+                f"Expected {exception_type.__name__}, but got {
+                    type(e).__name__
+                }: {e}"
             )
 
     def run_test(self, test_func, test_name):

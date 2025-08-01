@@ -39,7 +39,9 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
 
         # 記錄請求開始
         if self.enable_detailed_logging:
-            logger.info(f"[{request_id}] {request.method} {request.url.path} started")
+            logger.info(
+                f"[{request_id}] {request.method} {request.url.path} started"
+            )
 
         try:
             response = await call_next(request)
@@ -71,7 +73,9 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
             )
             raise
 
-    def _collect_metrics(self, request: Request, response: Response, process_time: float):
+    def _collect_metrics(
+        self, request: Request, response: Response, process_time: float
+    ):
         """收集效能指標"""
         metric = {
             "method": request.method,
@@ -90,7 +94,9 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
 class CompressionMiddleware(BaseHTTPMiddleware):
     """智慧壓縮中介軟體"""
 
-    def __init__(self, app, minimum_size: int = 1024, compression_level: int = 6):
+    def __init__(
+        self, app, minimum_size: int = 1024, compression_level: int = 6
+    ):
         super().__init__(app)
         self.minimum_size = minimum_size
         self.compression_level = compression_level
@@ -137,7 +143,9 @@ class CompressionMiddleware(BaseHTTPMiddleware):
             return response
 
         # 執行 gzip 壓縮
-        compressed_body = gzip.compress(body, compresslevel=self.compression_level)
+        compressed_body = gzip.compress(
+            body, compresslevel=self.compression_level
+        )
 
         # 更新標頭
         response.headers["content-encoding"] = "gzip"
@@ -219,7 +227,12 @@ class CacheMiddleware(BaseHTTPMiddleware):
             return False
 
         # 可快取的路徑
-        cacheable_paths = ["/api/trends", "/api/user/profile", "/api/analytics", "/api/models/list"]
+        cacheable_paths = [
+            "/api/trends",
+            "/api/user/profile",
+            "/api/analytics",
+            "/api/models/list",
+        ]
 
         return any(path in request.url.path for path in cacheable_paths)
 
@@ -240,7 +253,9 @@ class CacheMiddleware(BaseHTTPMiddleware):
                 "headers": dict(response.headers),
             }
 
-            await self.cache_manager.set(cache_key, cache_data, self.default_ttl)
+            await self.cache_manager.set(
+                cache_key, cache_data, self.default_ttl
+            )
             logger.debug(f"Cached response for key {cache_key[:16]}")
 
         except Exception as e:
@@ -340,12 +355,15 @@ def create_optimized_app(
     # 效能監控中介軟體
     if enable_performance_logging:
         app.add_middleware(
-            PerformanceMiddleware, enable_detailed_logging=enable_performance_logging
+            PerformanceMiddleware,
+            enable_detailed_logging=enable_performance_logging,
         )
 
     # 快取中介軟體
     if cache_manager:
-        app.add_middleware(CacheMiddleware, cache_manager=cache_manager, default_ttl=300)
+        app.add_middleware(
+            CacheMiddleware, cache_manager=cache_manager, default_ttl=300
+        )
 
     # 速率限制中介軟體
     if rate_limiter:
@@ -353,7 +371,9 @@ def create_optimized_app(
 
     # 壓縮中介軟體
     if enable_compression:
-        app.add_middleware(CompressionMiddleware, minimum_size=1024, compression_level=6)
+        app.add_middleware(
+            CompressionMiddleware, minimum_size=1024, compression_level=6
+        )
 
     return app
 
@@ -388,7 +408,9 @@ def async_cache(ttl: int = 300):
 
             # 清理過期快取
             if len(cache) > 1000:  # 限制快取大小
-                expired_keys = [k for k, t in cache_times.items() if now - t > ttl]
+                expired_keys = [
+                    k for k, t in cache_times.items() if now - t > ttl
+                ]
                 for k in expired_keys:
                     cache.pop(k, None)
                     cache_times.pop(k, None)
@@ -420,7 +442,9 @@ def batch_processor(batch_size: int = 10, timeout: float = 1.0):
                 pending_requests.clear()
             else:
                 # 設置超時處理
-                asyncio.create_task(_timeout_handler(func, pending_requests, timeout))
+                asyncio.create_task(
+                    _timeout_handler(func, pending_requests, timeout)
+                )
 
             return await future
 
@@ -461,7 +485,9 @@ def batch_processor(batch_size: int = 10, timeout: float = 1.0):
 # 使用範例
 if __name__ == "__main__":
     # 創建優化的應用
-    app = create_optimized_app(enable_compression=True, enable_performance_logging=True)
+    app = create_optimized_app(
+        enable_compression=True, enable_performance_logging=True
+    )
 
     @app.get("/api/health")
     async def health_check():
@@ -472,6 +498,9 @@ if __name__ == "__main__":
     async def test_cache():
         # 模擬慢速操作
         await asyncio.sleep(1)
-        return {"data": "cached_result", "timestamp": datetime.now().isoformat()}
+        return {
+            "data": "cached_result",
+            "timestamp": datetime.now().isoformat(),
+        }
 
     logger.info("API optimization configured successfully")

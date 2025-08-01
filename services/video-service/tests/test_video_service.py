@@ -14,8 +14,15 @@ from httpx import AsyncClient
 from main import app
 from models.video_project import VideoProject, VideoStatus
 from ai.suno_client import SunoAIClient, VoiceGenerationResponse
-from ai.gemini_client import GeminiClient, ScriptGenerationResponse, ScriptScene
-from ai.stable_diffusion_client import StableDiffusionClient, ImageGenerationResponse
+from ai.gemini_client import (
+    GeminiClient,
+    ScriptGenerationResponse,
+    ScriptScene,
+)
+from ai.stable_diffusion_client import (
+    StableDiffusionClient,
+    ImageGenerationResponse,
+)
 
 client = TestClient(app)
 
@@ -109,7 +116,9 @@ class TestVideoGeneration:
 
     @patch("main.verify_token")
     @patch("main.get_db_connection")
-    def test_create_video_project_success(self, mock_db, mock_verify_token, sample_video_request):
+    def test_create_video_project_success(
+        self, mock_db, mock_verify_token, sample_video_request
+    ):
         """Test successful video project creation"""
 
         # Mock authentication
@@ -119,7 +128,11 @@ class TestVideoGeneration:
         # Mock headers
         headers = {"Authorization": "Bearer valid_token"}
 
-        response = client.post("/api/v1/video/generate", json=sample_video_request, headers=headers)
+        response = client.post(
+            "/api/v1/video/generate",
+            json=sample_video_request,
+            headers=headers,
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -132,7 +145,9 @@ class TestVideoGeneration:
     def test_create_video_project_unauthorized(self, sample_video_request):
         """Test video project creation without authentication"""
 
-        response = client.post("/api/v1/video/generate", json=sample_video_request)
+        response = client.post(
+            "/api/v1/video/generate", json=sample_video_request
+        )
         assert response.status_code == 403  # Missing Authorization header
 
     @patch("main.verify_token")
@@ -154,9 +169,14 @@ class TestVideoGeneration:
             created_at=datetime.utcnow(),
         )
 
-        with patch("models.video_project.VideoProject.get_by_id", return_value=mock_project):
+        with patch(
+            "models.video_project.VideoProject.get_by_id",
+            return_value=mock_project,
+        ):
             headers = {"Authorization": "Bearer valid_token"}
-            response = client.get("/api/v1/video/projects/project123", headers=headers)
+            response = client.get(
+                "/api/v1/video/projects/project123", headers=headers
+            )
 
             assert response.status_code == 200
             data = response.json()
@@ -189,7 +209,9 @@ class TestAIIntegration:
         client = GeminiClient("test_api_key")
 
         with patch.object(client, "_generate_content") as mock_generate:
-            mock_generate.return_value = '{"full_script": "test script", "scenes": []}'
+            mock_generate.return_value = (
+                '{"full_script": "test script", "scenes": []}'
+            )
 
             with patch.object(
                 client,
@@ -237,10 +259,15 @@ class TestAIIntegration:
             with patch.object(
                 client,
                 "_save_image",
-                return_value=("http://test.com/image.png", "http://test.com/thumb.jpg"),
+                return_value=(
+                    "http://test.com/image.png",
+                    "http://test.com/thumb.jpg",
+                ),
             ):
                 result = await client.generate_image(
-                    prompt="A modern office scene", style="modern", aspect_ratio="16:9"
+                    prompt="A modern office scene",
+                    style="modern",
+                    aspect_ratio="16:9",
                 )
 
                 assert isinstance(result, ImageGenerationResponse)
@@ -268,11 +295,14 @@ class TestVideoComposition:
                 "/tmp/img3.png",
             ]
 
-            with patch.object(composer, "_create_preview", return_value="/tmp/preview.mp4"):
+            with patch.object(
+                composer, "_create_preview", return_value="/tmp/preview.mp4"
+            ):
                 with patch.object(
-                    composer, "_upload_media", return_value="http://test.com/preview.mp4"
+                    composer,
+                    "_upload_media",
+                    return_value="http://test.com/preview.mp4",
                 ):
-
                     result = await composer.create_video(
                         script_scenes=sample_script_response.scenes,
                         voice_url="http://test.com/voice.mp3",
@@ -298,7 +328,11 @@ class TestSocialMediaIntegration:
     async def test_social_media_manager_publish(self):
         """Test social media publishing"""
 
-        from social.platforms import SocialMediaManager, PublishRequest, PublishResult
+        from social.platforms import (
+            SocialMediaManager,
+            PublishRequest,
+            PublishResult,
+        )
 
         manager = SocialMediaManager()
 
@@ -364,7 +398,9 @@ class TestDatabase:
         )
 
         with patch.object(project, "save") as mock_save:
-            await project.update_status(mock_db, VideoStatus.GENERATING_SCRIPT, 25, None)
+            await project.update_status(
+                mock_db, VideoStatus.GENERATING_SCRIPT, 25, None
+            )
 
             assert project.status == VideoStatus.GENERATING_SCRIPT
             assert project.progress == 25

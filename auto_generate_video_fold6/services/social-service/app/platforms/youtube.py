@@ -92,7 +92,8 @@ async def publish_video(
 
         # 使用 YouTube Data API v3 上傳影片
         upload_url = f"{
-            settings.YOUTUBE_API_BASE}/videos?uploadType=resumable&part=snippet,status"
+            settings.YOUTUBE_API_BASE
+        }/videos?uploadType=resumable&part=snippet,status"
 
         async with aiohttp.ClientSession() as session:
             # 初始化上傳

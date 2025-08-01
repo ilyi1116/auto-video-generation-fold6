@@ -89,7 +89,10 @@ class PostgreSQLBackup:
                     pg_dump_cmd,
                     stdout=f,
                     stderr=subprocess.PIPE,
-                    env={**os.environ, "PGPASSWORD": self.db_config.get("password", "")},
+                    env={
+                        **os.environ,
+                        "PGPASSWORD": self.db_config.get("password", ""),
+                    },
                 )
 
                 _, stderr = process.communicate()
@@ -101,7 +104,9 @@ class PostgreSQLBackup:
             file_size = os.path.getsize(backup_file)
             checksum = await self._calculate_checksum(backup_file)
 
-            logger.info(f"PostgreSQL 備份完成: {backup_file} ({file_size} bytes)")
+            logger.info(
+                f"PostgreSQL 備份完成: {backup_file} ({file_size} bytes)"
+            )
 
             return {
                 "success": True,
@@ -137,7 +142,10 @@ class PostgreSQLBackup:
                     stdin=f,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    env={**os.environ, "PGPASSWORD": self.db_config.get("password", "")},
+                    env={
+                        **os.environ,
+                        "PGPASSWORD": self.db_config.get("password", ""),
+                    },
                 )
 
                 stdout, stderr = process.communicate()
@@ -189,14 +197,20 @@ class RedisBackup:
                 await asyncio.sleep(1)
 
             # 複製 RDB 檔案
-            redis_dump_path = self.redis_config.get("dump_dir", "/var/lib/redis/dump.rdb")
+            redis_dump_path = self.redis_config.get(
+                "dump_dir", "/var/lib/redis/dump.rdb"
+            )
             if os.path.exists(redis_dump_path):
-                subprocess.run(["cp", redis_dump_path, backup_file], check=True)
+                subprocess.run(
+                    ["cp", redis_dump_path, backup_file], check=True
+                )
 
                 file_size = os.path.getsize(backup_file)
                 checksum = await self._calculate_checksum(backup_file)
 
-                logger.info(f"Redis 備份完成: {backup_file} ({file_size} bytes)")
+                logger.info(
+                    f"Redis 備份完成: {backup_file} ({file_size} bytes)"
+                )
 
                 return {
                     "success": True,
@@ -228,7 +242,10 @@ class FileSystemBackup:
         self.config = config
 
     async def create_backup(
-        self, source_paths: List[str], backup_path: str, exclude_patterns: List[str] = None
+        self,
+        source_paths: List[str],
+        backup_path: str,
+        exclude_patterns: List[str] = None,
     ) -> Dict[str, Any]:
         """創建檔案系統備份"""
 
@@ -245,7 +262,9 @@ class FileSystemBackup:
                         tar.add(
                             source_path,
                             arcname=os.path.basename(source_path),
-                            exclude=self._create_exclude_filter(exclude_patterns or []),
+                            exclude=self._create_exclude_filter(
+                                exclude_patterns or []
+                            ),
                         )
 
             file_size = os.path.getsize(backup_file)
@@ -299,10 +318,14 @@ class S3BackupStorage:
         )
         self.bucket_name = self.s3_config.get("bucket_name")
 
-    async def upload_backup(self, local_file: str, s3_key: str) -> Dict[str, Any]:
+    async def upload_backup(
+        self, local_file: str, s3_key: str
+    ) -> Dict[str, Any]:
         """上傳備份到 S3"""
         try:
-            logger.info(f"上傳備份到 S3: {local_file} -> s3://{self.bucket_name}/{s3_key}")
+            logger.info(
+                f"上傳備份到 S3: {local_file} -> s3://{self.bucket_name}/{s3_key}"
+            )
 
             # 上傳檔案
             self.s3_client.upload_file(local_file, self.bucket_name, s3_key)
@@ -314,7 +337,10 @@ class S3BackupStorage:
                 Tagging={
                     "TagSet": [
                         {"Key": "BackupType", "Value": "AutoVideoSystem"},
-                        {"Key": "CreatedDate", "Value": datetime.utcnow().isoformat()},
+                        {
+                            "Key": "CreatedDate",
+                            "Value": datetime.utcnow().isoformat(),
+                        },
                     ]
                 },
             )
@@ -326,10 +352,14 @@ class S3BackupStorage:
             logger.error(f"S3 上傳失敗: {e}")
             return {"success": False, "error": str(e)}
 
-    async def download_backup(self, s3_key: str, local_file: str) -> Dict[str, Any]:
+    async def download_backup(
+        self, s3_key: str, local_file: str
+    ) -> Dict[str, Any]:
         """從 S3 下載備份"""
         try:
-            logger.info(f"從 S3 下載備份: s3://{self.bucket_name}/{s3_key} -> {local_file}")
+            logger.info(
+                f"從 S3 下載備份: s3://{self.bucket_name}/{s3_key} -> {local_file}"
+            )
 
             self.s3_client.download_file(self.bucket_name, s3_key, local_file)
 
@@ -380,7 +410,9 @@ class BackupManager:
             "s3": {
                 "access_key_id": os.getenv("AWS_ACCESS_KEY_ID", ""),
                 "secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", ""),
-                "bucket_name": os.getenv("S3_BACKUP_BUCKET", "auto-video-backups"),
+                "bucket_name": os.getenv(
+                    "S3_BACKUP_BUCKET", "auto-video-backups"
+                ),
                 "region": "us-west-2",
             },
             "backup": {
@@ -424,7 +456,12 @@ class BackupManager:
 
             # 3. 檔案系統備份
             logger.info("執行檔案系統備份...")
-            filesystem_paths = ["./config", "./services", "./monitoring", "./scripts"]
+            filesystem_paths = [
+                "./config",
+                "./services",
+                "./monitoring",
+                "./scripts",
+            ]
             exclude_patterns = ["__pycache__", ".git", "node_modules", "*.log"]
             fs_result = await self.filesystem_backup.create_backup(
                 filesystem_paths, backup_path, exclude_patterns
@@ -439,10 +476,16 @@ class BackupManager:
                 for component, result in backup_results["components"].items():
                     if result.get("success") and "backup_file" in result:
                         backup_file = result["backup_file"]
-                        s3_key = f"backups/{job_id}/{os.path.basename(backup_file)}"
+                        s3_key = (
+                            f"backups/{job_id}/{os.path.basename(backup_file)}"
+                        )
 
-                        s3_result = await self.s3_storage.upload_backup(backup_file, s3_key)
-                        s3_results.append({"component": component, "s3_result": s3_result})
+                        s3_result = await self.s3_storage.upload_backup(
+                            backup_file, s3_key
+                        )
+                        s3_results.append(
+                            {"component": component, "s3_result": s3_result}
+                        )
 
                 backup_results["s3_uploads"] = s3_results
 
@@ -473,7 +516,9 @@ class BackupManager:
                 file_path = os.path.join(backup_path, filename)
                 if os.path.isfile(file_path):
                     # 檢查檔案修改時間
-                    file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+                    file_time = datetime.fromtimestamp(
+                        os.path.getmtime(file_path)
+                    )
                     if file_time < cutoff_date:
                         os.remove(file_path)
                         logger.info(f"刪除過期備份: {filename}")
@@ -481,7 +526,9 @@ class BackupManager:
         except Exception as e:
             logger.error(f"清理備份失敗: {e}")
 
-    async def verify_backup_integrity(self, backup_file: str, expected_checksum: str) -> bool:
+    async def verify_backup_integrity(
+        self, backup_file: str, expected_checksum: str
+    ) -> bool:
         """驗證備份完整性"""
 
         try:
@@ -520,9 +567,13 @@ async def main():
         # 顯示各組件備份結果
         for component, details in result["components"].items():
             if details.get("success"):
-                print(f"  ✅ {component}: {details.get('size_bytes', 0)} bytes")
+                print(
+                    f"  ✅ {component}: {details.get('size_bytes', 0)} bytes"
+                )
             else:
-                print(f"  ❌ {component}: {details.get('error', 'Unknown error')}")
+                print(
+                    f"  ❌ {component}: {details.get('error', 'Unknown error')}"
+                )
     else:
         print(f"❌ 備份失敗: {result.get('error', 'Unknown error')}")
 

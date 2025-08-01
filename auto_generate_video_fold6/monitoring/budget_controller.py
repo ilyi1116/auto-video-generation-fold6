@@ -70,9 +70,15 @@ class BudgetController:
 
         # 預設預算規則
         self.default_rules = [
-            BudgetRule(0.8, ActionType.CONTINUE, "預算使用達到 80%，請注意成本控制"),
-            BudgetRule(0.9, ActionType.THROTTLE, "預算使用達到 90%，啟動限流模式"),
-            BudgetRule(0.95, ActionType.PAUSE, "預算使用達到 95%，暫停非必要操作"),
+            BudgetRule(
+                0.8, ActionType.CONTINUE, "預算使用達到 80%，請注意成本控制"
+            ),
+            BudgetRule(
+                0.9, ActionType.THROTTLE, "預算使用達到 90%，啟動限流模式"
+            ),
+            BudgetRule(
+                0.95, ActionType.PAUSE, "預算使用達到 95%，暫停非必要操作"
+            ),
             BudgetRule(1.0, ActionType.STOP, "預算已用完，停止所有付費操作"),
         ]
 
@@ -118,7 +124,9 @@ class BudgetController:
         rules.sort(key=lambda x: x.threshold_percentage)
         return rules if rules else self.default_rules
 
-    async def check_budget_and_decide(self, estimated_cost: float = 0) -> BudgetDecision:
+    async def check_budget_and_decide(
+        self, estimated_cost: float = 0
+    ) -> BudgetDecision:
         """檢查預算並做出決策"""
         try:
             # 獲取當前預算狀態
@@ -128,10 +136,14 @@ class BudgetController:
             current_cost = budget_status["current_cost"]
             budget_limit = budget_status["budget_limit"]
             estimated_total = current_cost + estimated_cost
-            usage_rate = estimated_total / budget_limit if budget_limit > 0 else 0
+            usage_rate = (
+                estimated_total / budget_limit if budget_limit > 0 else 0
+            )
 
             # 根據規則決定行動
-            decision = self._make_decision(usage_rate, budget_status, estimated_cost)
+            decision = self._make_decision(
+                usage_rate, budget_status, estimated_cost
+            )
 
             # 更新統計
             self._update_stats(decision)
@@ -159,7 +171,10 @@ class BudgetController:
             )
 
     def _make_decision(
-        self, usage_rate: float, budget_status: Dict[str, Any], estimated_cost: float
+        self,
+        usage_rate: float,
+        budget_status: Dict[str, Any],
+        estimated_cost: float,
     ) -> BudgetDecision:
         """根據使用率和規則做出決策"""
 
@@ -190,7 +205,9 @@ class BudgetController:
         # 根據規則生成決策
         status = self._determine_status(usage_rate)
         can_continue = self._can_continue(applicable_rule.action, usage_rate)
-        suggested_actions = self._generate_suggestions(status, usage_rate, estimated_cost)
+        suggested_actions = self._generate_suggestions(
+            status, usage_rate, estimated_cost
+        )
 
         return BudgetDecision(
             status=status,
@@ -230,7 +247,9 @@ class BudgetController:
 
         # 檢查配置中的停止設定
         if self.config_manager:
-            stop_on_exceeded = self.config_manager.get("cost_control.stop_on_budget_exceeded", True)
+            stop_on_exceeded = self.config_manager.get(
+                "cost_control.stop_on_budget_exceeded", True
+            )
             if stop_on_exceeded and usage_rate >= 1.0:
                 return False
 
@@ -289,12 +308,16 @@ class BudgetController:
         # 特殊檢查
         if decision.action == ActionType.THROTTLE:
             # 限流模式下的額外檢查
-            if estimated_cost > decision.remaining_budget * 0.1:  # 超過剩餘預算的10%
+            if (
+                estimated_cost > decision.remaining_budget * 0.1
+            ):  # 超過剩餘預算的10%
                 return False, "限流模式下，單次操作成本過高"
 
         return True, decision.message
 
-    async def post_operation_update(self, actual_cost: float, operation_result: bool = True):
+    async def post_operation_update(
+        self, actual_cost: float, operation_result: bool = True
+    ):
         """操作後更新"""
         if actual_cost > 0:
             # 記錄實際成本（這應該由 CostTracker 處理）
@@ -314,7 +337,9 @@ class BudgetController:
         elif decision.action == ActionType.STOP:
             self.daily_stats["stop_events"] += 1
 
-    async def _log_decision(self, decision: BudgetDecision, budget_status: Dict[str, Any]):
+    async def _log_decision(
+        self, decision: BudgetDecision, budget_status: Dict[str, Any]
+    ):
         """記錄預算決策"""
         log_entry = {
             "timestamp": datetime.now().isoformat(),
@@ -322,7 +347,9 @@ class BudgetController:
             "action": decision.action.value,
             "can_continue": decision.can_continue,
             "message": decision.message,
-            "usage_rate": decision.metadata.get("usage_rate", 0) if decision.metadata else 0,
+            "usage_rate": decision.metadata.get("usage_rate", 0)
+            if decision.metadata
+            else 0,
             "current_cost": decision.current_usage,
             "remaining_budget": decision.remaining_budget,
             "budget_limit": budget_status.get("budget_limit", 0),
@@ -365,17 +392,23 @@ class BudgetController:
                 }
                 for rule in self.rules
             ],
-            "last_check": self.last_check_time.isoformat() if self.last_check_time else None,
+            "last_check": self.last_check_time.isoformat()
+            if self.last_check_time
+            else None,
             "generated_at": datetime.now().isoformat(),
         }
 
-    async def adjust_budget_dynamically(self, new_budget: float, reason: str = ""):
+    async def adjust_budget_dynamically(
+        self, new_budget: float, reason: str = ""
+    ):
         """動態調整預算"""
         if not self.config_manager:
             logger.warning("無配置管理器，無法動態調整預算")
             return False
 
-        old_budget = self.config_manager.get("cost_control.daily_budget_usd", 100.0)
+        old_budget = self.config_manager.get(
+            "cost_control.daily_budget_usd", 100.0
+        )
 
         # 更新配置
         self.config_manager.set("cost_control.daily_budget_usd", new_budget)
@@ -414,7 +447,9 @@ class BudgetController:
         """獲取當前狀態"""
         return {
             "status": self.current_status.value,
-            "last_check": self.last_check_time.isoformat() if self.last_check_time else None,
+            "last_check": self.last_check_time.isoformat()
+            if self.last_check_time
+            else None,
             "daily_stats": self.daily_stats,
             "rules_count": len(self.rules),
         }
@@ -439,7 +474,9 @@ async def main():
     print("=== 預算控制器測試 ===")
 
     # 模擬操作前檢查
-    can_proceed, message = await controller.pre_operation_check("video_generation", 2.5)
+    can_proceed, message = await controller.pre_operation_check(
+        "video_generation", 2.5
+    )
     print(f"操作前檢查: {can_proceed}, 訊息: {message}")
 
     # 模擬預算決策

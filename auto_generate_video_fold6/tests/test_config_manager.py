@@ -16,7 +16,9 @@ except ImportError:
     CONFIG_MANAGER_AVAILABLE = False
 
 
-@pytest.mark.skipif(not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用")
+@pytest.mark.skipif(
+    not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用"
+)
 class TestConfigManager:
     """配置管理器測試類"""
 
@@ -35,7 +37,10 @@ class TestConfigManager:
                 "batch_size": 3,
                 "platforms": ["tiktok", "instagram"],
             },
-            "cost_control": {"daily_budget_usd": 50.0, "stop_on_budget_exceeded": True},
+            "cost_control": {
+                "daily_budget_usd": 50.0,
+                "stop_on_budget_exceeded": True,
+            },
         }
 
         with open(config_dir / "base-config.json", "w") as f:
@@ -218,24 +223,34 @@ class TestConfigManager:
         cm2 = ConfigManager(str(temp_config_dir))
 
         # 驗證配置一致性
-        assert cm2.get("generation.daily_video_limit") == cm1.get("generation.daily_video_limit")
+        assert cm2.get("generation.daily_video_limit") == cm1.get(
+            "generation.daily_video_limit"
+        )
 
 
 @pytest.mark.unit
 class TestConfigManagerUtils:
     """配置管理器工具函數測試"""
 
-    @pytest.mark.skipif(not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用")
+    @pytest.mark.skipif(
+        not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用"
+    )
     def test_get_config_function(self, mock_config_manager):
         """測試 get_config 便利函數"""
-        with patch("config.config_manager.config_manager", mock_config_manager):
+        with patch(
+            "config.config_manager.config_manager", mock_config_manager
+        ):
             value = get_config("generation.daily_video_limit", 0)
             assert value == 5
 
-    @pytest.mark.skipif(not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用")
+    @pytest.mark.skipif(
+        not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用"
+    )
     def test_set_mode_function(self, mock_config_manager):
         """測試 set_mode 便利函數"""
-        with patch("config.config_manager.config_manager", mock_config_manager):
+        with patch(
+            "config.config_manager.config_manager", mock_config_manager
+        ):
             set_mode("enterprise")
             # 這裡應該檢查模式是否改變，但需要 mock 實現
             assert True  # 簡化的測試
@@ -246,7 +261,9 @@ class TestConfigManagerUtils:
 class TestConfigManagerIntegration:
     """配置管理器整合測試"""
 
-    @pytest.mark.skipif(not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用")
+    @pytest.mark.skipif(
+        not CONFIG_MANAGER_AVAILABLE, reason="配置管理器模組不可用"
+    )
     def test_full_config_workflow(self, temp_config_dir):
         """測試完整配置工作流程"""
         # 初始化配置管理器

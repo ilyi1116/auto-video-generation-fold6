@@ -33,7 +33,9 @@ logger = structlog.get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan management"""
-    logger.info("Starting voice inference service", service="inference-service")
+    logger.info(
+        "Starting voice inference service", service="inference-service"
+    )
 
     # Create database tables
     metadata.create_all(bind=engine)
@@ -89,4 +91,8 @@ async def health_check():
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"service": "voice-cloning-inference", "version": "1.0.0", "status": "running"}
+    return {
+        "service": "voice-cloning-inference",
+        "version": "1.0.0",
+        "status": "running",
+    }

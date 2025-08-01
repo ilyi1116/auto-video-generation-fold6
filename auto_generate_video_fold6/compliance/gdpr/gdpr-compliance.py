@@ -10,7 +10,16 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from enum import Enum
 from dataclasses import dataclass, asdict
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, JSON
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Text,
+    Boolean,
+    JSON,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import logging
@@ -82,8 +91,12 @@ class GDPRDataRequest(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=False)
-    request_type = Column(String(50), nullable=False)  # access, rectification, erasure, portability
-    status = Column(String(50), default="pending")  # pending, processing, completed, rejected
+    request_type = Column(
+        String(50), nullable=False
+    )  # access, rectification, erasure, portability
+    status = Column(
+        String(50), default="pending"
+    )  # pending, processing, completed, rejected
     requested_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
     request_details = Column(JSON)
@@ -126,7 +139,9 @@ class GDPRComplianceManager:
                 ip_address=consent.ip_address,
                 user_agent=consent.user_agent,
                 details={
-                    "expires_at": consent.expires_at.isoformat() if consent.expires_at else None
+                    "expires_at": consent.expires_at.isoformat()
+                    if consent.expires_at
+                    else None
                 },
             )
 
@@ -143,7 +158,9 @@ class GDPRComplianceManager:
             await self.db.rollback()
             return False
 
-    async def withdraw_consent(self, user_id: int, purpose: DataProcessingPurpose) -> bool:
+    async def withdraw_consent(
+        self, user_id: int, purpose: DataProcessingPurpose
+    ) -> bool:
         """撤回同意"""
         try:
             log_entry = GDPRConsentLog(
@@ -157,7 +174,9 @@ class GDPRComplianceManager:
             self.db.add(log_entry)
             await self.db.commit()
 
-            logger.info(f"Consent withdrawn for user {user_id}, purpose: {purpose.value}")
+            logger.info(
+                f"Consent withdrawn for user {user_id}, purpose: {purpose.value}"
+            )
             return True
 
         except Exception as e:
@@ -165,13 +184,18 @@ class GDPRComplianceManager:
             await self.db.rollback()
             return False
 
-    async def check_consent(self, user_id: int, purpose: DataProcessingPurpose) -> bool:
+    async def check_consent(
+        self, user_id: int, purpose: DataProcessingPurpose
+    ) -> bool:
         """檢查同意狀態"""
         try:
             # 查找最新的同意記錄
             latest_consent = (
                 self.db.query(GDPRConsentLog)
-                .filter(GDPRConsentLog.user_id == user_id, GDPRConsentLog.purpose == purpose.value)
+                .filter(
+                    GDPRConsentLog.user_id == user_id,
+                    GDPRConsentLog.purpose == purpose.value,
+                )
                 .order_by(GDPRConsentLog.timestamp.desc())
                 .first()
             )
@@ -236,7 +260,9 @@ class DataRequestHandler:
         """創建資料請求"""
         try:
             # 生成驗證令牌
-            verification_token = self._generate_verification_token(user_id, request_type)
+            verification_token = self._generate_verification_token(
+                user_id, request_type
+            )
 
             request = GDPRDataRequest(
                 user_id=user_id,
@@ -248,7 +274,9 @@ class DataRequestHandler:
             self.db.add(request)
             await self.db.commit()
 
-            logger.info(f"Data request created for user {user_id}, type: {request_type}")
+            logger.info(
+                f"Data request created for user {user_id}, type: {request_type}"
+            )
             return verification_token
 
         except Exception as e:
@@ -261,7 +289,10 @@ class DataRequestHandler:
         try:
             request = (
                 self.db.query(GDPRDataRequest)
-                .filter(GDPRDataRequest.id == request_id, GDPRDataRequest.request_type == "access")
+                .filter(
+                    GDPRDataRequest.id == request_id,
+                    GDPRDataRequest.request_type == "access",
+                )
                 .first()
             )
 
@@ -295,7 +326,10 @@ class DataRequestHandler:
         try:
             request = (
                 self.db.query(GDPRDataRequest)
-                .filter(GDPRDataRequest.id == request_id, GDPRDataRequest.request_type == "erasure")
+                .filter(
+                    GDPRDataRequest.id == request_id,
+                    GDPRDataRequest.request_type == "erasure",
+                )
                 .first()
             )
 
@@ -331,7 +365,8 @@ class DataRequestHandler:
             request = (
                 self.db.query(GDPRDataRequest)
                 .filter(
-                    GDPRDataRequest.id == request_id, GDPRDataRequest.request_type == "portability"
+                    GDPRDataRequest.id == request_id,
+                    GDPRDataRequest.request_type == "portability",
                 )
                 .first()
             )
@@ -369,11 +404,21 @@ class DataRequestHandler:
         """收集用戶所有資料"""
         user_data = {
             "user_profile": await self.user_service.get_user_profile(user_id),
-            "audio_files": await self.data_service.get_user_audio_files(user_id),
-            "training_jobs": await self.data_service.get_user_training_jobs(user_id),
-            "video_projects": await self.data_service.get_user_video_projects(user_id),
-            "social_accounts": await self.data_service.get_user_social_accounts(user_id),
-            "usage_analytics": await self.data_service.get_user_analytics(user_id),
+            "audio_files": await self.data_service.get_user_audio_files(
+                user_id
+            ),
+            "training_jobs": await self.data_service.get_user_training_jobs(
+                user_id
+            ),
+            "video_projects": await self.data_service.get_user_video_projects(
+                user_id
+            ),
+            "social_accounts": await self.data_service.get_user_social_accounts(
+                user_id
+            ),
+            "usage_analytics": await self.data_service.get_user_analytics(
+                user_id
+            ),
             "consent_history": await self._get_user_consent_history(user_id),
             "processing_logs": await self._get_user_processing_logs(user_id),
         }
@@ -386,29 +431,41 @@ class DataRequestHandler:
 
         try:
             # 刪除音頻檔案
-            audio_count = await self.data_service.delete_user_audio_files(user_id)
+            audio_count = await self.data_service.delete_user_audio_files(
+                user_id
+            )
             if audio_count > 0:
                 deleted_items.append(f"audio_files: {audio_count}")
 
             # 刪除訓練任務
-            training_count = await self.data_service.delete_user_training_jobs(user_id)
+            training_count = await self.data_service.delete_user_training_jobs(
+                user_id
+            )
             if training_count > 0:
                 deleted_items.append(f"training_jobs: {training_count}")
 
             # 刪除影片專案
-            video_count = await self.data_service.delete_user_video_projects(user_id)
+            video_count = await self.data_service.delete_user_video_projects(
+                user_id
+            )
             if video_count > 0:
                 deleted_items.append(f"video_projects: {video_count}")
 
             # 刪除社群媒體帳號連結
-            social_count = await self.data_service.delete_user_social_accounts(user_id)
+            social_count = await self.data_service.delete_user_social_accounts(
+                user_id
+            )
             if social_count > 0:
                 deleted_items.append(f"social_accounts: {social_count}")
 
             # 匿名化分析資料（保留聚合統計）
-            analytics_count = await self.data_service.anonymize_user_analytics(user_id)
+            analytics_count = await self.data_service.anonymize_user_analytics(
+                user_id
+            )
             if analytics_count > 0:
-                deleted_items.append(f"analytics_anonymized: {analytics_count}")
+                deleted_items.append(
+                    f"analytics_anonymized: {analytics_count}"
+                )
 
             # 最後刪除用戶帳號
             await self.user_service.delete_user_account(user_id)
@@ -466,7 +523,9 @@ class DataRequestHandler:
             for log in logs
         ]
 
-    def _generate_verification_token(self, user_id: int, request_type: str) -> str:
+    def _generate_verification_token(
+        self, user_id: int, request_type: str
+    ) -> str:
         """生成驗證令牌"""
         content = f"{user_id}:{request_type}:{datetime.utcnow().isoformat()}"
         return hashlib.sha256(content.encode()).hexdigest()
@@ -521,27 +580,40 @@ class DataRetentionManager:
                 # 執行清理動作
                 await self._cleanup_expired_data(category, expired_logs)
                 compliance_report["actions_taken"].append(
-                    {"category": category.value, "cleaned_records": len(expired_logs)}
+                    {
+                        "category": category.value,
+                        "cleaned_records": len(expired_logs),
+                    }
                 )
 
         return compliance_report
 
-    async def _cleanup_expired_data(self, category: DataCategory, expired_logs: List):
+    async def _cleanup_expired_data(
+        self, category: DataCategory, expired_logs: List
+    ):
         """清理過期資料"""
         try:
             for log in expired_logs:
                 if category == DataCategory.AUDIO_DATA:
-                    await self.data_service.delete_expired_audio_files(log.user_id, log.timestamp)
+                    await self.data_service.delete_expired_audio_files(
+                        log.user_id, log.timestamp
+                    )
                 elif category == DataCategory.VIDEO_DATA:
-                    await self.data_service.delete_expired_video_files(log.user_id, log.timestamp)
+                    await self.data_service.delete_expired_video_files(
+                        log.user_id, log.timestamp
+                    )
                 elif category == DataCategory.USAGE_DATA:
-                    await self.data_service.anonymize_expired_usage_data(log.user_id, log.timestamp)
+                    await self.data_service.anonymize_expired_usage_data(
+                        log.user_id, log.timestamp
+                    )
 
                 # 刪除處理日誌記錄
                 self.db.delete(log)
 
             await self.db.commit()
-            logger.info(f"Cleaned up {len(expired_logs)} expired records for {category.value}")
+            logger.info(
+                f"Cleaned up {len(expired_logs)} expired records for {category.value}"
+            )
 
         except Exception as e:
             logger.error(f"Failed to cleanup expired data: {e}")

@@ -28,7 +28,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
 
     # Auth Service
-    auth_service_url: str = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
+    auth_service_url: str = os.getenv(
+        "AUTH_SERVICE_URL", "http://auth-service:8001"
+    )
 
     # CORS
     cors_origins: List[str] = [
@@ -44,11 +46,17 @@ class Settings(BaseSettings):
 
     # Synthesis settings
     max_text_length: int = int(os.getenv("MAX_TEXT_LENGTH", "1000"))
-    max_audio_duration: int = int(os.getenv("MAX_AUDIO_DURATION", "300"))  # 5 minutes
+    max_audio_duration: int = int(
+        os.getenv("MAX_AUDIO_DURATION", "300")
+    )  # 5 minutes
 
     # Performance
-    synthesis_timeout: int = int(os.getenv("SYNTHESIS_TIMEOUT", "60"))  # 60 seconds
-    model_load_timeout: int = int(os.getenv("MODEL_LOAD_TIMEOUT", "120"))  # 2 minutes
+    synthesis_timeout: int = int(
+        os.getenv("SYNTHESIS_TIMEOUT", "60")
+    )  # 60 seconds
+    model_load_timeout: int = int(
+        os.getenv("MODEL_LOAD_TIMEOUT", "120")
+    )  # 2 minutes
 
 
 @lru_cache()

@@ -153,7 +153,6 @@ class GeminiClient:
                 json=request_data,
                 headers={"Content-Type": "application/json"},
             ) as response:
-
                 duration = time.time() - start_time
 
                 if response.status != 200:
@@ -312,7 +311,6 @@ class GeminiClient:
                 json=request_data,
                 headers={"Content-Type": "application/json"},
             ) as response:
-
                 if response.status == 200:
                     result_data = await response.json()
                     duration = time.time() - start_time

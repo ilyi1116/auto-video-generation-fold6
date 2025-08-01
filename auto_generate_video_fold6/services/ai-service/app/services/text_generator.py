@@ -305,7 +305,7 @@ REQUIREMENTS:
     approximately {duration_seconds * 2.5} words)
 - Target Audience: {target_audience}
 - Tone: {tone}
-{f'- Include Keywords: {keyword_text}' if keyword_text else ''}
+{f"- Include Keywords: {keyword_text}" if keyword_text else ""}
 
 SCRIPT GUIDELINES:
 1. Start with a strong hook in the first 3 seconds
@@ -343,7 +343,7 @@ SCRIPT CONTENT:
 REQUIREMENTS:
 - Style: {style}
 - Maximum length: {max_length} characters
-{f'- Include keywords: {keyword_text}' if keyword_text else ''}
+{f"- Include keywords: {keyword_text}" if keyword_text else ""}
 
 STYLE CHARACTERISTICS:
 - Catchy: Use power words, numbers, emotional triggers
@@ -381,9 +381,13 @@ OPTIMIZATION TASK:
 OPTIMIZATION GUIDELINES:
 - Maintain the core message and hook
 - Preserve the most engaging elements
-- {'Remove redundant points, combine ideas, use more concise \
-    language' if action == 'shorten' else 'Add supporting details, \
-        examples, or elaboration on key points'}
+- {
+            "Remove redundant points, combine ideas, use more concise \
+    language"
+            if action == "shorten"
+            else "Add supporting details, \
+        examples, or elaboration on key points"
+        }
 - Keep the natural flow and transitions
 - Maintain call-to-action
 

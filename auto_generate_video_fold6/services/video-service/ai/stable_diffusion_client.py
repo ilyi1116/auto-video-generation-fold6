@@ -173,12 +173,12 @@ class StableDiffusionClient:
                 f"{self.base_url}/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
                 json=payload,
             ) as response:
-
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(
-                        f"Stable Diffusion API error: {response
-                                                       .status} - {error_text}"
+                        f"Stable Diffusion API error: {response.status} - {
+                            error_text
+                        }"
                     )
 
                 result = await response.json()
@@ -229,7 +229,7 @@ class StableDiffusionClient:
         # Execute all tasks concurrently with some delay to avoid rate limits
         results = []
         for i in range(0, len(tasks), 3):  # Process 3 at a time
-            batch = tasks[i: i + 3]
+            batch = tasks[i : i + 3]
             batch_results = await asyncio.gather(
                 *batch, return_exceptions=True
             )
@@ -350,7 +350,6 @@ class StableDiffusionClient:
                 f"{self.base_url}/generation/esrgan-v1-x2plus/image-to-image/upscale",
                 json=payload,
             ) as response:
-
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(

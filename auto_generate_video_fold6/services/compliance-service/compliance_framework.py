@@ -168,9 +168,9 @@ class GDPRCompliance:
 
         if not is_valid:
             logger.warning(
-                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for
-                                                               k, v \
-                                                                   in validations.items() if not v]}"
+                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {
+                    [k for k, v in validations.items() if not v]
+                }"
             )
 
         return is_valid
@@ -517,7 +517,6 @@ class AuditLogger:
         try:
             alert_config = self.config.get("alerts", {})
             if alert_config.get("enabled", False):
-
                 alert_message = f"""
                 高風險合規事件警報
 
@@ -528,7 +527,7 @@ class AuditLogger:
                 操作: {event.action}
                 風險等級: {event.risk_level}
                 時間: {event.timestamp}
-                合規標準: {', '.join(event.compliance_tags)}
+                合規標準: {", ".join(event.compliance_tags)}
 
                 請立即檢查並採取適當措施。
                 """

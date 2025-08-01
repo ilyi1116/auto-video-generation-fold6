@@ -94,7 +94,9 @@ class CacheMiddleware(BaseHTTPMiddleware):
                     response_body += chunk
 
                 await self.cache_client.setex(
-                    cache_key, 300, response_body.decode()  # 5 分鐘 TTL
+                    cache_key,
+                    300,
+                    response_body.decode(),  # 5 分鐘 TTL
                 )
 
                 # 重建回應

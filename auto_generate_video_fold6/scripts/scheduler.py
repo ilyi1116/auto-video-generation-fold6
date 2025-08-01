@@ -37,7 +37,10 @@ except ImportError:
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("/app/logs/scheduler.log"), logging.StreamHandler(sys.stdout)],
+    handlers=[
+        logging.FileHandler("/app/logs/scheduler.log"),
+        logging.StreamHandler(sys.stdout),
+    ],
 )
 logger = logging.getLogger(__name__)
 
@@ -77,9 +80,15 @@ class VideoScheduler:
                     "auto_generation_interval": scheduling.get(
                         "auto_generation_interval", 6
                     ),  # 小時
-                    "work_hours_only": scheduling.get("work_hours_only", False),
-                    "work_hours": scheduling.get("work_hours", {"start": "09:00", "end": "18:00"}),
-                    "max_daily_videos": get_config("generation.daily_video_limit", 10),
+                    "work_hours_only": scheduling.get(
+                        "work_hours_only", False
+                    ),
+                    "work_hours": scheduling.get(
+                        "work_hours", {"start": "09:00", "end": "18:00"}
+                    ),
+                    "max_daily_videos": get_config(
+                        "generation.daily_video_limit", 10
+                    ),
                     "batch_size": get_config("generation.batch_size", 3),
                 }
             else:
@@ -119,7 +128,10 @@ class VideoScheduler:
             # 估算批次成本
             estimated_cost = self._estimate_batch_cost()
 
-            can_proceed, message = await self.budget_controller.pre_operation_check(
+            (
+                can_proceed,
+                message,
+            ) = await self.budget_controller.pre_operation_check(
                 "scheduled_generation", estimated_cost
             )
 
@@ -174,7 +186,9 @@ class VideoScheduler:
         # 檢查間隔時間
         last_run_key = "auto_generation"
         if last_run_key in self.last_run:
-            interval_hours = self.schedule_config.get("auto_generation_interval", 6)
+            interval_hours = self.schedule_config.get(
+                "auto_generation_interval", 6
+            )
             time_since_last = datetime.now() - self.last_run[last_run_key]
 
             if time_since_last < timedelta(hours=interval_hours):

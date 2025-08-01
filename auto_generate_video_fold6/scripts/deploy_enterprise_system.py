@@ -54,8 +54,16 @@ class EnterpriseSystemDeployer:
                     "compliance-framework",
                     "security-scanner",
                 ],
-                "high_availability": {"enabled": True, "load_balancer": "haproxy", "replicas": 3},
-                "auto_scaling": {"enabled": True, "min_instances": 2, "max_instances": 10},
+                "high_availability": {
+                    "enabled": True,
+                    "load_balancer": "haproxy",
+                    "replicas": 3,
+                },
+                "auto_scaling": {
+                    "enabled": True,
+                    "min_instances": 2,
+                    "max_instances": 10,
+                },
             }
 
     async def deploy_enterprise_system(self) -> Dict[str, Any]:
@@ -154,15 +162,21 @@ class EnterpriseSystemDeployer:
 
             # 計算部署結果
             total_duration = time.time() - start_time
-            deployment_success = self._evaluate_deployment_success(deployment_results)
+            deployment_success = self._evaluate_deployment_success(
+                deployment_results
+            )
 
             deployment_results.update(
                 {
                     "end_time": datetime.utcnow().isoformat(),
                     "duration_seconds": total_duration,
                     "deployment_success": deployment_success,
-                    "system_status": "OPERATIONAL" if deployment_success else "FAILED",
-                    "next_steps": self._generate_next_steps(deployment_results),
+                    "system_status": "OPERATIONAL"
+                    if deployment_success
+                    else "FAILED",
+                    "next_steps": self._generate_next_steps(
+                        deployment_results
+                    ),
                     "maintenance_schedule": self._generate_maintenance_schedule(),
                 }
             )
@@ -171,7 +185,9 @@ class EnterpriseSystemDeployer:
             await self._generate_deployment_summary(deployment_results)
 
             if deployment_success:
-                logger.info("🎉 企業級系統部署完成！系統已準備好為用戶提供服務。")
+                logger.info(
+                    "🎉 企業級系統部署完成！系統已準備好為用戶提供服務。"
+                )
             else:
                 logger.error("❌ 系統部署過程中遇到問題，請查看詳細日誌。")
 
@@ -180,7 +196,11 @@ class EnterpriseSystemDeployer:
         except Exception as e:
             logger.error(f"系統部署失敗: {e}")
             deployment_results.update(
-                {"error": str(e), "deployment_success": False, "system_status": "FAILED"}
+                {
+                    "error": str(e),
+                    "deployment_success": False,
+                    "system_status": "FAILED",
+                }
             )
             return deployment_results
 
@@ -275,11 +295,15 @@ class EnterpriseSystemDeployer:
 
             for service_name in services:
                 logger.info(f"部署服務: {service_name}")
-                service_result = await self._deploy_single_service(service_name)
+                service_result = await self._deploy_single_service(
+                    service_name
+                )
                 deployment_results[service_name] = service_result
 
             # 配置服務間通信
-            inter_service_result = await self._configure_inter_service_communication()
+            inter_service_result = (
+                await self._configure_inter_service_communication()
+            )
 
             return {
                 "status": "SUCCESS",
@@ -400,7 +424,9 @@ class EnterpriseSystemDeployer:
             audit_logging_result = await self._configure_audit_logging()
 
             # 配置資料保留政策
-            retention_policies_result = await self._configure_retention_policies()
+            retention_policies_result = (
+                await self._configure_retention_policies()
+            )
 
             return {
                 "status": "SUCCESS",
@@ -416,8 +442,13 @@ class EnterpriseSystemDeployer:
     async def _configure_high_availability(self) -> Dict[str, Any]:
         """配置高可用性"""
         try:
-            if not self.config.get("high_availability", {}).get("enabled", False):
-                return {"status": "SKIPPED", "reason": "High availability disabled in config"}
+            if not self.config.get("high_availability", {}).get(
+                "enabled", False
+            ):
+                return {
+                    "status": "SKIPPED",
+                    "reason": "High availability disabled in config",
+                }
 
             # 部署負載平衡器
             load_balancer_result = await self._deploy_load_balancer()
@@ -426,7 +457,9 @@ class EnterpriseSystemDeployer:
             replicas_result = await self._configure_service_replicas()
 
             # 配置資料庫主從複製
-            db_replication_result = await self._configure_database_replication()
+            db_replication_result = (
+                await self._configure_database_replication()
+            )
 
             return {
                 "status": "SUCCESS",
@@ -442,13 +475,18 @@ class EnterpriseSystemDeployer:
         """配置自動擴展"""
         try:
             if not self.config.get("auto_scaling", {}).get("enabled", False):
-                return {"status": "SKIPPED", "reason": "Auto scaling disabled in config"}
+                return {
+                    "status": "SKIPPED",
+                    "reason": "Auto scaling disabled in config",
+                }
 
             # 配置 HPA (Horizontal Pod Autoscaler)
             hpa_result = await self._configure_horizontal_pod_autoscaler()
 
             # 配置資源監控
-            resource_monitoring_result = await self._configure_resource_monitoring()
+            resource_monitoring_result = (
+                await self._configure_resource_monitoring()
+            )
 
             # 配置擴展策略
             scaling_policies_result = await self._configure_scaling_policies()
@@ -514,14 +552,22 @@ class EnterpriseSystemDeployer:
         try:
             # 執行安全掃描腳本
             result = subprocess.run(
-                ["python", "scripts/security_scanner.py", "--severity", "medium", "--verbose"],
+                [
+                    "python",
+                    "scripts/security_scanner.py",
+                    "--severity",
+                    "medium",
+                    "--verbose",
+                ],
                 capture_output=True,
                 text=True,
                 timeout=1200,
             )
 
             return {
-                "status": "SUCCESS" if result.returncode <= 1 else "FAILED",  # 安全掃描允許輕微問題
+                "status": "SUCCESS"
+                if result.returncode <= 1
+                else "FAILED",  # 安全掃描允許輕微問題
                 "exit_code": result.returncode,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
@@ -549,7 +595,9 @@ class EnterpriseSystemDeployer:
             return {
                 "status": "SUCCESS" if all_valid else "FAILED",
                 "validations": validations,
-                "failed_validations": [k for k, v in validations.items() if not v],
+                "failed_validations": [
+                    k for k, v in validations.items() if not v
+                ],
             }
 
         except Exception as e:
@@ -599,7 +647,9 @@ class EnterpriseSystemDeployer:
         dependencies = ["docker", "docker-compose", "python3", "pip"]
         for dep in dependencies:
             try:
-                subprocess.run([dep, "--version"], capture_output=True, check=True)
+                subprocess.run(
+                    [dep, "--version"], capture_output=True, check=True
+                )
             except (subprocess.CalledProcessError, FileNotFoundError):
                 return False
         return True
@@ -607,11 +657,17 @@ class EnterpriseSystemDeployer:
     # 其他部署方法的簡化實現
     async def _create_docker_networks(self) -> List[str]:
         """創建 Docker 網路"""
-        networks = ["auto-video-network", "monitoring-network", "backup-network"]
+        networks = [
+            "auto-video-network",
+            "monitoring-network",
+            "backup-network",
+        ]
         created = []
         for network_name in networks:
             try:
-                self.docker_client.networks.create(network_name, driver="bridge")
+                self.docker_client.networks.create(
+                    network_name, driver="bridge"
+                )
                 created.append(network_name)
             except Exception as e:
                 logger.warning(f"網路創建失敗 {network_name}: {e}")
@@ -654,7 +710,9 @@ class EnterpriseSystemDeployer:
         """配置快取策略"""
         return {"status": "SUCCESS", "policies_configured": 5}
 
-    async def _deploy_single_service(self, service_name: str) -> Dict[str, Any]:
+    async def _deploy_single_service(
+        self, service_name: str
+    ) -> Dict[str, Any]:
         """部署單個服務"""
         return {"status": "SUCCESS", "service": service_name, "replicas": 3}
 
@@ -666,7 +724,12 @@ class EnterpriseSystemDeployer:
 
     def _evaluate_deployment_success(self, results: Dict[str, Any]) -> bool:
         """評估部署成功狀態"""
-        critical_components = ["infrastructure", "databases", "core_services", "final_validation"]
+        critical_components = [
+            "infrastructure",
+            "databases",
+            "core_services",
+            "final_validation",
+        ]
 
         for component in critical_components:
             if component not in results:
@@ -742,21 +805,29 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="企業級系統部署")
-    parser.add_argument("--config", default="config/deployment-config.json", help="部署配置檔案")
+    parser.add_argument(
+        "--config",
+        default="config/deployment-config.json",
+        help="部署配置檔案",
+    )
     parser.add_argument(
         "--environment",
         choices=["development", "staging", "production"],
         default="production",
         help="部署環境",
     )
-    parser.add_argument("--dry-run", action="store_true", help="演練模式（不實際部署）")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="演練模式（不實際部署）"
+    )
     parser.add_argument("--verbose", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()
 
     # 設置日誌
     log_level = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=log_level, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
     if args.dry_run:
         logger.info("🔍 演練模式：將模擬部署過程，不會實際修改系統")
@@ -766,13 +837,15 @@ async def main():
     results = await deployer.deploy_enterprise_system()
 
     # 輸出結果摘要
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print("🚀 企業級系統部署結果摘要")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
     print(f"部署環境: {results.get('environment', 'Unknown')}")
     print(f"部署持續時間: {results.get('duration_seconds', 0):.2f} 秒")
     print(f"系統狀態: {results.get('system_status', 'Unknown')}")
-    print(f"部署成功: {'✅ 是' if results.get('deployment_success', False) else '❌ 否'}")
+    print(
+        f"部署成功: {'✅ 是' if results.get('deployment_success', False) else '❌ 否'}"
+    )
 
     if results.get("deployment_success", False):
         print(f"\n🎉 恭喜！企業級自動影片生成系統已成功部署！")
@@ -790,7 +863,9 @@ async def main():
         for i, step in enumerate(results.get("next_steps", []), 1):
             print(f"{i}. {step}")
 
-        print(f"\n系統已達到世界級企業標準，可與 Netflix、Spotify、Uber 等頂級技術公司媲美！")
+        print(
+            f"\n系統已達到世界級企業標準，可與 Netflix、Spotify、Uber 等頂級技術公司媲美！"
+        )
         exit(0)
     else:
         print(f"\n❌ 部署過程中遇到問題，請檢查日誌並修復後重新部署。")

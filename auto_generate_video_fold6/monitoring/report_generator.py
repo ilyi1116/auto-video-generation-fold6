@@ -66,8 +66,7 @@ class ReportGenerator:
         template_dir = Path(__file__).parent / "templates"
         template_dir.mkdir(exist_ok=True)
         self.jinja_env = Environment(
-            loader=FileSystemLoader(str(template_dir)),
-            autoescape=True
+            loader=FileSystemLoader(str(template_dir)), autoescape=True
         )
 
         # 確保模板文件存在
@@ -265,7 +264,9 @@ class ReportGenerator:
 
         return await self._generate_report(config)
 
-    async def generate_monthly_report(self, year: int = None, month: int = None) -> str:
+    async def generate_monthly_report(
+        self, year: int = None, month: int = None
+    ) -> str:
         """生成月報告"""
         if year is None or month is None:
             today = date.today()
@@ -311,7 +312,9 @@ class ReportGenerator:
         else:
             raise ValueError(f"不支援的輸出格式: {config.output_format}")
 
-    async def _collect_report_data(self, config: ReportConfig) -> Dict[str, Any]:
+    async def _collect_report_data(
+        self, config: ReportConfig
+    ) -> Dict[str, Any]:
         """收集報告數據"""
         data = {
             "period": {
@@ -327,7 +330,9 @@ class ReportGenerator:
 
         return data
 
-    async def _get_generation_metrics(self, config: ReportConfig) -> GenerationMetrics:
+    async def _get_generation_metrics(
+        self, config: ReportConfig
+    ) -> GenerationMetrics:
         """獲取生成指標"""
         # 模擬數據 - 在實際實作中應該從資料庫查詢
         total_videos = 45
@@ -340,7 +345,11 @@ class ReportGenerator:
             failed_generations=failed,
             total_cost=67.50,
             average_cost_per_video=1.50,
-            platforms_distribution={"tiktok": 20, "instagram": 15, "youtube": 10},
+            platforms_distribution={
+                "tiktok": 20,
+                "instagram": 15,
+                "youtube": 10,
+            },
             quality_distribution={"high": 15, "medium": 25, "low": 5},
             generation_time_stats={"avg": 180, "min": 120, "max": 300},
         )
@@ -352,7 +361,9 @@ class ReportGenerator:
 
         try:
             if config.report_type == "daily":
-                summary = await self.cost_tracker.get_daily_summary(config.start_date)
+                summary = await self.cost_tracker.get_daily_summary(
+                    config.start_date
+                )
                 return {
                     "total_cost": summary.total_cost,
                     "api_calls_count": summary.api_calls_count,
@@ -361,7 +372,10 @@ class ReportGenerator:
                     "budget_status": {
                         "limit": summary.budget_limit,
                         "remaining": summary.budget_remaining,
-                        "usage_percent": (summary.total_cost / summary.budget_limit) * 100,
+                        "usage_percent": (
+                            summary.total_cost / summary.budget_limit
+                        )
+                        * 100,
                     },
                 }
             else:
@@ -382,16 +396,26 @@ class ReportGenerator:
         return {
             "total_cost": 67.50,
             "api_calls_count": 450,
-            "providers_breakdown": {"openai": 35.20, "stability_ai": 22.80, "elevenlabs": 9.50},
+            "providers_breakdown": {
+                "openai": 35.20,
+                "stability_ai": 22.80,
+                "elevenlabs": 9.50,
+            },
             "operations_breakdown": {
                 "text_generation": 35.20,
                 "image_generation": 22.80,
                 "voice_synthesis": 9.50,
             },
-            "budget_status": {"limit": 100.0, "remaining": 32.50, "usage_percent": 67.5},
+            "budget_status": {
+                "limit": 100.0,
+                "remaining": 32.50,
+                "usage_percent": 67.5,
+            },
         }
 
-    async def _get_performance_metrics(self, config: ReportConfig) -> Dict[str, Any]:
+    async def _get_performance_metrics(
+        self, config: ReportConfig
+    ) -> Dict[str, Any]:
         """獲取效能指標"""
         # 模擬效能數據
         return {
@@ -399,10 +423,16 @@ class ReportGenerator:
             "success_rate": 93.3,  # 百分比
             "error_rate": 6.7,
             "throughput": 15,  # 影片/小時
-            "resource_usage": {"cpu_avg": 65, "memory_avg": 78, "disk_usage": 45},
+            "resource_usage": {
+                "cpu_avg": 65,
+                "memory_avg": 78,
+                "disk_usage": 45,
+            },
         }
 
-    async def _get_daily_breakdown(self, config: ReportConfig) -> List[Dict[str, Any]]:
+    async def _get_daily_breakdown(
+        self, config: ReportConfig
+    ) -> List[Dict[str, Any]]:
         """獲取每日明細"""
         breakdown = []
         current_date = config.start_date
@@ -416,7 +446,9 @@ class ReportGenerator:
                     "success_rate": 95.0,
                     "total_cost": 22.50,
                     "avg_cost": 1.50,
-                    "success_rate_class": "status-success" if 95.0 >= 90 else "status-warning",
+                    "success_rate_class": "status-success"
+                    if 95.0 >= 90
+                    else "status-warning",
                 }
             )
             current_date += timedelta(days=1)
@@ -477,7 +509,12 @@ class ReportGenerator:
             return {"title": "成本分布", "path": "", "error": "無數據"}
 
         plt.figure(figsize=(10, 6))
-        plt.pie(providers.values(), labels=providers.keys(), autopct="%1.1f%%", startangle=90)
+        plt.pie(
+            providers.values(),
+            labels=providers.keys(),
+            autopct="%1.1f%%",
+            startangle=90,
+        )
         plt.title("API 供應商成本分布")
 
         chart_path = output_dir / "cost_distribution.png"
@@ -511,7 +548,10 @@ class ReportGenerator:
         plt.savefig(chart_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        return {"title": "每日成本趨勢", "path": str(chart_path.relative_to(self.reports_dir))}
+        return {
+            "title": "每日成本趨勢",
+            "path": str(chart_path.relative_to(self.reports_dir)),
+        }
 
     async def _create_generation_stats_chart(
         self, metrics: GenerationMetrics, output_dir: Path
@@ -522,14 +562,23 @@ class ReportGenerator:
         colors = ["#28a745", "#dc3545"]
 
         plt.figure(figsize=(8, 6))
-        plt.pie(sizes, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90)
+        plt.pie(
+            sizes,
+            labels=labels,
+            colors=colors,
+            autopct="%1.1f%%",
+            startangle=90,
+        )
         plt.title("影片生成成功率")
 
         chart_path = output_dir / "generation_success_rate.png"
         plt.savefig(chart_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        return {"title": "影片生成成功率", "path": str(chart_path.relative_to(self.reports_dir))}
+        return {
+            "title": "影片生成成功率",
+            "path": str(chart_path.relative_to(self.reports_dir)),
+        }
 
     async def _create_platform_distribution_chart(
         self, platforms: Dict[str, int], output_dir: Path
@@ -539,7 +588,11 @@ class ReportGenerator:
             return {"title": "平台分布", "path": "", "error": "無數據"}
 
         plt.figure(figsize=(10, 6))
-        plt.bar(platforms.keys(), platforms.values(), color=["#1f77b4", "#ff7f0e", "#2ca02c"])
+        plt.bar(
+            platforms.keys(),
+            platforms.values(),
+            color=["#1f77b4", "#ff7f0e", "#2ca02c"],
+        )
         plt.title("各平台影片數量分布")
         plt.xlabel("平台")
         plt.ylabel("影片數量")
@@ -557,7 +610,10 @@ class ReportGenerator:
         }
 
     async def _prepare_template_data(
-        self, data: Dict[str, Any], charts: List[Dict[str, str]], config: ReportConfig
+        self,
+        data: Dict[str, Any],
+        charts: List[Dict[str, str]],
+        config: ReportConfig,
     ) -> Dict[str, Any]:
         """準備模板數據"""
         metrics = data["generation_metrics"]
@@ -571,11 +627,12 @@ class ReportGenerator:
                 "status_class": "status-success",
             },
             {
-                "value": f"{(metrics.successful_generations/metrics.total_videos)*100:.1f}%",
+                "value": f"{(metrics.successful_generations / metrics.total_videos) * 100:.1f}%",
                 "label": "成功率",
                 "status_class": (
                     "status-success"
-                    if metrics.successful_generations / metrics.total_videos > 0.9
+                    if metrics.successful_generations / metrics.total_videos
+                    > 0.9
                     else "status-warning"
                 ),
             },
@@ -600,7 +657,9 @@ class ReportGenerator:
                     {
                         "category": provider,
                         "amount": amount,
-                        "percentage": (amount / total_cost) * 100 if total_cost > 0 else 0,
+                        "percentage": (amount / total_cost) * 100
+                        if total_cost > 0
+                        else 0,
                         "trend": "↗️",
                         "trend_class": "status-success",
                     }
@@ -612,7 +671,11 @@ class ReportGenerator:
             "generation_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "key_metrics": key_metrics,
             "cost_analysis": config.include_cost_analysis,
-            "cost_charts": [chart for chart in charts if "cost" in chart.get("title", "").lower()],
+            "cost_charts": [
+                chart
+                for chart in charts
+                if "cost" in chart.get("title", "").lower()
+            ],
             "generation_charts": [
                 chart
                 for chart in charts
@@ -623,15 +686,15 @@ class ReportGenerator:
             "detailed_data": data["daily_breakdown"],
         }
 
-    async def _render_html_report(self, template_data: Dict[str, Any], config: ReportConfig) -> str:
+    async def _render_html_report(
+        self, template_data: Dict[str, Any], config: ReportConfig
+    ) -> str:
         """渲染 HTML 報告"""
         template = self.jinja_env.get_template("report.html")
         html_content = template.render(**template_data)
 
         # 保存報告
-        report_filename = (
-            f"{config.report_type}_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
-        )
+        report_filename = f"{config.report_type}_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
         report_path = self.reports_dir / report_filename
 
         with open(report_path, "w", encoding="utf-8") as f:
@@ -640,16 +703,18 @@ class ReportGenerator:
         logger.info(f"HTML 報告已生成: {report_path}")
         return str(report_path)
 
-    async def _render_json_report(self, template_data: Dict[str, Any], config: ReportConfig) -> str:
+    async def _render_json_report(
+        self, template_data: Dict[str, Any], config: ReportConfig
+    ) -> str:
         """渲染 JSON 報告"""
         # 保存報告
-        report_filename = (
-            f"{config.report_type}_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        report_filename = f"{config.report_type}_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         report_path = self.reports_dir / report_filename
 
         with open(report_path, "w", encoding="utf-8") as f:
-            json.dump(template_data, f, indent=2, ensure_ascii=False, default=str)
+            json.dump(
+                template_data, f, indent=2, ensure_ascii=False, default=str
+            )
 
         logger.info(f"JSON 報告已生成: {report_path}")
         return str(report_path)

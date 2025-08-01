@@ -23,7 +23,11 @@ async def demo_gemini_integration():
         import sys
         import os
 
-        sys.path.append(os.path.join(os.path.dirname(__file__), "..", "services", "ai-service"))
+        sys.path.append(
+            os.path.join(
+                os.path.dirname(__file__), "..", "services", "ai-service"
+            )
+        )
         from gemini_client import (
             generate_video_script,
             analyze_trends,
@@ -59,7 +63,9 @@ async def demo_gemini_integration():
             print("✅ 趨勢分析成功:")
             print(f"病毒潛力: {analysis.get('viral_potential', 'N/A')}/10")
             print(f"目標受眾: {analysis.get('target_audience', 'N/A')}")
-            print(f"推薦平台: {', '.join(analysis.get('recommended_platforms', []))}")
+            print(
+                f"推薦平台: {', '.join(analysis.get('recommended_platforms', []))}"
+            )
         else:
             print(f"❌ 趨勢分析失敗: {analysis.get('error')}")
 
@@ -68,7 +74,9 @@ async def demo_gemini_integration():
         async with GeminiClient(api_key=api_key) as client:
             result = await client.generate_content(
                 prompt="為科技短影片創作吸引人的開場白，要求生動有趣",
-                generation_config=GeminiGenerationConfig(temperature=0.9, max_output_tokens=150),
+                generation_config=GeminiGenerationConfig(
+                    temperature=0.9, max_output_tokens=150
+                ),
             )
 
             if result.success:
@@ -91,8 +99,16 @@ async def demo_suno_integration():
         import sys
         import os
 
-        sys.path.append(os.path.join(os.path.dirname(__file__), "..", "services", "music-service"))
-        from suno_client import generate_music_for_video, SunoClient, MusicGenerationRequest
+        sys.path.append(
+            os.path.join(
+                os.path.dirname(__file__), "..", "services", "music-service"
+            )
+        )
+        from suno_client import (
+            generate_music_for_video,
+            SunoClient,
+            MusicGenerationRequest,
+        )
 
         api_key = os.getenv("SUNO_API_KEY")
         if not api_key:
@@ -119,14 +135,18 @@ async def demo_suno_integration():
             if music_result.audio_url:
                 async with SunoClient(api_key=api_key) as client:
                     output_path = Path("examples/demo_music.mp3")
-                    success = await client.download_audio(music_result.audio_url, output_path)
+                    success = await client.download_audio(
+                        music_result.audio_url, output_path
+                    )
 
                     if success:
                         print(f"✅ 音樂文件已下載到: {output_path}")
                     else:
                         print("❌ 音樂文件下載失敗")
         else:
-            print(f"❌ 音樂生成失敗: {music_result.error_message if music_result else '未知錯誤'}")
+            print(
+                f"❌ 音樂生成失敗: {music_result.error_message if music_result else '未知錯誤'}"
+            )
 
         # 2. 生成不同風格的音樂
         print("\n🎪 生成娛樂風格音樂...")
@@ -139,13 +159,17 @@ async def demo_suno_integration():
                 title="娛樂節目背景音樂",
             )
 
-            entertainment_result = await client.generate_music(entertainment_request)
+            entertainment_result = await client.generate_music(
+                entertainment_request
+            )
 
             if entertainment_result.status == "completed":
                 print("✅ 娛樂風格音樂生成成功!")
                 print(f"標題: {entertainment_result.title}")
             else:
-                print(f"❌ 娛樂風格音樂生成失敗: {entertainment_result.error_message}")
+                print(
+                    f"❌ 娛樂風格音樂生成失敗: {entertainment_result.error_message}"
+                )
 
     except ImportError as e:
         print(f"❌ 導入錯誤: {e}")
@@ -193,7 +217,9 @@ async def demo_ai_orchestrator():
             fallback_enabled=True,
         )
 
-        analysis_response = await orchestrator.process_request(analysis_request)
+        analysis_response = await orchestrator.process_request(
+            analysis_request
+        )
 
         if analysis_response.success:
             print("✅ 內容分析成功:")
@@ -209,7 +235,9 @@ async def demo_ai_orchestrator():
         # 3. 音樂生成
         print("\n🎵 智能音樂生成...")
         music_content = await generate_music_for_video(
-            prompt="科技感十足的背景音樂，適合產品介紹", duration=20, style="futuristic, tech"
+            prompt="科技感十足的背景音樂，適合產品介紹",
+            duration=20,
+            style="futuristic, tech",
         )
 
         if music_content:
@@ -253,7 +281,9 @@ async def demo_complete_workflow():
                 style="professional",
                 api_key=gemini_key,
             )
-            print(f"✅ 腳本: {script[:100]}..." if script else "❌ 腳本生成失敗")
+            print(
+                f"✅ 腳本: {script[:100]}..." if script else "❌ 腳本生成失敗"
+            )
         else:
             script = "AI 技術正在快速發展，改變著我們的生活方式..."
             print("⚠️ 使用預設腳本（未設置 Gemini API Key）")
@@ -278,12 +308,18 @@ async def demo_complete_workflow():
 
         # 3. 分析和優化
         print("\n3️⃣ 內容分析和優化建議...")
-        from services.ai_service.ai_orchestrator import AIOrchestrator, AIRequest, AITaskType
+        from services.ai_service.ai_orchestrator import (
+            AIOrchestrator,
+            AIRequest,
+            AITaskType,
+        )
 
         orchestrator = AIOrchestrator()
 
         trend_request = AIRequest(
-            task_type=AITaskType.TREND_ANALYSIS, prompt=script, fallback_enabled=True
+            task_type=AITaskType.TREND_ANALYSIS,
+            prompt=script,
+            fallback_enabled=True,
         )
 
         trend_response = await orchestrator.process_request(trend_request)

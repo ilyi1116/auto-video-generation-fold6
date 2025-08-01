@@ -4,7 +4,9 @@ from typing import List
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql://voiceclone_user:password@postgres:5432/voiceclone_db"
+    database_url: str = (
+        "postgresql://voiceclone_user:password@postgres:5432/voiceclone_db"
+    )
 
     # JWT
     jwt_secret_key: str = "your-secret-key-change-in-production"
@@ -18,7 +20,10 @@ class Settings(BaseSettings):
 
     # CORS
     allowed_hosts: List[str] = ["localhost", "127.0.0.1"]
-    cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    cors_origins: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
 
     # Logging
     log_level: str = "INFO"

@@ -155,7 +155,6 @@ class TikTokClient(SocialPlatform):
         async with session.post(
             f"{self.upload_url}/video/upload", data=data, headers=headers
         ) as response:
-
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
@@ -201,7 +200,6 @@ class TikTokClient(SocialPlatform):
         async with session.post(
             f"{self.base_url}/video/publish", json=payload, headers=headers
         ) as response:
-
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
@@ -237,7 +235,6 @@ class TikTokClient(SocialPlatform):
                 params={"video_id": platform_id},
                 headers=headers,
             ) as response:
-
                 if response.status != 200:
                     return {"error": f"API error: {response.status}"}
 
@@ -276,7 +273,6 @@ class TikTokClient(SocialPlatform):
                 params={"video_id": platform_id},
                 headers=headers,
             ) as response:
-
                 return response.status == 200
 
         except Exception as e:
@@ -383,7 +379,6 @@ class YouTubeClient(SocialPlatform):
             data=body,
             headers=headers,
         ) as response:
-
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
@@ -454,7 +449,6 @@ class YouTubeClient(SocialPlatform):
                 params={"id": platform_id},
                 headers=headers,
             ) as response:
-
                 return response.status == 204
 
         except Exception as e:
@@ -524,12 +518,12 @@ class InstagramClient(SocialPlatform):
         async with session.post(
             f"{self.base_url}/{self.business_account_id}/media", params=params
         ) as response:
-
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"Instagram media creation error: {response
-                                                       .status} - {error_text}"
+                    f"Instagram media creation error: {response.status} - {
+                        error_text
+                    }"
                 )
 
             result = await response.json()
@@ -552,7 +546,6 @@ class InstagramClient(SocialPlatform):
             f"{self.base_url}/{self.business_account_id}/media_publish",
             params=params,
         ) as response:
-
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
@@ -584,7 +577,6 @@ class InstagramClient(SocialPlatform):
             async with session.get(
                 f"{self.base_url}/{media_id}", params=params
             ) as response:
-
                 if response.status == 200:
                     result = await response.json()
                     return result.get("permalink")
@@ -610,7 +602,6 @@ class InstagramClient(SocialPlatform):
             async with session.get(
                 f"{self.base_url}/{platform_id}", params=params
             ) as response:
-
                 if response.status != 200:
                     return {"error": f"API error: {response.status}"}
 
@@ -648,7 +639,6 @@ class InstagramClient(SocialPlatform):
             async with session.delete(
                 f"{self.base_url}/{platform_id}", params=params
             ) as response:
-
                 return response.status == 200
 
         except Exception as e:

@@ -9,7 +9,9 @@ from typing import Callable, Dict, Any
 from fastapi import FastAPI, Request, Response
 from opentelemetry import trace, baggage
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+    OTLPSpanExporter,
+)
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
@@ -47,7 +49,9 @@ class OpenTelemetryMiddleware:
                 ResourceAttributes.SERVICE_NAME: service_name,
                 ResourceAttributes.SERVICE_VERSION: service_version,
                 ResourceAttributes.DEPLOYMENT_ENVIRONMENT: environment,
-                ResourceAttributes.SERVICE_INSTANCE_ID: os.getenv("HOSTNAME", "unknown"),
+                ResourceAttributes.SERVICE_INSTANCE_ID: os.getenv(
+                    "HOSTNAME", "unknown"
+                ),
             }
         )
 
@@ -71,7 +75,9 @@ class OpenTelemetryMiddleware:
                 agent_host_name=jaeger_endpoint.split("://")[1].split(":")[0],
                 agent_port=int(jaeger_endpoint.split(":")[-1]),
             )
-            tracer_provider.add_span_processor(BatchSpanProcessor(jaeger_exporter))
+            tracer_provider.add_span_processor(
+                BatchSpanProcessor(jaeger_exporter)
+            )
 
         # OTLP 導出器 (優先使用)
         otlp_endpoint = otlp_endpoint or os.getenv(
@@ -79,8 +85,12 @@ class OpenTelemetryMiddleware:
         )
         if otlp_endpoint:
             try:
-                otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
-                tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+                otlp_exporter = OTLPSpanExporter(
+                    endpoint=otlp_endpoint, insecure=True
+                )
+                tracer_provider.add_span_processor(
+                    BatchSpanProcessor(otlp_exporter)
+                )
                 logger.info(f"OTLP exporter configured: {otlp_endpoint}")
             except Exception as e:
                 logger.warning(f"Failed to setup OTLP exporter: {e}")
@@ -115,7 +125,9 @@ class OpenTelemetryMiddleware:
         # 添加自訂中介軟體
         app.middleware("http")(self._custom_middleware)
 
-    async def _custom_middleware(self, request: Request, call_next: Callable) -> Response:
+    async def _custom_middleware(
+        self, request: Request, call_next: Callable
+    ) -> Response:
         """自訂追蹤中介軟體"""
         # 提取上游追蹤上下文
         headers = dict(request.headers)
@@ -123,7 +135,9 @@ class OpenTelemetryMiddleware:
 
         # 創建新的 span
         with self.tracer.start_as_current_span(
-            f"{request.method} {request.url.path}", context=context, kind=trace.SpanKind.SERVER
+            f"{request.method} {request.url.path}",
+            context=context,
+            kind=trace.SpanKind.SERVER,
         ) as span:
             # 設定基本屬性
             span.set_attributes(
@@ -133,7 +147,9 @@ class OpenTelemetryMiddleware:
                     SpanAttributes.HTTP_SCHEME: request.url.scheme,
                     SpanAttributes.HTTP_HOST: request.url.hostname,
                     SpanAttributes.HTTP_TARGET: request.url.path,
-                    SpanAttributes.USER_AGENT_ORIGINAL: request.headers.get("user-agent", ""),
+                    SpanAttributes.USER_AGENT_ORIGINAL: request.headers.get(
+                        "user-agent", ""
+                    ),
                 }
             )
 
@@ -144,9 +160,15 @@ class OpenTelemetryMiddleware:
                 baggage.set_baggage("user.id", user_id)
 
             # 添加請求 ID 和關聯 ID
-            request_id = request.headers.get("x-request-id") or self._generate_request_id()
-            correlation_id = request.headers.get("x-correlation-id") or self._generate_correlation_id()
-            
+            request_id = (
+                request.headers.get("x-request-id")
+                or self._generate_request_id()
+            )
+            correlation_id = (
+                request.headers.get("x-correlation-id")
+                or self._generate_correlation_id()
+            )
+
             span.set_attribute("request.id", request_id)
             span.set_attribute("correlation.id", correlation_id)
             baggage.set_baggage("request.id", request_id)
@@ -166,7 +188,8 @@ class OpenTelemetryMiddleware:
                 span.set_attributes(
                     {
                         SpanAttributes.HTTP_STATUS_CODE: response.status_code,
-                        "http.response.duration_ms": (time.time() - start_time) * 1000,
+                        "http.response.duration_ms": (time.time() - start_time)
+                        * 1000,
                     }
                 )
 
@@ -174,8 +197,12 @@ class OpenTelemetryMiddleware:
                 for key, value in headers_to_inject.items():
                     response.headers[key] = value
 
-                response.headers["x-trace-id"] = format(span.get_span_context().trace_id, "032x")
-                response.headers["x-span-id"] = format(span.get_span_context().span_id, "016x")
+                response.headers["x-trace-id"] = format(
+                    span.get_span_context().trace_id, "032x"
+                )
+                response.headers["x-span-id"] = format(
+                    span.get_span_context().span_id, "016x"
+                )
                 response.headers["x-request-id"] = request_id
                 response.headers["x-correlation-id"] = correlation_id
 
@@ -202,7 +229,9 @@ class OpenTelemetryMiddleware:
                 import jwt
 
                 token = auth_header[7:]
-                payload = jwt.decode(token, options={"verify_signature": False})
+                payload = jwt.decode(
+                    token, options={"verify_signature": False}
+                )
                 return payload.get("sub") or payload.get("user_id")
             except Exception:
                 pass
@@ -213,21 +242,27 @@ class OpenTelemetryMiddleware:
     def _generate_request_id(self) -> str:
         """生成請求 ID"""
         import uuid
+
         return str(uuid.uuid4())
-    
+
     def _generate_correlation_id(self) -> str:
         """生成關聯 ID"""
         import uuid
+
         return str(uuid.uuid4())
 
-    def create_span(self, name: str, attributes: Dict[str, Any] = None) -> trace.Span:
+    def create_span(
+        self, name: str, attributes: Dict[str, Any] = None
+    ) -> trace.Span:
         """創建新的 span"""
         span = self.tracer.start_span(name)
         if attributes:
             span.set_attributes(attributes)
         return span
 
-    def add_span_event(self, span: trace.Span, name: str, attributes: Dict[str, Any] = None):
+    def add_span_event(
+        self, span: trace.Span, name: str, attributes: Dict[str, Any] = None
+    ):
         """添加 span 事件"""
         span.add_event(name, attributes or {})
 
@@ -286,7 +321,9 @@ def trace_function(operation_name: str = None):
                     return result
                 except Exception as e:
                     span.record_exception(e)
-                    span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                    span.set_status(
+                        trace.Status(trace.StatusCode.ERROR, str(e))
+                    )
                     raise
 
         @wraps(func)
@@ -308,7 +345,9 @@ def trace_function(operation_name: str = None):
                     return result
                 except Exception as e:
                     span.record_exception(e)
-                    span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                    span.set_status(
+                        trace.Status(trace.StatusCode.ERROR, str(e))
+                    )
                     raise
 
         import asyncio
@@ -352,12 +391,16 @@ class DatabaseTracing:
 
                         # 記錄結果統計
                         if hasattr(result, "rowcount"):
-                            span.set_attribute("db.rows_affected", result.rowcount)
+                            span.set_attribute(
+                                "db.rows_affected", result.rowcount
+                            )
 
                         return result
                     except Exception as e:
                         span.record_exception(e)
-                        span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                        span.set_status(
+                            trace.Status(trace.StatusCode.ERROR, str(e))
+                        )
                         raise
 
             return wrapper
@@ -398,13 +441,16 @@ class HTTPClientTracing:
 
                         if hasattr(response, "status_code"):
                             span.set_attribute(
-                                SpanAttributes.HTTP_STATUS_CODE, response.status_code
+                                SpanAttributes.HTTP_STATUS_CODE,
+                                response.status_code,
                             )
 
                         return response
                     except Exception as e:
                         span.record_exception(e)
-                        span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                        span.set_status(
+                            trace.Status(trace.StatusCode.ERROR, str(e))
+                        )
                         raise
 
             return wrapper

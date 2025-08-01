@@ -11,7 +11,9 @@ class Settings(BaseSettings):
     database_pool_size: int = int(os.getenv("DATABASE_POOL_SIZE", "10"))
     database_max_overflow: int = int(os.getenv("DATABASE_MAX_OVERFLOW", "20"))
     database_pool_timeout: int = int(os.getenv("DATABASE_POOL_TIMEOUT", "30"))
-    database_pool_recycle: int = int(os.getenv("DATABASE_POOL_RECYCLE", "3600"))
+    database_pool_recycle: int = int(
+        os.getenv("DATABASE_POOL_RECYCLE", "3600")
+    )
 
     # JWT Configuration
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")

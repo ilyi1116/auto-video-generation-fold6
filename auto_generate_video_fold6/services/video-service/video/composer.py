@@ -564,9 +564,9 @@ class VideoComposer:
         return {
             "duration": float(format_info.get("duration", 0)),
             "file_size": int(format_info.get("size", 0)),
-            "resolution": f"{video_stream.get('width', 0
-                                              )}x{video_stream.get \
-                                                  ('height', 0)}",
+            "resolution": f"{video_stream.get('width', 0)}x{
+                video_stream.get('height', 0)
+            }",
             "format": format_info.get("format_name", "mp4").split(",")[0],
         }
 
