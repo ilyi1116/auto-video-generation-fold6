@@ -34,7 +34,7 @@ jobs:
         continue-on-error: true
       
       - name: Run Snyk security scan
-        if: ${{ env.SNYK_TOKEN != '' }}
+        if: ${{ secrets.SNYK_TOKEN != '' }}
         run: |
           echo "Running Snyk security scan with token..."
           mkdir -p ./frontend
@@ -44,7 +44,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Create empty Snyk report
-        if: ${{ env.SNYK_TOKEN == '' }}
+        if: ${{ secrets.SNYK_TOKEN == '' }}
         run: |
           echo "Snyk token not found, creating empty SARIF file."
           mkdir -p ./frontend
