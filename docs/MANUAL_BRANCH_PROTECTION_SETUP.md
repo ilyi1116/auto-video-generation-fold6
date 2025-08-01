@@ -1,0 +1,1 @@
+../auto_generate_video_fold6/docs/MANUAL_BRANCH_PROTECTION_SETUP.md

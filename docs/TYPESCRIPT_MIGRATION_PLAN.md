@@ -1,0 +1,1 @@
+../auto_generate_video_fold6/docs/TYPESCRIPT_MIGRATION_PLAN.md
