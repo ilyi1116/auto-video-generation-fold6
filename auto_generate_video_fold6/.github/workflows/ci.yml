@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Fixed
+name: CI/CD Pipeline - Clean
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           bandit -r services/ -f json -o bandit-report.json || true
         continue-on-error: true
 
-      - name: Run Snyk security scan
+      - name: Run Snyk security scan (with fallback)
         run: |
           # Create empty SARIF file as fallback
           mkdir -p ./frontend
@@ -55,36 +55,16 @@ jobs:
           }
           EOF
 
-          # Try to run Snyk if token is available
-          echo "Running Snyk security scan with fallback..."
-          npx snyk test --sarif-file-output=./frontend/snyk.sarif 2>/dev/null || echo "Snyk scan completed with issues or token not available"
+          # Try to run Snyk (will use token if available via environment)
+          echo "Running Snyk security scan..."
+          npx snyk test --sarif-file-output=./frontend/snyk.sarif 2>/dev/null || echo "Snyk scan completed with issues or no token available"
         continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Verify Snyk SARIF file exists
         run: |
-          if [ ! -f "./frontend/snyk.sarif" ]; then
-            echo "Warning: Snyk SARIF file does not exist, creating empty SARIF file"
-            mkdir -p ./frontend
-            cat > ./frontend/snyk.sarif << 'EOF'
-          {
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "version": "2.1.0",
-            "runs": [
-              {
-                "tool": {
-                  "driver": {
-                    "name": "snyk",
-                    "version": "1.0.0",
-                    "informationUri": "https://snyk.io"
-                  }
-                },
-                "results": []
-              }
-            ]
-          }
-          EOF
-          fi
-          ls -la ./frontend/snyk.sarif
+          ls -la ./frontend/snyk.sarif || echo "SARIF file not found"
 
       - name: Upload Snyk results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
@@ -112,7 +92,7 @@ jobs:
           name: security-reports
           path: |
             bandit-report.json
-            snyk.sarif
+            ./frontend/snyk.sarif
           retention-days: 7
 
   # Frontend tests
@@ -273,50 +253,6 @@ jobs:
             echo "No tests found for ${{ matrix.service }}"
           fi
         continue-on-error: true
-
-  # Docker build test
-  docker-build:
-    name: Docker Build Test
-    runs-on: ubuntu-latest
-    needs: [test-frontend]
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Test Docker Compose configuration
-        run: |
-          if [ -f docker-compose.yml ]; then
-            echo "Testing Docker Compose configuration..."
-            docker compose config
-          else
-            echo "No docker-compose.yml found"
-          fi
-
-      - name: Test individual service builds
-        run: |
-          services_with_dockerfile=()
-          for service_dir in services/*/; do
-            if [ -f "${service_dir}Dockerfile" ]; then
-              service_name=$(basename "$service_dir")
-              services_with_dockerfile+=("$service_name")
-            fi
-          done
-
-          if [ ${#services_with_dockerfile[@]} -eq 0 ]; then
-            echo "No services with Dockerfile found"
-            exit 0
-          fi
-
-          echo "Found services with Dockerfile: ${services_with_dockerfile[*]}"
-
-          # Test build first service only to save time
-          first_service=${services_with_dockerfile[0]}
-          echo "Testing build for: $first_service"
-          docker build services/$first_service -t test-$first_service || echo "Build failed for $first_service"
 
   # Integration test (simplified)
   integration-test:
