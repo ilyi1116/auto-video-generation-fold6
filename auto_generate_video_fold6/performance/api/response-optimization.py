@@ -205,7 +205,7 @@ class CacheMiddleware(BaseHTTPMiddleware):
         ]
 
         key_string = ":".join(key_parts)
-        return f"http_cache:{hashlib.md5(key_string.encode()).hexdigest()}"
+        return f"http_cache:{hashlib.sha256(key_string.encode()).hexdigest()}"
 
     def _should_cache(self, request: Request, response: Response) -> bool:
         """判斷是否應該快取"""

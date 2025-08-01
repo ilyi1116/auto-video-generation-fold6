@@ -667,7 +667,7 @@ async def main():
 if __name__ == "__main__":
     try:
         dashboard = AnalyticsDashboard()
-        dashboard.run(host="0.0.0.0", port=8050, debug=False)
+        dashboard.run(host="127.0.0.1", port=8050, debug=False)
     except Exception as e:
         logger.error(f"啟動儀表板失敗: {e}")
         print("請安裝必要的依賴: pip install dash plotly pandas")

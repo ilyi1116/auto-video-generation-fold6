@@ -65,7 +65,10 @@ class ReportGenerator:
         # 初始化模板引擎
         template_dir = Path(__file__).parent / "templates"
         template_dir.mkdir(exist_ok=True)
-        self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
+        self.jinja_env = Environment(
+            loader=FileSystemLoader(str(template_dir)),
+            autoescape=True
+        )
 
         # 確保模板文件存在
         self._create_default_templates()

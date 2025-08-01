@@ -5,12 +5,13 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # Database
-    database_url: str = os.getenv(
-        "DATABASE_URL",
-        "postgresql://auto_video_user:your_secure_password_here@"
-        "postgres:5432/auto_video_db",
-    )
+    # Database Configuration
+    database_url: str = os.getenv("DATABASE_URL")
+    database_read_url: str = os.getenv("DATABASE_READ_URL")  # Read replica URL
+    database_pool_size: int = int(os.getenv("DATABASE_POOL_SIZE", "10"))
+    database_max_overflow: int = int(os.getenv("DATABASE_MAX_OVERFLOW", "20"))
+    database_pool_timeout: int = int(os.getenv("DATABASE_POOL_TIMEOUT", "30"))
+    database_pool_recycle: int = int(os.getenv("DATABASE_POOL_RECYCLE", "3600"))
 
     # JWT Configuration
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
@@ -66,6 +67,8 @@ class Settings(BaseSettings):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Validate required settings
+        if not self.database_url:
+            raise ValueError("DATABASE_URL environment variable is required")
         if not self.jwt_secret_key:
             raise ValueError("JWT_SECRET_KEY environment variable is required")
         if len(self.jwt_secret_key) < 32:

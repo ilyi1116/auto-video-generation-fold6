@@ -1,0 +1,140 @@
+{
+  "summary": {
+    "total_validations": 6,
+    "passed": 5,
+    "failed": 1,
+    "success_rate": 83.33333333333334
+  },
+  "results": [
+    {
+      "component": "備份腳本",
+      "success": true,
+      "message": "所有備份腳本都存在且可執行",
+      "details": {
+        "scripts": [
+          "scripts/backup_manager.py",
+          "scripts/backup-system.sh",
+          "scripts/restore-system.sh",
+          "scripts/disaster_recovery.py"
+        ]
+      }
+    },
+    {
+      "component": "系統依賴",
+      "success": true,
+      "message": "所有必要的系統工具都可用",
+      "details": {
+        "available": [
+          {
+            "command": "pg_dump",
+            "description": "PostgreSQL 備份工具"
+          },
+          {
+            "command": "psql",
+            "description": "PostgreSQL 客戶端"
+          },
+          {
+            "command": "tar",
+            "description": "檔案歸檔工具"
+          },
+          {
+            "command": "gzip",
+            "description": "壓縮工具"
+          },
+          {
+            "command": "docker",
+            "description": "容器管理工具"
+          }
+        ]
+      }
+    },
+    {
+      "component": "備份配置",
+      "success": true,
+      "message": "所有備份配置文件格式正確",
+      "details": {
+        "valid_configs": [
+          "config/backup-config.json",
+          "config/disaster-recovery-config.json",
+          "scripts/backup/config.yaml"
+        ]
+      }
+    },
+    {
+      "component": "備份目錄",
+      "success": true,
+      "message": "備份目錄結構正確",
+      "details": {
+        "existing_dirs": [
+          "scripts/backup",
+          "monitoring/backup",
+          "config"
+        ],
+        "missing_dirs": [],
+        "writable_temp_dirs": []
+      }
+    },
+    {
+      "component": "Docker 備份配置",
+      "success": true,
+      "message": "Docker Compose 備份配置正確",
+      "details": {
+        "backup_configs": [
+          {
+            "file": "docker-compose.yml",
+            "configs": [
+              "postgres_data:",
+              "redis_data:",
+              "minio_data:"
+            ]
+          },
+          {
+            "file": "docker/docker-compose.prod.yml",
+            "configs": [
+              "postgres_data:",
+              "redis_data:",
+              "minio_data:"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "component": "環境變數",
+      "success": false,
+      "message": "備份環境變數配置: 0/8 已配置",
+      "details": {
+        "configured": [],
+        "missing": [
+          "BACKUP_ENABLED",
+          "BACKUP_SCHEDULE",
+          "BACKUP_RETENTION_DAYS",
+          "BACKUP_S3_BUCKET",
+          "DATABASE_URL",
+          "REDIS_URL",
+          "S3_ACCESS_KEY_ID",
+          "S3_SECRET_ACCESS_KEY"
+        ],
+        "documented": [
+          "BACKUP_ENABLED",
+          "BACKUP_SCHEDULE",
+          "BACKUP_RETENTION_DAYS",
+          "BACKUP_S3_BUCKET",
+          "DATABASE_URL",
+          "REDIS_URL",
+          "S3_ACCESS_KEY_ID",
+          "S3_SECRET_ACCESS_KEY",
+          "BACKUP_ENABLED",
+          "BACKUP_SCHEDULE",
+          "BACKUP_RETENTION_DAYS",
+          "BACKUP_S3_BUCKET",
+          "DATABASE_URL",
+          "REDIS_URL",
+          "S3_ACCESS_KEY_ID",
+          "S3_SECRET_ACCESS_KEY"
+        ],
+        "undocumented": []
+      }
+    }
+  ]
+}

@@ -215,7 +215,7 @@ class CacheKeyGenerator:
     def generate_hash(*args) -> str:
         """生成快取鍵雜湊"""
         content = ":".join(str(arg) for arg in args)
-        return hashlib.md5(content.encode()).hexdigest()
+        return hashlib.sha256(content.encode()).hexdigest()
 
 
 def cache_result(ttl: int = 3600, key_prefix: str = None):
@@ -266,7 +266,7 @@ def _generate_cache_key(func: Callable, prefix: str, args: tuple, kwargs: dict) 
     kwargs_str = ":".join(f"{k}={v}" for k, v in sorted(filtered_kwargs.items()))
 
     content = f"{func_name}:{args_str}:{kwargs_str}"
-    hash_key = hashlib.md5(content.encode()).hexdigest()
+    hash_key = hashlib.sha256(content.encode()).hexdigest()
 
     if prefix:
         return f"{prefix}:{hash_key}"

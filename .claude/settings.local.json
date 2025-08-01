@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(command -v:*)",
+      "Bash(pip install:*)",
+      "Bash(bandit:*)",
+      "Bash(mkdir:*)",
+      "Bash(python scripts/validate_backup_config:*)",
+      "Bash(chmod:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

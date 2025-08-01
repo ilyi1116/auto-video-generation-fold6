@@ -4,6 +4,222 @@
 
 本指南提供 Auto Video 系統常見問題的診斷和解決方案，幫助開發者和運維人員快速定位並解決系統問題。
 
+## 🔐 安全問題排查
+
+### 常見安全配置問題
+
+#### 硬編碼密碼問題
+**問題症狀**: 部署時出現安全警告，或安全掃描發現硬編碼密碼
+```bash
+# 檢查是否存在硬編碼密碼
+bandit -r . --skip B101,B601 -f txt | grep -E "(HIGH|MEDIUM)"
+```
+
+**解決方案**:
+1. 檢查所有 `docker-compose.yml` 文件，確保沒有默認密碼
+2. 使用環境變數替代硬編碼值：
+```yaml
+# 錯誤做法
+POSTGRES_PASSWORD: your_secure_password_here
+
+# 正確做法  
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+```
+
+3. 確保所有 `.env.example` 文件包含必要的環境變數
+
+#### 容器權限過大問題
+**問題症狀**: 容器使用 `privileged: true` 或以 root 身份運行
+```bash
+# 檢查容器權限配置
+grep -r "privileged.*true" docker-compose*.yml
+```
+
+**解決方案**:
+1. 移除不必要的 `privileged: true` 配置
+2. 為容器添加資源限制：
+```yaml
+deploy:
+  resources:
+    limits:
+      cpus: '1.0'
+      memory: 1G
+    reservations:
+      cpus: '0.5'
+      memory: 512M
+```
+
+#### MD5 哈希安全問題
+**問題症狀**: 安全掃描發現使用弱哈希算法
+```bash
+# 檢查 MD5 使用
+grep -r "hashlib.md5" --include="*.py" .
+```
+
+**解決方案**: 將 MD5 替換為 SHA-256
+```python
+# 錯誤做法
+hashlib.md5(content.encode()).hexdigest()
+
+# 正確做法
+hashlib.sha256(content.encode()).hexdigest()
+```
+
+### 安全掃描與修復
+
+#### 運行安全掃描
+```bash
+# Python 代碼安全掃描
+pip install bandit
+bandit -r . --skip B101,B601 -f json -o security_report.json
+
+# Docker 映像掃描
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  -v $(pwd):/tmp aquasec/trivy image --exit-code 1 your-image:tag
+```
+
+#### 常見安全修復
+1. **Jinja2 自動轉義**: 啟用 `autoescape=True`
+2. **綁定地址限制**: 避免使用 `0.0.0.0`，改用 `127.0.0.1`
+3. **SSL/TLS 配置**: 確保使用安全的 TLS 版本
+
+## ⚡ 性能問題排查
+
+### 資料庫性能優化
+
+#### 連接池配置問題
+**問題症狀**: 資料庫連接超時，"too many connections" 錯誤
+
+**診斷命令**:
+```bash
+# 檢查 PostgreSQL 連接數
+docker exec -it postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} \
+  -c "SELECT count(*) FROM pg_stat_activity;"
+
+# 檢查連接池配置
+grep -r "pool_size\|max_overflow" --include="*.py" services/
+```
+
+**解決方案**:
+1. 優化連接池配置：
+```python
+# config.py
+DATABASE_POOL_SIZE=10
+DATABASE_MAX_OVERFLOW=20
+DATABASE_POOL_TIMEOUT=30
+DATABASE_POOL_RECYCLE=3600
+```
+
+2. 添加讀寫分離支持：
+```python
+# database.py
+read_engine = create_engine(settings.database_read_url, ...)
+ReadSessionLocal = sessionmaker(bind=read_engine or engine)
+```
+
+#### 資料庫查詢性能
+**問題症狀**: 查詢響應慢，CPU 使用率高
+
+**診斷**:
+```sql
+-- 檢查慢查詢
+SELECT query, mean_time, calls 
+FROM pg_stat_statements 
+ORDER BY mean_time DESC LIMIT 10;
+
+-- 檢查鎖等待
+SELECT * FROM pg_locks WHERE NOT granted;
+```
+
+**解決方案**:
+1. 添加適當的索引
+2. 使用連接池
+3. 實施查詢優化
+4. 考慮讀寫分離
+
+## 📊 監控告警問題
+
+### Prometheus 告警規則問題
+**問題症狀**: 告警不觸發，或誤報過多
+
+**檢查配置**:
+```bash
+# 驗證 Prometheus 配置
+docker exec prometheus promtool check config /etc/prometheus/prometheus.yml
+
+# 檢查告警規則
+docker exec prometheus promtool check rules /etc/prometheus/rules/*.yml
+```
+
+**常見告警規則調整**:
+```yaml
+# 調整告警閾值
+- alert: HighCpuUsage
+  expr: cpu_usage > 80
+  for: 2m  # 增加持續時間避免誤報
+  
+# 添加抑制規則避免告警風暴
+- alert: DatabaseDown
+  expr: up{job="postgres"} == 0
+  for: 30s
+```
+
+### Grafana 監控面板問題
+**問題症狀**: 面板不顯示數據，或顯示錯誤
+
+**排查步驟**:
+1. 檢查數據源連接
+2. 驗證查詢語法
+3. 檢查時間範圍設置
+4. 查看 Grafana 日誌
+
+## 🔄 備份恢復問題
+
+### 備份配置驗證
+**使用內建驗證腳本**:
+```bash
+# 運行備份配置驗證
+python scripts/validate_backup_config.py
+
+# 運行完整備份恢復測試
+python scripts/test_backup_recovery.py
+```
+
+### 常見備份問題
+
+#### 權限問題
+**問題症狀**: 備份腳本執行失敗，權限被拒絕
+```bash
+# 檢查腳本權限
+ls -la scripts/backup*
+
+# 添加執行權限
+chmod +x scripts/backup_manager.py scripts/disaster_recovery.py
+```
+
+#### 存儲空間不足
+**問題症狀**: 備份失敗，磁碟空間不足
+```bash
+# 檢查磁碟空間
+df -h
+
+# 清理舊備份
+find /var/backups -name "*.tar.gz" -mtime +30 -delete
+```
+
+#### 環境變數缺失
+**問題症狀**: 備份腳本找不到配置
+```bash
+# 檢查必要環境變數
+echo $DATABASE_URL
+echo $S3_ACCESS_KEY_ID
+echo $BACKUP_ENABLED
+
+# 從 .env.example 複製配置
+cp .env.example .env
+# 編輯 .env 文件設置實際值
+```
+
 ## 🎯 快速診斷
 
 ### 系統健康檢查清單
