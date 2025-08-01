@@ -100,9 +100,31 @@ kubectl get services -n auto-video-generation
 
 ## 🔧 配置管理
 
+### Docker Compose 配置說明
+
+本專案提供多個 Docker Compose 配置檔案，用途如下：
+
+- **`docker-compose.unified.yml`** - **主要配置** (Phase 3 統一部署)
+  - 整合所有微服務的完整部署配置
+  - 包含 Phase 2 資料庫系統配置
+  - 支援開發、測試、生產三種環境
+  - **建議使用此配置進行所有部署**
+
+- **`docker-compose.yml`** - 向下相容配置
+  - 保留用於向下相容
+  - 不建議新專案使用
+
+### Kubernetes 配置說明
+
+- **`k8s/unified-deployment.yaml`** - **生產環境 K8s 配置**
+  - 包含 25 個 Kubernetes 資源定義
+  - 整合 Phase 2 資料庫系統
+  - 支援自動擴展 (HPA)、網路政策、Ingress
+  - **用於 Staging 和 Production 環境**
+
 ### 環境變數配置
 
-#### 開發環境 (.env)
+#### 開發環境 (.env.development)
 ```bash
 ENVIRONMENT=development
 DEBUG=true
@@ -110,12 +132,12 @@ LOG_LEVEL=debug
 
 # 資料庫配置
 POSTGRES_HOST=localhost
-POSTGRES_PASSWORD=password
-DATABASE_URL=postgresql://postgres:password@localhost:5432/auto_video_generation
+POSTGRES_PASSWORD=dev_password
+DATABASE_URL=postgresql://postgres:dev_password@localhost:5432/auto_video_generation_dev
 
-# API 密鑰 (開發用)
-OPENAI_API_KEY=sk-dev-...
-GOOGLE_AI_API_KEY=dev-key-...
+# API 密鑰 (開發用預設值)
+OPENAI_API_KEY=sk-dev-test-key
+GOOGLE_AI_API_KEY=dev-google-key
 ```
 
 #### 生產環境 (Kubernetes Secrets)
@@ -134,6 +156,33 @@ kubectl create secret tls app-tls-secret \
   -n auto-video-generation
 ```
 
+### 配置同步指南
+
+為確保 Docker Compose 和 Kubernetes 配置保持同步，請遵循以下步驟：
+
+#### 1. 環境變數同步
+```bash
+# 更新 .env.template 後，同步到 Kubernetes ConfigMap
+# 手動檢查 k8s/unified-deployment.yaml 中的 ConfigMap 部分
+# 確保環境變數名稱和預設值一致
+```
+
+#### 2. 服務版本同步
+```bash
+# 更新 Docker Compose 中的映像版本後
+# 同步更新 Kubernetes Deployment 中的映像標籤
+# 使用統一的映像版本管理策略
+```
+
+#### 3. 使用腳本驗證同步
+```bash
+# 執行配置驗證腳本
+python scripts/validate-alembic.py
+
+# 執行 Phase 3 驗證
+python scripts/test-phase3-deployment.py
+```
+
 ### 資料庫配置 (Phase 2 統一系統)
 
 #### Alembic 遷移執行
@@ -141,7 +190,7 @@ kubectl create secret tls app-tls-secret \
 # 開發環境
 alembic upgrade head
 
-# 容器環境
+# 容器環境 (使用統一配置)
 docker-compose -f docker-compose.unified.yml exec api-gateway alembic upgrade head
 
 # Kubernetes 環境

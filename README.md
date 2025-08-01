@@ -1,4 +1,4 @@
-# 🎬 Auto Video - AI 驅動的聲音克隆與影片生成系統
+# 🎬 Auto Video Generation System - AI 驅動的聲音克隆與影片生成系統
 
 <div align="center">
 
@@ -14,7 +14,9 @@
 
 ## 📖 專案概覽
 
-Auto Video 是一個**企業級的 AI 聲音克隆與自動影片生成系統**，採用現代微服務架構，整合多種先進 AI 技術，實現從語音克隆到社群媒體發布的完整自動化流程。
+Auto Video Generation System 是一個**企業級的 AI 聲音克隆與自動影片生成系統**，採用現代微服務架構，整合多種先進 AI 技術，實現從語音克隆到社群媒體發布的完整自動化流程。
+
+本專案經過完整的**三階段系統優化**，提供生產級的部署策略和資料庫管理系統。
 
 ### 🌟 核心功能
 
@@ -29,10 +31,11 @@ Auto Video 是一個**企業級的 AI 聲音克隆與自動影片生成系統**�
 
 - **後端**: FastAPI (Python) + 微服務架構
 - **前端**: SvelteKit + TypeScript
-- **AI 服務**: Google Gemini, Stable Diffusion, ElevenLabs
-- **資料庫**: PostgreSQL + Redis
+- **AI 服務**: OpenAI GPT-4, Google Gemini, Stable Diffusion
+- **資料庫**: PostgreSQL (統一 Alembic 遷移) + Redis (分散式快取)
 - **監控**: Prometheus + Grafana
-- **部署**: Docker + Docker Compose
+- **部署**: Docker Compose + Kubernetes (生產環境)
+- **CI/CD**: GitHub Actions 完整流水線
 
 ## 🚀 快速開始
 
@@ -40,23 +43,35 @@ Auto Video 是一個**企業級的 AI 聲音克隆與自動影片生成系統**�
 
 - **Python**: 3.11+
 - **Node.js**: 18+
-- **Docker**: 20.10+
-- **記憶體**: 至少 8GB RAM
+- **Docker**: 20.10+ 與 Docker Compose
+- **記憶體**: 至少 8GB RAM (推薦 16GB)
 - **儲存**: 至少 50GB 可用空間
 
-### 一鍵環境設置
+### 🎯 一鍵部署 (推薦)
 
 ```bash
 # 1. 克隆專案
-git clone https://github.com/your-org/auto-video.git
-cd auto-video
+git clone https://github.com/your-org/auto-video-generation-fold6.git
+cd auto-video-generation-fold6
 
-# 2. 執行自動化設置腳本
-chmod +x auto_generate_video_fold6/scripts/dev-setup.sh
-./auto_generate_video_fold6/scripts/dev-setup.sh
+# 2. 配置環境變數
+cp .env.template .env
+# 編輯 .env 填入必要的 API 密鑰
 
-# 3. 啟動開發環境
-./auto_generate_video_fold6/scripts/start-dev.sh
+# 3. 一鍵啟動 (統一部署腳本)
+chmod +x scripts/deploy-unified.sh
+./scripts/deploy-unified.sh docker development
+
+# 4. 驗證部署
+curl http://localhost:8000/health
+curl http://localhost:3000/
+```
+
+### 🏃‍♂️ 開發環境快速啟動
+
+```bash
+# 僅啟動基礎設施 (適合本地開發)
+./scripts/deploy-unified.sh dev
 ```
 
 ### 手動設置（詳細步驟）
@@ -122,27 +137,43 @@ docker-compose up -d
 ```
 auto-video-generation-fold6/
 ├── 📁 auto_generate_video_fold6/      # 主要應用程式目錄
-│   ├── 🌐 frontend/                   # SvelteKit 前端應用
-│   ├── 🔧 services/                   # 微服務實現
-│   │   ├── 🔐 api-gateway/           # API 閘道器 (8000)
-│   │   ├── 👤 auth-service/          # 認證服務 (8001)
-│   │   ├── 💾 data-service/          # 資料服務 (8002)
-│   │   ├── 🤖 inference-service/     # AI 推論服務 (8003)
-│   │   ├── 🎬 video-service/         # 影片處理服務 (8004)
-│   │   ├── 🧠 ai-service/            # AI 模型管理 (8005)
-│   │   ├── 📱 social-service/        # 社群媒體整合 (8006)
-│   │   ├── 📊 trend-service/         # 趋势分析 (8007)
-│   │   └── ⏰ scheduler-service/     # 任務排程 (8008)
-│   ├── 🗂️ config/                    # 配置文件
-│   ├── 📊 monitoring/                # 監控配置
-│   ├── 🛠️ scripts/                   # 維護腳本
-│   ├── 🧪 tests/                     # 測試文件
-│   ├── 📚 docs/                      # 技術文檔
-│   └── 🐳 docker/                    # 容器編排文件
-├── 📄 docs/                          # 專案文檔 (連結到子目錄)
-├── 🔧 scripts/                       # 頂層腳本 (向下相容)
+│   ├── 🔐 api_gateway/               # API 閘道器 (8000)
+│   ├── 👤 auth_service/              # 認證服務 (8001)
+│   ├── 🎬 video_service/             # 影片處理服務 (8004)
+│   ├── 🧠 ai_service/                # AI 模型管理 (8005)
+│   ├── 📱 social_service/            # 社群媒體整合 (8006)
+│   ├── 📊 trend_service/             # 趨勢分析 (8007)
+│   ├── ⏰ scheduler_service/         # 任務排程 (8008)
+│   ├── 💾 storage_service/           # 儲存服務 (8009)
+│   ├── 🗂️ models/                    # 統一資料庫模型 (Phase 2)
+│   ├── 💽 database/                  # 資料庫管理工具
+│   ├── 🔧 shared/                    # 共享程式庫
+│   │   ├── api/                     # API 標準格式
+│   │   ├── auth/                    # 認證工具
+│   │   └── utils/                   # 通用工具
+│   └── 📚 docs/                      # 技術文檔
+├── 🌐 frontend/                       # SvelteKit 前端應用
+├── 🛠️ scripts/                        # 維護與部署腳本
+│   ├── deploy-unified.sh            # 統一部署腳本
+│   ├── db-migration-manager.py      # 資料庫遷移管理
+│   └── test-phase3-deployment.py    # Phase 3 驗證腳本
+├── 📊 docs/                           # 專案文檔
+│   └── DEPLOYMENT_STRATEGY.md       # 部署策略指南
+├── 🐳 k8s/                           # Kubernetes 部署配置
+│   └── unified-deployment.yaml      # 生產環境 K8s 配置
+├── 🔧 .github/workflows/             # CI/CD 流水線
+├── 📋 docker-compose.unified.yml      # 統一 Docker Compose 配置
+├── 🗄️ alembic/                       # 資料庫遷移檔案
+├── ⚙️ alembic.ini                     # Alembic 配置
+├── 🔐 .env.template                   # 環境變數範本 (142 項配置)
 └── 📋 pyproject.toml                 # Python 專案配置
 ```
+
+### 🎯 三階段系統優化成果
+
+- **Phase 1**: 專案結構統一化 ✅
+- **Phase 2**: 資料庫系統統一 (Alembic + 統一模型) ✅
+- **Phase 3**: 部署策略系統 (Docker + K8s + 自動化腳本) ✅
 
 ## 🔧 API 概覽
 
@@ -182,24 +213,37 @@ python scripts/config-validator.py
 
 ## 🚀 部署指南
 
-### 開發環境
+### 統一部署腳本 (Phase 3)
+
+本專案提供統一的部署腳本，支援多環境一鍵部署：
 
 ```bash
-# 使用 Docker Compose
-cd auto_generate_video_fold6
-docker-compose -f docker/docker-compose.dev.yml up -d
+# 開發環境 Docker 部署
+./scripts/deploy-unified.sh docker development
+
+# 測試環境部署  
+./scripts/deploy-unified.sh docker staging
+
+# 生產環境 Kubernetes 部署
+./scripts/deploy-unified.sh k8s production
+
+# 開發環境快速啟動 (僅基礎設施)
+./scripts/deploy-unified.sh dev
 ```
 
-### 生產環境
+### 部署特色
 
-```bash
-# 生產部署
-cd auto_generate_video_fold6
-docker-compose -f docker/docker-compose.prod.yml up -d
+- ✅ **自動依賴檢查** - 確保 Docker、kubectl 等工具已安裝
+- ✅ **環境配置管理** - 自動處理不同環境的配置差異
+- ✅ **Phase 2 資料庫整合** - 自動執行 Alembic 遷移
+- ✅ **健康檢查** - 部署後自動驗證服務狀態
+- ✅ **錯誤處理** - 完整的錯誤日誌和故障排除
 
-# 執行健康檢查
-./scripts/health-check.sh
-```
+### 詳細部署文檔
+
+- 📚 [完整部署策略指南](docs/DEPLOYMENT_STRATEGY.md)
+- 🐳 [Docker Compose 配置說明](docker-compose.unified.yml)
+- ☸️ [Kubernetes 生產部署](k8s/unified-deployment.yaml)
 
 ## 📚 文檔連結
 
