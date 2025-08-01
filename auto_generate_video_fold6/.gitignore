@@ -159,3 +159,9 @@ celerybeat.pid
 # 文檔生成
 docs/_build/
 site/
+# Ignore production environment file
+.env.production
+
+# Test results and generated videos
+test-results/
+generated_videos/
