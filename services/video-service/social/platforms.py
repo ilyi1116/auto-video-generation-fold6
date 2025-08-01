@@ -182,9 +182,11 @@ class TikTokClient(SocialPlatform):
         payload = {
             "video_id": video_id,
             "text": request.description or request.title,
-            "privacy_level": "PUBLIC_TO_EVERYONE"
-            if request.privacy == "public"
-            else "SELF_ONLY",
+            "privacy_level": (
+                "PUBLIC_TO_EVERYONE"
+                if request.privacy == "public"
+                else "SELF_ONLY"
+            ),
             "disable_duet": False,
             "disable_comment": False,
             "disable_stitch": False,
@@ -501,9 +503,9 @@ class InstagramClient(SocialPlatform):
 
         params = {
             "video_url": request.video_url,
-            "media_type": "REELS"
-            if request.custom_metadata.get("is_reels")
-            else "VIDEO",
+            "media_type": (
+                "REELS" if request.custom_metadata.get("is_reels") else "VIDEO"
+            ),
             "caption": f"{request.title}\n\n{request.description or ''}",
             "access_token": self.api_key,
         }

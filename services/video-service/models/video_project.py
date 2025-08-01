@@ -329,14 +329,16 @@ class VideoProject(BaseModel):
             progress=row["progress"],
             error_message=row["error_message"],
             script_content=row["script_content"],
-            script_scenes=json.loads(row["script_scenes"])
-            if row["script_scenes"]
-            else None,
+            script_scenes=(
+                json.loads(row["script_scenes"])
+                if row["script_scenes"]
+                else None
+            ),
             voice_url=row["voice_url"],
             music_url=row["music_url"],
-            image_urls=json.loads(row["image_urls"])
-            if row["image_urls"]
-            else None,
+            image_urls=(
+                json.loads(row["image_urls"]) if row["image_urls"] else None
+            ),
             preview_url=row["preview_url"],
             final_url=row["final_url"],
             thumbnail_url=row["thumbnail_url"],
@@ -471,15 +473,15 @@ class VideoProject(BaseModel):
             "preview_url": self.preview_url,
             "final_url": self.final_url,
             "thumbnail_url": self.thumbnail_url,
-            "created_at": self.created_at.isoformat()
-            if self.created_at
-            else None,
-            "updated_at": self.updated_at.isoformat()
-            if self.updated_at
-            else None,
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "estimated_completion": (
                 self.estimated_completion.isoformat()
                 if self.estimated_completion

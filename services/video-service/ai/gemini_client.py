@@ -297,9 +297,7 @@ Make sure the total duration of all scenes equals {duration} seconds.
             scene_type = (
                 "intro"
                 if i == 0
-                else "outro"
-                if i == scene_count - 1
-                else "main"
+                else "outro" if i == scene_count - 1 else "main"
             )
 
             scenes.append(
