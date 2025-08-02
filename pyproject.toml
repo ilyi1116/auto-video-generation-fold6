@@ -9,7 +9,7 @@ description = "Auto Video Generation System with AI Voice Cloning and Social Med
 authors = [{name = "Auto Video Team", email = "team@autovideo.com"}]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -17,13 +17,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-
-# 包發現配置
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["auto_generate_video_fold6*"]
-exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
-
 dependencies = [
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
@@ -45,6 +38,12 @@ dependencies = [
     "torch>=2.1.0",
     "torchaudio>=2.1.0",
 ]
+
+# 包發現配置
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["auto_generate_video_fold6*"]
+exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
 
 [project.optional-dependencies]
 dev = [
