@@ -5,7 +5,7 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 
 # HTTP client and async support
-aiohttp==3.9.1
+aiohttp>=3.10.11
 httpx==0.25.2
 asyncio-mqtt==0.15.0
 

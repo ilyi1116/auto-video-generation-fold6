@@ -13,7 +13,7 @@ psycopg2-binary>=2.9.0
 redis>=5.0.0
 
 # 身份驗證
-python-jose[cryptography]>=3.3.0
+python-jose[cryptography]>=3.3.4
 passlib[bcrypt]>=1.7.4
 
 # HTTP 客戶端
