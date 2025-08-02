@@ -21,7 +21,12 @@ import psutil
 import redis
 import sqlalchemy as sa
 import yaml
-from prometheus_client import CollectorRegistry, Counter, Gauge, start_http_server
+from prometheus_client import (
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    start_http_server,
+)
 from sqlalchemy import create_engine
 
 import docker
@@ -560,9 +565,9 @@ class HealthMonitor:
                     not last_alert or (current_time - last_alert).seconds > 300
                 ):  # 5分鐘間隔
                     await self._send_alert(health_status, failure_count)
-                    self.service_states[service_name]["last_alert"] = (
-                        current_time
-                    )
+                    self.service_states[service_name][
+                        "last_alert"
+                    ] = current_time
 
     async def _check_dependencies(self, health_statuses: List[HealthStatus]):
         """檢查服務依賴關係"""

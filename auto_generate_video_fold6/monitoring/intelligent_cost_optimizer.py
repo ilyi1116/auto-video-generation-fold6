@@ -666,9 +666,11 @@ class BudgetManager:
             # 計算當前期間的實際成本
             actual_cost = await self._calculate_period_cost(
                 budget_data["period"],
-                CostCategory(budget_data["category"])
-                if budget_data["category"] != "all"
-                else None,
+                (
+                    CostCategory(budget_data["category"])
+                    if budget_data["category"] != "all"
+                    else None
+                ),
             )
 
             # 計算使用率
@@ -787,7 +789,9 @@ class IntelligentCostOptimizer:
                     logger.warning(f"無法預測 {category.value} 的成本: {e}")
 
             # 2. 優化建議
-            recommendations = await self.cost_optimizer.generate_optimization_recommendations()
+            recommendations = (
+                await self.cost_optimizer.generate_optimization_recommendations()
+            )
 
             # 3. 異常檢測
             anomalies = await self.anomaly_detector.detect_anomalies()

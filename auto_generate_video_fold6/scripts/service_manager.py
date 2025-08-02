@@ -73,9 +73,9 @@ class ServiceStatus:
         return {
             **asdict(self),
             "state": self.state.value,
-            "start_time": self.start_time.isoformat()
-            if self.start_time
-            else None,
+            "start_time": (
+                self.start_time.isoformat() if self.start_time else None
+            ),
             "metadata": self.metadata or {},
         }
 

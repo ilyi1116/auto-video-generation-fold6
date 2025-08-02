@@ -27,12 +27,16 @@ class DeploymentTester:
             "api-gateway": "http://localhost:8000",
             "auth-service": "http://localhost:8001",
             "video-service": "http://localhost:8004",
-            "frontend": "http://localhost:3000"
+            "frontend": "http://localhost:3000",
         }
 
-    async def test_service_health(self, service_name: str, base_url: str) -> Dict:
+    async def test_service_health(
+        self, service_name: str, base_url: str
+    ) -> Dict:
         """測試服務健康狀態"""
-        health_endpoint = f"{base_url}/health" if service_name != "frontend" else base_url
+        health_endpoint = (
+            f"{base_url}/health" if service_name != "frontend" else base_url
+        )
 
         try:
             timeout = aiohttp.ClientTimeout(total=10)
@@ -43,10 +47,12 @@ class DeploymentTester:
 
                     return {
                         "service": service_name,
-                        "status": "healthy" if status_code == 200 else "unhealthy",
+                        "status": (
+                            "healthy" if status_code == 200 else "unhealthy"
+                        ),
                         "status_code": status_code,
                         "response": response_text[:200],
-                        "response_time_ms": 0  # 將在外部計算
+                        "response_time_ms": 0,  # 將在外部計算
                     }
 
         except Exception as e:
@@ -56,7 +62,7 @@ class DeploymentTester:
                 "error": str(e),
                 "status_code": 0,
                 "response": "",
-                "response_time_ms": 0
+                "response_time_ms": 0,
             }
 
     async def test_api_endpoints(self) -> List[Dict]:
@@ -66,26 +72,26 @@ class DeploymentTester:
                 "name": "API Gateway Health Check",
                 "method": "GET",
                 "url": f"{self.services['api-gateway']}/health",
-                "expected_status": 200
+                "expected_status": 200,
             },
             {
                 "name": "Auth Service Health Check",
                 "method": "GET",
                 "url": f"{self.services['auth-service']}/health",
-                "expected_status": 200
+                "expected_status": 200,
             },
             {
                 "name": "Video Service Health Check",
                 "method": "GET",
                 "url": f"{self.services['video-service']}/health",
-                "expected_status": 200
+                "expected_status": 200,
             },
             {
                 "name": "API Documentation",
                 "method": "GET",
                 "url": f"{self.services['api-gateway']}/docs",
-                "expected_status": 200
-            }
+                "expected_status": 200,
+            },
         ]
 
         results = []
@@ -101,28 +107,43 @@ class DeploymentTester:
                             status_code = response.status
                             response_text = await response.text()
                     elif test_case["method"] == "POST":
-                        async with session.post(test_case["url"], json=test_case.get("data", {})) as response:
+                        async with session.post(
+                            test_case["url"], json=test_case.get("data", {})
+                        ) as response:
                             status_code = response.status
                             response_text = await response.text()
 
                     response_time = (time.time() - start_time) * 1000
 
-                    results.append({
-                        "test_name": test_case["name"],
-                        "status": "pass" if status_code == test_case["expected_status"] else "fail",
-                        "status_code": status_code,
-                        "expected_status": test_case["expected_status"],
-                        "response_time_ms": round(response_time, 2),
-                        "response": response_text[:100] + "..." if len(response_text) > 100 else response_text
-                    })
+                    results.append(
+                        {
+                            "test_name": test_case["name"],
+                            "status": (
+                                "pass"
+                                if status_code == test_case["expected_status"]
+                                else "fail"
+                            ),
+                            "status_code": status_code,
+                            "expected_status": test_case["expected_status"],
+                            "response_time_ms": round(response_time, 2),
+                            "response": (
+                                response_text[:100] + "..."
+                                if len(response_text) > 100
+                                else response_text
+                            ),
+                        }
+                    )
 
                 except Exception as e:
-                    results.append({
-                        "test_name": test_case["name"],
-                        "status": "error",
-                        "error": str(e),
-                        "response_time_ms": (time.time() - start_time) * 1000
-                    })
+                    results.append(
+                        {
+                            "test_name": test_case["name"],
+                            "status": "error",
+                            "error": str(e),
+                            "response_time_ms": (time.time() - start_time)
+                            * 1000,
+                        }
+                    )
 
         return results
 
@@ -130,40 +151,57 @@ class DeploymentTester:
         """測試 Docker 服務狀態"""
         try:
             # 檢查 Docker 是否運行
-            result = subprocess.run(["docker", "info"], capture_output=True, text=True)
+            result = subprocess.run(
+                ["docker", "info"], capture_output=True, text=True
+            )
             if result.returncode != 0:
                 return {"status": "error", "message": "Docker is not running"}
 
             # 獲取容器狀態
-            result = subprocess.run([
-                "docker", "ps", "--format", "json"
-            ], capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                ["docker", "ps", "--format", "json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             containers = []
             if result.stdout.strip():
-                for line in result.stdout.strip().split('\n'):
+                for line in result.stdout.strip().split("\n"):
                     container_info = json.loads(line)
-                    containers.append({
-                        "name": container_info.get("Names", ""),
-                        "image": container_info.get("Image", ""),
-                        "status": container_info.get("Status", ""),
-                        "ports": container_info.get("Ports", "")
-                    })
+                    containers.append(
+                        {
+                            "name": container_info.get("Names", ""),
+                            "image": container_info.get("Image", ""),
+                            "status": container_info.get("Status", ""),
+                            "ports": container_info.get("Ports", ""),
+                        }
+                    )
 
             # 檢查 Docker Compose 服務
-            compose_result = subprocess.run([
-                "docker-compose", "-f", "docker-compose.unified.yml", "ps"
-            ], capture_output=True, text=True, cwd=self.project_root)
+            compose_result = subprocess.run(
+                ["docker-compose", "-f", "docker-compose.unified.yml", "ps"],
+                capture_output=True,
+                text=True,
+                cwd=self.project_root,
+            )
 
             return {
                 "status": "success",
                 "total_containers": len(containers),
                 "containers": containers,
-                "compose_status": compose_result.stdout if compose_result.returncode == 0 else "Error getting compose status"
+                "compose_status": (
+                    compose_result.stdout
+                    if compose_result.returncode == 0
+                    else "Error getting compose status"
+                ),
             }
 
         except subprocess.CalledProcessError as e:
-            return {"status": "error", "message": f"Docker command failed: {e}"}
+            return {
+                "status": "error",
+                "message": f"Docker command failed: {e}",
+            }
         except Exception as e:
             return {"status": "error", "message": f"Unexpected error: {e}"}
 
@@ -171,31 +209,41 @@ class DeploymentTester:
         """測試資料庫連接"""
         results = {
             "postgresql": {"status": "unknown"},
-            "redis": {"status": "unknown"}
+            "redis": {"status": "unknown"},
         }
 
         # 測試 PostgreSQL
         try:
-            result = subprocess.run([
-                "pg_isready", "-h", "localhost", "-p", "5432"
-            ], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ["pg_isready", "-h", "localhost", "-p", "5432"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
 
             results["postgresql"] = {
-                "status": "available" if result.returncode == 0 else "unavailable",
-                "message": result.stdout.strip() or result.stderr.strip()
+                "status": (
+                    "available" if result.returncode == 0 else "unavailable"
+                ),
+                "message": result.stdout.strip() or result.stderr.strip(),
             }
         except Exception as e:
             results["postgresql"] = {"status": "error", "message": str(e)}
 
         # 測試 Redis
         try:
-            result = subprocess.run([
-                "redis-cli", "-h", "localhost", "-p", "6379", "ping"
-            ], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ["redis-cli", "-h", "localhost", "-p", "6379", "ping"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
 
             results["redis"] = {
-                "status": "available" if "PONG" in result.stdout else "unavailable",
-                "message": result.stdout.strip()
+                "status": (
+                    "available" if "PONG" in result.stdout else "unavailable"
+                ),
+                "message": result.stdout.strip(),
             }
         except Exception as e:
             results["redis"] = {"status": "error", "message": str(e)}
@@ -207,27 +255,39 @@ class DeploymentTester:
         monitoring_services = {
             "prometheus": "http://localhost:9090/-/healthy",
             "grafana": "http://localhost:3001/api/health",
-            "alertmanager": "http://localhost:9093/-/healthy"
+            "alertmanager": "http://localhost:9093/-/healthy",
         }
 
         results = {}
 
         for service_name, health_url in monitoring_services.items():
             try:
-                result = subprocess.run([
-                    "curl", "-f", "-s", "-m", "5", health_url
-                ], capture_output=True, text=True)
+                result = subprocess.run(
+                    ["curl", "-f", "-s", "-m", "5", health_url],
+                    capture_output=True,
+                    text=True,
+                )
 
                 results[service_name] = {
-                    "status": "available" if result.returncode == 0 else "unavailable",
-                    "response": result.stdout[:100] if result.stdout else result.stderr[:100]
+                    "status": (
+                        "available"
+                        if result.returncode == 0
+                        else "unavailable"
+                    ),
+                    "response": (
+                        result.stdout[:100]
+                        if result.stdout
+                        else result.stderr[:100]
+                    ),
                 }
             except Exception as e:
                 results[service_name] = {"status": "error", "message": str(e)}
 
         return results
 
-    async def run_load_test(self, target_url: str, duration_seconds: int = 30) -> Dict:
+    async def run_load_test(
+        self, target_url: str, duration_seconds: int = 30
+    ) -> Dict:
         """運行簡單的負載測試"""
         print(f"🚀 開始負載測試: {target_url} ({duration_seconds}秒)")
 
@@ -236,7 +296,7 @@ class DeploymentTester:
             "successful_requests": 0,
             "failed_requests": 0,
             "response_times": [],
-            "errors": []
+            "errors": [],
         }
 
         start_time = time.time()
@@ -270,12 +330,18 @@ class DeploymentTester:
 
         # 計算統計資訊
         if results["response_times"]:
-            results["avg_response_time"] = sum(results["response_times"]) / len(results["response_times"])
+            results["avg_response_time"] = sum(
+                results["response_times"]
+            ) / len(results["response_times"])
             results["max_response_time"] = max(results["response_times"])
             results["min_response_time"] = min(results["response_times"])
 
-        results["requests_per_second"] = results["total_requests"] / duration_seconds
-        results["success_rate"] = (results["successful_requests"] / max(results["total_requests"], 1)) * 100
+        results["requests_per_second"] = (
+            results["total_requests"] / duration_seconds
+        )
+        results["success_rate"] = (
+            results["successful_requests"] / max(results["total_requests"], 1)
+        ) * 100
 
         return results
 
@@ -286,7 +352,7 @@ class DeploymentTester:
         test_results = {
             "timestamp": datetime.now().isoformat(),
             "environment": self.environment,
-            "tests": {}
+            "tests": {},
         }
 
         # 1. Docker 服務測試
@@ -301,13 +367,17 @@ class DeploymentTester:
         print("🏥 測試服務健康狀態...")
         health_results = []
         for service_name, base_url in self.services.items():
-            health_result = await self.test_service_health(service_name, base_url)
+            health_result = await self.test_service_health(
+                service_name, base_url
+            )
             health_results.append(health_result)
         test_results["tests"]["service_health"] = health_results
 
         # 4. API 端點測試
         print("🔗 測試 API 端點...")
-        test_results["tests"]["api_endpoints"] = await self.test_api_endpoints()
+        test_results["tests"][
+            "api_endpoints"
+        ] = await self.test_api_endpoints()
 
         # 5. 監控服務測試
         print("📊 測試監控服務...")
@@ -317,10 +387,14 @@ class DeploymentTester:
         if self.services.get("api-gateway"):
             print("⚡ 運行負載測試...")
             load_test_url = f"{self.services['api-gateway']}/health"
-            test_results["tests"]["load_test"] = await self.run_load_test(load_test_url, 15)
+            test_results["tests"]["load_test"] = await self.run_load_test(
+                load_test_url, 15
+            )
 
         # 計算整體測試結果
-        test_results["summary"] = self._calculate_test_summary(test_results["tests"])
+        test_results["summary"] = self._calculate_test_summary(
+            test_results["tests"]
+        )
 
         return test_results
 
@@ -331,7 +405,7 @@ class DeploymentTester:
             "passed_tests": 0,
             "failed_tests": 0,
             "error_tests": 0,
-            "overall_status": "unknown"
+            "overall_status": "unknown",
         }
 
         # 計算服務健康檢查
@@ -361,7 +435,10 @@ class DeploymentTester:
             summary["overall_status"] = "no_tests"
         elif summary["failed_tests"] == 0 and summary["error_tests"] == 0:
             summary["overall_status"] = "all_passed"
-        elif summary["passed_tests"] > summary["failed_tests"] + summary["error_tests"]:
+        elif (
+            summary["passed_tests"]
+            > summary["failed_tests"] + summary["error_tests"]
+        ):
             summary["overall_status"] = "mostly_passed"
         else:
             summary["overall_status"] = "failed"
@@ -374,62 +451,74 @@ class DeploymentTester:
             "# 部署測試報告",
             f"**測試時間**: {test_results['timestamp']}",
             f"**測試環境**: {test_results['environment']}",
-            ""
+            "",
         ]
 
         # 測試總結
         summary = test_results["summary"]
-        report.extend([
-            "## 測試總結",
-            f"- **總測試數**: {summary['total_tests']}",
-            f"- **通過**: {summary['passed_tests']} ✅",
-            f"- **失敗**: {summary['failed_tests']} ❌",
-            f"- **錯誤**: {summary['error_tests']} ⚠️",
-            f"- **整體狀態**: {summary['overall_status']}",
-            ""
-        ])
+        report.extend(
+            [
+                "## 測試總結",
+                f"- **總測試數**: {summary['total_tests']}",
+                f"- **通過**: {summary['passed_tests']} ✅",
+                f"- **失敗**: {summary['failed_tests']} ❌",
+                f"- **錯誤**: {summary['error_tests']} ⚠️",
+                f"- **整體狀態**: {summary['overall_status']}",
+                "",
+            ]
+        )
 
         # Docker 服務狀態
         docker_tests = test_results["tests"].get("docker", {})
         if docker_tests:
-            report.extend([
-                "## Docker 服務狀態",
-                f"- **狀態**: {docker_tests.get('status', 'unknown')}",
-                f"- **運行中容器**: {docker_tests.get('total_containers', 0)}",
-                ""
-            ])
+            report.extend(
+                [
+                    "## Docker 服務狀態",
+                    f"- **狀態**: {docker_tests.get('status', 'unknown')}",
+                    f"- **運行中容器**: {docker_tests.get('total_containers', 0)}",
+                    "",
+                ]
+            )
 
             if docker_tests.get("containers"):
                 report.append("### 容器列表")
                 report.append("| 名稱 | 映像 | 狀態 |")
                 report.append("|------|------|------|")
                 for container in docker_tests["containers"][:10]:
-                    report.append(f"| {container['name']} | {container['image']} | {container['status']} |")
+                    report.append(
+                        f"| {container['name']} | {container['image']} | {container['status']} |"
+                    )
                 report.append("")
 
         # 資料庫連接狀態
         db_tests = test_results["tests"].get("databases", {})
         if db_tests:
-            report.extend([
-                "## 資料庫連接狀態",
-                f"- **PostgreSQL**: {db_tests.get('postgresql', {}).get('status', 'unknown')} "
-                f"{' ✅' if db_tests.get('postgresql', {}).get('status') == 'available' else ' ❌'}",
-                f"- **Redis**: {db_tests.get('redis', {}).get('status', 'unknown')} "
-                f"{' ✅' if db_tests.get('redis', {}).get('status') == 'available' else ' ❌'}",
-                ""
-            ])
+            report.extend(
+                [
+                    "## 資料庫連接狀態",
+                    f"- **PostgreSQL**: {db_tests.get('postgresql', {}).get('status', 'unknown')} "
+                    f"{' ✅' if db_tests.get('postgresql', {}).get('status') == 'available' else ' ❌'}",
+                    f"- **Redis**: {db_tests.get('redis', {}).get('status', 'unknown')} "
+                    f"{' ✅' if db_tests.get('redis', {}).get('status') == 'available' else ' ❌'}",
+                    "",
+                ]
+            )
 
         # 服務健康檢查
         health_tests = test_results["tests"].get("service_health", [])
         if health_tests:
-            report.extend([
-                "## 服務健康檢查",
-                "| 服務 | 狀態 | 狀態碼 | 回應時間 |",
-                "|------|------|--------|----------|"
-            ])
+            report.extend(
+                [
+                    "## 服務健康檢查",
+                    "| 服務 | 狀態 | 狀態碼 | 回應時間 |",
+                    "|------|------|--------|----------|",
+                ]
+            )
 
             for health_test in health_tests:
-                status_emoji = "✅" if health_test["status"] == "healthy" else "❌"
+                status_emoji = (
+                    "✅" if health_test["status"] == "healthy" else "❌"
+                )
                 report.append(
                     f"| {health_test['service']} | {health_test['status']} {status_emoji} | "
                     f"{health_test.get('status_code', 'N/A')} | {health_test.get('response_time_ms', 0):.1f}ms |"
@@ -439,11 +528,13 @@ class DeploymentTester:
         # API 端點測試
         api_tests = test_results["tests"].get("api_endpoints", [])
         if api_tests:
-            report.extend([
-                "## API 端點測試",
-                "| 測試名稱 | 狀態 | 狀態碼 | 預期狀態碼 | 回應時間 |",
-                "|----------|------|--------|------------|----------|"
-            ])
+            report.extend(
+                [
+                    "## API 端點測試",
+                    "| 測試名稱 | 狀態 | 狀態碼 | 預期狀態碼 | 回應時間 |",
+                    "|----------|------|--------|------------|----------|",
+                ]
+            )
 
             for api_test in api_tests:
                 status_emoji = "✅" if api_test["status"] == "pass" else "❌"
@@ -457,24 +548,24 @@ class DeploymentTester:
         # 負載測試結果
         load_test = test_results["tests"].get("load_test")
         if load_test:
-            report.extend([
-                "## 負載測試結果",
-                f"- **總請求數**: {load_test['total_requests']}",
-                f"- **成功請求**: {load_test['successful_requests']}",
-                f"- **失敗請求**: {load_test['failed_requests']}",
-                f"- **成功率**: {load_test.get('success_rate', 0):.1f}%",
-                f"- **請求/秒**: {load_test.get('requests_per_second', 0):.1f}",
-                f"- **平均回應時間**: {load_test.get('avg_response_time', 0):.1f}ms",
-                f"- **最大回應時間**: {load_test.get('max_response_time', 0):.1f}ms",
-                ""
-            ])
+            report.extend(
+                [
+                    "## 負載測試結果",
+                    f"- **總請求數**: {load_test['total_requests']}",
+                    f"- **成功請求**: {load_test['successful_requests']}",
+                    f"- **失敗請求**: {load_test['failed_requests']}",
+                    f"- **成功率**: {load_test.get('success_rate', 0):.1f}%",
+                    f"- **請求/秒**: {load_test.get('requests_per_second', 0):.1f}",
+                    f"- **平均回應時間**: {load_test.get('avg_response_time', 0):.1f}ms",
+                    f"- **最大回應時間**: {load_test.get('max_response_time', 0):.1f}ms",
+                    "",
+                ]
+            )
 
         # 建議
-        report.extend([
-            "## 建議",
-            self._generate_recommendations(test_results),
-            ""
-        ])
+        report.extend(
+            ["## 建議", self._generate_recommendations(test_results), ""]
+        )
 
         return "\n".join(report)
 
@@ -506,22 +597,36 @@ class DeploymentTester:
         if load_test and load_test.get("success_rate", 0) < 95:
             recommendations.append("- 負載測試成功率偏低，檢查服務穩定性")
 
-        recommendations.extend([
-            "- 定期執行部署測試確保系統穩定性",
-            "- 監控服務日誌排查問題",
-            "- 設置自動化健康檢查"
-        ])
+        recommendations.extend(
+            [
+                "- 定期執行部署測試確保系統穩定性",
+                "- 監控服務日誌排查問題",
+                "- 設置自動化健康檢查",
+            ]
+        )
 
         return "\n".join(recommendations)
 
 
 async def main():
     parser = argparse.ArgumentParser(description="部署測試工具")
-    parser.add_argument("--env", help="測試環境", default="development",
-                       choices=["development", "staging", "production"])
-    parser.add_argument("--output", help="輸出報告文件路徑", default="deployment-test-report.md")
-    parser.add_argument("--json", help="同時輸出 JSON 格式", action="store_true")
-    parser.add_argument("--load-test", help="是否執行負載測試", action="store_true")
+    parser.add_argument(
+        "--env",
+        help="測試環境",
+        default="development",
+        choices=["development", "staging", "production"],
+    )
+    parser.add_argument(
+        "--output",
+        help="輸出報告文件路徑",
+        default="deployment-test-report.md",
+    )
+    parser.add_argument(
+        "--json", help="同時輸出 JSON 格式", action="store_true"
+    )
+    parser.add_argument(
+        "--load-test", help="是否執行負載測試", action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -540,21 +645,23 @@ async def main():
 
     # 輸出報告
     output_path = Path(args.output)
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
 
     print(f"📊 測試報告已生成: {output_path}")
 
     # 輸出 JSON 格式 (如果請求)
     if args.json:
-        json_path = output_path.with_suffix('.json')
-        with open(json_path, 'w', encoding='utf-8') as f:
+        json_path = output_path.with_suffix(".json")
+        with open(json_path, "w", encoding="utf-8") as f:
             json.dump(test_results, f, indent=2, ensure_ascii=False)
         print(f"📄 JSON 數據已輸出: {json_path}")
 
     # 檢查測試結果
     summary = test_results["summary"]
-    print(f"\n📊 測試結果: {summary['passed_tests']}/{summary['total_tests']} 通過")
+    print(
+        f"\n📊 測試結果: {summary['passed_tests']}/{summary['total_tests']} 通過"
+    )
 
     if summary["overall_status"] == "all_passed":
         print("✅ 所有測試通過！")
@@ -569,4 +676,5 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     sys.exit(asyncio.run(main()))

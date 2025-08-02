@@ -351,7 +351,7 @@ def create_optimized_app(
             "https://your-domain.com",
             "https://app.autovideo.com",
             "http://localhost:3000",
-            "http://localhost:8000"
+            "http://localhost:8000",
         ],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE"],

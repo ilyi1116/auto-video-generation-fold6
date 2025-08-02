@@ -16,13 +16,23 @@ from typing import Any, Callable, Dict, List, Optional
 
 # Prometheus metrics (optional dependency)
 try:
-    from prometheus_client import Counter, Gauge, Histogram, Summary, start_http_server
+    from prometheus_client import (
+        Counter,
+        Gauge,
+        Histogram,
+        Summary,
+        start_http_server,
+    )
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
 
-from ..logging.structured_logger import get_logger, set_correlation_id, set_request_id
+from ..logging.structured_logger import (
+    get_logger,
+    set_correlation_id,
+    set_request_id,
+)
 
 logger = get_logger(__name__)
 

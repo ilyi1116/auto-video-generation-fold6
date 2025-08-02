@@ -5,15 +5,13 @@
 import os
 from dotenv import load_dotenv
 
+
 def validate_config():
     """驗證配置文件"""
     # 加載環境變量
     load_dotenv()
 
-    required_vars = [
-        'DATABASE_URL',
-        'JWT_SECRET_KEY'
-    ]
+    required_vars = ["DATABASE_URL", "JWT_SECRET_KEY"]
 
     missing_vars = []
     for var in required_vars:
@@ -27,5 +25,6 @@ def validate_config():
     print("✅ Configuration validation passed!")
     return True
 
+
 if __name__ == "__main__":
-    validate_config() 
+    validate_config()

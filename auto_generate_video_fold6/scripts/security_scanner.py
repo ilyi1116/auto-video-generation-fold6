@@ -173,19 +173,19 @@ class SecurityScanner:
             scan_results = {}
 
             if "static_analysis" in self.config.get("scan_types", []):
-                scan_results[
-                    "static_analysis"
-                ] = await self._run_static_analysis()
+                scan_results["static_analysis"] = (
+                    await self._run_static_analysis()
+                )
 
             if "dependency_scan" in self.config.get("scan_types", []):
-                scan_results[
-                    "dependency_scan"
-                ] = await self._run_dependency_scan()
+                scan_results["dependency_scan"] = (
+                    await self._run_dependency_scan()
+                )
 
             if "container_scan" in self.config.get("scan_types", []):
-                scan_results[
-                    "container_scan"
-                ] = await self._run_container_scan()
+                scan_results["container_scan"] = (
+                    await self._run_container_scan()
+                )
 
             if "network_scan" in self.config.get("scan_types", []):
                 scan_results["network_scan"] = await self._run_network_scan()
@@ -194,22 +194,22 @@ class SecurityScanner:
                 scan_results["web_app_scan"] = await self._run_web_app_scan()
 
             if "compliance_check" in self.config.get("scan_types", []):
-                scan_results[
-                    "compliance_check"
-                ] = await self._run_compliance_check()
+                scan_results["compliance_check"] = (
+                    await self._run_compliance_check()
+                )
 
             # API 安全測試
             scan_results["api_security"] = await self._run_api_security_scan()
 
             # 配置安全檢查
-            scan_results[
-                "config_security"
-            ] = await self._run_config_security_scan()
+            scan_results["config_security"] = (
+                await self._run_config_security_scan()
+            )
 
             # 密碼學安全檢查
-            scan_results[
-                "crypto_security"
-            ] = await self._run_crypto_security_scan()
+            scan_results["crypto_security"] = (
+                await self._run_crypto_security_scan()
+            )
 
             end_time = datetime.utcnow()
             duration = (end_time - start_time).total_seconds()
@@ -616,13 +616,13 @@ class SecurityScanner:
 
         for framework in frameworks:
             if framework == "OWASP":
-                compliance_results[
-                    "OWASP"
-                ] = await self._check_owasp_compliance()
+                compliance_results["OWASP"] = (
+                    await self._check_owasp_compliance()
+                )
             elif framework == "NIST":
-                compliance_results[
-                    "NIST"
-                ] = await self._check_nist_compliance()
+                compliance_results["NIST"] = (
+                    await self._check_nist_compliance()
+                )
             elif framework == "CIS":
                 compliance_results["CIS"] = await self._check_cis_compliance()
 

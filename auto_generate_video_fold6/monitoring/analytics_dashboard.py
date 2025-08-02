@@ -513,9 +513,9 @@ class AnalyticsDashboard:
                     "date": current_date.isoformat(),
                     "videos": videos,
                     "success": success,
-                    "success_rate": (success / videos) * 100
-                    if videos > 0
-                    else 0,
+                    "success_rate": (
+                        (success / videos) * 100 if videos > 0 else 0
+                    ),
                 }
             )
 
@@ -531,9 +531,9 @@ class AnalyticsDashboard:
             },
             "total_videos": total_videos,
             "total_success": total_success,
-            "success_rate": (total_success / total_videos) * 100
-            if total_videos > 0
-            else 0,
+            "success_rate": (
+                (total_success / total_videos) * 100 if total_videos > 0 else 0
+            ),
             "platforms": {
                 "TikTok": int(total_videos * 0.45),
                 "Instagram": int(total_videos * 0.35),

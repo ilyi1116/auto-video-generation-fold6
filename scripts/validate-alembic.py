@@ -45,10 +45,7 @@ def main():
     # 測試 Alembic 命令
     try:
         result = subprocess.run(
-            ["alembic", "current"],
-            capture_output=True,
-            text=True,
-            timeout=30
+            ["alembic", "current"], capture_output=True, text=True, timeout=30
         )
         if result.returncode == 0:
             print("✅ Alembic 命令可以正常執行")
@@ -75,7 +72,7 @@ def main():
     print("\n📋 Alembic 系統驗證完成")
     print("\n🚀 使用方法:")
     print("  # 創建新遷移")
-    print("  alembic revision --autogenerate -m \"Description\"")
+    print('  alembic revision --autogenerate -m "Description"')
     print("  ")
     print("  # 升級資料庫到最新版本")
     print("  alembic upgrade head")

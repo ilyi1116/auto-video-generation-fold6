@@ -89,38 +89,38 @@ class MonitoringLoggingSystemTest:
 
             for config_file in log_config_files:
                 config_path = self.project_root / config_file
-                assert config_path.exists(), (
-                    f"日誌配置文件不存在: {config_file}"
-                )
+                assert (
+                    config_path.exists()
+                ), f"日誌配置文件不存在: {config_file}"
 
                 # 檢查配置文件內容
                 if config_file.endswith(".py"):
                     content = config_path.read_text()
-                    assert "StructuredLogger" in content, (
-                        f"缺少 StructuredLogger 類別: {config_file}"
-                    )
-                    assert "correlation_id" in content, (
-                        f"缺少關聯ID支援: {config_file}"
-                    )
-                    assert "json" in content.lower(), (
-                        f"缺少JSON格式支援: {config_file}"
-                    )
+                    assert (
+                        "StructuredLogger" in content
+                    ), f"缺少 StructuredLogger 類別: {config_file}"
+                    assert (
+                        "correlation_id" in content
+                    ), f"缺少關聯ID支援: {config_file}"
+                    assert (
+                        "json" in content.lower()
+                    ), f"缺少JSON格式支援: {config_file}"
 
                 elif config_file.endswith(".json"):
                     with open(config_path, "r") as f:
                         config = json.load(f)
-                    assert "formatters" in config, (
-                        f"缺少格式化器配置: {config_file}"
-                    )
-                    assert "handlers" in config, (
-                        f"缺少處理器配置: {config_file}"
-                    )
+                    assert (
+                        "formatters" in config
+                    ), f"缺少格式化器配置: {config_file}"
+                    assert (
+                        "handlers" in config
+                    ), f"缺少處理器配置: {config_file}"
 
                 elif config_file.endswith(".conf"):
                     content = config_path.read_text()
-                    assert "source" in content, (
-                        f"缺少輸入源配置: {config_file}"
-                    )
+                    assert (
+                        "source" in content
+                    ), f"缺少輸入源配置: {config_file}"
                     assert "match" in content, f"缺少匹配規則: {config_file}"
 
             self._record_result("structured_logging_configuration", True)
@@ -196,9 +196,9 @@ class MonitoringLoggingSystemTest:
             assert datasources_dir.exists(), "數據源配置目錄不存在"
 
             prometheus_datasource = datasources_dir / "prometheus.yml"
-            assert prometheus_datasource.exists(), (
-                "Prometheus 數據源配置不存在"
-            )
+            assert (
+                prometheus_datasource.exists()
+            ), "Prometheus 數據源配置不存在"
 
             if yaml:
                 with open(prometheus_datasource, "r") as f:
@@ -229,12 +229,12 @@ class MonitoringLoggingSystemTest:
                 with open(dashboard_path, "r") as f:
                     dashboard_config = json.load(f)
 
-                assert "dashboard" in dashboard_config, (
-                    f"儀表板配置格式錯誤: {dashboard}"
-                )
-                assert "panels" in dashboard_config["dashboard"], (
-                    f"缺少面板配置: {dashboard}"
-                )
+                assert (
+                    "dashboard" in dashboard_config
+                ), f"儀表板配置格式錯誤: {dashboard}"
+                assert (
+                    "panels" in dashboard_config["dashboard"]
+                ), f"缺少面板配置: {dashboard}"
 
             self._record_result("grafana_dashboard_configuration", True)
 
@@ -302,12 +302,12 @@ class MonitoringLoggingSystemTest:
 
                     for rule in group["rules"]:
                         assert "alert" in rule, f"規則缺少警報名稱: {rule}"
-                        assert "expr" in rule, (
-                            f"規則缺少表達式: {rule['alert']}"
-                        )
-                        assert "for" in rule, (
-                            f"規則缺少持續時間: {rule['alert']}"
-                        )
+                        assert (
+                            "expr" in rule
+                        ), f"規則缺少表達式: {rule['alert']}"
+                        assert (
+                            "for" in rule
+                        ), f"規則缺少持續時間: {rule['alert']}"
 
             # 檢查通知範本
             templates_dir = (
@@ -343,9 +343,9 @@ class MonitoringLoggingSystemTest:
             middleware_content = otel_middleware.read_text()
             assert "tracer" in middleware_content.lower(), "缺少追蹤器配置"
             assert "span" in middleware_content.lower(), "缺少跨度處理"
-            assert "correlation" in middleware_content.lower(), (
-                "缺少關聯ID處理"
-            )
+            assert (
+                "correlation" in middleware_content.lower()
+            ), "缺少關聯ID處理"
 
             # 檢查追蹤配置檔案
             tracing_configs = [
@@ -359,9 +359,9 @@ class MonitoringLoggingSystemTest:
                 # 允許文件不存在，因為這是 Red 階段
                 if config_path.exists():
                     content = config_path.read_text()
-                    assert "opentelemetry" in content.lower(), (
-                        f"缺少 OpenTelemetry 配置: {config_file}"
-                    )
+                    assert (
+                        "opentelemetry" in content.lower()
+                    ), f"缺少 OpenTelemetry 配置: {config_file}"
 
             self._record_result("distributed_tracing_setup", True)
 
@@ -423,25 +423,25 @@ class MonitoringLoggingSystemTest:
                 assert middleware_path.exists(), f"中間件不存在: {middleware}"
 
                 content = middleware_path.read_text()
-                assert "async def" in content or "def " in content, (
-                    f"中間件缺少函數定義: {middleware}"
-                )
+                assert (
+                    "async def" in content or "def " in content
+                ), f"中間件缺少函數定義: {middleware}"
 
                 if "performance" in middleware:
-                    assert "response_time" in content.lower(), (
-                        f"缺少回應時間監控: {middleware}"
-                    )
-                    assert "request_count" in content.lower(), (
-                        f"缺少請求計數: {middleware}"
-                    )
+                    assert (
+                        "response_time" in content.lower()
+                    ), f"缺少回應時間監控: {middleware}"
+                    assert (
+                        "request_count" in content.lower()
+                    ), f"缺少請求計數: {middleware}"
 
                 elif "health" in middleware:
-                    assert "health" in content.lower(), (
-                        f"缺少健康檢查: {middleware}"
-                    )
-                    assert "status" in content.lower(), (
-                        f"缺少狀態檢查: {middleware}"
-                    )
+                    assert (
+                        "health" in content.lower()
+                    ), f"缺少健康檢查: {middleware}"
+                    assert (
+                        "status" in content.lower()
+                    ), f"缺少狀態檢查: {middleware}"
 
             # 檢查資料庫監控配置
             db_monitoring = self.project_root / "monitoring/database"
@@ -497,9 +497,9 @@ class MonitoringLoggingSystemTest:
             assert metrics_collector.exists(), "業務指標收集器不存在"
 
             collector_content = metrics_collector.read_text()
-            assert "BusinessMetricsCollector" in collector_content, (
-                "缺少業務指標收集器類別"
-            )
+            assert (
+                "BusinessMetricsCollector" in collector_content
+            ), "缺少業務指標收集器類別"
             assert "collect_metrics" in collector_content, "缺少指標收集方法"
 
             self._record_result("business_metrics_tracking", True)
@@ -514,9 +514,9 @@ class MonitoringLoggingSystemTest:
             monitoring_compose = (
                 self.project_root / "docker-compose.monitoring.yml"
             )
-            assert monitoring_compose.exists(), (
-                "監控 Docker Compose 文件不存在"
-            )
+            assert (
+                monitoring_compose.exists()
+            ), "監控 Docker Compose 文件不存在"
 
             if yaml:
                 with open(monitoring_compose, "r") as f:
@@ -556,9 +556,9 @@ class MonitoringLoggingSystemTest:
                     ), f"服務缺少映像配置: {service_name}"
 
                     if "ports" in service_config:
-                        assert len(service_config["ports"]) > 0, (
-                            f"服務未暴露端口: {service_name}"
-                        )
+                        assert (
+                            len(service_config["ports"]) > 0
+                        ), f"服務未暴露端口: {service_name}"
 
             self._record_result("monitoring_docker_compose_integration", True)
 
@@ -580,12 +580,12 @@ class MonitoringLoggingSystemTest:
                 health_path = self.project_root / health_file
                 if health_path.exists():  # 允許文件不存在
                     content = health_path.read_text()
-                    assert "health" in content.lower(), (
-                        f"缺少健康檢查實作: {health_file}"
-                    )
-                    assert "status" in content.lower(), (
-                        f"缺少狀態檢查: {health_file}"
-                    )
+                    assert (
+                        "health" in content.lower()
+                    ), f"缺少健康檢查實作: {health_file}"
+                    assert (
+                        "status" in content.lower()
+                    ), f"缺少狀態檢查: {health_file}"
 
             # 檢查各服務的健康檢查端點定義
             for service in self.services[:3]:  # 只檢查前3個服務
@@ -596,9 +596,9 @@ class MonitoringLoggingSystemTest:
                         if py_file.name in ["main.py", "app.py", "health.py"]:
                             content = py_file.read_text()
                             if "/health" in content:
-                                assert "health" in content.lower(), (
-                                    f"健康檢查端點實作不完整: {py_file}"
-                                )
+                                assert (
+                                    "health" in content.lower()
+                                ), f"健康檢查端點實作不完整: {py_file}"
                                 break
 
             self._record_result("health_check_endpoints", True)
@@ -621,9 +621,9 @@ class MonitoringLoggingSystemTest:
             if config_validator.exists():
                 content = config_validator.read_text()
                 assert "validate" in content.lower(), "缺少配置驗證功能"
-                assert "prometheus" in content.lower(), (
-                    "缺少 Prometheus 配置驗證"
-                )
+                assert (
+                    "prometheus" in content.lower()
+                ), "缺少 Prometheus 配置驗證"
                 assert "grafana" in content.lower(), "缺少 Grafana 配置驗證"
 
             # 檢查環境變數範本

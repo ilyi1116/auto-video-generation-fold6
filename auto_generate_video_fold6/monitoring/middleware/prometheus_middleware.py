@@ -10,7 +10,13 @@ from typing import Callable
 import psutil
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import PlainTextResponse
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 
 
 class PrometheusMiddleware:

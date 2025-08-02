@@ -213,9 +213,11 @@ class PerformanceBenchmark:
                 "avg_response_time_ms": avg_response_time,
                 "avg_throughput_rps": avg_throughput,
                 "grade": grade,
-                "status": "PASS"
-                if grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -267,9 +269,11 @@ class PerformanceBenchmark:
                 "best_throughput_rps": best_throughput,
                 "avg_error_rate": avg_error_rate,
                 "grade": overall_grade,
-                "status": "PASS"
-                if overall_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if overall_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -308,9 +312,11 @@ class PerformanceBenchmark:
                 "postgresql": pg_results,
                 "redis": redis_results,
                 "grade": overall_grade,
-                "status": "PASS"
-                if overall_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if overall_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -353,9 +359,11 @@ class PerformanceBenchmark:
                 "hit_ratio": hit_ratio_results,
                 "consistency": consistency_results,
                 "grade": overall_grade,
-                "status": "PASS"
-                if overall_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if overall_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -428,9 +436,11 @@ class PerformanceBenchmark:
                     "samples": len(memory_samples),
                 },
                 "grade": overall_grade,
-                "status": "PASS"
-                if overall_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if overall_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -520,9 +530,11 @@ class PerformanceBenchmark:
                 "ai_service_results": results,
                 "avg_processing_time_ms": avg_processing_time,
                 "grade": ai_grade,
-                "status": "PASS"
-                if ai_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if ai_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -565,9 +577,11 @@ class PerformanceBenchmark:
                 "avg_read_throughput_mbps": avg_read_throughput,
                 "avg_write_throughput_mbps": avg_write_throughput,
                 "grade": io_grade,
-                "status": "PASS"
-                if io_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if io_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:
@@ -604,9 +618,11 @@ class PerformanceBenchmark:
                 "latency": latency_results,
                 "bandwidth": bandwidth_results,
                 "grade": overall_grade,
-                "status": "PASS"
-                if overall_grade in ["excellent", "good"]
-                else "NEEDS_IMPROVEMENT",
+                "status": (
+                    "PASS"
+                    if overall_grade in ["excellent", "good"]
+                    else "NEEDS_IMPROVEMENT"
+                ),
             }
 
         except Exception as e:

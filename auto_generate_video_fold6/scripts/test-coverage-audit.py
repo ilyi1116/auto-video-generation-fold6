@@ -159,11 +159,11 @@ class TestCoverageAuditor:
             "summary": {
                 "total_files": total_files,
                 "tested_files": tested_files,
-                "coverage_percentage": round(
-                    (tested_files / total_files) * 100, 2
-                )
-                if total_files > 0
-                else 0,
+                "coverage_percentage": (
+                    round((tested_files / total_files) * 100, 2)
+                    if total_files > 0
+                    else 0
+                ),
                 "untested_files": total_files - tested_files,
             },
             "services": {},
@@ -179,11 +179,11 @@ class TestCoverageAuditor:
             self.coverage_report["services"][service_name] = {
                 "total_files": service_total,
                 "tested_files": service_tested,
-                "coverage_percentage": round(
-                    (service_tested / service_total) * 100, 2
-                )
-                if service_total > 0
-                else 0,
+                "coverage_percentage": (
+                    round((service_tested / service_total) * 100, 2)
+                    if service_total > 0
+                    else 0
+                ),
                 "files": files,
             }
 

@@ -141,12 +141,14 @@ class DatabaseSyncManager:
                 if not exists:
                     # 建立版本表
                     await conn.execute(
-                        text("""
+                        text(
+                            """
                         CREATE TABLE alembic_version (
                             version_num VARCHAR(32) NOT NULL,
                             CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
                         )
-                        """)
+                        """
+                        )
                     )
                     await conn.commit()
                     logger.info("✅ 建立 Alembic 版本表")
@@ -278,22 +280,26 @@ class DatabaseSyncManager:
 
                 # 檢查外鍵約束
                 fk_result = await conn.execute(
-                    text("""
+                    text(
+                        """
                     SELECT conname, conrelid::regclass, confrelid::regclass
                     FROM pg_constraint
                     WHERE contype = 'f'
-                    """)
+                    """
+                    )
                 )
                 fks = fk_result.fetchall()
                 integrity_report["foreign_keys_count"] = len(fks)
 
                 # 檢查索引
                 idx_result = await conn.execute(
-                    text("""
+                    text(
+                        """
                     SELECT indexname, tablename
                     FROM pg_indexes
                     WHERE schemaname = 'public'
-                    """)
+                    """
+                    )
                 )
                 indexes = idx_result.fetchall()
                 integrity_report["indexes_count"] = len(indexes)
@@ -372,9 +378,9 @@ class DatabaseSyncManager:
             health_status["sync_status"] = await self.check_sync_status()
 
             # 完整性檢查
-            health_status[
-                "integrity_status"
-            ] = await self.validate_database_integrity()
+            health_status["integrity_status"] = (
+                await self.validate_database_integrity()
+            )
 
         except Exception as e:
             logger.error(f"健康檢查失敗: {e}")

@@ -160,9 +160,11 @@ class SecurityReportGenerator:
                     "line_number": 0,
                     "rule_id": vuln_id,
                     "remediation": f"Update to version {vuln.get('fixAvailable', {}).get('version', 'latest')}",
-                    "cve_id": vuln.get("cves", [None])[0]
-                    if vuln.get("cves")
-                    else None,
+                    "cve_id": (
+                        vuln.get("cves", [None])[0]
+                        if vuln.get("cves")
+                        else None
+                    ),
                     "created_at": datetime.now().isoformat(),
                 }
                 self.findings.append(finding)
@@ -528,9 +530,7 @@ class SecurityReportGenerator:
             "remediation_priority": (
                 "immediate"
                 if critical_count > 0
-                else "high"
-                if high_count > 0
-                else "normal"
+                else "high" if high_count > 0 else "normal"
             ),
         }
 

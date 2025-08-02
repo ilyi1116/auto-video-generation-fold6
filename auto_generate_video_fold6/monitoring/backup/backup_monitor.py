@@ -150,10 +150,10 @@ class BackupMonitor:
                 "successful": len(successful_backups),
                 "failed": len(failed_backups),
                 "success_rate": (
-                    len(successful_backups) / len(backup_completes) * 100
-                )
-                if backup_completes
-                else 0,
+                    (len(successful_backups) / len(backup_completes) * 100)
+                    if backup_completes
+                    else 0
+                ),
                 "total_size_bytes": total_backup_size,
                 "total_size_mb": round(total_backup_size / (1024 * 1024), 2),
             },
@@ -163,10 +163,10 @@ class BackupMonitor:
                 "successful": len(successful_restores),
                 "failed": len(failed_restores),
                 "success_rate": (
-                    len(successful_restores) / len(restore_completes) * 100
-                )
-                if restore_completes
-                else 0,
+                    (len(successful_restores) / len(restore_completes) * 100)
+                    if restore_completes
+                    else 0
+                ),
             },
             "recent_failures": failed_backups + failed_restores,
         }

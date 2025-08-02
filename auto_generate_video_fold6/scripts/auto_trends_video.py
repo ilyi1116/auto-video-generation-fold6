@@ -145,7 +145,9 @@ class AutoTrendsVideoGenerator:
                 ),
                 "video_duration": generation_config.get(
                     "duration_range", [30, 60]
-                )[0],  # 取最小值
+                )[
+                    0
+                ],  # 取最小值
                 "platforms": generation_config.get("platforms", ["tiktok"]),
                 "categories": get_config(
                     "content.content_categories",
@@ -497,7 +499,7 @@ class AutoTrendsVideoGenerator:
 
             # 分批處理
             for i in range(0, len(keywords), batch_size):
-                batch = keywords[i:i + batch_size]  # noqa: E203
+                batch = keywords[i : i + batch_size]  # noqa: E203
                 logger.info(
                     f"處理批次 {i // batch_size + 1}, 包含 {len(batch)} 個關鍵字"
                 )
@@ -776,9 +778,9 @@ class AutoTrendsVideoGenerator:
                 "successful": len(successful),
                 "failed": len(failed),
                 "exceptions": len(exceptions),
-                "success_rate": len(successful) / len(results)
-                if results
-                else 0,
+                "success_rate": (
+                    len(successful) / len(results) if results else 0
+                ),
                 "successful_keywords": [r["keyword"] for r in successful],
                 "failed_keywords": [
                     r["keyword"] for r in failed if "keyword" in r

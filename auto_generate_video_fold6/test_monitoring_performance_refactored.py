@@ -132,9 +132,9 @@ class MonitoringPerformanceRefactoredTest:
                 "p95_log_time_us": p95_log_time,
                 "max_log_time_us": max_log_time,
                 "concurrent_avg_time_us": concurrent_avg,
-                "throughput_logs_per_second": 1000000 / avg_log_time
-                if avg_log_time > 0
-                else 0,
+                "throughput_logs_per_second": (
+                    1000000 / avg_log_time if avg_log_time > 0 else 0
+                ),
                 "buffer_utilization": logger_stats.get(
                     "buffer_utilization", 0
                 ),
@@ -143,9 +143,9 @@ class MonitoringPerformanceRefactoredTest:
 
             # 效能驗證
             threshold = self.performance_thresholds["log_entry_processing"]
-            assert avg_log_time < threshold, (
-                f"平均日誌處理時間 {avg_log_time:.2f}μs 超過閾值 {threshold}μs"
-            )
+            assert (
+                avg_log_time < threshold
+            ), f"平均日誌處理時間 {avg_log_time:.2f}μs 超過閾值 {threshold}μs"
 
             self._record_result(
                 "optimized_logging_performance", True, metrics=metrics
@@ -219,9 +219,9 @@ class MonitoringPerformanceRefactoredTest:
                 "p95_metric_time_us": p95_metric_time,
                 "batch_avg_time_us": batch_avg_time,
                 "histogram_avg_time_us": avg_histogram_time,
-                "metrics_per_second": 1000000 / avg_metric_time
-                if avg_metric_time > 0
-                else 0,
+                "metrics_per_second": (
+                    1000000 / avg_metric_time if avg_metric_time > 0 else 0
+                ),
                 "buffer_utilization": collector_stats.get(
                     "buffer_utilization", 0
                 ),
@@ -235,9 +235,9 @@ class MonitoringPerformanceRefactoredTest:
 
             # 效能驗證
             threshold = self.performance_thresholds["metric_collection"]
-            assert avg_metric_time < threshold, (
-                f"平均指標收集時間 {avg_metric_time:.2f}μs 超過閾值 {threshold}μs"
-            )
+            assert (
+                avg_metric_time < threshold
+            ), f"平均指標收集時間 {avg_metric_time:.2f}μs 超過閾值 {threshold}μs"
 
             self._record_result(
                 "optimized_metrics_collection_performance",
@@ -326,16 +326,18 @@ class MonitoringPerformanceRefactoredTest:
                 "p95_generation_time_us": p95_generation_time,
                 "concurrent_avg_time_us": concurrent_avg,
                 "context_switch_avg_time_us": avg_context_switch_time,
-                "operations_per_second": 1000000 / avg_generation_time
-                if avg_generation_time > 0
-                else 0,
+                "operations_per_second": (
+                    1000000 / avg_generation_time
+                    if avg_generation_time > 0
+                    else 0
+                ),
             }
 
             # 效能驗證
             threshold = self.performance_thresholds["correlation_lookup"]
-            assert avg_generation_time < threshold, (
-                f"平均關聯ID處理時間 {avg_generation_time:.3f}μs 超過閾值 {threshold}μs"
-            )
+            assert (
+                avg_generation_time < threshold
+            ), f"平均關聯ID處理時間 {avg_generation_time:.3f}μs 超過閾值 {threshold}μs"
 
             self._record_result(
                 "correlation_id_performance", True, metrics=metrics
@@ -409,9 +411,9 @@ class MonitoringPerformanceRefactoredTest:
             metrics["optimization_percentage"] = (config_score / 5) * 100
 
             # 要求至少60%的優化配置
-            assert config_score >= 3, (
-                f"配置優化分數 {config_score}/5 過低，需要更多優化"
-            )
+            assert (
+                config_score >= 3
+            ), f"配置優化分數 {config_score}/5 過低，需要更多優化"
 
             self._record_result(
                 "monitoring_configuration_optimization", True, metrics=metrics
@@ -541,12 +543,12 @@ class MonitoringPerformanceRefactoredTest:
             }
 
             # 效能驗證
-            assert avg_performance_score >= 70, (
-                f"平均儀表板效能分數 {avg_performance_score:.1f} 過低，需要優化"
-            )
-            assert avg_queries_per_dashboard <= 15, (
-                f"平均每個儀表板查詢數 {avg_queries_per_dashboard:.1f} 過多"
-            )
+            assert (
+                avg_performance_score >= 70
+            ), f"平均儀表板效能分數 {avg_performance_score:.1f} 過低，需要優化"
+            assert (
+                avg_queries_per_dashboard <= 15
+            ), f"平均每個儀表板查詢數 {avg_queries_per_dashboard:.1f} 過多"
 
             self._record_result(
                 "dashboard_query_performance_optimization",
@@ -636,9 +638,11 @@ class MonitoringPerformanceRefactoredTest:
                     "rules": file_rules,
                     "groups": file_groups,
                     "complex_rules": file_complex_rules,
-                    "complexity_ratio": file_complex_rules / file_rules
-                    if file_rules > 0
-                    else 0,
+                    "complexity_ratio": (
+                        file_complex_rules / file_rules
+                        if file_rules > 0
+                        else 0
+                    ),
                 }
 
                 total_rules += file_rules
@@ -675,12 +679,12 @@ class MonitoringPerformanceRefactoredTest:
             }
 
             # 效能驗證
-            assert estimated_eval_time <= 50, (
-                f"預估警報評估時間 {estimated_eval_time:.1f}μs 過高"
-            )
-            assert avg_rules_per_group <= 10, (
-                f"平均每組規則數 {avg_rules_per_group:.1f} 過多，建議拆分"
-            )
+            assert (
+                estimated_eval_time <= 50
+            ), f"預估警報評估時間 {estimated_eval_time:.1f}μs 過高"
+            assert (
+                avg_rules_per_group <= 10
+            ), f"平均每組規則數 {avg_rules_per_group:.1f} 過多，建議拆分"
 
             self._record_result(
                 "alerting_performance_optimization", True, metrics=metrics

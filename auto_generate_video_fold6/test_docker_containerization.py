@@ -51,18 +51,18 @@ class DockerContainerizationTest:
 
             for dockerfile_path in expected_dockerfiles:
                 full_path = self.project_root / dockerfile_path
-                assert full_path.exists(), (
-                    f"Dockerfile 不存在: {dockerfile_path}"
-                )
+                assert (
+                    full_path.exists()
+                ), f"Dockerfile 不存在: {dockerfile_path}"
 
                 # 讀取 Dockerfile 內容
                 content = full_path.read_text()
 
                 # 檢查多階段構建標記
                 stages = content.count("FROM ")
-                assert stages >= 2, (
-                    f"Dockerfile {dockerfile_path} 不是多階段構建 (只有 {stages} 個 FROM)"
-                )
+                assert (
+                    stages >= 2
+                ), f"Dockerfile {dockerfile_path} 不是多階段構建 (只有 {stages} 個 FROM)"
 
                 # 檢查必要的構建階段（不區分大小寫）
                 content_lower = content.lower()
@@ -93,18 +93,18 @@ class DockerContainerizationTest:
 
             for compose_file in compose_files:
                 full_path = self.project_root / compose_file
-                assert full_path.exists(), (
-                    f"Docker Compose 文件不存在: {compose_file}"
-                )
+                assert (
+                    full_path.exists()
+                ), f"Docker Compose 文件不存在: {compose_file}"
 
                 # 解析 YAML 配置
                 with open(full_path, "r") as f:
                     config = yaml.safe_load(f)
 
                 # 檢查服務定義
-                assert "services" in config, (
-                    f"缺少 services 定義: {compose_file}"
-                )
+                assert (
+                    "services" in config
+                ), f"缺少 services 定義: {compose_file}"
 
                 expected_services = [
                     "trend-service",
@@ -117,9 +117,9 @@ class DockerContainerizationTest:
                 ]
 
                 for service in expected_services:
-                    assert service in config["services"], (
-                        f"缺少服務定義: {service} in {compose_file}"
-                    )
+                    assert (
+                        service in config["services"]
+                    ), f"缺少服務定義: {service} in {compose_file}"
 
                 # 檢查生產配置特定要求
                 if "prod" in compose_file:
@@ -133,12 +133,12 @@ class DockerContainerizationTest:
                             "social-service",
                             "scheduler-service",
                         ]:
-                            assert "deploy" in service_config, (
-                                f"生產服務缺少 deploy 配置: {service_name}"
-                            )
-                            assert "resources" in service_config["deploy"], (
-                                f"缺少資源限制: {service_name}"
-                            )
+                            assert (
+                                "deploy" in service_config
+                            ), f"生產服務缺少 deploy 配置: {service_name}"
+                            assert (
+                                "resources" in service_config["deploy"]
+                            ), f"缺少資源限制: {service_name}"
 
             self._record_result("docker_compose_production_config", True)
 
@@ -344,9 +344,9 @@ class DockerContainerizationTest:
                     "redis",
                 ]:  # 排除基礎設施服務
                     networks_config = service_config.get("networks", [])
-                    assert "app-network" in networks_config, (
-                        f"服務 {service_name} 未加入應用網路"
-                    )
+                    assert (
+                        "app-network" in networks_config
+                    ), f"服務 {service_name} 未加入應用網路"
 
             # 檢查端口暴露配置
             exposed_services = ["frontend", "trend-service", "video-service"]

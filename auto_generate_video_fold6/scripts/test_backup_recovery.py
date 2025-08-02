@@ -134,9 +134,11 @@ class BackupRecoveryTester:
                 duration=duration,
                 message=f"成功備份和恢復 {len(test_data)} 筆資料",
                 details={
-                    "backup_file_size": backup_file.stat().st_size
-                    if backup_file.exists()
-                    else 0,
+                    "backup_file_size": (
+                        backup_file.stat().st_size
+                        if backup_file.exists()
+                        else 0
+                    ),
                     "restored_records": len(restored_data),
                 },
             )
@@ -234,9 +236,11 @@ class BackupRecoveryTester:
                 duration=duration,
                 message=f"成功備份和恢復 {len(test_keys)} 個 Redis 鍵",
                 details={
-                    "backup_file_size": backup_file.stat().st_size
-                    if backup_file.exists()
-                    else 0,
+                    "backup_file_size": (
+                        backup_file.stat().st_size
+                        if backup_file.exists()
+                        else 0
+                    ),
                     "restored_keys": restored_count,
                 },
             )
@@ -323,9 +327,11 @@ class BackupRecoveryTester:
                 duration=duration,
                 message=f"成功備份和恢復 {len(test_files)} 個檔案",
                 details={
-                    "backup_archive_size": backup_archive.stat().st_size
-                    if backup_archive.exists()
-                    else 0,
+                    "backup_archive_size": (
+                        backup_archive.stat().st_size
+                        if backup_archive.exists()
+                        else 0
+                    ),
                     "restored_files": len(restored_files),
                 },
             )
@@ -435,14 +441,16 @@ class BackupRecoveryTester:
         try:
             with conn.cursor() as cur:
                 # 創建測試表
-                cur.execute(f"""
+                cur.execute(
+                    f"""
                     CREATE TABLE IF NOT EXISTS {table_name} (
                         id SERIAL PRIMARY KEY,
                         name VARCHAR(100),
                         email VARCHAR(100),
                         created_date DATE
                     )
-                """)
+                """
+                )
 
                 # 插入測試資料
                 for row in data:
@@ -610,9 +618,11 @@ class BackupRecoveryTester:
                     "total_tests": total_tests,
                     "passed": passed_tests,
                     "failed": failed_tests,
-                    "success_rate": (passed_tests / total_tests) * 100
-                    if total_tests > 0
-                    else 0,
+                    "success_rate": (
+                        (passed_tests / total_tests) * 100
+                        if total_tests > 0
+                        else 0
+                    ),
                     "total_duration": total_duration,
                     "timestamp": datetime.now().isoformat(),
                 },

@@ -407,9 +407,11 @@ def create_voice_training_sequence(
             id=base_voice.id,
             name=base_voice.name,
             user_id=base_voice.user_id,
-            status=VoiceStatus.TRAINING.value
-            if progress < 100
-            else VoiceStatus.READY.value,
+            status=(
+                VoiceStatus.TRAINING.value
+                if progress < 100
+                else VoiceStatus.READY.value
+            ),
             training_progress=progress,
         )
         sequences.append(voice_snapshot)

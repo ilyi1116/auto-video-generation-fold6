@@ -257,9 +257,11 @@ class DockerPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     type="system_cpu",
-                    severity="warning"
-                    if system_metrics.cpu_percent < 95
-                    else "critical",
+                    severity=(
+                        "warning"
+                        if system_metrics.cpu_percent < 95
+                        else "critical"
+                    ),
                     message=f"High system CPU usage: {system_metrics.cpu_percent:.1f}%",
                     container=None,
                     value=system_metrics.cpu_percent,
@@ -272,9 +274,11 @@ class DockerPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     type="system_memory",
-                    severity="warning"
-                    if system_metrics.memory_percent < 95
-                    else "critical",
+                    severity=(
+                        "warning"
+                        if system_metrics.memory_percent < 95
+                        else "critical"
+                    ),
                     message=f"High system memory usage: {system_metrics.memory_percent:.1f}%",
                     container=None,
                     value=system_metrics.memory_percent,
@@ -287,9 +291,11 @@ class DockerPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     type="system_disk",
-                    severity="warning"
-                    if system_metrics.disk_usage_percent < 95
-                    else "critical",
+                    severity=(
+                        "warning"
+                        if system_metrics.disk_usage_percent < 95
+                        else "critical"
+                    ),
                     message=f"High disk usage: {system_metrics.disk_usage_percent:.1f}%",
                     container=None,
                     value=system_metrics.disk_usage_percent,
@@ -304,9 +310,11 @@ class DockerPerformanceMonitor:
                 alerts.append(
                     PerformanceAlert(
                         type="container_cpu",
-                        severity="warning"
-                        if metrics.cpu_percent < 95
-                        else "critical",
+                        severity=(
+                            "warning"
+                            if metrics.cpu_percent < 95
+                            else "critical"
+                        ),
                         message=f"High CPU usage in {metrics.name}: {metrics.cpu_percent:.1f}%",
                         container=metrics.name,
                         value=metrics.cpu_percent,
@@ -319,9 +327,11 @@ class DockerPerformanceMonitor:
                 alerts.append(
                     PerformanceAlert(
                         type="container_memory",
-                        severity="warning"
-                        if metrics.memory_percent < 95
-                        else "critical",
+                        severity=(
+                            "warning"
+                            if metrics.memory_percent < 95
+                            else "critical"
+                        ),
                         message=f"High memory usage in {metrics.name}: {metrics.memory_percent:.1f}%",
                         container=metrics.name,
                         value=metrics.memory_percent,

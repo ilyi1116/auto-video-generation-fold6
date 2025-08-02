@@ -139,9 +139,11 @@ class GDPRComplianceManager:
                 ip_address=consent.ip_address,
                 user_agent=consent.user_agent,
                 details={
-                    "expires_at": consent.expires_at.isoformat()
-                    if consent.expires_at
-                    else None
+                    "expires_at": (
+                        consent.expires_at.isoformat()
+                        if consent.expires_at
+                        else None
+                    )
                 },
             )
 

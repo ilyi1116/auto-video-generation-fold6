@@ -224,9 +224,9 @@ class TDDReportGenerator:
                     service_data["requirements"] = {}
                 try:
                     with open(req_path) as f:
-                        service_data["requirements"][req_file] = (
-                            f.read().splitlines()
-                        )
+                        service_data["requirements"][
+                            req_file
+                        ] = f.read().splitlines()
                 except Exception as e:
                     print(f"⚠️ 無法讀取 {req_file}: {e}")
 
@@ -590,38 +590,40 @@ class TDDReportGenerator:
         template_vars = {
             "timestamp": self.timestamp,
             "compliance_score": compliance["score"],
-            "compliance_color": "#27ae60"
-            if compliance["overall"]
-            else "#e74c3c",
-            "compliance_class": "success"
-            if compliance["overall"]
-            else "error",
-            "compliance_status": "✅ 通過"
-            if compliance["overall"]
-            else "❌ 需改進",
-            "coverage_class": "success"
-            if compliance["coverage"]
-            else "warning",
-            "coverage_status": "✅ 達標"
-            if compliance["coverage"]
-            else "⚠️ 不足",
-            "test_class": "success"
-            if compliance["test_existence"]
-            else "error",
-            "test_status": "✅ 存在"
-            if compliance["test_existence"]
-            else "❌ 缺失",
-            "quality_class": "success"
-            if compliance["code_quality"]
-            else "warning",
-            "quality_status": "✅ 良好"
-            if compliance["code_quality"]
-            else "⚠️ 有問題",
+            "compliance_color": (
+                "#27ae60" if compliance["overall"] else "#e74c3c"
+            ),
+            "compliance_class": (
+                "success" if compliance["overall"] else "error"
+            ),
+            "compliance_status": (
+                "✅ 通過" if compliance["overall"] else "❌ 需改進"
+            ),
+            "coverage_class": (
+                "success" if compliance["coverage"] else "warning"
+            ),
+            "coverage_status": (
+                "✅ 達標" if compliance["coverage"] else "⚠️ 不足"
+            ),
+            "test_class": (
+                "success" if compliance["test_existence"] else "error"
+            ),
+            "test_status": (
+                "✅ 存在" if compliance["test_existence"] else "❌ 缺失"
+            ),
+            "quality_class": (
+                "success" if compliance["code_quality"] else "warning"
+            ),
+            "quality_status": (
+                "✅ 良好" if compliance["code_quality"] else "⚠️ 有問題"
+            ),
         }
 
         # Git 資訊
         if git:
-            template_vars["git_info"] = f"""
+            template_vars[
+                "git_info"
+            ] = f"""
                 <p><strong>提交:</strong> {git["short_hash"]} - {git["commit_message"]}</p>
                 <p><strong>分支:</strong> {git["branch"]} | <strong>作者:</strong> {git["author"]}</p>
                 <p><strong>時間:</strong> {git["date"]}</p>
@@ -635,7 +637,8 @@ class TDDReportGenerator:
             frontend_html = []
             if frontend.get("coverage"):
                 cov = frontend["coverage"]
-                frontend_html.append(f"""
+                frontend_html.append(
+                    f"""
                     <div class="metric">
                         <span>語句覆蓋率</span>
                         <span class="metric-value {"success" if cov["statements"] >= 90 else "warning"}">
@@ -645,11 +648,13 @@ class TDDReportGenerator:
                     <div class="coverage-bar">
                         <div class="coverage-fill" style="width: {cov["statements"]}%"></div>
                     </div>
-                """)
+                """
+                )
 
             if frontend.get("test_results"):
                 test = frontend["test_results"]
-                frontend_html.append(f"""
+                frontend_html.append(
+                    f"""
                     <div class="metric">
                         <span>通過測試</span>
                         <span class="metric-value success">{test["passed"]}</span>
@@ -660,7 +665,8 @@ class TDDReportGenerator:
                             {test["failed"]}
                         </span>
                     </div>
-                """)
+                """
+                )
 
             template_vars["frontend_content"] = (
                 "".join(frontend_html) or "<p>⚠️ 未找到測試數據</p>"
@@ -673,7 +679,8 @@ class TDDReportGenerator:
         # 後端內容
         if backend["services"]:
             backend_html = []
-            backend_html.append(f"""
+            backend_html.append(
+                f"""
                 <div class="metric">
                     <span>服務總數</span>
                     <span class="metric-value">{backend["total_services"]}</span>
@@ -688,7 +695,8 @@ class TDDReportGenerator:
                     <span>總測試數</span>
                     <span class="metric-value">{backend["total_tests"]}</span>
                 </div>
-            """)
+            """
+            )
 
             template_vars["backend_content"] = "".join(backend_html)
         else:
@@ -763,7 +771,8 @@ class TDDReportGenerator:
 def main():
     """主函數"""
     if len(sys.argv) > 1 and sys.argv[1] == "--help":
-        print("""
+        print(
+            """
 TDD 測試報告生成工具
 
 使用方法:
@@ -778,7 +787,8 @@ TDD 測試報告生成工具
 輸出:
     - tdd-reports/index.html - HTML 格式報告
     - tdd-reports/report.json - JSON 格式數據
-        """)
+        """
+        )
         return
 
     generator = TDDReportGenerator()

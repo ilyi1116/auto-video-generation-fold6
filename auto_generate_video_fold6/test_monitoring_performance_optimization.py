@@ -116,12 +116,12 @@ class MonitoringPerformanceOptimizationTest:
 
             # 驗證效能要求
             threshold = self.performance_thresholds["log_entry_processing"]
-            assert avg_log_time < threshold, (
-                f"平均日誌處理時間 {avg_log_time:.2f}μs 超過閾值 {threshold}μs"
-            )
-            assert p95_log_time < threshold * 2, (
-                f"P95 日誌處理時間 {p95_log_time:.2f}μs 超過閾值 {threshold * 2}μs"
-            )
+            assert (
+                avg_log_time < threshold
+            ), f"平均日誌處理時間 {avg_log_time:.2f}μs 超過閾值 {threshold}μs"
+            assert (
+                p95_log_time < threshold * 2
+            ), f"P95 日誌處理時間 {p95_log_time:.2f}μs 超過閾值 {threshold * 2}μs"
 
             # 併發測試
             def concurrent_logging(thread_id, log_count):
@@ -211,9 +211,9 @@ class MonitoringPerformanceOptimizationTest:
 
             # 驗證效能要求
             threshold = self.performance_thresholds["metric_collection"]
-            assert avg_metric_time < threshold, (
-                f"平均指標收集時間 {avg_metric_time:.2f}μs 超過閾值 {threshold}μs"
-            )
+            assert (
+                avg_metric_time < threshold
+            ), f"平均指標收集時間 {avg_metric_time:.2f}μs 超過閾值 {threshold}μs"
 
             # 測試指標摘要生成效能
             summary_start = time.perf_counter()
@@ -283,10 +283,11 @@ class MonitoringPerformanceOptimizationTest:
             metrics = {
                 "avg_correlation_lookup_us": avg_correlation_time,
                 "avg_trace_event_time_us": avg_event_time,
-                "correlation_lookups_per_second": 1000000
-                / avg_correlation_time
-                if avg_correlation_time > 0
-                else 0,
+                "correlation_lookups_per_second": (
+                    1000000 / avg_correlation_time
+                    if avg_correlation_time > 0
+                    else 0
+                ),
             }
 
             self._record_result(
@@ -338,9 +339,9 @@ class MonitoringPerformanceOptimizationTest:
             p95_span_time = statistics.quantiles(span_times, n=20)[18]
 
             threshold = self.performance_thresholds["trace_span_creation"]
-            assert avg_span_time < threshold, (
-                f"平均 Span 創建時間 {avg_span_time:.3f}μs 超過閾值 {threshold}μs"
-            )
+            assert (
+                avg_span_time < threshold
+            ), f"平均 Span 創建時間 {avg_span_time:.3f}μs 超過閾值 {threshold}μs"
 
             # 測試嵌套 Span 效能
             nested_start = time.perf_counter()
@@ -417,9 +418,9 @@ class MonitoringPerformanceOptimizationTest:
                 dashboard_metrics[dashboard_name] = {
                     "total_queries": query_count,
                     "complex_queries": complex_queries,
-                    "complexity_ratio": complex_queries / query_count
-                    if query_count > 0
-                    else 0,
+                    "complexity_ratio": (
+                        complex_queries / query_count if query_count > 0 else 0
+                    ),
                     "panels_count": len(panels),
                 }
 
@@ -430,9 +431,9 @@ class MonitoringPerformanceOptimizationTest:
             avg_queries_per_dashboard = total_queries / len(dashboard_metrics)
 
             # 建議：每個儀表板不超過 20 個查詢以保持效能
-            assert avg_queries_per_dashboard <= 20, (
-                f"平均每個儀表板查詢數 {avg_queries_per_dashboard:.1f} 過多，建議不超過 20"
-            )
+            assert (
+                avg_queries_per_dashboard <= 20
+            ), f"平均每個儀表板查詢數 {avg_queries_per_dashboard:.1f} 過多，建議不超過 20"
 
             metrics = {
                 "total_dashboards": len(dashboard_metrics),
@@ -508,9 +509,9 @@ class MonitoringPerformanceOptimizationTest:
             }
 
             # 效能驗證：預期延遲不超過 50ms
-            assert base_latency <= 50, (
-                f"預期日誌處理延遲 {base_latency}ms 過高，建議不超過 50ms"
-            )
+            assert (
+                base_latency <= 50
+            ), f"預期日誌處理延遲 {base_latency}ms 過高，建議不超過 50ms"
 
             self._record_result(
                 "log_aggregation_performance", True, metrics=metrics
@@ -585,9 +586,9 @@ class MonitoringPerformanceOptimizationTest:
             metrics = {
                 "total_rules": total_rules,
                 "complex_rules": complex_rules,
-                "complexity_ratio": complex_rules / total_rules
-                if total_rules > 0
-                else 0,
+                "complexity_ratio": (
+                    complex_rules / total_rules if total_rules > 0 else 0
+                ),
                 "avg_complexity_score": avg_complexity,
                 "max_complexity_score": max_complexity,
                 "estimated_eval_time_us": estimated_eval_time,
@@ -595,9 +596,9 @@ class MonitoringPerformanceOptimizationTest:
 
             # 效能驗證
             threshold = self.performance_thresholds["alert_evaluation"]
-            assert estimated_eval_time <= threshold, (
-                f"預估警報評估時間 {estimated_eval_time:.1f}μs 超過閾值 {threshold}μs"
-            )
+            assert (
+                estimated_eval_time <= threshold
+            ), f"預估警報評估時間 {estimated_eval_time:.1f}μs 超過閾值 {threshold}μs"
 
             self._record_result(
                 "alert_evaluation_performance", True, metrics=metrics
@@ -676,14 +677,14 @@ class MonitoringPerformanceOptimizationTest:
             target_interval = self.observability_targets[
                 "metric_resolution_seconds"
             ]
-            assert interval_seconds <= target_interval, (
-                f"抓取間隔 {interval_seconds}s 超過目標 {target_interval}s"
-            )
+            assert (
+                interval_seconds <= target_interval
+            ), f"抓取間隔 {interval_seconds}s 超過目標 {target_interval}s"
 
             target_retention = self.observability_targets["log_retention_days"]
-            assert retention_days >= target_retention, (
-                f"資料保留期 {retention_days} 天不足，目標 {target_retention} 天"
-            )
+            assert (
+                retention_days >= target_retention
+            ), f"資料保留期 {retention_days} 天不足，目標 {target_retention} 天"
 
             self._record_result(
                 "observability_configuration_optimization",

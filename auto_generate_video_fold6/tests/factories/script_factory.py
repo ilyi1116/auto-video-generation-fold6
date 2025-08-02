@@ -94,14 +94,18 @@ class ScriptFactory(factory.Factory, TDDFactoryMixin, CommonFieldsMixin):
 
     # 內容統計
     word_count = factory.LazyAttribute(
-        lambda o: len(o.content.split())
-        if hasattr(o, "content")
-        else fake.random_int(50, 200)
+        lambda o: (
+            len(o.content.split())
+            if hasattr(o, "content")
+            else fake.random_int(50, 200)
+        )
     )
     estimated_duration = factory.LazyAttribute(
-        lambda o: o.word_count * 0.4
-        if hasattr(o, "word_count")
-        else fake.random_int(30, 120)
+        lambda o: (
+            o.word_count * 0.4
+            if hasattr(o, "word_count")
+            else fake.random_int(30, 120)
+        )
     )  # 秒
 
     # 狀態

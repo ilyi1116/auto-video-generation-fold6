@@ -108,7 +108,9 @@ def remove_unused_imports(content):
                         import_parts = [line.replace("import", "").strip()]
 
                 # 檢查是否在內容中使用
-                rest_content = "\n".join(lines[lines.index(line) + 1:])  # noqa: E203
+                rest_content = "\n".join(
+                    lines[lines.index(line) + 1 :]
+                )  # noqa: E203
                 used = False
                 for part in import_parts:
                     clean_part = (

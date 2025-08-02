@@ -448,9 +448,11 @@ class SecurityScanner:
                             rule_id=vuln_id,
                             confidence="HIGH",
                             remediation=f"Update to version {vuln.get('fixAvailable', {}).get('version', 'latest')}",
-                            cve_id=vuln.get("cves", [None])[0]
-                            if vuln.get("cves")
-                            else None,
+                            cve_id=(
+                                vuln.get("cves", [None])[0]
+                                if vuln.get("cves")
+                                else None
+                            ),
                             created_at=datetime.now().isoformat(),
                         )
                         findings.append(finding)

@@ -173,9 +173,9 @@ class EnterpriseSystemDeployer:
                     "end_time": datetime.utcnow().isoformat(),
                     "duration_seconds": total_duration,
                     "deployment_success": deployment_success,
-                    "system_status": "OPERATIONAL"
-                    if deployment_success
-                    else "FAILED",
+                    "system_status": (
+                        "OPERATIONAL" if deployment_success else "FAILED"
+                    ),
                     "next_steps": self._generate_next_steps(
                         deployment_results
                     ),
@@ -567,9 +567,9 @@ class EnterpriseSystemDeployer:
             )
 
             return {
-                "status": "SUCCESS"
-                if result.returncode <= 1
-                else "FAILED",  # 安全掃描允許輕微問題
+                "status": (
+                    "SUCCESS" if result.returncode <= 1 else "FAILED"
+                ),  # 安全掃描允許輕微問題
                 "exit_code": result.returncode,
                 "stdout": result.stdout,
                 "stderr": result.stderr,

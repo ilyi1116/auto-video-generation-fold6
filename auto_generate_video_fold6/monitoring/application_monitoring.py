@@ -118,7 +118,9 @@ class ApplicationMonitoring:
         # 設定指標中介軟體
         if self.metrics_middleware:
             app.middleware("http")(self.metrics_middleware)
-            from .middleware.prometheus_middleware import setup_metrics_endpoint
+            from .middleware.prometheus_middleware import (
+                setup_metrics_endpoint,
+            )
 
             setup_metrics_endpoint(app, self.metrics_middleware)
 

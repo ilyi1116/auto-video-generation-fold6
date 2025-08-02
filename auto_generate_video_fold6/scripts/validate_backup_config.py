@@ -442,9 +442,11 @@ class BackupConfigValidator:
                 "total_validations": total_tests,
                 "passed": passed_tests,
                 "failed": failed_tests,
-                "success_rate": (passed_tests / total_tests) * 100
-                if total_tests > 0
-                else 0,
+                "success_rate": (
+                    (passed_tests / total_tests) * 100
+                    if total_tests > 0
+                    else 0
+                ),
             },
             "results": [
                 {

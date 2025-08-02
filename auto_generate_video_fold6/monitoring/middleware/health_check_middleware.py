@@ -129,9 +129,11 @@ class HealthChecker:
             elif isinstance(result, bool):
                 return HealthCheckResult(
                     name=name,
-                    status=HealthStatus.HEALTHY
-                    if result
-                    else HealthStatus.UNHEALTHY,
+                    status=(
+                        HealthStatus.HEALTHY
+                        if result
+                        else HealthStatus.UNHEALTHY
+                    ),
                     timestamp=datetime.utcnow(),
                     duration_ms=duration_ms,
                     message="OK" if result else "Check failed",
@@ -143,9 +145,11 @@ class HealthChecker:
                     timestamp=datetime.utcnow(),
                     duration_ms=duration_ms,
                     message="OK",
-                    details=result
-                    if isinstance(result, dict)
-                    else {"result": str(result)},
+                    details=(
+                        result
+                        if isinstance(result, dict)
+                        else {"result": str(result)}
+                    ),
                 )
 
         except asyncio.TimeoutError:

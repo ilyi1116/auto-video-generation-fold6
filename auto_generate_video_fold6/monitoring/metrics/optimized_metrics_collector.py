@@ -248,9 +248,11 @@ class OptimizedMetricsCollector:
                 "0.5": sorted_values[int(count * 0.5)],
                 "0.9": sorted_values[int(count * 0.9)],
                 "0.95": sorted_values[int(count * 0.95)],
-                "0.99": sorted_values[int(count * 0.99)]
-                if count > 1
-                else sorted_values[0],
+                "0.99": (
+                    sorted_values[int(count * 0.99)]
+                    if count > 1
+                    else sorted_values[0]
+                ),
             },
         }
 

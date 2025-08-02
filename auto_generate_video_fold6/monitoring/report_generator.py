@@ -447,9 +447,9 @@ class ReportGenerator:
                     "success_rate": 95.0,
                     "total_cost": 22.50,
                     "avg_cost": 1.50,
-                    "success_rate_class": "status-success"
-                    if 95.0 >= 90
-                    else "status-warning",
+                    "success_rate_class": (
+                        "status-success" if 95.0 >= 90 else "status-warning"
+                    ),
                 }
             )
             current_date += timedelta(days=1)
@@ -658,9 +658,11 @@ class ReportGenerator:
                     {
                         "category": provider,
                         "amount": amount,
-                        "percentage": (amount / total_cost) * 100
-                        if total_cost > 0
-                        else 0,
+                        "percentage": (
+                            (amount / total_cost) * 100
+                            if total_cost > 0
+                            else 0
+                        ),
                         "trend": "↗️",
                         "trend_class": "status-success",
                     }

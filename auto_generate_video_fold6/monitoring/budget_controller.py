@@ -347,9 +347,11 @@ class BudgetController:
             "action": decision.action.value,
             "can_continue": decision.can_continue,
             "message": decision.message,
-            "usage_rate": decision.metadata.get("usage_rate", 0)
-            if decision.metadata
-            else 0,
+            "usage_rate": (
+                decision.metadata.get("usage_rate", 0)
+                if decision.metadata
+                else 0
+            ),
             "current_cost": decision.current_usage,
             "remaining_budget": decision.remaining_budget,
             "budget_limit": budget_status.get("budget_limit", 0),
@@ -392,9 +394,11 @@ class BudgetController:
                 }
                 for rule in self.rules
             ],
-            "last_check": self.last_check_time.isoformat()
-            if self.last_check_time
-            else None,
+            "last_check": (
+                self.last_check_time.isoformat()
+                if self.last_check_time
+                else None
+            ),
             "generated_at": datetime.now().isoformat(),
         }
 
@@ -447,9 +451,11 @@ class BudgetController:
         """獲取當前狀態"""
         return {
             "status": self.current_status.value,
-            "last_check": self.last_check_time.isoformat()
-            if self.last_check_time
-            else None,
+            "last_check": (
+                self.last_check_time.isoformat()
+                if self.last_check_time
+                else None
+            ),
             "daily_stats": self.daily_stats,
             "rules_count": len(self.rules),
         }
