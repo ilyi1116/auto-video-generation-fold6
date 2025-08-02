@@ -234,7 +234,7 @@ class StableDiffusionClient:
         # Execute all tasks concurrently with some delay to avoid rate limits
         results = []
         for i in range(0, len(tasks), 3):  # Process 3 at a time
-            batch = tasks[i : i + 3]
+            batch = tasks[i:i + 3]
             batch_results = await asyncio.gather(
                 *batch, return_exceptions=True
             )
