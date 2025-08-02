@@ -12,9 +12,8 @@ import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-import yaml
 
 import docker
 
@@ -640,7 +639,6 @@ class EnterpriseSystemDeployer:
 
     def _check_required_ports(self) -> bool:
         """檢查必需端口"""
-        required_ports = [80, 443, 8080, 5432, 6379, 9090, 3000]
         # 簡化實現，實際應該檢查端口是否可用
         return True
 
@@ -850,7 +848,7 @@ async def main():
     )
 
     if results.get("deployment_success", False):
-        print(f"\n🎉 恭喜！企業級自動影片生成系統已成功部署！")
+        print("\n🎉 恭喜！企業級自動影片生成系統已成功部署！")
         print(f"\n系統功能:")
         print(f"• 🎥 AI 驅動的影片自動生成")
         print(f"• 🔐 企業級認證與授權（LDAP/SAML/OAuth2）")
@@ -861,7 +859,7 @@ async def main():
         print(f"• 🔄 高可用性與自動擴展")
         print(f"• 🔒 多層安全防護")
 
-        print(f"\n後續步驟:")
+        print("\n後續步驟:")
         for i, step in enumerate(results.get("next_steps", []), 1):
             print(f"{i}. {step}")
 
@@ -870,7 +868,7 @@ async def main():
         )
         exit(0)
     else:
-        print(f"\n❌ 部署過程中遇到問題，請檢查日誌並修復後重新部署。")
+        print("\n❌ 部署過程中遇到問題，請檢查日誌並修復後重新部署。")
         exit(1)
 
 

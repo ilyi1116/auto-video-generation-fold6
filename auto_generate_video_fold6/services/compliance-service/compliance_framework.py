@@ -168,9 +168,7 @@ class GDPRCompliance:
 
         if not is_valid:
             logger.warning(
-                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {
-                    [k for k, v in validations.items() if not v]
-                }"
+                f"同意驗證失敗: {consent_record.consent_id}, 失敗項目: {[k for k, v in validations.items() if not v]}"
             )
 
         return is_valid
@@ -983,7 +981,7 @@ async def main():
         datetime.utcnow() - timedelta(days=30),
         datetime.utcnow(),
     )
-    print(f"GDPR 報告已生成")
+    print("GDPR 報告已生成")
 
 
 if __name__ == "__main__":

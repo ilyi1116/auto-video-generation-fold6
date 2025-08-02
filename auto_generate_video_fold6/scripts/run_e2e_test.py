@@ -4,13 +4,10 @@ E2E 測試運行器
 啟動模擬服務並執行測試
 """
 
-import asyncio
-import os
 import signal
 import subprocess
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor
 
 
 class E2ETestRunner:

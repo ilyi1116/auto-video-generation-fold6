@@ -7,10 +7,8 @@
 import asyncio
 import json
 import logging
-import os
 import signal
 import sys
-import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -19,7 +17,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from config.config_manager import get_config, get_current_mode
+    from config.config_manager import get_config
 
     CONFIG_MANAGER_AVAILABLE = True
 except ImportError:

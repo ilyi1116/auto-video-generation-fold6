@@ -5,14 +5,10 @@
 """
 
 import asyncio
-import json
 import logging
-import smtplib
 import time
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -625,7 +621,6 @@ class HealthMonitor:
     async def _update_system_metrics(self, metrics: SystemMetrics):
         """更新系統指標到 Prometheus"""
         # 可以在這裡添加系統指標的 Prometheus 更新
-        pass
 
     async def _send_alert(
         self, health_status: HealthStatus, failure_count: int

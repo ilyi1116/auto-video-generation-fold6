@@ -1,0 +1,350 @@
+{
+  "timestamp": "2025-08-02T22:23:29.027900",
+  "critical_issues": [],
+  "high_issues": [
+    {
+      "title": "Docker 安全風險: 使用 root 用戶",
+      "location": "services/optimization/Dockerfile.optimized:143",
+      "recommendation": "改用非特權用戶",
+      "timestamp": "2025-08-02T22:24:48.619304"
+    },
+    {
+      "title": "Docker 安全風險: 使用 root 用戶",
+      "location": "auto_generate_video_fold6/monitoring/fluentd/Dockerfile:4",
+      "recommendation": "改用非特權用戶",
+      "timestamp": "2025-08-02T22:24:48.619850"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "scripts/security_monitor.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.838445"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/api-gateway/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.838904"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/inference-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.839066"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/data-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.839441"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/auth-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.840229"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/trend-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.843786"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/api-gateway/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.846150"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/voice-enhancement/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.846356"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/inference-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.847110"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/data-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.847583"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/auth-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.848867"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/scheduler-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T22:24:48.849406"
+    }
+  ],
+  "medium_issues": [
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "scripts/security_monitor.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T22:24:48.718712"
+    },
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "auto_generate_video_fold6/services/video-service/auth.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T22:24:48.727693"
+    }
+  ],
+  "low_issues": [
+    {
+      "title": "NPM 依賴漏洞: @auth/sveltekit",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T22:23:31.594685"
+    },
+    {
+      "title": "NPM 依賴漏洞: @sveltejs/adapter-auto",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T22:23:31.594711"
+    },
+    {
+      "title": "NPM 依賴漏洞: @sveltejs/kit",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T22:23:31.594714"
+    },
+    {
+      "title": "NPM 依賴漏洞: cookie",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T22:23:31.594716"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/api-gateway/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619177"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/api-gateway/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619203"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/inference-service/Dockerfile:5",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619347"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/data-service/Dockerfile:11",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619391"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/data-ingestion/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619430"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/data-ingestion/Dockerfile:46",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619438"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/video-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619481"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/video-service/Dockerfile:79",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619495"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/auth-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619546"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/auth-service/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619560"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/training-worker/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619607"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/training-worker/Dockerfile:50",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619616"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/docker/Dockerfile.e2e:4",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619659"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/scripts/Dockerfile.scheduler:7",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619811"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/graphql-gateway/Dockerfile:6",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619888"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/ai-service/Dockerfile:8",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.619979"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/api-gateway/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620017"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/api-gateway/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620031"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/voice-enhancement/Dockerfile:6",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620072"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/storage-service/Dockerfile:6",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620102"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/inference-service/Dockerfile:5",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620132"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-service/Dockerfile.test:9",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620172"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-service/Dockerfile:11",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620219"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-ingestion/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620256"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-ingestion/Dockerfile:46",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620265"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/auth-service/Dockerfile.test:9",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620376"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/auth-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620422"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/auth-service/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620435"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/training-worker/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620477"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/training-worker/Dockerfile:50",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620486"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/scheduler-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620529"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/scheduler-service/Dockerfile:80",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620545"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/social-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620594"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/social-service/Dockerfile:76",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T22:24:48.620609"
+    },
+    {
+      "title": "JWT 配置建議: Token 過期時間過長",
+      "location": "scripts/security_monitor.py",
+      "recommendation": "建議縮短到 15 分鐘",
+      "timestamp": "2025-08-02T22:24:48.718729"
+    }
+  ],
+  "recommendations": [
+    "⚠️ 優先處理 High 級別的安全問題"
+  ],
+  "summary": {
+    "total_issues": 55,
+    "critical_count": 0,
+    "high_count": 14,
+    "medium_count": 2,
+    "low_count": 39
+  }
+}

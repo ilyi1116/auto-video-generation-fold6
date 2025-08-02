@@ -5,22 +5,15 @@
 """
 
 import asyncio
-import gzip
-import json
 import logging
 import os
-import shutil
-import subprocess
 import tarfile
-import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import boto3
-import psycopg2
-import redis
 import schedule
 import yaml
 from cryptography.fernet import Fernet
@@ -723,17 +716,14 @@ class BackupSystem:
     async def _restore_files(self, step: Dict[str, Any]):
         """恢復檔案"""
         # 實作檔案恢復邏輯
-        pass
 
     async def _start_services(self, step: Dict[str, Any]):
         """啟動服務"""
         # 實作服務啟動邏輯
-        pass
 
     async def _verify_system(self, step: Dict[str, Any]):
         """驗證系統"""
         # 實作系統驗證邏輯
-        pass
 
 
 async def main():

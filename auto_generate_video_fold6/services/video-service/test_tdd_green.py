@@ -55,13 +55,13 @@ class GreenTest:
     def summary(self):
         total = self.passed + self.failed
         success_rate = (self.passed / total * 100) if total > 0 else 0
-        print(f"\n📊 TDD Green 階段測試結果:")
+        print("\n📊 TDD Green 階段測試結果:")
         print(f"通過: {self.passed}")
         print(f"失敗: {self.failed}")
         print(f"成功率: {success_rate:.1f}%")
 
         if self.errors:
-            print(f"\n❌ 錯誤列表:")
+            print("\n❌ 錯誤列表:")
             for error in self.errors:
                 print(f"  - {error}")
 

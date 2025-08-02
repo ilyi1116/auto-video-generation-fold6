@@ -5,15 +5,13 @@ TDD Green 階段: Mock 服務實作
 """
 
 import asyncio
-import json
 import logging
 import threading
 import time
 import uuid
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import List
 
-import aiohttp
 from aiohttp import web
 
 logging.basicConfig(level=logging.INFO)
@@ -76,7 +74,7 @@ class MockTrendService:
         data = await request.json()
         categories = data.get("categories", [])
         platforms = data.get("platforms", [])
-        hours_back = data.get("hours_back", 24)
+        data.get("hours_back", 24)
         min_engagement = data.get("min_engagement", 1000)
 
         # 根據參數篩選趨勢
@@ -112,7 +110,7 @@ class MockVideoService:
     async def handle_create_workflow(self, request):
         data = await request.json()
         user_id = data.get("user_id")
-        trend_keywords = data.get("trend_keywords", [])
+        data.get("trend_keywords", [])
         video_count = data.get("video_count", 1)
 
         logger.info(f"收到工作流程創建請求: {data}")

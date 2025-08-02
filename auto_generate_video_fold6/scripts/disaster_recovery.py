@@ -12,10 +12,8 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import boto3
 import psycopg2
 import redis
 import requests
@@ -640,7 +638,7 @@ class DisasterRecoveryManager:
 
         step = procedure["step"]
         action = procedure["action"]
-        timeout = procedure.get("timeout", 300)
+        procedure.get("timeout", 300)
 
         operation.logs.append(f"執行步驟 {step}: {action}")
         logger.info(f"執行恢復步驟 {step}: {action}")
@@ -676,7 +674,7 @@ class DisasterRecoveryManager:
         """執行驗證步驟"""
 
         check = validation["check"]
-        timeout = validation.get("timeout", 30)
+        validation.get("timeout", 30)
 
         operation.logs.append(f"執行驗證: {check}")
         logger.info(f"執行恢復驗證: {check}")

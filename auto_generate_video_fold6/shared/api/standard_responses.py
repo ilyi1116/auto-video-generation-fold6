@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List, Union, Generic, TypeVar
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field
-from fastapi import Response, status
+from fastapi import status
 from dataclasses import dataclass
 import json
 

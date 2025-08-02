@@ -6,12 +6,11 @@
 
 import asyncio
 import json
-import logging
 import time
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 # Database connectivity checks
 try:
@@ -482,7 +481,7 @@ class HealthCheckMiddleware:
 
         # 記憶體使用檢查 (如果 psutil 可用)
         try:
-            import psutil
+            pass
 
             health_checker.register_check("memory_usage", check_memory_usage)
         except ImportError:

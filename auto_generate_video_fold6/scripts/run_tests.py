@@ -5,14 +5,13 @@
 """
 
 import argparse
-import asyncio
 import json
 import logging
 import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # 設置日誌
 logging.basicConfig(
@@ -587,7 +586,7 @@ def main():
         passed_tests = sum(1 for r in results if r.get("success", False))
         failed_tests = total_tests - passed_tests
 
-        print(f"\n📊 測試摘要:")
+        print("\n📊 測試摘要:")
         print(f"   總計: {total_tests}")
         print(f"   通過: {passed_tests}")
         print(f"   失敗: {failed_tests}")
@@ -602,7 +601,7 @@ def main():
             print(f"\n❌ {failed_tests} 個測試失敗")
             sys.exit(1)
         else:
-            print(f"\n✅ 所有測試通過!")
+            print("\n✅ 所有測試通過!")
 
     except KeyboardInterrupt:
         logger.info("測試被用戶中斷")

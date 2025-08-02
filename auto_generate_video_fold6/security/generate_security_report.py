@@ -4,12 +4,11 @@
 整合多個安全掃描工具的結果，生成統一的安全報告
 """
 
-import os
 import json
 import argparse
 import yaml
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from datetime import datetime
 import logging
 
@@ -621,7 +620,7 @@ def main():
     generator.save_report(report, args.output, args.format)
 
     # 輸出摘要到 stdout
-    print(f"Security scan completed:")
+    print("Security scan completed:")
     print(f"  Total findings: {report['metadata']['total_findings']}")
     print(f"  Critical: {report['summary']['CRITICAL']}")
     print(f"  High: {report['summary']['HIGH']}")

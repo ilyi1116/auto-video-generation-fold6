@@ -11,7 +11,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import argparse
 from datetime import datetime
 
@@ -300,7 +300,6 @@ class DeploymentTester:
         }
 
         start_time = time.time()
-        tasks = []
 
         # 創建並發請求任務
         async def make_request(session):

@@ -50,7 +50,7 @@ async def demo_gemini_integration():
         )
 
         if script:
-            print(f"✅ 腳本生成成功:")
+            print("✅ 腳本生成成功:")
             print(f"```\n{script}\n```")
         else:
             print("❌ 腳本生成失敗")
@@ -187,7 +187,6 @@ async def demo_ai_orchestrator():
             AIOrchestrator,
             AIRequest,
             AITaskType,
-            AIProvider,
             generate_text_with_fallback,
             generate_music_for_video,
         )
@@ -254,7 +253,9 @@ async def demo_ai_orchestrator():
         for provider, stats in status.items():
             health_status = "🟢" if stats["healthy"] else "🔴"
             print(
-                f"  {health_status} {provider}: 成功率 {stats['success_rate']:.2%}, 平均響應時間 {stats['average_response_time']:.2f}s"
+                f"  {health_status} {provider}: 成功率 "
+                f"{stats['success_rate']:.2%}, 平均響應時間 "
+                f"{stats['average_response_time']:.2f}s"
             )
 
     except ImportError as e:
@@ -331,7 +332,7 @@ async def demo_complete_workflow():
                 print(f"  病毒潛力: {analysis.get('viral_potential', 'N/A')}")
                 print(f"  目標受眾: {analysis.get('target_audience', 'N/A')}")
             else:
-                print(f"  分析結果: 已完成")
+                print("  分析結果: 已完成")
         else:
             print("❌ 趨勢分析失敗")
 

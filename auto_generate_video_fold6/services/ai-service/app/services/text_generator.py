@@ -295,8 +295,7 @@ class TextGenerator:
         """Build prompt for script generation"""
         keyword_text = ", ".join(keywords) if keywords else ""
 
-        return f"""Create an engaging video script for social media \
-            platforms like TikTok and YouTube Shorts.
+        return f"""Create an engaging video script for social media             platforms like TikTok and YouTube Shorts.
 
 REQUIREMENTS:
 - Topic: {topic}
@@ -321,8 +320,7 @@ STYLE CHARACTERISTICS:
 - Humorous: Include light humor, wordplay, relatable situations
 - Professional: Use formal language, expert positioning
 
-Please write ONLY the script content, no additional formatting or \
-    explanations."""
+Please write ONLY the script content, no additional formatting or     explanations."""
 
     def _build_title_prompt(
         self,

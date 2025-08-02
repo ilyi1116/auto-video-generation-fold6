@@ -4,9 +4,8 @@
 
 import pytest
 import json
-import tempfile
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import patch
 
 try:
     from config.config_manager import ConfigManager, get_config, set_mode

@@ -5,12 +5,11 @@ Auto Video Generation System - Database Migration Manager
 """
 
 import argparse
-import asyncio
 import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import psycopg2
 from psycopg2 import sql
@@ -394,7 +393,7 @@ def main():
         manager.create_databases()
 
     elif args.command == "migrate":
-        message = args.message or "Auto migration"
+        args.message or "Auto migration"
         manager.create_initial_migration()
 
     elif args.command == "upgrade":

@@ -7,7 +7,7 @@
 import json
 import os
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 from pathlib import Path
 from datetime import datetime
 import copy

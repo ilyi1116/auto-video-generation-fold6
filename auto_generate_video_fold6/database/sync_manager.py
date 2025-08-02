@@ -8,12 +8,12 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import asyncpg
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 logger = logging.getLogger(__name__)

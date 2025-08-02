@@ -10,7 +10,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # 設置日誌
 logging.basicConfig(
@@ -167,7 +167,7 @@ class BackupConfigValidator:
                 try:
                     if config_path.endswith(".json"):
                         with open(full_path, "r", encoding="utf-8") as f:
-                            config_data = json.load(f)
+                            json.load(f)
                     elif config_path.endswith(".yaml") or config_path.endswith(
                         ".yml"
                     ):

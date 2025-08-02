@@ -10,22 +10,13 @@ import hashlib
 import json
 import logging
 import re
-import socket
-import ssl
 import subprocess
-import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-import bandit
-import nmap
-import requests
-import semgrep
-import sqlparse
-import yaml
 from bandit.core import config as bandit_config
 from bandit.core import manager as bandit_manager
 
@@ -1272,13 +1263,13 @@ async def main():
     print(f"總發現問題: {len(report.findings)}")
     print(f"風險評分: {report.risk_score}/100")
 
-    print(f"\n嚴重程度分布:")
+    print("\n嚴重程度分布:")
     severity_counts = report.summary["severity_distribution"]
     for severity, count in severity_counts.items():
         if count > 0:
             print(f"  {severity.upper()}: {count}")
 
-    print(f"\n合規狀態:")
+            print("\n合規狀態:")
     for framework, compliant in report.compliance_status.items():
         status = "✅ 合規" if compliant else "❌ 不合規"
         print(f"  {framework}: {status}")

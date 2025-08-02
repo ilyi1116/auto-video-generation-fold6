@@ -4,13 +4,12 @@
 執行定期安全檢查，報告安全問題並生成建議
 """
 
-import os
 import sys
 import json
 import subprocess
 import datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 import logging
 
 # 設置日誌
@@ -364,7 +363,7 @@ class SecurityMonitor:
                                     "立即移除並輪換密鑰",
                                 )
 
-                except Exception as e:
+                except Exception:
                     continue  # 跳過無法讀取的文件
 
     def add_issue(

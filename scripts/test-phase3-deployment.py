@@ -5,11 +5,8 @@ Phase 3 部署策略驗證腳本
 """
 
 import sys
-import os
 import yaml
-import json
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
 
 # 添加專案路徑
 project_root = Path(__file__).parent.parent

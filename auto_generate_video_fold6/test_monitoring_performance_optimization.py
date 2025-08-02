@@ -4,18 +4,13 @@ TDD Refactor 階段: 監控效能和可觀測性優化測試
 驗證監控系統的效能特性和可觀測性功能
 """
 
-import asyncio
 import json
 import time
-import os
 import statistics
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict
 import logging
 import concurrent.futures
-from unittest.mock import Mock, patch
-import threading
 
 # 配置測試日誌
 logging.basicConfig(level=logging.INFO)
@@ -217,7 +212,7 @@ class MonitoringPerformanceOptimizationTest:
 
             # 測試指標摘要生成效能
             summary_start = time.perf_counter()
-            summary = collector.get_all_metrics_summary()
+            collector.get_all_metrics_summary()
             summary_end = time.perf_counter()
             summary_time = (summary_end - summary_start) * 1000
 
@@ -261,12 +256,12 @@ class MonitoringPerformanceOptimizationTest:
             correlation_times = []
             for i in range(1000):
                 start_time = time.perf_counter()
-                correlation_id = middleware_module.get_correlation_id()
+                middleware_module.get_correlation_id()
                 end_time = time.perf_counter()
                 correlation_times.append((end_time - start_time) * 1000000)
 
             avg_correlation_time = statistics.mean(correlation_times)
-            threshold = self.performance_thresholds["correlation_id_lookup"]
+            self.performance_thresholds["correlation_id_lookup"]
 
             # 測試追踪事件記錄效能
             event_times = []

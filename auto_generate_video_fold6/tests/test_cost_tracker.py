@@ -3,17 +3,14 @@
 """
 
 import pytest
-import asyncio
-import json
 import sqlite3
-from datetime import datetime, date, timedelta
-from unittest.mock import AsyncMock, patch, MagicMock
+from datetime import date
+from unittest.mock import patch
 
 try:
     from monitoring.cost_tracker import (
         CostTracker,
         get_cost_tracker,
-        APICallRecord,
         DailyCostSummary,
     )
     from monitoring.budget_controller import (
@@ -178,7 +175,7 @@ class TestCostTracker:
             await cost_tracker._check_budget_alerts(1.0)
 
         # 檢查警告文件是否創建
-        alert_file = cost_tracker.db_path.parent / "budget_alerts.json"
+        cost_tracker.db_path.parent / "budget_alerts.json"
         # 注意：實際的警告文件路徑可能不同，這裡只是示例測試
 
     @pytest.mark.asyncio
@@ -198,7 +195,7 @@ class TestCostTracker:
         export_file = await cost_tracker.export_cost_data(days=7)
 
         assert export_file is not None
-        export_path = cost_tracker.db_path.parent / export_file
+        cost_tracker.db_path.parent / export_file
         # 實際的匯出檔案可能在不同路徑
 
         # 驗證匯出內容結構

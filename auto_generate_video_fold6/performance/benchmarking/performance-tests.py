@@ -8,16 +8,14 @@ import json
 import logging
 import statistics
 import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Tuple
+from datetime import datetime
+from typing import Dict, List
 
 import aiohttp
 import matplotlib.pyplot as plt
 import numpy as np
 import psutil
-import pytest
 
 logger = logging.getLogger(__name__)
 

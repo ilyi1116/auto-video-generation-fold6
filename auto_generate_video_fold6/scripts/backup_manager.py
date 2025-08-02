@@ -12,14 +12,12 @@ import logging
 import os
 import subprocess
 import tarfile
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import boto3
-import psycopg2
 import redis
 
 logger = logging.getLogger(__name__)

@@ -1,12 +1,11 @@
 # 測試數據工廠使用範例
 # 展示如何在 TDD 開發中使用工廠
 
-from typing import Dict, Any
 from .user_factory import UserFactory, create_test_users_scenario
 from .project_factory import ProjectFactory, create_test_projects_scenario
-from .video_factory import VideoFactory, create_test_videos_scenario
-from .script_factory import ScriptFactory, create_test_scripts_scenario
-from .voice_factory import VoiceCloneFactory, create_test_voices_scenario
+from .video_factory import VideoFactory
+from .script_factory import ScriptFactory
+from .voice_factory import VoiceCloneFactory
 
 
 # TDD 範例 1: RED 階段測試
@@ -246,7 +245,7 @@ def run_all_examples():
         example_refactor_phase_test()
         print()
 
-        workflow_data = example_complete_user_workflow()
+        example_complete_user_workflow()
         print()
 
         example_batch_data_test()

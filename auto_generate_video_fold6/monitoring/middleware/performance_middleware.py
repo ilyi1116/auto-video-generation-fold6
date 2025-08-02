@@ -4,15 +4,12 @@
 追蹤應用程式效能指標並整合 Prometheus
 """
 
-import asyncio
-import json
-import logging
 import threading
 import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict
 
 # Prometheus metrics (optional dependency)
 try:

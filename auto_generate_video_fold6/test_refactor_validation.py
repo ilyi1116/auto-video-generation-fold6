@@ -5,7 +5,6 @@ TDD Refactor 階段驗證測試
 """
 
 import asyncio
-import pytest
 import time
 import sys
 from pathlib import Path
@@ -18,7 +17,6 @@ sys.path.insert(0, str(Path(__file__).parent / "services" / "common"))
 from base_service import (
     BaseService,
     ServiceState,
-    ServiceError,
     MetricsCollector,
     StructuredLogger,
     TraceContext,
@@ -31,7 +29,6 @@ from workflow_engine_refactored import (
     WorkflowContext,
     WorkflowState,
     StepState,
-    StepResult,
 )
 
 logging.basicConfig(level=logging.INFO)

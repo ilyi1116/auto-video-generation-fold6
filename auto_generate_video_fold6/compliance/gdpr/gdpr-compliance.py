@@ -7,21 +7,18 @@ import json
 import hashlib
 import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 from enum import Enum
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from sqlalchemy import (
-    create_engine,
     Column,
     Integer,
     String,
     DateTime,
     Text,
-    Boolean,
     JSON,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 import logging
 
 logger = logging.getLogger(__name__)
@@ -633,14 +630,14 @@ async def example_usage():
     # compliance_manager = GDPRComplianceManager(db_session)
 
     # 記錄用戶同意
-    consent = ConsentRecord(
-        user_id=123,
-        purpose=DataProcessingPurpose.SERVICE_PROVISION,
-        categories=[DataCategory.PERSONAL_IDENTITY, DataCategory.AUDIO_DATA],
-        granted_at=datetime.utcnow(),
-        ip_address="192.168.1.100",
-        user_agent="Mozilla/5.0...",
-    )
+    # consent = ConsentRecord(
+    #     user_id=123,
+    #     purpose=DataProcessingPurpose.SERVICE_PROVISION,
+    #     categories=[DataCategory.PERSONAL_IDENTITY, DataCategory.AUDIO_DATA],
+    #     granted_at=datetime.utcnow(),
+    #     ip_address="192.168.1.100",
+    #     user_agent="Mozilla/5.0...",
+    # )
 
     # await compliance_manager.record_consent(consent)
 

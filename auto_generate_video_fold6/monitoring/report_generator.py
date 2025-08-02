@@ -7,15 +7,12 @@
 import asyncio
 import json
 import logging
-import sqlite3
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
 from jinja2 import Environment, FileSystemLoader
 
 # 設置日誌

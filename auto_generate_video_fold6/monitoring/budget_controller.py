@@ -8,10 +8,10 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from cost_tracker import CostTracker, get_cost_tracker
 
@@ -179,7 +179,7 @@ class BudgetController:
         """根據使用率和規則做出決策"""
 
         current_cost = budget_status["current_cost"]
-        budget_limit = budget_status["budget_limit"]
+        budget_status["budget_limit"]
         remaining_budget = budget_status["budget_remaining"]
 
         # 找到適用的規則
@@ -487,7 +487,7 @@ async def main():
 
     # 模擬預算決策
     decision = await controller.check_budget_and_decide(1.0)
-    print(f"\n預算決策:")
+    print("\n預算決策:")
     print(f"狀態: {decision.status.value}")
     print(f"行動: {decision.action.value}")
     print(f"可繼續: {decision.can_continue}")
@@ -495,8 +495,8 @@ async def main():
     print(f"建議: {decision.suggested_actions}")
 
     # 獲取報告
-    report = await controller.get_daily_budget_report()
-    print(f"\n每日報告生成完成")
+    await controller.get_daily_budget_report()
+    print("\n每日報告生成完成")
 
 
 if __name__ == "__main__":

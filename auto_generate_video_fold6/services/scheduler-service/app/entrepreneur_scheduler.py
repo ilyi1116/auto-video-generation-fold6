@@ -215,9 +215,7 @@ class EntrepreneurScheduler:
             if task.retry_count < self.config.retry_attempts:
                 task.retry_count += 1
                 logger.warning(
-                    f"任務執行失敗，準備重試 ({task.retry_count}/{
-                        self.config.retry_attempts
-                    }): {e}"
+                    f"任務執行失敗，準備重試 ({task.retry_count}/{self.config.retry_attempts}): {e}"
                 )
                 # 延遲後重試
                 await asyncio.sleep(self.config.retry_delay_minutes * 60)
@@ -317,9 +315,7 @@ class EntrepreneurScheduler:
             "config": {
                 "daily_video_limit": self.config.daily_video_limit,
                 "daily_budget_limit": self.config.daily_budget_limit,
-                "work_hours": f"{self.config.work_hours_start}-{
-                    self.config.work_hours_end
-                }",
+                "work_hours": f"{self.config.work_hours_start}-{self.config.work_hours_end}",
             },
         }
 

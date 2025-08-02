@@ -22,17 +22,14 @@ class BaseFactory(ABC, Generic[T]):
     @abstractmethod
     def create(self, **kwargs) -> T:
         """建立一個測試實例"""
-        pass
 
     @abstractmethod
     def build(self, **kwargs) -> T:
         """建構但不保存的測試實例（用於單元測試）"""
-        pass
 
     @abstractmethod
     def create_batch(self, size: int, **kwargs) -> list[T]:
         """建立多個測試實例"""
-        pass
 
 
 class TDDFactoryMixin:

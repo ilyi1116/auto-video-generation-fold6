@@ -3,7 +3,6 @@
 自動修復 flake8 錯誤的腳本
 """
 
-import os
 import re
 import subprocess
 import sys
@@ -196,7 +195,7 @@ def main():
         if fix_python_file(py_file):
             fixed_count += 1
 
-    print(f"\n修復完成!")
+            print("\n修復完成!")
     print(f"總檔案數: {total_count}")
     print(f"已修復: {fixed_count}")
 

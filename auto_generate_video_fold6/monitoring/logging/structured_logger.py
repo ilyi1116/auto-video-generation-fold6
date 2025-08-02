@@ -3,7 +3,6 @@
 為 Auto Video 系統提供統一的日誌記錄功能
 """
 
-import json
 import logging
 import os
 import time
@@ -12,7 +11,7 @@ from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import structlog
 from pythonjsonlogger import jsonlogger

@@ -4,11 +4,10 @@
 import factory
 from faker import Faker
 from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Dict, List
 from enum import Enum
 
 from .base_factory import (
-    BaseFactory,
     TDDFactoryMixin,
     CommonFieldsMixin,
     register_factory,
@@ -424,4 +423,3 @@ def cleanup_test_voices(voices: Dict[str, VoiceCloneData]):
     在測試完成後呼叫
     """
     # 清理語音模型檔案和數據庫記錄
-    pass

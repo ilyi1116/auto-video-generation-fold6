@@ -6,10 +6,9 @@
 
 import ast
 import json
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict
 
 
 class TestCoverageAuditor:
@@ -218,7 +217,7 @@ class TestCoverageAuditor:
         for priority_file in self.coverage_report["priority_files"][
             :10
         ]:  # 前10個
-            file_path = self.project_root / priority_file["file"]
+            self.project_root / priority_file["file"]
 
             # 找到對應的文件信息
             file_info = next(
@@ -334,7 +333,7 @@ class Test{class_info["name"]}:
         print(f"❌ 未測試文件: {summary['untested_files']}")
         print(f"📈 覆蓋率: {summary['coverage_percentage']}%")
 
-        print(f"\n🎯 各服務覆蓋率:")
+        print("\n🎯 各服務覆蓋率:")
         for service_name, service_info in self.coverage_report[
             "services"
         ].items():
@@ -346,7 +345,7 @@ class Test{class_info["name"]}:
                 f"  {status} {service_name}: {coverage}% ({service_info['tested_files']}/{service_info['total_files']})"
             )
 
-        print(f"\n🚨 高優先級需要測試的文件 (複雜度 ≥ 3):")
+        print("\n🚨 高優先級需要測試的文件 (複雜度 ≥ 3):")
         for i, priority_file in enumerate(
             self.coverage_report["priority_files"][:10], 1
         ):
@@ -387,6 +386,6 @@ if __name__ == "__main__":
     auditor = TestCoverageAuditor(project_root)
     report_file, templates = auditor.run_audit()
 
-    print(f"\n🎉 審查完成！")
+    print("\n🎉 審查完成！")
     print(f"📊 報告: {report_file}")
     print(f"🧪 模板: {len(templates)} 個文件已生成")

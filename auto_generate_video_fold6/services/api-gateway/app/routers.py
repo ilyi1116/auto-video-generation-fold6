@@ -539,7 +539,7 @@ async def get_services_health() -> dict:
     for service in services:
         try:
             health_status[service] = await proxy.health_check_service(service)
-        except Exception as e:
+        except Exception:
             health_status[service] = False
 
     return health_status

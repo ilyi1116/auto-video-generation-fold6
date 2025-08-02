@@ -6,9 +6,8 @@
 
 import pytest
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from typing import Dict, Any
 import uuid
-import json
 
 # ================================
 # 用戶測試數據

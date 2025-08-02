@@ -7,17 +7,14 @@
 import asyncio
 import json
 import logging
-import sqlite3
 from datetime import date, datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import dash
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import Input, Output, callback, dcc, html
-from plotly.subplots import make_subplots
+from dash import Input, Output, dcc, html
 
 # 設置日誌
 logging.basicConfig(level=logging.INFO)

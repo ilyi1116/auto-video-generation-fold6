@@ -4,18 +4,9 @@ TDD Red 階段: 監控和日誌系統測試
 定義完整監控和日誌系統的期望行為
 """
 
-import asyncio
 import json
-import time
-import os
-import tempfile
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-import subprocess
 import logging
-import sqlite3
-from unittest.mock import Mock, patch, MagicMock
 
 # Try to import optional dependencies
 try:
@@ -144,7 +135,7 @@ class MonitoringLoggingSystemTest:
                     config = yaml.safe_load(f)
             else:
                 # 簡單文本檢查如果沒有 yaml
-                config_text = prometheus_config.read_text()
+                prometheus_config.read_text()
                 config = {
                     "scrape_configs": [{"job_name": "prometheus"}]
                 }  # 模擬基本結構

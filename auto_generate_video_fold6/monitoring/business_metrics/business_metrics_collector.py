@@ -4,10 +4,8 @@
 收集和記錄業務相關的關鍵效能指標 (KPIs)
 """
 
-import asyncio
 import json
 import threading
-import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -16,7 +14,7 @@ from typing import Any, Dict, List, Optional, Union
 
 # Prometheus metrics (optional dependency)
 try:
-    from prometheus_client import Counter, Gauge, Histogram, Info, Summary
+    from prometheus_client import Counter, Gauge, Histogram, Summary
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -413,7 +411,9 @@ class BusinessMetricsCollector:
 
 # 全域業務指標收集器實例
 business_metrics = BusinessMetricsCollector(
-    "/data/data/com.termux/files/home/myProject/auto_generate_video_fold6/monitoring/business_metrics/metrics_definition.json"
+    "/data/data/com.termux/files/home/myProject/"
+    "auto_generate_video_fold6/monitoring/business_metrics/"
+    "metrics_definition.json"
 )
 
 

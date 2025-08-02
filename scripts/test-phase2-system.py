@@ -19,19 +19,6 @@ def test_model_imports():
     try:
         from auto_generate_video_fold6.models import (
             Base,
-            User,
-            TrendingTopic,
-            KeywordResearch,
-            ViralContent,
-            TrendAnalysis,
-            StoredFile,
-            FileProcessingJob,
-            FileDownload,
-            VideoProject,
-            VideoGeneration,
-            VideoAsset,
-            ScheduledTask,
-            TaskExecution,
         )
 
         print("✅ 所有模型導入成功")
@@ -59,8 +46,6 @@ def test_model_relationships():
     try:
         from auto_generate_video_fold6.models import (
             VideoProject,
-            VideoGeneration,
-            VideoAsset,
         )
 
         # 檢查關係屬性

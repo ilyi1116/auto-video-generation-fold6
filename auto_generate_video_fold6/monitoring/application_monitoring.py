@@ -8,18 +8,17 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 import asyncpg
 import psutil
 import redis.asyncio as redis
 import structlog
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException
 from opentelemetry import trace
-from prometheus_client import Counter, Gauge, Histogram, Info
+from prometheus_client import Counter, Gauge, Info
 
 from .middleware.prometheus_middleware import PrometheusMiddleware
-from .tracing.opentelemetry_middleware import setup_tracing, trace_function
 
 
 class ApplicationMonitoring:

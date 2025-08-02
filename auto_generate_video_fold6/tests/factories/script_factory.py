@@ -3,12 +3,10 @@
 
 import factory
 from faker import Faker
-from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Dict, List
 from enum import Enum
 
 from .base_factory import (
-    BaseFactory,
     TDDFactoryMixin,
     CommonFieldsMixin,
     register_factory,
@@ -362,4 +360,3 @@ def cleanup_test_scripts(scripts: Dict[str, ScriptData]):
     在測試完成後呼叫
     """
     # 清理腳本數據和相關檔案
-    pass

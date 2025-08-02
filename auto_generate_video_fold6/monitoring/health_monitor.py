@@ -7,14 +7,13 @@
 import asyncio
 import json
 import logging
-import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import aiofiles
 import aiohttp
@@ -181,13 +180,13 @@ class HealthMonitor:
                             text = await response.text()
                             if service.expected_response in text:
                                 status = HealthStatus.HEALTHY
-                                message = f"HTTP 200 OK, 響應內容匹配"
+                                message = "HTTP 200 OK, 響應內容匹配"
                             else:
                                 status = HealthStatus.WARNING
-                                message = f"HTTP 200 OK, 但響應內容不匹配"
+                                message = "HTTP 200 OK, 但響應內容不匹配"
                         else:
                             status = HealthStatus.HEALTHY
-                            message = f"HTTP 200 OK"
+                            message = "HTTP 200 OK"
                     else:
                         status = HealthStatus.WARNING
                         message = f"HTTP {response.status}"
@@ -246,7 +245,7 @@ class HealthMonitor:
                 service=service.name,
                 status=HealthStatus.HEALTHY,
                 response_time=response_time,
-                message=f"TCP 連接成功",
+                message="TCP 連接成功",
                 timestamp=datetime.now(),
                 metadata={"host": host, "port": port},
             )

@@ -4,10 +4,9 @@
 import factory
 from faker import Faker
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Dict
 
 from .base_factory import (
-    BaseFactory,
     TDDFactoryMixin,
     CommonFieldsMixin,
     register_factory,
@@ -173,4 +172,3 @@ def cleanup_test_users(users: Dict[str, UserData]):
     """
     # 這裡可以加入清理邏輯
     # 例如：從資料庫刪除測試數據
-    pass

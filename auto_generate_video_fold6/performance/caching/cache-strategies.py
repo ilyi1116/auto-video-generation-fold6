@@ -9,8 +9,8 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
 import redis.asyncio as redis
 

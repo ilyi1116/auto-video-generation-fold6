@@ -7,23 +7,15 @@
 import asyncio
 import json
 import logging
-import queue
 import statistics
-import subprocess
-import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
-import aiohttp
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import psutil
-import seaborn as sns
 
 logger = logging.getLogger(__name__)
 
@@ -1096,7 +1088,7 @@ async def main():
     print(f"業界比較: {industry_comparison.get('comparison', 'N/A')}")
     print(f"性能百分位: 第 {industry_comparison.get('percentile', 0)} 百分位")
 
-    print(f"\n建議改進措施:")
+    print("\n建議改進措施:")
     for i, recommendation in enumerate(results.get("recommendations", []), 1):
         print(f"{i}. {recommendation}")
 

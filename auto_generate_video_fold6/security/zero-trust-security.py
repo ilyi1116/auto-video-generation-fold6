@@ -7,7 +7,6 @@
 import asyncio
 import logging
 import json
-import time
 import hashlib
 import secrets
 from typing import Dict, List, Optional, Any, Set
@@ -15,9 +14,6 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 from datetime import datetime, timedelta
 import jwt
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import redis
 import httpx
 
@@ -155,7 +151,7 @@ class BehaviorAnalyzer:
         """分析用戶行為並返回風險分數"""
 
         # 獲取用戶歷史行為
-        behavior_history = await self._get_user_behavior_history(user_id)
+        await self._get_user_behavior_history(user_id)
 
         # 時間分析
         time_risk = await self._analyze_time_patterns(

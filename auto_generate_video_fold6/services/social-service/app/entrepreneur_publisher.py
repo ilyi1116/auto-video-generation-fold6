@@ -164,9 +164,7 @@ class EntrepreneurPublisher:
         """多平台批次發布"""
 
         try:
-            request_id = f"batch_{
-                datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-            }_{request.user_id}"
+            request_id = f"batch_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{request.user_id}"
 
             batch_result = BatchPublishResult(
                 request_id=request_id,

@@ -9,9 +9,7 @@ from typing import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -302,4 +300,3 @@ async def cleanup_after_test():
     """每個測試後的清理"""
     yield
     # 這裡可以添加清理邏輯，例如清理臨時檔案、重置狀態等
-    pass

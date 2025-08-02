@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import aiofiles
 
@@ -654,14 +654,14 @@ async def main():
 
     # 獲取今日摘要
     summary = await tracker.get_daily_summary()
-    print(f"\n今日成本摘要:")
+    print("\n今日成本摘要:")
     print(f"總成本: ${summary.total_cost:.4f}")
     print(f"API 呼叫次數: {summary.api_calls_count}")
     print(f"預算剩餘: ${summary.budget_remaining:.2f}")
 
     # 檢查預算狀態
     budget_status = await tracker.check_budget_status()
-    print(f"\n預算狀態:")
+    print("\n預算狀態:")
     print(f"使用率: {budget_status['usage_percentage']:.1f}%")
     print(f"可繼續操作: {budget_status['can_continue']}")
 

@@ -6,15 +6,12 @@
 import asyncio
 import json
 import logging
-import os
 import time
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-import numpy as np
-import pandas as pd
 import redis
 from elasticsearch import AsyncElasticsearch
 
@@ -510,12 +507,12 @@ class LogAnalyzer:
     async def generate_daily_insights(self):
         """生成每日洞察報告"""
         yesterday = datetime.utcnow() - timedelta(days=1)
-        start_of_yesterday = yesterday.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        end_of_yesterday = yesterday.replace(
-            hour=23, minute=59, second=59, microsecond=999999
-        )
+        # start_of_yesterday = yesterday.replace(
+        #     hour=0, minute=0, second=0, microsecond=0
+        # )
+        # end_of_yesterday = yesterday.replace(
+        #     hour=23, minute=59, second=59, microsecond=999999
+        # )
 
         insights = {
             "date": yesterday.date().isoformat(),

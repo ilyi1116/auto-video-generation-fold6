@@ -6,11 +6,8 @@ TDD Green 階段: 簡化版端對端測試
 
 import asyncio
 import aiohttp
-import json
 import time
 import logging
-from datetime import datetime
-from typing import Dict, Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -286,13 +283,13 @@ async def main():
         trend_data = await runner.test_trend_analysis()
 
         # 3. 影片工作流程測試
-        workflow_data = await runner.test_video_workflow(trend_data)
+        await runner.test_video_workflow(trend_data)
 
         # 4. 排程器操作測試
-        scheduler_ok = await runner.test_scheduler_operations()
+        await runner.test_scheduler_operations()
 
         # 5. 基本發布測試
-        publish_ok = await runner.test_basic_publishing()
+        await runner.test_basic_publishing()
 
         # 打印結果
         success = runner.print_results()

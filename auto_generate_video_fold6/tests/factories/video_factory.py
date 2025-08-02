@@ -4,11 +4,10 @@
 import factory
 from faker import Faker
 from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Dict, List
 from enum import Enum
 
 from .base_factory import (
-    BaseFactory,
     TDDFactoryMixin,
     CommonFieldsMixin,
     register_factory,
@@ -321,4 +320,3 @@ def cleanup_test_videos(videos: Dict[str, VideoData]):
     在測試完成後呼叫
     """
     # 清理影片檔案和數據庫記錄
-    pass

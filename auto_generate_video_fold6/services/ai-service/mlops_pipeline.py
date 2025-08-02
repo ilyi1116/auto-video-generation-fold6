@@ -528,8 +528,7 @@ class MLOpsPipeline:
 
         health_ok = error_rate < 0.01 and latency < 100
         logger.info(
-            f"金絲雀健康檢查: 錯誤率={error_rate:.3f}, 延遲={latency:.1f}ms, \
-                健康={health_ok}"
+            f"金絲雀健康檢查: 錯誤率={error_rate:.3f}, 延遲={latency:.1f}ms, 健康={health_ok}"
         )
         return health_ok
 

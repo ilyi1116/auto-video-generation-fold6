@@ -295,8 +295,8 @@ class LocalStorageBackend(StorageBackend):
     async def generate_presigned_url(
         self, object_key: str, expiration: int = 3600
     ) -> str:
-        """Generate presigned URL for file access (not applicable for \
-            local storage)"""
+        """Generate presigned URL for file access (not applicable for "
+        "local storage)"""
         return f"/storage/{object_key}"
 
 
@@ -334,9 +334,7 @@ class StorageManager:
 
         now = datetime.utcnow()
 
-        object_key = f"{user_id}/{file_type}/{now.year:04d}/{now.month:02d}/{
-            safe_filename
-        }"
+        object_key = f"{user_id}/{file_type}/{now.year:04d}/{now.month:02d}/{safe_filename}"
         return object_key
 
     def calculate_file_hash(self, file_data: bytes) -> str:

@@ -13,13 +13,10 @@ TDD Red 階段: 端對端創業者工作流程整合測試
 """
 
 import asyncio
-import pytest
 import aiohttp
-import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Any, Optional
-from pathlib import Path
 import logging
 import sys
 
@@ -489,7 +486,7 @@ class E2ETestRunner:
             async with self.session.post(
                 workflow_url, json=invalid_payload, headers=headers
             ) as response:
-                error_response = await response.json()
+                await response.json()
 
                 # 驗證系統正確返回錯誤
                 if response.status == 200:
@@ -554,7 +551,7 @@ async def run_e2e_tests():
             logger.info("✅ 影片工作流程測試通過")
 
             # 5. 發布工作流程測試
-            publish_data = await runner.test_publishing_workflow(video_data)
+            await runner.test_publishing_workflow(video_data)
             logger.info("✅ 發布工作流程測試通過")
 
             # 6. 錯誤恢復測試

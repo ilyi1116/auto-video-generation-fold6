@@ -10,8 +10,8 @@ import time
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
-from datetime import datetime, timedelta
+from typing import Dict, List
+from datetime import datetime
 import argparse
 
 

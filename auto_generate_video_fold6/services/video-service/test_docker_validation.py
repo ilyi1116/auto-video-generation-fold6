@@ -75,14 +75,14 @@ class DockerValidationTest:
         total = self.passed + self.failed
         success_rate = (self.passed / total * 100) if total > 0 else 0
 
-        print(f"\n📊 Docker 環境驗證結果:")
+        print("\n📊 Docker 環境驗證結果:")
         print(f"Docker 可用: {'✅' if self.docker_available else '❌'}")
         print(f"通過: {self.passed}")
         print(f"失敗: {self.failed}")
         print(f"成功率: {success_rate:.1f}%")
 
         if self.errors:
-            print(f"\n❌ 錯誤列表:")
+            print("\n❌ 錯誤列表:")
             for error in self.errors:
                 print(f"  - {error}")
 
@@ -348,7 +348,7 @@ def main():
     for test_func, test_name in basic_tests:
         test.run_simple_test(test_func, test_name)
 
-    print(f"\n🐳 Docker 環境測試:")
+    print("\n🐳 Docker 環境測試:")
     print("-" * 30)
     for test_func, test_name in docker_tests:
         test.run_simple_test(test_func, test_name)
@@ -356,7 +356,7 @@ def main():
     test.summary()
 
     # 提供 Docker 環境建議
-    print(f"\n🐳 Docker 環境建議:")
+    print("\n🐳 Docker 環境建議:")
     print("=" * 30)
 
     if test.docker_available:
@@ -373,7 +373,7 @@ def main():
         print("  2. 確保 Docker 服務運行中")
         print("  3. 重新執行此驗證測試")
 
-    print(f"\n✨ TDD 影片生成工作流程完整驗證:")
+    print("\n✨ TDD 影片生成工作流程完整驗證:")
     print("=" * 40)
     print("🔴 Red 階段: ✅ 完成 - 撰寫失敗測試")
     print("🟢 Green 階段: ✅ 完成 - 實作最小程式碼")
@@ -381,10 +381,10 @@ def main():
     print("🐳 Docker 驗證: ✅ 完成 - 環境兼容性確認")
 
     if test.failed == 0:
-        print(f"\n🎉 所有驗證測試通過!")
+        print("\n🎉 所有驗證測試通過!")
         print("🚀 TDD 實踐示範完成，可投入生產環境!")
     else:
-        print(f"\n⚠️  部分測試失敗，需要進一步調整")
+        print("\n⚠️  部分測試失敗，需要進一步調整")
 
 
 if __name__ == "__main__":

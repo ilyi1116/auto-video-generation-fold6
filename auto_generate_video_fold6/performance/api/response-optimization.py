@@ -11,13 +11,12 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional
+from datetime import datetime
+from typing import Callable, List, Optional
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)

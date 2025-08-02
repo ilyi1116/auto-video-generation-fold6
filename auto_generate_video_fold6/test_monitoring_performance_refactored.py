@@ -4,19 +4,13 @@ TDD Refactor 階段: 監控效能和可觀測性優化測試 (重構版)
 專注於實際效能優化，避免外部依賴問題
 """
 
-import asyncio
 import json
 import time
-import os
 import statistics
-import threading
-import queue
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict
 import logging
 import concurrent.futures
-from unittest.mock import Mock, patch
 import uuid
 
 # 配置測試日誌
@@ -69,7 +63,6 @@ class MonitoringPerformanceRefactoredTest:
             # 導入優化的效能日誌記錄器
             from monitoring.logging.performance_logger import (
                 get_performance_logger,
-                performance_monitor,
             )
 
             # 創建測試日誌記錄器
@@ -264,7 +257,7 @@ class MonitoringPerformanceRefactoredTest:
                 start_time = time.perf_counter()
                 correlation_id = str(uuid.uuid4())
                 correlation_id_context.set(correlation_id)
-                retrieved_id = correlation_id_context.get()
+                correlation_id_context.get()
                 end_time = time.perf_counter()
                 generation_times.append((end_time - start_time) * 1000000)
 
@@ -313,7 +306,7 @@ class MonitoringPerformanceRefactoredTest:
 
                 start_time = time.perf_counter()
                 token = correlation_id_context.set(new_id)
-                retrieved = correlation_id_context.get()
+                correlation_id_context.get()
                 correlation_id_context.reset(token)
                 end_time = time.perf_counter()
 
