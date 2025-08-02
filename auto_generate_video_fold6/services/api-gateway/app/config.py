@@ -59,7 +59,7 @@ class Settings(BaseSettings):
 
     # JWT Configuration (for token verification)
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
-    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "RS256")
 
     # Request Configuration
     service_timeout: int = int(os.getenv("SERVICE_TIMEOUT", "30"))

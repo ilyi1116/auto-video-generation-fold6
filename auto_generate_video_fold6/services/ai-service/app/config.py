@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # JWT Configuration
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
-    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "RS256")
 
     # AI Service API Keys
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")

@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # JWT
     JWT_SECRET_KEY: str = "your-secret-key"
-    JWT_ALGORITHM: str = "HS256"
+    JWT_ALGORITHM: str = "RS256"
 
     # CORS
     CORS_ORIGINS: List[str] = [

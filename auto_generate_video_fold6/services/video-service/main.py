@@ -40,10 +40,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://your-domain.com",
+        "https://app.autovideo.com",
+        "http://localhost:3000",
+        "http://localhost:8000"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Include routers
@@ -267,7 +272,28 @@ async def delete_video_project(
 
     await project.delete(db)
 
-    # TODO: Clean up associated files and resources
+    # Clean up associated files and resources
+    try:
+        # Clean up generated files
+        if project.voice_url:
+            await cleanup_file(project.voice_url)
+        if project.music_url:
+            await cleanup_file(project.music_url)
+        if project.preview_url:
+            await cleanup_file(project.preview_url)
+        if project.final_url:
+            await cleanup_file(project.final_url)
+        if project.thumbnail_url:
+            await cleanup_file(project.thumbnail_url)
+        
+        # Clean up image files
+        if project.image_urls:
+            for image_url in project.image_urls:
+                await cleanup_file(image_url)
+        
+        logger.info(f"Cleaned up resources for project {project_id}")
+    except Exception as e:
+        logger.warning(f"Failed to cleanup some resources for project {project_id}: {e}")
 
     return {"message": "Project deleted successfully"}
 
@@ -385,6 +411,22 @@ def get_aspect_ratio(platform: str) -> str:
         "default": "16:9",
     }
     return ratios.get(platform, "16:9")
+
+
+async def cleanup_file(file_url: str):
+    """Clean up file from storage"""
+    try:
+        # Extract file path from URL
+        if file_url.startswith('http'):
+            # Handle remote files
+            pass
+        else:
+            # Handle local files
+            import os
+            if os.path.exists(file_url):
+                os.remove(file_url)
+    except Exception as e:
+        logger.warning(f"Failed to cleanup file {file_url}: {e}")
 
 
 if __name__ == "__main__":

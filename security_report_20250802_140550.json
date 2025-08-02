@@ -1,0 +1,862 @@
+{
+  "timestamp": "2025-08-02T14:04:28.981524",
+  "critical_issues": [
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:77",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184618"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:116",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184642"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:121",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184645"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:129",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184650"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:137",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184655"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:140",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184657"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:142",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184659"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:149",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184663"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:150",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184664"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.template:152",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184666"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:7",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184766"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:37",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184780"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:63",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184792"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:69",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184796"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:73",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184799"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:74",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184800"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:78",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184803"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:81",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184805"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:82",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184807"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:86",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184810"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:87",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184811"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:92",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184814"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:96",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184817"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:100",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184819"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:107",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184823"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:114",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184827"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.example:151",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184841"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:10",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184891"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:26",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184899"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:36",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184904"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:37",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184906"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:38",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184907"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:41",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184910"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": ".env.development:42",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184911"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.testing:16",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184950"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.testing:17",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184952"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.testing:21",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.184955"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:9",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185002"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:28",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185011"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:36",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185016"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:45",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185021"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:48",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185023"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:51",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185026"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:54",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185028"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:57",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185031"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:63",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185034"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:64",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185036"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:67",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185038"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:69",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185040"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env:73",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185042"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:16",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185111"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:33",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185120"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:42",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185124"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:48",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185129"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:57",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185133"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:60",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185136"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:63",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185139"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:66",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185141"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:69",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185144"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:76",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185148"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:80",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185151"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:84",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185154"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:118",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185168"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.example:137",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185177"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:24",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185249"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:36",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185255"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:47",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185260"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:57",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185264"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:59",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185266"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:64",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185269"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:65",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185270"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:66",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185272"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:67",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185273"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:73",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185276"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:75",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185278"
+    },
+    {
+      "title": "安全風險: 硬編碼密鑰",
+      "location": "auto_generate_video_fold6/.env.development:77",
+      "recommendation": "使用環境變量或密鑰管理服務",
+      "timestamp": "2025-08-02T14:05:50.185280"
+    }
+  ],
+  "high_issues": [
+    {
+      "title": "Docker 安全風險: 使用 root 用戶",
+      "location": "services/optimization/Dockerfile.optimized:143",
+      "recommendation": "改用非特權用戶",
+      "timestamp": "2025-08-02T14:05:49.903493"
+    },
+    {
+      "title": "Docker 安全風險: 使用 root 用戶",
+      "location": "auto_generate_video_fold6/monitoring/fluentd/Dockerfile:4",
+      "recommendation": "改用非特權用戶",
+      "timestamp": "2025-08-02T14:05:49.903997"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "backend/api_gateway/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.092293"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "scripts/security_monitor.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.092607"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/api-gateway/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.093047"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/inference-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.093211"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/data-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.093589"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/data-ingestion/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.093738"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/video-service/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.093801"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "services/auth-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.094172"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/graphql-gateway/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.097207"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/trend-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.097440"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/api-gateway/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.098428"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/voice-enhancement/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.098600"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/storage-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.098927"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/inference-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.099226"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/data-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.099627"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/auth-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.100804"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/scheduler-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.101340"
+    },
+    {
+      "title": "CORS 安全風險: 允許所有來源",
+      "location": "auto_generate_video_fold6/services/social-service/app/main.py",
+      "recommendation": "改為明確的域名列表",
+      "timestamp": "2025-08-02T14:05:50.101614"
+    }
+  ],
+  "medium_issues": [
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "backend/shared/config/settings.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T14:05:49.989101"
+    },
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "scripts/security_monitor.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T14:05:49.989427"
+    },
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "services/inference-service/app/config.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T14:05:49.990097"
+    },
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "services/video-service/auth.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T14:05:49.990872"
+    },
+    {
+      "title": "JWT 安全風險: 使用對稱加密算法",
+      "location": "auto_generate_video_fold6/services/video-service/auth.py",
+      "recommendation": "改用 RS256 非對稱加密",
+      "timestamp": "2025-08-02T14:05:49.998456"
+    }
+  ],
+  "low_issues": [
+    {
+      "title": "NPM 依賴漏洞: @auth/sveltekit",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T14:04:29.664154"
+    },
+    {
+      "title": "NPM 依賴漏洞: @sveltejs/adapter-auto",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T14:04:29.664172"
+    },
+    {
+      "title": "NPM 依賴漏洞: @sveltejs/kit",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T14:04:29.664175"
+    },
+    {
+      "title": "NPM 依賴漏洞: cookie",
+      "location": "文件: auto_generate_video_fold6/frontend/package.json",
+      "recommendation": "執行 npm audit fix",
+      "timestamp": "2025-08-02T14:04:29.664177"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/api-gateway/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903371"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/api-gateway/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903395"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/inference-service/Dockerfile:5",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903536"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/data-service/Dockerfile:11",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903575"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/data-ingestion/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903614"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/data-ingestion/Dockerfile:46",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903623"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/video-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903665"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/video-service/Dockerfile:79",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903679"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/auth-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903723"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/auth-service/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903735"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/training-worker/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903776"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "services/training-worker/Dockerfile:50",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903784"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/docker/Dockerfile.e2e:4",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903822"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/scripts/Dockerfile.scheduler:7",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.903962"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/graphql-gateway/Dockerfile:6",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904034"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/ai-service/Dockerfile:8",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904134"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/api-gateway/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904167"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/api-gateway/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904179"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/voice-enhancement/Dockerfile:6",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904216"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/storage-service/Dockerfile:6",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904243"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/inference-service/Dockerfile:5",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904272"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-service/Dockerfile.test:9",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904310"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-service/Dockerfile:11",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904356"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-ingestion/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904391"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/data-ingestion/Dockerfile:46",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904399"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/auth-service/Dockerfile.test:9",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904509"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/auth-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904554"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/auth-service/Dockerfile:72",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904568"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/training-worker/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904611"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/training-worker/Dockerfile:50",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904620"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/scheduler-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904659"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/scheduler-service/Dockerfile:80",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904673"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/social-service/Dockerfile:14",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904718"
+    },
+    {
+      "title": "Docker 優化建議: 缺少 --no-install-recommends",
+      "location": "auto_generate_video_fold6/services/social-service/Dockerfile:76",
+      "recommendation": "添加 --no-install-recommends 標誌",
+      "timestamp": "2025-08-02T14:05:49.904732"
+    },
+    {
+      "title": "JWT 配置建議: Token 過期時間過長",
+      "location": "scripts/security_monitor.py",
+      "recommendation": "建議縮短到 15 分鐘",
+      "timestamp": "2025-08-02T14:05:49.989438"
+    }
+  ],
+  "recommendations": [
+    "🚨 立即處理 Critical 級別的安全問題",
+    "⚠️ 優先處理 High 級別的安全問題"
+  ],
+  "summary": {
+    "total_issues": 140,
+    "critical_count": 76,
+    "high_count": 20,
+    "medium_count": 5,
+    "low_count": 39
+  }
+}

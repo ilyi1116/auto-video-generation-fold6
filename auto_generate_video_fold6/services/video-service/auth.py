@@ -35,7 +35,7 @@ async def verify_token(token: str) -> Optional[str]:
     try:
         # Get JWT settings from environment
         jwt_secret = os.getenv("JWT_SECRET_KEY")
-        jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
+        jwt_algorithm = os.getenv("JWT_ALGORITHM", "RS256")
         auth_service_url = os.getenv(
             "AUTH_SERVICE_URL", "http://localhost:8001"
         )
@@ -200,7 +200,7 @@ def create_service_token(service_name: str, expires_in: int = 3600) -> str:
         }
 
         token = jwt.encode(
-            payload, jwt_secret, algorithm=os.getenv("JWT_ALGORITHM", "HS256")
+            payload, jwt_secret, algorithm=os.getenv("JWT_ALGORITHM", "RS256")
         )
 
         logger.debug(f"Created service token for: {service_name}")
@@ -385,7 +385,7 @@ def get_token_validator() -> TokenValidator:
         if not jwt_secret:
             raise AuthenticationError("JWT secret not configured")
 
-        jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
+        jwt_algorithm = os.getenv("JWT_ALGORITHM", "RS256")
         _token_validator = TokenValidator(jwt_secret, jwt_algorithm)
 
     return _token_validator

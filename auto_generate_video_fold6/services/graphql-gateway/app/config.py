@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # JWT 設定
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "your-secret-key")
-    JWT_ALGORITHM: str = "HS256"
+    JWT_ALGORITHM: str = "RS256"
 
     class Config:
         env_file = ".env"

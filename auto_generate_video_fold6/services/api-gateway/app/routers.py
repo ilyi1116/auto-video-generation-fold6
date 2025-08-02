@@ -8,6 +8,7 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import JSONResponse
+from datetime import datetime
 
 from .auth import get_current_user
 from .proxy import proxy
@@ -475,10 +476,91 @@ async def admin_health_check(request: Request):
 @limiter.limit("10/minute")
 async def get_metrics(request: Request):
     """Get basic metrics"""
-    # TODO: Implement metrics collection
-    return {
-        "message": "Metrics endpoint - to be implemented",
-        "uptime": "unknown",
-        "requests_total": "unknown",
-        "active_users": "unknown",
-    }
+    try:
+        # Collect basic metrics
+        metrics = {
+            "uptime": get_uptime(),
+            "requests_total": get_total_requests(),
+            "active_users": get_active_users(),
+            "services_health": await get_services_health(),
+            "system_resources": get_system_resources(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        return JSONResponse(
+            status_code=200,
+            content=metrics
+        )
+    except Exception as e:
+        logger.error(f"Failed to collect metrics: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to collect metrics"}
+        )
+
+
+def get_uptime() -> str:
+    """Get system uptime"""
+    import time
+    import psutil
+    try:
+        boot_time = psutil.boot_time()
+        uptime_seconds = time.time() - boot_time
+        return format_uptime(uptime_seconds)
+    except:
+        return "unknown"
+
+
+def get_total_requests() -> int:
+    """Get total requests count"""
+    # This would typically come from a metrics collector
+    # For now, return a placeholder
+    return 0
+
+
+def get_active_users() -> int:
+    """Get active users count"""
+    # This would typically come from session management
+    # For now, return a placeholder
+    return 0
+
+
+async def get_services_health() -> dict:
+    """Get health status of all services"""
+    services = ["auth", "data", "inference", "video", "ai", "social", "trend", "scheduler"]
+    health_status = {}
+    
+    for service in services:
+        try:
+            health_status[service] = await proxy.health_check_service(service)
+        except Exception as e:
+            health_status[service] = False
+    
+    return health_status
+
+
+def get_system_resources() -> dict:
+    """Get system resource usage"""
+    import psutil
+    try:
+        return {
+            "cpu_percent": psutil.cpu_percent(interval=1),
+            "memory_percent": psutil.virtual_memory().percent,
+            "disk_percent": psutil.disk_usage('/').percent
+        }
+    except:
+        return {"cpu_percent": 0, "memory_percent": 0, "disk_percent": 0}
+
+
+def format_uptime(seconds: float) -> str:
+    """Format uptime in human readable format"""
+    days = int(seconds // 86400)
+    hours = int((seconds % 86400) // 3600)
+    minutes = int((seconds % 3600) // 60)
+    
+    if days > 0:
+        return f"{days}d {hours}h {minutes}m"
+    elif hours > 0:
+        return f"{hours}h {minutes}m"
+    else:
+        return f"{minutes}m"

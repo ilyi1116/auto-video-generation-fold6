@@ -29,8 +29,8 @@ data:
   S3_REGION: "us-east-1"
   
   # JWT Configuration
-  JWT_ALGORITHM: "HS256"
-  JWT_EXPIRATION: "86400"
+  JWT_ALGORITHM: "RS256"
+  JWT_EXPIRATION: "900"
   
   # CORS Configuration
   CORS_ALLOW_ORIGINS: "https://autovideo.yourdomain.com"

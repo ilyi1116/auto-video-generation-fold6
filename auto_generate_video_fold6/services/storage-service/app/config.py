@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # JWT Configuration
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
-    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "RS256")
 
     # Storage Configuration
     storage_backend: str = os.getenv(

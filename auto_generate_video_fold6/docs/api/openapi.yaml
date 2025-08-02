@@ -2,633 +2,328 @@ openapi: 3.0.3
 info:
   title: Auto Video Generation System API
   description: |
-    ## Overview
-    The Auto Video Generation System is a comprehensive AI-powered platform for creating viral short-form videos automatically. 
+    Auto Video Generation System 是一個完整的 AI 驅動影片生成平台，
+    提供從腳本生成到影片發布的端到端自動化流程。
     
-    This API allows you to:
-    - Generate engaging video scripts using AI
-    - Create stunning visuals with AI image generation
-    - Synthesize natural-sounding voiceovers
-    - Analyze trending topics and keywords
-    - Schedule and publish content across multiple social platforms
+    ## 主要功能
+    - 🎬 自動影片生成
+    - 🎭 AI 語音克隆
+    - 🎨 智能內容創作
+    - 📱 社群媒體整合
+    - 📊 趨勢分析
+    - ⏰ 自動排程發布
     
-    ## Authentication
-    All API endpoints require authentication using JWT tokens. Include the token in the Authorization header:
+    ## 認證
+    所有 API 端點都需要 JWT 認證，請在請求標頭中包含：
     ```
-    Authorization: Bearer YOUR_JWT_TOKEN
+    Authorization: Bearer <your_jwt_token>
     ```
     
-    ## Rate Limits
-    - Free tier: 60 requests per minute
-    - Pro tier: 300 requests per minute
-    - Enterprise: Custom limits
-    
-    ## SDKs and Libraries
-    Official SDKs are available for:
-    - Python
-    - JavaScript/TypeScript
-    - React/Next.js
-    
-  version: "1.0.0"
+    ## 速率限制
+    - 一般端點：30 請求/分鐘
+    - 影片生成：10 請求/分鐘
+    - 檔案上傳：20 請求/分鐘
+    - 管理端點：10 請求/分鐘
+  version: 1.0.0
   contact:
-    name: Auto Video Generation Team
-    email: support@autovideo.com
-    url: https://docs.autovideo.com
+    name: API Support
+    email: support@video-system.com
+    url: https://video-system.com/support
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  termsOfService: https://autovideo.com/terms
 
 servers:
-  - url: https://api.autovideo.com/v1
+  - url: https://api.video-system.com/v1
     description: Production server
-  - url: https://staging-api.autovideo.com/v1
-    description: Staging server
-  - url: http://localhost:8000/api/v1
+  - url: http://localhost:8000/v1
     description: Development server
 
 security:
   - BearerAuth: []
 
 paths:
-  # Authentication Endpoints
   /auth/register:
     post:
-      tags: [Authentication]
-      summary: Register a new user
-      description: Create a new user account
-      security: []
+      tags:
+        - Authentication
+      summary: 用戶註冊
+      description: 創建新用戶帳戶
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
-            example:
-              email: "user@example.com"
-              username: "demo_user"
-              password: "SecurePassword123"
-              full_name: "Demo User"
+              type: object
+              required:
+                - email
+                - password
+                - username
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 用戶電子郵件
+                password:
+                  type: string
+                  minLength: 8
+                  description: 用戶密碼
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                  description: 用戶名稱
       responses:
         '201':
-          description: User registered successfully
+          description: 註冊成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/AuthResponse'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: 請求參數錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
-          $ref: '#/components/responses/Conflict'
+          description: 用戶已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/login:
     post:
-      tags: [Authentication]
-      summary: User login
-      description: Authenticate user and return JWT token
-      security: []
+      tags:
+        - Authentication
+      summary: 用戶登入
+      description: 使用電子郵件和密碼登入
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLogin'
-            example:
-              email: "user@example.com"
-              password: "SecurePassword123"
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 用戶電子郵件
+                password:
+                  type: string
+                  description: 用戶密碼
       responses:
         '200':
-          description: Login successful
+          description: 登入成功
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
         '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /auth/me:
-    get:
-      tags: [Authentication]
-      summary: Get current user profile
-      description: Retrieve the authenticated user's profile information
-      responses:
-        '200':
-          description: User profile retrieved successfully
+          description: 認證失敗
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/ErrorResponse'
 
-  # AI Text Generation Endpoints
-  /ai/text/generate-script:
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: 獲取用戶資料
+      description: 獲取當前登入用戶的資料
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功獲取用戶資料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: 未授權
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/generate:
     post:
-      tags: [AI - Text Generation]
-      summary: Generate video script
-      description: |
-        Generate an engaging video script based on topic and style preferences.
-        
-        **Features:**
-        - Multiple writing styles (engaging, informative, humorous, professional)
-        - Customizable duration and target audience
-        - Keyword integration for SEO optimization
-        - Real-time generation with quality scoring
+      tags:
+        - Video Generation
+      summary: 創建影片生成專案
+      description: 開始一個新的影片生成專案
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoGenerationRequest'
+      responses:
+        '201':
+          description: 專案創建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoProjectResponse'
+        '400':
+          description: 請求參數錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未授權
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/projects/{project_id}:
+    get:
+      tags:
+        - Video Generation
+      summary: 獲取影片專案
+      description: 獲取特定影片專案的詳細資訊
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 專案 ID
+      responses:
+        '200':
+          description: 成功獲取專案
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoProjectResponse'
+        '404':
+          description: 專案不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/projects:
+    get:
+      tags:
+        - Video Generation
+      summary: 獲取用戶影片專案列表
+      description: 獲取當前用戶的所有影片專案
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: 每頁專案數量
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: 偏移量
+      responses:
+        '200':
+          description: 成功獲取專案列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VideoProjectResponse'
+
+  /ai/script/generate:
+    post:
+      tags:
+        - AI Services
+      summary: 生成腳本
+      description: 使用 AI 生成影片腳本
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ScriptGenerationRequest'
-            example:
-              topic: "5 AI Tools That Will Change Your Life"
-              style: "engaging"
-              duration_seconds: 60
-              target_audience: "tech enthusiasts"
-              keywords: ["AI", "productivity", "automation"]
-              tone: "enthusiastic"
       responses:
         '200':
-          description: Script generated successfully
+          description: 腳本生成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScriptGenerationResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '429':
-          $ref: '#/components/responses/RateLimit'
+                $ref: '#/components/schemas/GeneratedScript'
 
-  /ai/text/generate-titles:
+  /ai/voice/synthesize:
     post:
-      tags: [AI - Text Generation]
-      summary: Generate catchy titles
-      description: Generate multiple engaging titles based on script content
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TitleGenerationRequest'
-      responses:
-        '200':
-          description: Titles generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TitleGenerationResponse'
-
-  # AI Image Generation Endpoints
-  /ai/images/generate:
-    post:
-      tags: [AI - Image Generation]
-      summary: Generate image from text
-      description: |
-        Create stunning visuals using AI image generation.
-        
-        **Supported Features:**
-        - Multiple artistic styles (modern, vintage, minimalist, etc.)
-        - Various aspect ratios (9:16, 16:9, 1:1, 4:3)
-        - High-resolution output (720p, 1080p, 4K)
-        - Negative prompts for quality control
-        - Seed-based reproducibility
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ImageGenerationRequest'
-            example:
-              prompt: "Modern workspace with AI hologram, clean design, blue accents"
-              style: "modern"
-              aspect_ratio: "9:16"
-              resolution: "1080p"
-              negative_prompt: "blurry, low quality, distorted"
-      responses:
-        '200':
-          description: Image generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ImageGenerationResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  /ai/images/generate-variations:
-    post:
-      tags: [AI - Image Generation]
-      summary: Generate image variations
-      description: Create multiple variations of an existing image
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ImageVariationRequest'
-      responses:
-        '200':
-          description: Variations generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ImageVariationResponse'
-
-  # AI Audio Processing Endpoints
-  /ai/audio/synthesize:
-    post:
-      tags: [AI - Audio Processing]
-      summary: Synthesize voice from text
-      description: |
-        Convert text to natural-sounding speech using advanced AI voice synthesis.
-        
-        **Voice Options:**
-        - Multiple voice styles and emotions
-        - Multi-language support
-        - Adjustable speed and pitch
-        - High-quality output formats
+      tags:
+        - AI Services
+      summary: 語音合成
+      description: 將文字轉換為語音
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/VoiceSynthesisRequest'
-            example:
-              text: "Welcome to the future of content creation!"
-              voice_style: "professional"
-              language: "en"
-              speed: 1.0
-              emotion: "enthusiastic"
       responses:
         '200':
-          description: Voice synthesized successfully
+          description: 語音合成成功
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/VoiceSynthesisResponse'
 
-  /ai/audio/upload:
-    post:
-      tags: [AI - Audio Processing]
-      summary: Upload audio file
-      description: Upload audio file for processing or voice cloning
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                audio_file:
-                  type: string
-                  format: binary
-                  description: Audio file (MP3, WAV, M4A, FLAC)
-      responses:
-        '200':
-          description: Audio uploaded successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AudioUploadResponse'
-
-  # AI Music Generation Endpoints (Suno.ai Integration)
-  /ai/music/generate:
-    post:
-      tags: [AI - Music Generation]
-      summary: Generate background music
-      description: |
-        Generate AI-powered background music using Suno.ai integration.
-        
-        **Features:**
-        - Multiple music styles and genres
-        - Customizable duration (15-300 seconds)
-        - Instrumental or vocal options
-        - High-quality output formats
-        - Copyright-free music for commercial use
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MusicGenerationRequest'
-            example:
-              prompt: "Upbeat electronic music for tech product showcase"
-              style: "electronic"
-              duration: 60
-              instrumental: true
-              mood: "energetic"
-      responses:
-        '200':
-          description: Music generation started successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MusicGenerationResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '429':
-          $ref: '#/components/responses/RateLimit'
-
-  /ai/music/status/{generation_id}:
+  /social/posts:
     get:
-      tags: [AI - Music Generation]
-      summary: Check music generation status
-      description: Check the status of an ongoing music generation request
-      parameters:
-        - name: generation_id
-          in: path
-          required: true
-          description: Music generation ID
-          schema:
-            type: string
-            format: uuid
+      tags:
+        - Social Media
+      summary: 獲取社群媒體貼文
+      description: 獲取用戶的社群媒體貼文列表
+      security:
+        - BearerAuth: []
       responses:
         '200':
-          description: Generation status retrieved successfully
+          description: 成功獲取貼文列表
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MusicGenerationStatusResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SocialPost'
 
-  /ai/music/history:
+  /trends/analysis:
     get:
-      tags: [AI - Music Generation]
-      summary: Get music generation history
-      description: Retrieve user's music generation history with pagination
-      parameters:
-        - name: limit
-          in: query
-          description: Number of items to return
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: offset
-          in: query
-          description: Number of items to skip
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
+      tags:
+        - Trends
+      summary: 獲取趨勢分析
+      description: 獲取當前熱門趨勢分析
+      security:
+        - BearerAuth: []
       responses:
         '200':
-          description: Music history retrieved successfully
+          description: 成功獲取趨勢分析
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MusicHistoryResponse'
-
-  # Video Project Management Endpoints
-  /projects:
-    get:
-      tags: [Video Projects]
-      summary: List video projects
-      description: Retrieve a list of user's video projects with filtering and pagination
-      parameters:
-        - name: status
-          in: query
-          description: Filter by project status
-          schema:
-            type: string
-            enum: [draft, processing, completed, failed, published]
-        - name: limit
-          in: query
-          description: Number of projects to return (max 100)
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: offset
-          in: query
-          description: Number of projects to skip
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-      responses:
-        '200':
-          description: Projects retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectListResponse'
-
-    post:
-      tags: [Video Projects]
-      summary: Create new video project
-      description: Create a new video generation project
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProjectCreateRequest'
-            example:
-              title: "Top 5 Productivity Hacks"
-              description: "A quick guide to boosting daily productivity"
-              settings:
-                aspect_ratio: "9:16"
-                duration: 60
-                style: "engaging"
-                voice_style: "professional"
-      responses:
-        '201':
-          description: Project created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponse'
-
-  /projects/{project_id}:
-    get:
-      tags: [Video Projects]
-      summary: Get project details
-      description: Retrieve detailed information about a specific project
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Project details retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    put:
-      tags: [Video Projects]
-      summary: Update project
-      description: Update project settings and metadata
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProjectUpdateRequest'
-      responses:
-        '200':
-          description: Project updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponse'
-
-    delete:
-      tags: [Video Projects]
-      summary: Delete project
-      description: Permanently delete a video project and all associated assets
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Project deleted successfully
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  # Trend Analysis Endpoints
-  /trends/keywords:
-    get:
-      tags: [Trend Analysis]
-      summary: Get trending keywords
-      description: |
-        Retrieve currently trending keywords and topics across social media platforms.
-        
-        **Data Sources:**
-        - TikTok trending hashtags
-        - YouTube trending topics  
-        - Instagram popular tags
-        - Twitter trending topics
-      parameters:
-        - name: platform
-          in: query
-          description: Filter by social media platform
-          schema:
-            type: string
-            enum: [tiktok, youtube, instagram, twitter, all]
-            default: all
-        - name: category
-          in: query
-          description: Filter by content category
-          schema:
-            type: string
-            enum: [technology, lifestyle, business, entertainment, education, health, food, travel]
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 20
-      responses:
-        '200':
-          description: Trending keywords retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrendingKeywordsResponse'
-
-  /trends/analyze:
-    post:
-      tags: [Trend Analysis]
-      summary: Analyze custom keywords
-      description: Analyze the trending potential of custom keywords
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/KeywordAnalysisRequest'
-            example:
-              keywords: ["AI automation", "productivity tips", "remote work"]
-              platforms: ["tiktok", "youtube"]
-              time_range: "7d"
-      responses:
-        '200':
-          description: Keyword analysis completed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KeywordAnalysisResponse'
-
-  # Social Media Integration Endpoints
-  /social/platforms:
-    get:
-      tags: [Social Media]
-      summary: List connected platforms
-      description: Get list of connected social media accounts
-      responses:
-        '200':
-          description: Connected platforms retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConnectedPlatformsResponse'
-
-    post:
-      tags: [Social Media]
-      summary: Connect social platform
-      description: Connect a new social media account
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PlatformConnectionRequest'
-      responses:
-        '201':
-          description: Platform connected successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PlatformConnectionResponse'
-
-  /social/publish:
-    post:
-      tags: [Social Media]
-      summary: Schedule content publication
-      description: Schedule video content for publication across social media platforms
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PublishScheduleRequest'
-            example:
-              project_id: "123e4567-e89b-12d3-a456-426614174000"
-              platforms: ["tiktok", "youtube"]
-              scheduled_time: "2025-01-26T10:00:00Z"
-              title: "5 AI Tools That Changed Everything"
-              description: "Discover the most powerful AI tools..."
-              tags: ["AI", "productivity", "tools"]
-      responses:
-        '201':
-          description: Publication scheduled successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PublishScheduleResponse'
+                $ref: '#/components/schemas/TrendsAnalysis'
 
 components:
   securitySchemes:
@@ -638,603 +333,298 @@ components:
       bearerFormat: JWT
 
   schemas:
-    # Authentication Schemas
-    UserRegistration:
+    User:
       type: object
-      required: [email, username, password]
       properties:
+        id:
+          type: string
+          format: uuid
         email:
           type: string
           format: email
-          example: "user@example.com"
         username:
           type: string
-          minLength: 3
-          maxLength: 50
-          example: "demo_user"
-        password:
-          type: string
-          minLength: 8
-          example: "SecurePassword123"
-        full_name:
-          type: string
-          maxLength: 255
-          example: "Demo User"
-
-    UserLogin:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-
-    AuthResponse:
-      type: object
-      properties:
-        access_token:
-          type: string
-          description: JWT access token
-        token_type:
-          type: string
-          example: "bearer"
-        expires_in:
-          type: integer
-          description: Token expiration time in seconds
-          example: 1800
-        user:
-          $ref: '#/components/schemas/UserProfile'
-
-    UserResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-        username:
-          type: string
-        full_name:
-          type: string
-        is_verified:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-
-    UserProfile:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-        username:
-          type: string
-        full_name:
-          type: string
-        avatar_url:
-          type: string
-          format: uri
-        bio:
-          type: string
-        website:
-          type: string
-          format: uri
-        location:
-          type: string
-        is_verified:
-          type: boolean
-        credits:
-          type: object
-          properties:
-            total:
-              type: integer
-            used:
-              type: integer
-            remaining:
-              type: integer
-
-    # AI Generation Schemas
-    ScriptGenerationRequest:
-      type: object
-      required: [topic]
-      properties:
-        topic:
-          type: string
-          description: Main topic for the video script
-          example: "5 AI Tools That Will Change Your Life"
-        style:
-          type: string
-          enum: [engaging, informative, humorous, professional]
-          default: engaging
-        duration_seconds:
-          type: integer
-          minimum: 15
-          maximum: 300
-          default: 60
-        target_audience:
-          type: string
-          example: "tech enthusiasts"
-        keywords:
-          type: array
-          items:
-            type: string
-          example: ["AI", "productivity", "automation"]
-        tone:
-          type: string
-          enum: [casual, formal, enthusiastic, educational]
-          default: casual
-
-    ScriptGenerationResponse:
-      type: object
-      properties:
-        script_id:
-          type: string
-          format: uuid
-        content:
-          type: string
-          description: Generated script content
-        word_count:
-          type: integer
-        estimated_duration:
-          type: integer
-          description: Estimated reading time in seconds
-        style:
-          type: string
-        status:
-          type: string
-          enum: [generated, approved, rejected]
-        generation_time_seconds:
-          type: number
-        metadata:
-          type: object
-
-    ImageGenerationRequest:
-      type: object
-      required: [prompt]
-      properties:
-        prompt:
-          type: string
-          description: Text description of the desired image
-          example: "Modern workspace with AI hologram"
-        style:
-          type: string
-          enum: [modern, vintage, minimalist, artistic, photorealistic, cartoon, anime, cyberpunk]
-          default: modern
-        aspect_ratio:
-          type: string
-          enum: ["9:16", "16:9", "1:1", "4:3"]
-          default: "9:16"
-        resolution:
-          type: string
-          enum: [720p, 1080p, 4k]
-          default: 1080p
-        negative_prompt:
-          type: string
-          description: Elements to avoid in the image
-        seed:
-          type: integer
-          description: Seed for reproducible results
-        guidance_scale:
-          type: number
-          minimum: 1.0
-          maximum: 20.0
-          default: 7.5
-        num_inference_steps:
-          type: integer
-          minimum: 10
-          maximum: 100
-          default: 50
-
-    ImageGenerationResponse:
-      type: object
-      properties:
-        image_id:
-          type: string
-          format: uuid
-        image_url:
-          type: string
-          format: uri
-          description: URL to the generated image
-        prompt:
-          type: string
-        style:
-          type: string
-        aspect_ratio:
-          type: string
-        resolution:
-          type: string
-        generation_time:
-          type: number
-        status:
-          type: string
-          enum: [completed, failed]
-        metadata:
-          type: object
-
-    VoiceSynthesisRequest:
-      type: object
-      required: [text]
-      properties:
-        text:
-          type: string
-          description: Text to convert to speech
-          maxLength: 5000
-        voice_style:
-          type: string
-          enum: [natural, professional, energetic, calm, enthusiastic]
-          default: natural
-        language:
-          type: string
-          enum: [en, zh, ja, ko, es, fr, de]
-          default: en
-        speed:
-          type: number
-          minimum: 0.5
-          maximum: 2.0
-          default: 1.0
-        pitch:
-          type: number
-          minimum: 0.5
-          maximum: 2.0
-          default: 1.0
-        emotion:
-          type: string
-          enum: [neutral, happy, sad, excited, serious]
-          default: neutral
-
-    VoiceSynthesisResponse:
-      type: object
-      properties:
-        audio_id:
-          type: string
-          format: uuid
-        audio_url:
-          type: string
-          format: uri
-          description: URL to the generated audio file
-        duration_seconds:
-          type: number
-        text:
-          type: string
-        voice_style:
-          type: string
-        language:
-          type: string
-        status:
-          type: string
-        metadata:
-          type: object
-
-    # Music Generation Schemas (Suno.ai Integration)
-    MusicGenerationRequest:
-      type: object
-      required: [prompt]
-      properties:
-        prompt:
-          type: string
-          description: Text description of the desired music
-          example: "Upbeat electronic music for tech product showcase"
-          maxLength: 500
-        style:
-          type: string
-          enum: [electronic, acoustic, classical, rock, pop, hip-hop, jazz, ambient, corporate, cinematic]
-          default: electronic
-          description: Musical style or genre
-        duration:
-          type: integer
-          minimum: 15
-          maximum: 300
-          default: 60
-          description: Duration in seconds
-        instrumental:
-          type: boolean
-          default: true
-          description: Generate instrumental music without vocals
-        mood:
-          type: string
-          enum: [energetic, calm, uplifting, dramatic, mysterious, playful, professional]
-          default: energetic
-        tempo:
-          type: string
-          enum: [slow, medium, fast]
-          default: medium
-        key:
-          type: string
-          enum: [C, C#, D, D#, E, F, F#, G, G#, A, A#, B]
-          description: Musical key (optional)
-        tags:
-          type: array
-          items:
-            type: string
-          description: Additional style tags
-          example: ["upbeat", "modern", "tech"]
-
-    MusicGenerationResponse:
-      type: object
-      properties:
-        generation_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the generation request
-        status:
-          type: string
-          enum: [queued, processing, completed, failed]
-          description: Current generation status
-        estimated_completion_time:
-          type: integer
-          description: Estimated completion time in seconds
-        prompt:
-          type: string
-        style:
-          type: string
-        duration:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-
-    MusicGenerationStatusResponse:
-      type: object
-      properties:
-        generation_id:
-          type: string
-          format: uuid
-        status:
-          type: string
-          enum: [queued, processing, completed, failed, timeout]
-        progress:
-          type: integer
-          minimum: 0
-          maximum: 100
-          description: Generation progress percentage
-        audio_url:
-          type: string
-          format: uri
-          description: URL to the generated audio file (available when completed)
-        video_url:
-          type: string
-          format: uri
-          description: URL to the generated video with visualization (optional)
-        duration:
-          type: number
-          description: Actual duration of generated music in seconds
-        title:
-          type: string
-          description: AI-generated title for the music
-        tags:
-          type: array
-          items:
-            type: string
-          description: Style tags applied to the music
-        error_message:
-          type: string
-          description: Error details if generation failed
-        generation_time:
-          type: number
-          description: Total generation time in seconds
-        cost:
-          type: number
-          description: Generation cost in credits
-        created_at:
-          type: string
-          format: date-time
-        completed_at:
-          type: string
-          format: date-time
-
-    MusicHistoryResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/MusicGenerationStatusResponse'
-        total:
-          type: integer
-        limit:
-          type: integer
-        offset:
-          type: integer
-        has_more:
-          type: boolean
-
-    AudioUploadResponse:
-      type: object
-      properties:
-        audio_id:
-          type: string
-          format: uuid
-        file_url:
-          type: string
-          format: uri
-        duration:
-          type: number
-        file_size:
-          type: integer
-        format:
-          type: string
-        sample_rate:
-          type: integer
-        metadata:
-          type: object
-
-    # Project Management Schemas
-    ProjectCreateRequest:
-      type: object
-      required: [title]
-      properties:
-        title:
-          type: string
-          maxLength: 255
-        description:
-          type: string
-          maxLength: 1000
-        settings:
-          type: object
-          properties:
-            aspect_ratio:
-              type: string
-              enum: ["9:16", "16:9", "1:1", "4:3"]
-            duration:
-              type: integer
-              minimum: 15
-              maximum: 300
-            style:
-              type: string
-            voice_style:
-              type: string
-            music:
-              type: boolean
-            captions:
-              type: boolean
-
-    ProjectResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        description:
-          type: string
-        status:
-          type: string
-          enum: [draft, processing, completed, failed, published]
-        settings:
-          type: object
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        assets:
-          type: object
-          properties:
-            script:
-              type: object
-            images:
-              type: array
-              items:
-                type: object
-            audio:
-              type: object
-            video:
-              type: object
+      required:
+        - id
+        - email
+        - username
 
-    # Error Schemas
-    Error:
+    AuthResponse:
       type: object
       properties:
-        error:
+        access_token:
           type: string
-        message:
+        refresh_token:
           type: string
-        details:
-          type: object
-        timestamp:
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+          description: Token 過期時間（秒）
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - access_token
+        - token_type
+        - user
+
+    VideoGenerationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        theme:
+          type: string
+          description: 影片主題
+        style:
+          type: string
+          default: modern
+          description: 視覺風格
+        duration:
+          type: integer
+          minimum: 15
+          maximum: 300
+          default: 60
+          description: 影片時長（秒）
+        voice_type:
+          type: string
+          default: default
+          description: 語音類型
+        music_genre:
+          type: string
+          default: ambient
+          description: 背景音樂類型
+        include_captions:
+          type: boolean
+          default: true
+          description: 是否包含字幕
+        target_platform:
+          type: string
+          enum: [youtube, tiktok, instagram, facebook]
+          default: youtube
+          description: 目標平台
+      required:
+        - title
+        - theme
+
+    VideoProjectResponse:
+      type: object
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          type: string
+          enum: [pending, generating_script, generating_voice, generating_images, composing, rendering, completed, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        created_at:
           type: string
           format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+        preview_url:
+          type: string
+          format: uri
+        final_url:
+          type: string
+          format: uri
+      required:
+        - project_id
+        - title
+        - status
+        - progress
+        - created_at
 
-    ValidationError:
+    ScriptGenerationRequest:
       type: object
       properties:
-        error:
+        theme:
           type: string
-          example: "validation_error"
-        message:
+          description: 腳本主題
+        duration:
+          type: integer
+          description: 目標時長（秒）
+        style:
           type: string
-          example: "Invalid input data"
-        details:
+          description: 內容風格
+        target_audience:
+          type: string
+          description: 目標觀眾
+      required:
+        - theme
+        - duration
+
+    GeneratedScript:
+      type: object
+      properties:
+        content:
+          type: string
+          description: 完整腳本內容
+        scenes:
           type: array
           items:
             type: object
             properties:
-              field:
+              scene_number:
+                type: integer
+              description:
                 type: string
-              message:
+              visual_description:
                 type: string
+              narration_text:
+                type: string
+              duration:
+                type: integer
+        narration_text:
+          type: string
+          description: 純文字敘述
+      required:
+        - content
+        - scenes
+        - narration_text
 
-  responses:
-    BadRequest:
-      description: Invalid request data
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ValidationError'
+    VoiceSynthesisRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          description: 要合成的文字
+        voice_type:
+          type: string
+          description: 語音類型
+        speed:
+          type: number
+          default: 1.0
+          description: 語音速度
+        pitch:
+          type: number
+          default: 1.0
+          description: 語音音調
+      required:
+        - text
 
-    Unauthorized:
-      description: Authentication required
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          example:
-            error: "unauthorized"
-            message: "Authentication token required"
+    VoiceSynthesisResponse:
+      type: object
+      properties:
+        audio_url:
+          type: string
+          format: uri
+          description: 生成的音頻檔案 URL
+        duration:
+          type: number
+          description: 音頻時長（秒）
+        word_count:
+          type: integer
+          description: 文字字數
+      required:
+        - audio_url
+        - duration
 
-    Forbidden:
-      description: Insufficient permissions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+    SocialPost:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum: [youtube, tiktok, instagram, facebook]
+        content:
+          type: string
+        media_url:
+          type: string
+          format: uri
+        scheduled_time:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [draft, scheduled, published, failed]
+        engagement_metrics:
+          type: object
+          properties:
+            views:
+              type: integer
+            likes:
+              type: integer
+            shares:
+              type: integer
+            comments:
+              type: integer
 
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          example:
-            error: "not_found"
-            message: "Resource not found"
+    TrendsAnalysis:
+      type: object
+      properties:
+        trending_topics:
+          type: array
+          items:
+            type: object
+            properties:
+              topic:
+                type: string
+              popularity_score:
+                type: number
+              growth_rate:
+                type: number
+              related_keywords:
+                type: array
+                items:
+                  type: string
+        platform_insights:
+          type: object
+          properties:
+            youtube:
+              type: object
+            tiktok:
+              type: object
+            instagram:
+              type: object
+        recommendations:
+          type: array
+          items:
+            type: string
 
-    Conflict:
-      description: Resource already exists
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
-    RateLimit:
-      description: Rate limit exceeded
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          example:
-            error: "rate_limit_exceeded"
-            message: "Too many requests. Please try again later."
-
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 錯誤訊息
+        code:
+          type: string
+          description: 錯誤代碼
+        details:
+          type: object
+          description: 詳細錯誤資訊
+      required:
+        - error
 
 tags:
   - name: Authentication
-    description: User authentication and account management
-  - name: AI - Text Generation
-    description: AI-powered text and script generation
-  - name: AI - Image Generation
-    description: AI-powered image creation and editing
-  - name: AI - Audio Processing
-    description: Voice synthesis and audio processing
-  - name: AI - Music Generation
-    description: AI-powered background music generation using Suno.ai
-  - name: Video Projects
-    description: Video project management and workflow
-  - name: Trend Analysis
-    description: Social media trend analysis and keyword insights
+    description: 用戶認證相關 API
+  - name: Video Generation
+    description: 影片生成相關 API
+  - name: AI Services
+    description: AI 服務相關 API
   - name: Social Media
-    description: Social media platform integration and publishing
+    description: 社群媒體整合 API
+  - name: Trends
+    description: 趨勢分析相關 API

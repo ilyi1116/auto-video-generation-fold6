@@ -31,7 +31,12 @@
       "Bash(flake8:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(safety check:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

@@ -454,7 +454,7 @@ class JWTTokenManager:
         self.secret_key = config.get("secret_key", secrets.token_urlsafe(64))
         self.algorithm = config.get("algorithm", "HS256")
         self.access_token_expire = timedelta(
-            minutes=config.get("access_token_expire_minutes", 30)
+            minutes=config.get("access_token_expire_minutes", 15)
         )
         self.refresh_token_expire = timedelta(
             days=config.get("refresh_token_expire_days", 7)
@@ -656,7 +656,7 @@ class EnterpriseAuthManager:
             "jwt": {
                 "secret_key": secrets.token_urlsafe(64),
                 "algorithm": "HS256",
-                "access_token_expire_minutes": 30,
+                "access_token_expire_minutes": 15,
                 "refresh_token_expire_days": 7,
             },
         }

@@ -128,7 +128,7 @@
   "jwt": {
     "secret_key": "${JWT_SECRET_KEY}",
     "algorithm": "RS256",
-    "access_token_expire_minutes": 30,
+    "access_token_expire_minutes": 15,
     "refresh_token_expire_days": 7,
     "id_token_expire_minutes": 60,
     "issuer": "https://auto-video.company.com",

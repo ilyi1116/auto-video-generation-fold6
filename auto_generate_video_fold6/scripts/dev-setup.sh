@@ -143,7 +143,7 @@ REDIS_URL=redis://localhost:6379/0
 
 # JWT 設定
 JWT_SECRET_KEY=dev-secret-key-change-in-production-32chars
-JWT_ALGORITHM=HS256
+JWT_ALGORITHM=RS256
 JWT_EXPIRE_MINUTES=60
 
 # AI 服務 (開發用測試 API Key)
@@ -184,7 +184,7 @@ REDIS_URL=redis://localhost:6379/1
 
 # JWT 設定
 JWT_SECRET_KEY=test-secret-key-32chars-for-testing
-JWT_ALGORITHM=HS256
+JWT_ALGORITHM=RS256
 JWT_EXPIRE_MINUTES=15
 
 # 禁用外部 API 調用
