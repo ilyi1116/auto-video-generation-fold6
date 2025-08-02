@@ -22,6 +22,9 @@ COPY auto_trends_video.py .
 # 複製配置文件
 COPY ../config /app/config
 
+# 創建非特權用戶
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 # 創建必要目錄
 RUN mkdir -p /app/logs /app/data
 
@@ -38,8 +41,12 @@ RUN crontab /etc/cron.d/video-scheduler
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8003/health || exit 1
 
-# 啟動腳本
+# 啟動腳本並設置權限
 COPY start_scheduler.sh .
-RUN chmod +x start_scheduler.sh
+RUN chmod +x start_scheduler.sh && \
+    chown -R appuser:appuser /app
+
+# 切換到非特權用戶
+USER appuser
 
 CMD ["./start_scheduler.sh"]

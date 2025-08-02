@@ -12,12 +12,19 @@ RUN apt-get update && apt-get install -y \
 COPY requirements*.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create non-privileged user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 # Copy application code
 COPY app/ ./app/
 
 # Create directories for storage
-RUN mkdir -p /app/storage/{temp,images,audio,video,documents}
-RUN chmod -R 755 /app/storage
+RUN mkdir -p /app/storage/{temp,images,audio,video,documents} && \
+    chown -R appuser:appuser /app && \
+    chmod -R 755 /app/storage
+
+# Switch to non-privileged user
+USER appuser
 
 EXPOSE 8000
 

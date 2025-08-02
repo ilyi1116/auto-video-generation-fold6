@@ -26,8 +26,13 @@ COPY package*.json ./
 # 安裝依賴（包含開發依賴）
 RUN npm ci
 
-# 複製專案檔案
+# 創建非特權用戶
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# 複製專案檔案並設置權限
 COPY . .
+RUN chown -R nextjs:nodejs /app
 
 # 建立測試腳本
 RUN echo '#!/bin/sh\n\
@@ -50,6 +55,9 @@ npm run test:e2e:headless || exit 1\n\
 echo ""\n\
 echo "✅ 所有前端測試通過！"\n\
 ' > /app/run-tests.sh && chmod +x /app/run-tests.sh
+
+# 切換到非特權用戶
+USER nextjs
 
 # 預設執行測試
 CMD ["/app/run-tests.sh"]

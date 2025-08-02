@@ -11,8 +11,15 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 複製應用程式碼
+# 創建非特權用戶
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 複製應用程式碼並設置權限
 COPY ./app ./app
+RUN chown -R appuser:appuser /app
+
+# 切換到非特權用戶
+USER appuser
 
 # 健康檢查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

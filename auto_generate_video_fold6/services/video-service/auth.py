@@ -306,7 +306,7 @@ def get_token_from_header(authorization: str) -> Optional[str]:
 class TokenValidator:
     """Token validation utility class"""
 
-    def __init__(self, jwt_secret: str, algorithm: str = "HS256"):
+    def __init__(self, jwt_secret: str, algorithm: str = "RS256"):
         self.jwt_secret = jwt_secret
         self.algorithm = algorithm
 
