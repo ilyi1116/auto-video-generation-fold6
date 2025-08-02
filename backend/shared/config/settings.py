@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     
     # JWT 設置
     JWT_SECRET_KEY: str = "your-secret-key"
-    JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_ALGORITHM: str = "RS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     
     # 服務端口
     API_GATEWAY_PORT: int = 8000
