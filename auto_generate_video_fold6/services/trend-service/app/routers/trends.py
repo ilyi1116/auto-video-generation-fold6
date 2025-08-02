@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 from ..auth import verify_token
 from ..database import get_db
 from ..models import TrendingTopic, ViralContent
-from ..schemas import PlatformType, TrendingTopicResponse, TrendSuggestion, ViralContentResponse
+from ..schemas import (
+    PlatformType,
+    TrendingTopicResponse,
+    TrendSuggestion,
+    ViralContentResponse,
+)
 from ..services import trend_analyzer
 
 router = APIRouter()

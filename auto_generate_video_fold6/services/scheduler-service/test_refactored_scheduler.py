@@ -9,10 +9,15 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from app.entrepreneur_scheduler_refactored import (EntrepreneurScheduler, MockVideoServiceClient,
-                                                   ScheduledTask, SchedulerConfig,
-                                                   StatisticsManager, TaskStatus,
-                                                   create_entrepreneur_scheduler)
+from app.entrepreneur_scheduler_refactored import (
+    EntrepreneurScheduler,
+    MockVideoServiceClient,
+    ScheduledTask,
+    SchedulerConfig,
+    StatisticsManager,
+    TaskStatus,
+    create_entrepreneur_scheduler,
+)
 
 # 添加服務路徑
 sys.path.insert(0, str(Path(__file__).parent / "app"))

@@ -7,10 +7,16 @@ import os
 import sys
 from datetime import datetime
 
-from workflow_engine_refactored import (CompletionTimeEstimator, InMemoryWorkflowRepository,
-                                        VideoWorkflowEngine, VideoWorkflowRequest,
-                                        VideoWorkflowResult, WorkflowIdGenerator, WorkflowStage,
-                                        WorkflowStatus)
+from workflow_engine_refactored import (
+    CompletionTimeEstimator,
+    InMemoryWorkflowRepository,
+    VideoWorkflowEngine,
+    VideoWorkflowRequest,
+    VideoWorkflowResult,
+    WorkflowIdGenerator,
+    WorkflowStage,
+    WorkflowStatus,
+)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 
@@ -50,9 +56,7 @@ class RefactorTest:
             pass  # 正確拋出異常
         except Exception as e:
             raise AssertionError(
-                f"Expected {exception_type.__name__}, but got {
-                    type(e).__name__
-                }: {e}"
+                f"Expected {exception_type.__name__}, but got {type(e).__name__}: {e}"
             )
 
     def run_test(self, test_func, test_name):

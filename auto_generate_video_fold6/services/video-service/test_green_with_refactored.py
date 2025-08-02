@@ -11,7 +11,10 @@ from pipeline_executor import PipelineExecutor
 from progress_tracker import ProgressTracker
 from resource_manager import ResourceManager
 from time_estimator import WorkflowTimeEstimator
-from workflow_engine_refactored import VideoWorkflowEngine, VideoWorkflowRequest
+from workflow_engine_refactored import (
+    VideoWorkflowEngine,
+    VideoWorkflowRequest,
+)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 

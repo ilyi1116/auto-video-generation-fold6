@@ -9,8 +9,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from app.entrepreneur_scheduler import (EntrepreneurScheduler, ScheduledTask, SchedulerConfig,
-                                        TaskStatus)
+from app.entrepreneur_scheduler import (
+    EntrepreneurScheduler,
+    ScheduledTask,
+    SchedulerConfig,
+    TaskStatus,
+)
 
 # 添加服務路徑
 sys.path.insert(0, str(Path(__file__).parent / "app"))

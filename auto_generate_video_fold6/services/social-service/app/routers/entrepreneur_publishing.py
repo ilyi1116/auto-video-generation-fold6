@@ -11,7 +11,11 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ..auth import verify_token
-from ..entrepreneur_publisher import EntrepreneurPublisher, Platform, PublishRequest
+from ..entrepreneur_publisher import (
+    EntrepreneurPublisher,
+    Platform,
+    PublishRequest,
+)
 
 logger = logging.getLogger(__name__)
 

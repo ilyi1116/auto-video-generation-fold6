@@ -44,7 +44,7 @@ app.add_middleware(
         "https://your-domain.com",
         "https://app.autovideo.com",
         "http://localhost:3000",
-        "http://localhost:8000"
+        "http://localhost:8000",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
@@ -285,15 +285,17 @@ async def delete_video_project(
             await cleanup_file(project.final_url)
         if project.thumbnail_url:
             await cleanup_file(project.thumbnail_url)
-        
+
         # Clean up image files
         if project.image_urls:
             for image_url in project.image_urls:
                 await cleanup_file(image_url)
-        
+
         logger.info(f"Cleaned up resources for project {project_id}")
     except Exception as e:
-        logger.warning(f"Failed to cleanup some resources for project {project_id}: {e}")
+        logger.warning(
+            f"Failed to cleanup some resources for project {project_id}: {e}"
+        )
 
     return {"message": "Project deleted successfully"}
 
@@ -417,12 +419,13 @@ async def cleanup_file(file_url: str):
     """Clean up file from storage"""
     try:
         # Extract file path from URL
-        if file_url.startswith('http'):
+        if file_url.startswith("http"):
             # Handle remote files
             pass
         else:
             # Handle local files
             import os
+
             if os.path.exists(file_url):
                 os.remove(file_url)
     except Exception as e:

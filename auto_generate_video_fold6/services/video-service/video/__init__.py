@@ -8,14 +8,24 @@ This module handles video composition, rendering, and media processing:
 - TDD-driven workflow management
 """
 
-from .composer import (CompositionRequest, CompositionResult, FinalRenderResult, SceneComposition,
-                       VideoComposer)
+from .composer import (
+    CompositionRequest,
+    CompositionResult,
+    FinalRenderResult,
+    SceneComposition,
+    VideoComposer,
+)
 from .pipeline_executor import PipelineExecutor, PipelineResult
 from .progress_tracker import ProgressStatus, ProgressTracker
 from .resource_manager import ResourceManager
 from .time_estimator import WorkflowTimeEstimator
+
 # TDD 實作的新功能
-from .workflow_engine import VideoWorkflowEngine, VideoWorkflowRequest, VideoWorkflowResult
+from .workflow_engine import (
+    VideoWorkflowEngine,
+    VideoWorkflowRequest,
+    VideoWorkflowResult,
+)
 
 __all__ = [
     # 原有功能

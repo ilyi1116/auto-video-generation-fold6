@@ -484,18 +484,14 @@ async def get_metrics(request: Request):
             "active_users": get_active_users(),
             "services_health": await get_services_health(),
             "system_resources": get_system_resources(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
-        
-        return JSONResponse(
-            status_code=200,
-            content=metrics
-        )
+
+        return JSONResponse(status_code=200, content=metrics)
     except Exception as e:
         logger.error(f"Failed to collect metrics: {e}")
         return JSONResponse(
-            status_code=500,
-            content={"error": "Failed to collect metrics"}
+            status_code=500, content={"error": "Failed to collect metrics"}
         )
 
 
@@ -503,6 +499,7 @@ def get_uptime() -> str:
     """Get system uptime"""
     import time
     import psutil
+
     try:
         boot_time = psutil.boot_time()
         uptime_seconds = time.time() - boot_time
@@ -527,26 +524,36 @@ def get_active_users() -> int:
 
 async def get_services_health() -> dict:
     """Get health status of all services"""
-    services = ["auth", "data", "inference", "video", "ai", "social", "trend", "scheduler"]
+    services = [
+        "auth",
+        "data",
+        "inference",
+        "video",
+        "ai",
+        "social",
+        "trend",
+        "scheduler",
+    ]
     health_status = {}
-    
+
     for service in services:
         try:
             health_status[service] = await proxy.health_check_service(service)
         except Exception as e:
             health_status[service] = False
-    
+
     return health_status
 
 
 def get_system_resources() -> dict:
     """Get system resource usage"""
     import psutil
+
     try:
         return {
             "cpu_percent": psutil.cpu_percent(interval=1),
             "memory_percent": psutil.virtual_memory().percent,
-            "disk_percent": psutil.disk_usage('/').percent
+            "disk_percent": psutil.disk_usage("/").percent,
         }
     except:
         return {"cpu_percent": 0, "memory_percent": 0, "disk_percent": 0}
@@ -557,7 +564,7 @@ def format_uptime(seconds: float) -> str:
     days = int(seconds // 86400)
     hours = int((seconds % 86400) // 3600)
     minutes = int((seconds % 3600) // 60)
-    
+
     if days > 0:
         return f"{days}d {hours}h {minutes}m"
     elif hours > 0:

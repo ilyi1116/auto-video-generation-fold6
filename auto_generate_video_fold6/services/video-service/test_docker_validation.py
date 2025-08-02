@@ -11,7 +11,10 @@ import sys
 import time
 from pathlib import Path
 
-from workflow_engine_refactored import VideoWorkflowEngine, VideoWorkflowRequest
+from workflow_engine_refactored import (
+    VideoWorkflowEngine,
+    VideoWorkflowRequest,
+)
 
 # 添加模組路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
@@ -120,9 +123,9 @@ def test_dockerfile_exists():
 
         # 基本 Dockerfile 驗證
         assert "FROM" in content, "Dockerfile should contain FROM instruction"
-        assert "WORKDIR" in content or "RUN" in content, (
-            "Dockerfile should contain basic instructions"
-        )
+        assert (
+            "WORKDIR" in content or "RUN" in content
+        ), "Dockerfile should contain basic instructions"
 
         print(f"✅ Dockerfile 存在於: {dockerfile_path}")
     else:

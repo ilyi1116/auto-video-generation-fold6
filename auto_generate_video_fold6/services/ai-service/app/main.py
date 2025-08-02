@@ -8,7 +8,12 @@ from pydantic import BaseModel
 
 from .auth import get_current_user
 from .config import settings
-from .routers import audio_processing, image_generation, music_generation, text_generation
+from .routers import (
+    audio_processing,
+    image_generation,
+    music_generation,
+    text_generation,
+)
 from .services.ai_manager import AIManager
 
 # Configure structured logging
@@ -60,7 +65,7 @@ app.add_middleware(
         "https://your-domain.com",
         "https://app.autovideo.com",
         "http://localhost:3000",
-        "http://localhost:8000"
+        "http://localhost:8000",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],

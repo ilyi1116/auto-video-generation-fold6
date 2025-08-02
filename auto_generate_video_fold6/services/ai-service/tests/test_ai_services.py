@@ -71,9 +71,9 @@ class TestAIServices:
         # Setup mock
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[
-            0
-        ].message.content = "Generated test script content"
+        mock_response.choices[0].message.content = (
+            "Generated test script content"
+        )
 
         mock_client = AsyncMock()
         mock_client.chat.completions.create.return_value = mock_response

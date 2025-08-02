@@ -8,8 +8,15 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from ai.gemini_client import GeminiClient, ScriptGenerationResponse, ScriptScene
-from ai.stable_diffusion_client import ImageGenerationResponse, StableDiffusionClient
+from ai.gemini_client import (
+    GeminiClient,
+    ScriptGenerationResponse,
+    ScriptScene,
+)
+from ai.stable_diffusion_client import (
+    ImageGenerationResponse,
+    StableDiffusionClient,
+)
 from ai.suno_client import SunoAIClient
 from fastapi.testclient import TestClient
 from main import app
@@ -188,7 +195,9 @@ class TestAIIntegration:
         with patch.object(client, "_get_session") as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 200
-            mock_session.return_value.get.return_value.__aenter__.return_value = mock_response
+            mock_session.return_value.get.return_value.__aenter__.return_value = (
+                mock_response
+            )
 
             health = await client.health_check()
             assert health["status"] == "healthy"
@@ -246,7 +255,9 @@ class TestAIIntegration:
                     }
                 ]
             }
-            mock_session.return_value.post.return_value.__aenter__.return_value = mock_response
+            mock_session.return_value.post.return_value.__aenter__.return_value = (
+                mock_response
+            )
 
             with patch.object(
                 client,
@@ -320,7 +331,11 @@ class TestSocialMediaIntegration:
     async def test_social_media_manager_publish(self):
         """Test social media publishing"""
 
-        from social.platforms import PublishRequest, PublishResult, SocialMediaManager
+        from social.platforms import (
+            PublishRequest,
+            PublishResult,
+            SocialMediaManager,
+        )
 
         manager = SocialMediaManager()
 

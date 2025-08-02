@@ -11,7 +11,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-from base_service import BaseService, ServiceError, TraceContext, handle_service_errors
+from base_service import (
+    BaseService,
+    ServiceError,
+    TraceContext,
+    handle_service_errors,
+)
 
 
 class WorkflowState(Enum):

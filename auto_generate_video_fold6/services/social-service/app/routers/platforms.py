@@ -4,7 +4,13 @@ from fastapi import APIRouter, HTTPException
 
 from ..config import settings
 from ..platforms import instagram, tiktok, youtube
-from ..schemas import OAuthCallback, PlatformAuth, PublishRequest, PublishResponse, TokenResponse
+from ..schemas import (
+    OAuthCallback,
+    PlatformAuth,
+    PublishRequest,
+    PublishResponse,
+    TokenResponse,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -15,10 +15,14 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
 # 這些 import 會失敗，因為我們還沒實作 - 這就是 TDD Red 階段
-from services.scheduler_service.app.entrepreneur_scheduler import (EntrepreneurScheduler,
-                                                                   ScheduledTask, SchedulerConfig,
-                                                                   TaskStatus)
+from services.scheduler_service.app.entrepreneur_scheduler import (
+    EntrepreneurScheduler,
+    ScheduledTask,
+    SchedulerConfig,
+    TaskStatus,
+)
 
 
 class TestEntrepreneurSchedulerTDD:

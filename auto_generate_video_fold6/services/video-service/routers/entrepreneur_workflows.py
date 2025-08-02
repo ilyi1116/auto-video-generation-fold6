@@ -12,9 +12,11 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ..auth import verify_token
-from ..video.entrepreneur_workflow_engine import (EntrepreneurWorkflowConfig,
-                                                  EntrepreneurWorkflowEngine,
-                                                  EntrepreneurWorkflowRequest)
+from ..video.entrepreneur_workflow_engine import (
+    EntrepreneurWorkflowConfig,
+    EntrepreneurWorkflowEngine,
+    EntrepreneurWorkflowRequest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -396,7 +398,7 @@ async def list_user_workflows(
 
         # 分頁
         total = len(user_workflows)
-        workflows = user_workflows[offset:offset + limit]  # noqa: E203
+        workflows = user_workflows[offset : offset + limit]  # noqa: E203
 
         return {
             "workflows": workflows,

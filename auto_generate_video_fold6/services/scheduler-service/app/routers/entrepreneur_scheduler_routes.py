@@ -11,7 +11,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ..auth import verify_token
-from ..entrepreneur_scheduler import EntrepreneurScheduler, SchedulerConfig, TaskStatus
+from ..entrepreneur_scheduler import (
+    EntrepreneurScheduler,
+    SchedulerConfig,
+    TaskStatus,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -312,7 +316,7 @@ async def list_scheduled_tasks(
         # 排序和分頁
         user_tasks.sort(key=lambda x: x["created_at"], reverse=True)
         total = len(user_tasks)
-        tasks = user_tasks[offset:offset + limit]  # noqa: E203
+        tasks = user_tasks[offset : offset + limit]  # noqa: E203
 
         return {
             "tasks": tasks,
