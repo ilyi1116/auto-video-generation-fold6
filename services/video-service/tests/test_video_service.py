@@ -198,9 +198,8 @@ class TestAIIntegration:
         with patch.object(client, "_get_session") as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 200
-            mock_get = (
-                mock_session.return_value.get.return_value
-                .__aenter__.return_value
+            mock_get = (  # noqa: E501
+                mock_session.return_value.get.return_value.__aenter__.return_value  # noqa: E501
             )
             mock_get = mock_response
 
@@ -260,9 +259,8 @@ class TestAIIntegration:
                     }
                 ]
             }
-            mock_post = (
-                mock_session.return_value.post.return_value
-                .__aenter__.return_value
+            mock_post = (  # noqa: E501
+                mock_session.return_value.post.return_value.__aenter__.return_value  # noqa: E501
             )
             mock_post = mock_response
 
