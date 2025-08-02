@@ -12,8 +12,8 @@ numpy>=1.24.0
 scipy>=1.11.0
 
 # 深度學習框架
-torch>=2.1.0
-torchaudio>=2.1.0
+torch>=2.2.0
+torchaudio>=2.2.0
 transformers>=4.35.0
 
 # 語音合成模型
@@ -39,7 +39,7 @@ pydub>=0.25.1
 ffmpeg-python>=0.2.0
 
 # 機器學習工具
-scikit-learn>=1.3.0
+scikit-learn>=1.4.0
 joblib>=1.3.0
 
 # 語音克隆

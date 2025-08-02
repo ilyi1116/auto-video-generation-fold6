@@ -44,7 +44,7 @@ types-requests==2.31.0.10
 types-aiofiles==23.2.0.0
 
 # Video file handling for tests
-Pillow==10.1.0
+Pillow>=10.3.0
 moviepy==1.0.3
 
 # Platform API testing helpers

@@ -3,7 +3,7 @@
 # 基礎依賴
 asyncio-mqtt==0.16.1
 redis==5.0.1
-requests==2.31.0
+requests>=2.32.4
 aiohttp>=3.10.11
 aiofiles==23.2.1
 
