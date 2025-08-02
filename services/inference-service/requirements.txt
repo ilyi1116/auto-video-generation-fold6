@@ -17,7 +17,7 @@ SQLAlchemy==2.0.23
 librosa==0.10.1
 soundfile==0.12.1
 numpy==1.24.3
-scipy==1.11.4
+scipy==1.13.1
 
 # Machine learning
 torch>=2.2.0
