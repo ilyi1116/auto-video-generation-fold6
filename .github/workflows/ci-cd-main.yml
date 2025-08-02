@@ -416,13 +416,7 @@ jobs:
         github.event_name == 'workflow_dispatch'
       )
 
-    environment: 
-      name: ${{ 
-        github.event_name == 'workflow_dispatch' && inputs.environment ||
-        github.ref == 'refs/heads/main' && 'production' ||
-        github.ref == 'refs/heads/develop' && 'staging' ||
-        'development'
-      }}
+    environment: production
 
     steps:
     - name: 📥 Checkout Code
