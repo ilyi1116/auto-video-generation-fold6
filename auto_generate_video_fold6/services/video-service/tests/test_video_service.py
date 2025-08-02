@@ -8,15 +8,8 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from ai.gemini_client import (
-    GeminiClient,
-    ScriptGenerationResponse,
-    ScriptScene,
-)
-from ai.stable_diffusion_client import (
-    ImageGenerationResponse,
-    StableDiffusionClient,
-)
+from ai.gemini_client import GeminiClient, ScriptGenerationResponse, ScriptScene
+from ai.stable_diffusion_client import ImageGenerationResponse, StableDiffusionClient
 from ai.suno_client import SunoAIClient
 from fastapi.testclient import TestClient
 from main import app
@@ -327,11 +320,7 @@ class TestSocialMediaIntegration:
     async def test_social_media_manager_publish(self):
         """Test social media publishing"""
 
-        from social.platforms import (
-            PublishRequest,
-            PublishResult,
-            SocialMediaManager,
-        )
+        from social.platforms import PublishRequest, PublishResult, SocialMediaManager
 
         manager = SocialMediaManager()
 

@@ -4,13 +4,13 @@
 驗證備份相關配置和依賴項的正確性
 """
 
-import os
 import json
 import logging
+import os
 import subprocess
-from pathlib import Path
-from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 # 設置日誌
 logging.basicConfig(

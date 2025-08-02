@@ -15,10 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     from main import app
-    from video.video_generator import (
-        VideoGenerationRequest,
-        video_generation_service,
-    )
+    from video.video_generator import VideoGenerationRequest, video_generation_service
 except ImportError:
     # Fallback for testing without actual services
     app = MagicMock()

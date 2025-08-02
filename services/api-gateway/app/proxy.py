@@ -1,7 +1,9 @@
+from typing import Any, Dict
+
 import httpx
-from fastapi import HTTPException, status
-from typing import Dict, Any
 import structlog
+from fastapi import HTTPException, status
+
 from .config import settings
 
 logger = structlog.get_logger()

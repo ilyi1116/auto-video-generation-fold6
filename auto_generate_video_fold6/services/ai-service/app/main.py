@@ -8,12 +8,7 @@ from pydantic import BaseModel
 
 from .auth import get_current_user
 from .config import settings
-from .routers import (
-    audio_processing,
-    image_generation,
-    music_generation,
-    text_generation,
-)
+from .routers import audio_processing, image_generation, music_generation, text_generation
 from .services.ai_manager import AIManager
 
 # Configure structured logging

@@ -4,25 +4,21 @@
 為每個請求生成和傳播關聯ID，支持分佈式追踪
 """
 
-import uuid
-import time
-from typing import Optional, Dict, Any
-from contextvars import ContextVar
 import logging
-from datetime import datetime
-
 # 使用相對導入的替代方案
 import os
 import sys
+import time
+import uuid
+from contextvars import ContextVar
+from datetime import datetime
+from typing import Any, Dict, Optional
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 try:
-    from logging.performance_logger import (
-        get_performance_logger,
-        set_correlation_id,
-        set_request_id,
-    )
+    from logging.performance_logger import (get_performance_logger, set_correlation_id,
+                                            set_request_id)
 
     logger = get_performance_logger(__name__)
 except ImportError:
@@ -326,8 +322,8 @@ def trace_function(
     """函數追踪裝飾器"""
 
     def decorator(func):
-        from functools import wraps
         import asyncio
+        from functools import wraps
 
         actual_operation_name = (
             operation_name or f"{func.__module__}.{func.__name__}"

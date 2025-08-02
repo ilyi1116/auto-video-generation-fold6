@@ -5,21 +5,22 @@
 """
 
 import asyncio
+import gzip
+import json
 import logging
 import os
-import subprocess
-import tempfile
-import json
 import shutil
+import subprocess
 import tarfile
-import gzip
+import tempfile
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
+
+import boto3
 import psycopg2
 import redis
-import boto3
-from dataclasses import dataclass
 
 # 設置日誌
 logging.basicConfig(

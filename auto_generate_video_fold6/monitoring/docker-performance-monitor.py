@@ -5,17 +5,19 @@ Real-time monitoring and optimization for containerized services
 """
 
 import json
-import time
-import docker
-import psutil
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from pathlib import Path
-import threading
 import signal
 import sys
+import threading
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import psutil
+
+import docker
 
 # Configure logging
 logging.basicConfig(

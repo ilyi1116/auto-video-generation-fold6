@@ -12,12 +12,12 @@
 
 import asyncio
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from .platforms import tiktok, youtube, instagram
+from .platforms import instagram, tiktok, youtube
 
 logger = logging.getLogger(__name__)
 

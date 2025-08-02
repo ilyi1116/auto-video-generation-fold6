@@ -3,14 +3,15 @@
 處理訂閱、付款和使用量管理
 """
 
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, Field
-from typing import Optional
-import stripe
+import logging
 import os
 from datetime import datetime
-import logging
+from typing import Optional
+
+import stripe
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, Field
 
 # 設定日誌
 logging.basicConfig(level=logging.INFO)

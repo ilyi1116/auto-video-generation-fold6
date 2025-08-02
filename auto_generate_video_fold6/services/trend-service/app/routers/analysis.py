@@ -6,12 +6,8 @@ from sqlalchemy.orm import Session
 from ..auth import verify_token
 from ..database import get_db
 from ..models import TrendAnalysis
-from ..schemas import (
-    CompetitorAnalysis,
-    TrendAnalysisRequest,
-    TrendAnalysisResponse,
-    ViralContentAnalysis,
-)
+from ..schemas import (CompetitorAnalysis, TrendAnalysisRequest, TrendAnalysisResponse,
+                       ViralContentAnalysis)
 from ..services import competitor_analyzer, content_analyzer
 
 router = APIRouter()

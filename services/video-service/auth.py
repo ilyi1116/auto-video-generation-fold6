@@ -5,12 +5,13 @@ This module handles JWT token validation and user authentication
 for the video generation service.
 """
 
-import jwt
 import logging
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
 import os
+from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
+
 import aiohttp
+import jwt
 from fastapi import HTTPException, status
 
 logger = logging.getLogger(__name__)

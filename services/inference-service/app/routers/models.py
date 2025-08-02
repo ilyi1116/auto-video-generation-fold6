@@ -1,11 +1,12 @@
+from datetime import datetime
+from typing import List, Optional
+
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
-import structlog
 
 from ..auth import get_current_user
-from ..database import database, voice_models, model_usage_stats
+from ..database import database, model_usage_stats, voice_models
 from ..services.model_manager import model_manager
 
 logger = structlog.get_logger()

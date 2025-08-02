@@ -32,8 +32,9 @@ class ResourceManager:
     def get_memory_usage(self) -> float:
         """取得記憶體使用量 - 最小實作"""
         try:
-            import psutil
             import os
+
+            import psutil
 
             process = psutil.Process(os.getpid())
             return process.memory_info().rss / 1024 / 1024  # MB

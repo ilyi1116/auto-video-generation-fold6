@@ -1,11 +1,11 @@
-import librosa
-import soundfile as sf
-import magic
 import os
 from pathlib import Path
-from typing import Dict, Any
-import structlog
+from typing import Any, Dict
 
+import librosa
+import magic
+import soundfile as sf
+import structlog
 from app.config import settings
 from app.schemas import FileValidationError
 

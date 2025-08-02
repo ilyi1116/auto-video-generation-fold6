@@ -12,10 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..auth import get_current_user
-from ..video.video_generator import (
-    VideoGenerationRequest,
-    video_generation_service,
-)
+from ..video.video_generator import VideoGenerationRequest, video_generation_service
 
 router = APIRouter()
 logger = structlog.get_logger()

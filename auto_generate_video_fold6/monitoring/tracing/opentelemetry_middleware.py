@@ -3,27 +3,26 @@ OpenTelemetry 分散式追蹤中介軟體
 為 FastAPI 應用程式提供完整的請求追蹤功能
 """
 
+import logging
 import os
 import time
-from typing import Callable, Dict, Any
+from typing import Any, Callable, Dict
+
 from fastapi import FastAPI, Request, Response
-from opentelemetry import trace, baggage
+from opentelemetry import baggage, trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
-    OTLPSpanExporter,
-)
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
-from opentelemetry.instrumentation.celery import CeleryInstrumentor
-from opentelemetry.propagate import inject, extract
+from opentelemetry.propagate import extract, inject
+from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.resources import Resource
 from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry.semconv.trace import SpanAttributes
-import logging
 
 logger = logging.getLogger(__name__)
 

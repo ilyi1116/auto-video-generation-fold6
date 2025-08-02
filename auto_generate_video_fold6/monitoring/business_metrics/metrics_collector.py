@@ -4,19 +4,19 @@
 收集和記錄業務相關的關鍵效能指標 (KPIs)
 """
 
-import time
 import asyncio
-from typing import Dict, List, Optional, Any, Union
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from collections import defaultdict, deque
 import json
 import threading
+import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
 # Prometheus metrics (optional dependency)
 try:
-    from prometheus_client import Counter, Histogram, Gauge, Summary, Info
+    from prometheus_client import Counter, Gauge, Histogram, Info, Summary
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:

@@ -1,13 +1,13 @@
+from contextlib import asynccontextmanager
+
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-import structlog
 
 from .config import settings
 from .database import engine
 from .models import Base
 from .routers import router
-
 
 # Configure structured logging
 structlog.configure(

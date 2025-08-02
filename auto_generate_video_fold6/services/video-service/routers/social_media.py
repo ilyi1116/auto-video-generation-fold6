@@ -13,10 +13,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..auth import get_current_user
-from ..social.platforms import (
-    PublishRequest,
-    SocialMediaManager,
-)
+from ..social.platforms import PublishRequest, SocialMediaManager
 
 router = APIRouter()
 logger = structlog.get_logger()

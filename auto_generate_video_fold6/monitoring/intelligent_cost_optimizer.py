@@ -5,18 +5,19 @@
 """
 
 import asyncio
-import logging
 import json
+import logging
+import warnings
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
-from enum import Enum
-from datetime import datetime, timedelta
 import redis
-from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-import warnings
+from sklearn.linear_model import LinearRegression
 
 warnings.filterwarnings("ignore")
 

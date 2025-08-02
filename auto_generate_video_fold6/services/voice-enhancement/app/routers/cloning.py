@@ -3,10 +3,11 @@ Voice Cloning API Router
 提供語音克隆相關的 API 端點
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import Dict, List
+
 import structlog
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel, Field
 
 from ..auth import get_current_user
 from ..services.voice_cloner import VoiceCloner

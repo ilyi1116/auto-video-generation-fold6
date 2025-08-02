@@ -26,7 +26,7 @@ from .ai.suno_client import SunoAIClient
 from .auth import verify_token
 from .database import get_db_connection
 from .models.video_project import VideoProject, VideoStatus
-from .routers import social_media, video_generation, entrepreneur_workflows
+from .routers import entrepreneur_workflows, social_media, video_generation
 from .video.composer import VideoComposer
 
 logging.basicConfig(level=logging.INFO)

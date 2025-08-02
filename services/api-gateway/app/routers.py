@@ -1,13 +1,14 @@
+import structlog
 from fastapi import (
     APIRouter,
-    Request,
     Depends,
-    HTTPException,
-    UploadFile,
     File,
+    HTTPException,
+    Request,
+    UploadFile,
 )
 from fastapi.responses import JSONResponse
-import structlog
+
 from .auth import get_current_user
 from .proxy import proxy
 from .rate_limiter import limiter

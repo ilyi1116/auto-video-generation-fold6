@@ -3,17 +3,18 @@ GraphQL Gateway Service
 負責統一 GraphQL API 端點，減少前端過度獲取問題
 """
 
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from strawberry.fastapi import GraphQLRouter
-import structlog
-from prometheus_client import make_asgi_app, Counter, Histogram
 import time
 
-from .config import get_settings
+import structlog
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import Counter, Histogram, make_asgi_app
+from strawberry.fastapi import GraphQLRouter
+
 from .auth import get_current_user
-from .schema import schema
+from .config import get_settings
 from .middleware import PrometheusMiddleware
+from .schema import schema
 
 # 設定日誌
 logger = structlog.get_logger()

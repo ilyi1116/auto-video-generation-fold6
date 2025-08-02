@@ -2,9 +2,10 @@
 Voice Enhancement Service 配置設定
 """
 
-from pydantic_settings import BaseSettings
-from typing import List
 import os
+from typing import List
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):

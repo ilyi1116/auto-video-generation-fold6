@@ -3,17 +3,15 @@
 驗證重構沒有破壞原有功能
 """
 
+import os
+import sys
+from datetime import datetime, timedelta
+
+from pipeline_executor import PipelineExecutor
+from progress_tracker import ProgressTracker
 from resource_manager import ResourceManager
 from time_estimator import WorkflowTimeEstimator
-from progress_tracker import ProgressTracker
-from pipeline_executor import PipelineExecutor
-from workflow_engine_refactored import (
-    VideoWorkflowEngine,
-    VideoWorkflowRequest,
-)
-from datetime import datetime, timedelta
-import sys
-import os
+from workflow_engine_refactored import VideoWorkflowEngine, VideoWorkflowRequest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 

@@ -3,10 +3,11 @@ Emotion Synthesis API Router
 提供情感語音合成相關的 API 端點
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
+
 import structlog
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from pydantic import BaseModel, Field
 
 from ..auth import get_current_user
 from ..services.emotion_synthesizer import EmotionSynthesizer

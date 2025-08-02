@@ -4,16 +4,13 @@
 直接測試排程管理器的核心功能
 """
 
-from app.entrepreneur_scheduler import (
-    EntrepreneurScheduler,
-    SchedulerConfig,
-    TaskStatus,
-    ScheduledTask,
-)
-import sys
 import asyncio
+import sys
 from datetime import datetime
 from pathlib import Path
+
+from app.entrepreneur_scheduler import (EntrepreneurScheduler, ScheduledTask, SchedulerConfig,
+                                        TaskStatus)
 
 # 添加服務路徑
 sys.path.insert(0, str(Path(__file__).parent / "app"))

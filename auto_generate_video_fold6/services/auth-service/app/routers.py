@@ -7,10 +7,7 @@ from sqlalchemy.orm import Session
 from . import crud, schemas, security
 from .config import settings
 from .database import get_db
-from .dependencies import (
-    get_current_active_user,
-    get_current_superuser,
-)
+from .dependencies import get_current_active_user, get_current_superuser
 
 router = APIRouter()
 

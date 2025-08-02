@@ -1,15 +1,10 @@
-from app.processors import (
-    AudioProcessor,
-    ImageProcessor,
-    ProcessorManager,
-    VideoProcessor,
-)
 import os
 import sys
 import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
+from app.processors import AudioProcessor, ImageProcessor, ProcessorManager, VideoProcessor
 from PIL import Image
 
 # Add the app directory to the path

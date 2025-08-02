@@ -5,11 +5,11 @@ TDD Refactor 階段：在保持測試通過的前提下改善程式碼結構
 遵循 Clean Code 和 SOLID 原則
 """
 
+import logging
 import uuid
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, Optional, Protocol
-import logging
 
 # 設定日誌
 logger = logging.getLogger(__name__)

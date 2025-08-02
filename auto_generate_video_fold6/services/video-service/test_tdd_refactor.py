@@ -3,19 +3,14 @@ TDD Refactor 階段測試
 確保重構後的程式碼仍然通過所有測試
 """
 
-from workflow_engine_refactored import (
-    VideoWorkflowEngine,
-    VideoWorkflowRequest,
-    VideoWorkflowResult,
-    WorkflowStatus,
-    WorkflowStage,
-    InMemoryWorkflowRepository,
-    WorkflowIdGenerator,
-    CompletionTimeEstimator,
-)
-from datetime import datetime
-import sys
 import os
+import sys
+from datetime import datetime
+
+from workflow_engine_refactored import (CompletionTimeEstimator, InMemoryWorkflowRepository,
+                                        VideoWorkflowEngine, VideoWorkflowRequest,
+                                        VideoWorkflowResult, WorkflowIdGenerator, WorkflowStage,
+                                        WorkflowStatus)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 

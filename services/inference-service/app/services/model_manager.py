@@ -1,9 +1,10 @@
 import asyncio
 import time
-from typing import Dict, Any
-import torch
+from typing import Any, Dict
+
 import numpy as np
 import structlog
+import torch
 
 from ..config import get_settings
 

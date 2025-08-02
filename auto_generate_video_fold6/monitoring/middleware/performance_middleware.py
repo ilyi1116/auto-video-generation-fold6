@@ -4,35 +4,25 @@
 追蹤應用程式效能指標並整合 Prometheus
 """
 
-import time
 import asyncio
-from typing import Dict, Optional, Any, Callable, List
-from datetime import datetime, timedelta
+import json
 import logging
+import threading
+import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
-import threading
-import json
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, List, Optional
 
 # Prometheus metrics (optional dependency)
 try:
-    from prometheus_client import (
-        Counter,
-        Histogram,
-        Gauge,
-        Summary,
-        start_http_server,
-    )
+    from prometheus_client import Counter, Gauge, Histogram, Summary, start_http_server
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
 
-from ..logging.structured_logger import (
-    get_logger,
-    set_correlation_id,
-    set_request_id,
-)
+from ..logging.structured_logger import get_logger, set_correlation_id, set_request_id
 
 logger = get_logger(__name__)
 
@@ -575,8 +565,8 @@ def performance_tracker(operation_type: str = "unknown"):
     """效能追蹤裝飾器"""
 
     def decorator(func):
-        from functools import wraps
         import asyncio
+        from functools import wraps
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):

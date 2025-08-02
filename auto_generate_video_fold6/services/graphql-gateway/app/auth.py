@@ -2,12 +2,13 @@
 GraphQL Gateway 身份驗證
 """
 
-from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt
 from typing import Optional
+
 import httpx
 import structlog
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 
 from .config import get_settings
 

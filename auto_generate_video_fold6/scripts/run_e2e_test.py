@@ -5,11 +5,11 @@ E2E 測試運行器
 """
 
 import asyncio
-import subprocess
-import time
-import signal
-import sys
 import os
+import signal
+import subprocess
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 

@@ -3,21 +3,22 @@ Auto Video System API 回應時間優化
 包含各種效能優化技術和中介軟體
 """
 
-import time
-import gzip
 import asyncio
 import functools
-from typing import Any, Callable, Optional, Dict, List
+import gzip
+import json
+import logging
+import time
+import uuid
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Response, HTTPException
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, List, Optional
+
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse
-import json
-import logging
-from datetime import datetime, timedelta
-import uuid
 
 logger = logging.getLogger(__name__)
 

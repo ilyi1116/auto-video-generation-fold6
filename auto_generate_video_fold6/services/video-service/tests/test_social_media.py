@@ -1,5 +1,3 @@
-from social.platforms import PublishRequest, PublishResult, SocialMediaManager
-from main import app
 import os
 import sys
 from datetime import datetime, timedelta
@@ -7,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+from main import app
+from social.platforms import PublishRequest, PublishResult, SocialMediaManager
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

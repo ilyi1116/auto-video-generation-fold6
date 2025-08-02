@@ -4,23 +4,23 @@ Video Service Tests
 Test suite for video generation service functionality
 """
 
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime
-from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock, Mock, patch
 
-from main import app
-from models.video_project import VideoProject, VideoStatus
-from ai.suno_client import SunoAIClient
+import pytest
 from ai.gemini_client import (
     GeminiClient,
     ScriptGenerationResponse,
     ScriptScene,
 )
 from ai.stable_diffusion_client import (
-    StableDiffusionClient,
     ImageGenerationResponse,
+    StableDiffusionClient,
 )
+from ai.suno_client import SunoAIClient
+from fastapi.testclient import TestClient
+from main import app
+from models.video_project import VideoProject, VideoStatus
 
 client = TestClient(app)
 
@@ -288,7 +288,7 @@ class TestVideoComposition:
     async def test_video_composer_creation(self, sample_script_response):
         """Test video composition creation"""
 
-        from video.composer import VideoComposer, CompositionResult
+        from video.composer import CompositionResult, VideoComposer
 
         composer = VideoComposer()
 
@@ -335,9 +335,9 @@ class TestSocialMediaIntegration:
         """Test social media publishing"""
 
         from social.platforms import (
-            SocialMediaManager,
             PublishRequest,
             PublishResult,
+            SocialMediaManager,
         )
 
         manager = SocialMediaManager()

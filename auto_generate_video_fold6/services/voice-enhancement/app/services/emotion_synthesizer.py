@@ -4,14 +4,15 @@ Emotion-aware Speech Synthesis
 """
 
 import io
-import numpy as np
 from typing import Dict, List
-import structlog
-from TTS.api import TTS
-from speechemotionrecognition import SpeechEmotionRecognition
+
 import librosa
+import numpy as np
 import soundfile as sf
-from transformers import Wav2Vec2Processor, Wav2Vec2Model
+import structlog
+from speechemotionrecognition import SpeechEmotionRecognition
+from transformers import Wav2Vec2Model, Wav2Vec2Processor
+from TTS.api import TTS
 
 logger = structlog.get_logger()
 

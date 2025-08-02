@@ -1,5 +1,5 @@
-from celery import Celery
 from app.config import settings
+from celery import Celery
 
 app = Celery(
     "voice_data_processor",

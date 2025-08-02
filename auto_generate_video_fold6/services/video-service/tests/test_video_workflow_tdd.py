@@ -135,8 +135,8 @@ class TestVideoWorkflowCore:
         )
 
         # 這會失敗，因為相關類別還不存在
-        from video.workflow_engine import VideoWorkflowEngine
         from video.pipeline_executor import PipelineExecutor
+        from video.workflow_engine import VideoWorkflowEngine
 
         engine = VideoWorkflowEngine()
         executor = PipelineExecutor()
@@ -212,8 +212,8 @@ class TestVideoWorkflowCore:
             quality_level="ultra",
         )
 
-        from video.workflow_engine import VideoWorkflowEngine
         from video.progress_tracker import ProgressTracker
+        from video.workflow_engine import VideoWorkflowEngine
 
         engine = VideoWorkflowEngine()
         tracker = ProgressTracker()
@@ -342,8 +342,8 @@ class TestVideoWorkflowCore:
             workflow_type="quick",
         )
 
-        from video.workflow_engine import VideoWorkflowEngine
         from video.resource_manager import ResourceManager
+        from video.workflow_engine import VideoWorkflowEngine
 
         engine = VideoWorkflowEngine()
         resource_manager = ResourceManager()
@@ -474,8 +474,9 @@ class TestVideoWorkflowPerformance:
     @pytest.mark.asyncio
     async def test_memory_usage_should_remain_stable_during_workflow(self):
         """測試：工作流程執行期間記憶體使用應該保持穩定"""
-        import psutil
         import os
+
+        import psutil
 
         # 安排
         request = VideoWorkflowRequest(

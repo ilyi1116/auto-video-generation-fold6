@@ -3,10 +3,11 @@
 專注於影片生成工作流程的核心測試
 """
 
-from workflow_engine import VideoWorkflowRequest
 import os
 import sys
 from datetime import timedelta
+
+from workflow_engine import VideoWorkflowRequest
 
 
 # 簡單的測試框架實現
@@ -122,8 +123,8 @@ def test_should_execute_complete_workflow_pipeline():
     )
 
     # 這會失敗，因為相關類別還不存在
-    from video.workflow_engine import VideoWorkflowEngine
     from video.pipeline_executor import PipelineExecutor
+    from video.workflow_engine import VideoWorkflowEngine
 
     engine = VideoWorkflowEngine()
     executor = PipelineExecutor()
@@ -171,8 +172,8 @@ def test_should_track_workflow_progress_accurately():
         quality_level="ultra",
     )
 
-    from video.workflow_engine import VideoWorkflowEngine
     from video.progress_tracker import ProgressTracker
+    from video.workflow_engine import VideoWorkflowEngine
 
     engine = VideoWorkflowEngine()
     tracker = ProgressTracker()
@@ -237,8 +238,8 @@ def test_should_cleanup_resources_after_workflow_completion():
         workflow_type="quick",
     )
 
-    from video.workflow_engine import VideoWorkflowEngine
     from video.resource_manager import ResourceManager
+    from video.workflow_engine import VideoWorkflowEngine
 
     engine = VideoWorkflowEngine()
     resource_manager = ResourceManager()

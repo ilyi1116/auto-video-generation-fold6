@@ -4,7 +4,7 @@
 TDD Green 階段：最小實作讓測試通過
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 
 class PipelineResult:

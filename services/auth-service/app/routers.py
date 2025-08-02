@@ -1,15 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import List
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from . import crud, schemas, security
+from .config import settings
 from .database import get_db
 from .dependencies import (
     get_current_active_user,
     get_current_superuser,
 )
-from .config import settings
 
 router = APIRouter()
 

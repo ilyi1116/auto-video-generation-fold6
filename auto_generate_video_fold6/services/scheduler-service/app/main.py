@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .database import Base, engine
-from .routers import scheduler, entrepreneur_scheduler_routes
+from .routers import entrepreneur_scheduler_routes, scheduler
 
 logger = logging.getLogger(__name__)
 

@@ -3,10 +3,11 @@ GraphQL 類型定義
 統一的資料模型，整合所有微服務的資料結構
 """
 
-import strawberry
-from typing import List, Optional
 from datetime import datetime
 from enum import Enum
+from typing import List, Optional
+
+import strawberry
 
 
 @strawberry.enum

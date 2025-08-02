@@ -6,10 +6,7 @@ from sqlalchemy.orm import Session
 from ..auth import verify_token
 from ..database import get_db
 from ..models import KeywordResearch
-from ..schemas import (
-    KeywordResearchResponse,
-    KeywordSearchRequest,
-)
+from ..schemas import KeywordResearchResponse, KeywordSearchRequest
 from ..services import keyword_analyzer
 
 router = APIRouter()

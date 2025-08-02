@@ -4,14 +4,15 @@ Voice Cloning Service
 """
 
 import io
-import numpy as np
+import pickle
+from pathlib import Path
 from typing import Dict, List
+
+import librosa
+import numpy as np
+import soundfile as sf
 import structlog
 from resemblyzer import VoiceEncoder, preprocess_wav
-import librosa
-import soundfile as sf
-from pathlib import Path
-import pickle
 
 logger = structlog.get_logger()
 

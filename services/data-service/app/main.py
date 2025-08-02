@@ -1,12 +1,12 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
 import structlog
 import uvicorn
-
 from app.config import settings
-from app.routers import upload, process
-from app.database import database, metadata, engine
+from app.database import database, engine, metadata
+from app.routers import process, upload
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Configure structured logging
 structlog.configure(

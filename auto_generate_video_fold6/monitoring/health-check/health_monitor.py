@@ -5,29 +5,26 @@
 """
 
 import asyncio
-import aiohttp
 import json
 import logging
+import smtplib
 import time
-from typing import Dict, List, Any, Optional
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
-import yaml
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 import psutil
-import docker
 import redis
 import sqlalchemy as sa
+import yaml
+from prometheus_client import CollectorRegistry, Counter, Gauge, start_http_server
 from sqlalchemy import create_engine
-from prometheus_client import (
-    CollectorRegistry,
-    Gauge,
-    Counter,
-    start_http_server,
-)
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+
+import docker
 
 
 @dataclass

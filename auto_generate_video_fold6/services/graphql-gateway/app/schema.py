@@ -3,18 +3,14 @@ GraphQL Schema 定義
 整合所有微服務的資料模型，提供統一的 GraphQL API
 """
 
-import strawberry
 from typing import List, Optional
+
 import httpx
+import strawberry
 import structlog
 
 from .config import get_settings
-from .types import (
-    User,
-    VideoProject,
-    AIScript,
-    TrendAnalysis,
-)
+from .types import AIScript, TrendAnalysis, User, VideoProject
 
 logger = structlog.get_logger()
 

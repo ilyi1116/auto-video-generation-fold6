@@ -7,11 +7,12 @@
 import json
 import os
 import sys
-from pathlib import Path
-from typing import Dict, List, Any, Tuple
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
 import jsonschema
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
 
 
 class ConfigValidator:

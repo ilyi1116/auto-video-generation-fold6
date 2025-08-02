@@ -1,14 +1,14 @@
+from contextlib import asynccontextmanager
+
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-import structlog
 from slowapi.errors import RateLimitExceeded
 
 from .config import settings
 from .middleware import LoggingMiddleware, SecurityHeadersMiddleware
-from .rate_limiter import limiter, custom_rate_limit_exceeded_handler
-from .routers import auth_router, data_router, inference_router, admin_router
-
+from .rate_limiter import custom_rate_limit_exceeded_handler, limiter
+from .routers import admin_router, auth_router, data_router, inference_router
 
 # Configure structured logging
 structlog.configure(

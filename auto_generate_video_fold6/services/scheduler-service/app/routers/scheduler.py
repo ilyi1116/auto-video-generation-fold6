@@ -7,16 +7,9 @@ from sqlalchemy.orm import Session
 from ..auth import verify_token
 from ..database import get_db
 from ..models import PlatformAccount, ScheduledPost
-from ..schemas import (
-    PlatformAccountRequest,
-    PlatformAccountResponse,
-    PlatformType,
-    PostStatus,
-    ScheduleListResponse,
-    SchedulePostRequest,
-    SchedulePostResponse,
-    UpdateScheduleRequest,
-)
+from ..schemas import (PlatformAccountRequest, PlatformAccountResponse, PlatformType, PostStatus,
+                       ScheduleListResponse, SchedulePostRequest, SchedulePostResponse,
+                       UpdateScheduleRequest)
 from ..tasks import publish_post
 
 router = APIRouter()

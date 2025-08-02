@@ -11,17 +11,14 @@ TDD Red 階段: 創業者排程管理器測試
 遵循 TDD 原則，這些測試會先失敗，然後我們實作讓它們通過
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
 
+import pytest
 # 這些 import 會失敗，因為我們還沒實作 - 這就是 TDD Red 階段
-from services.scheduler_service.app.entrepreneur_scheduler import (
-    EntrepreneurScheduler,
-    SchedulerConfig,
-    TaskStatus,
-    ScheduledTask,
-)
+from services.scheduler_service.app.entrepreneur_scheduler import (EntrepreneurScheduler,
+                                                                   ScheduledTask, SchedulerConfig,
+                                                                   TaskStatus)
 
 
 class TestEntrepreneurSchedulerTDD:

@@ -2,11 +2,12 @@
 Voice Enhancement Service 中介軟體
 """
 
-from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
 import time
+
 import structlog
+from fastapi import Request
 from prometheus_client import Counter, Histogram
+from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = structlog.get_logger()
 

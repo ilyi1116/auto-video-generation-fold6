@@ -8,13 +8,14 @@ content generation:
 - Content performance metrics collection
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Any
 import asyncio
 import logging
 from datetime import datetime
+from typing import Any, Dict, List
+
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # import os  # Unused import
 

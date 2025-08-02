@@ -14,10 +14,7 @@ from typing import Any, Dict, List, Optional
 
 # 導入各 AI 客戶端
 try:
-    from services.ai_service.gemini_client import (
-        GeminiClient,
-        GeminiGenerationConfig,
-    )
+    from services.ai_service.gemini_client import GeminiClient, GeminiGenerationConfig
 
     GEMINI_AVAILABLE = True
 except ImportError:
@@ -25,10 +22,7 @@ except ImportError:
     logging.warning("Gemini 客戶端不可用")
 
 try:
-    from services.music_service.suno_client import (
-        MusicGenerationRequest,
-        SunoClient,
-    )
+    from services.music_service.suno_client import MusicGenerationRequest, SunoClient
 
     SUNO_AVAILABLE = True
 except ImportError:

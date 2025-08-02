@@ -5,11 +5,12 @@ This module handles PostgreSQL database connections, connection pooling,
 and database initialization for the video service.
 """
 
-import asyncpg
 import logging
-from typing import Optional
 import os
 from contextlib import asynccontextmanager
+from typing import Optional
+
+import asyncpg
 
 logger = logging.getLogger(__name__)
 

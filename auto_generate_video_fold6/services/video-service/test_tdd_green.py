@@ -3,17 +3,15 @@ TDD Green 階段測試
 驗證最小實作是否讓測試通過
 """
 
+import os
+import sys
+from datetime import datetime, timedelta
+
+from pipeline_executor import PipelineExecutor
+from progress_tracker import ProgressTracker
 from resource_manager import ResourceManager
 from time_estimator import WorkflowTimeEstimator
-from progress_tracker import ProgressTracker
-from pipeline_executor import PipelineExecutor
-from workflow_engine import (
-    VideoWorkflowEngine,
-    VideoWorkflowRequest,
-)
-from datetime import datetime, timedelta
-import sys
-import os
+from workflow_engine import VideoWorkflowEngine, VideoWorkflowRequest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 

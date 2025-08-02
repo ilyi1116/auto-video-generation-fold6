@@ -4,19 +4,20 @@ Auto Video System 效能基準測試
 """
 
 import asyncio
-import time
-import statistics
 import json
-import psutil
-import aiohttp
-import pytest
-from typing import Dict, List, Tuple, Any
+import logging
+import statistics
+import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import numpy as np
+from typing import Any, Dict, List, Tuple
+
+import aiohttp
 import matplotlib.pyplot as plt
-from concurrent.futures import ThreadPoolExecutor
-import logging
+import numpy as np
+import psutil
+import pytest
 
 logger = logging.getLogger(__name__)
 

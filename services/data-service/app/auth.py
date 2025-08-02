@@ -1,6 +1,6 @@
 import httpx
-from fastapi import HTTPException
 import structlog
+from fastapi import HTTPException
 
 logger = structlog.get_logger(__name__)
 

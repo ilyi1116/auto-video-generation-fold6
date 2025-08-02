@@ -4,14 +4,14 @@ TDD 測試報告自動化生成工具 (Python 版本)
 遵循 TDD 原則，收集並生成詳細的測試報告
 """
 
-import os
 import json
+import os
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 
 class TDDReportGenerator:

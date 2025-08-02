@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import analytics, platforms, entrepreneur_publishing
+from .routers import analytics, entrepreneur_publishing, platforms
 
 logger = logging.getLogger(__name__)
 

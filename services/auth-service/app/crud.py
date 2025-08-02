@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Session
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
 from . import models, schemas, security
 
 

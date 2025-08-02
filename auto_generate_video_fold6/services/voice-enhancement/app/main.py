@@ -3,15 +3,16 @@ Voice Enhancement Service
 提供進階語音合成、情感表達和語音克隆功能
 """
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import structlog
-from prometheus_client import make_asgi_app
 import time
 
+import structlog
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import make_asgi_app
+
 from .config import get_settings
-from .routers import synthesis, emotions, cloning, enhancement
 from .middleware import PrometheusMiddleware
+from .routers import cloning, emotions, enhancement, synthesis
 
 # 設定日誌
 logger = structlog.get_logger()

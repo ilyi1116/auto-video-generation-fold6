@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+import io
+from datetime import datetime
+from typing import List, Optional
+
+import structlog
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Optional, List
-import structlog
-from datetime import datetime
-import io
 
 from ..auth import get_current_user
 from ..database import database, synthesis_jobs, voice_models

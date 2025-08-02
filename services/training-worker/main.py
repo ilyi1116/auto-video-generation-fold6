@@ -7,12 +7,12 @@ This service handles background training tasks for voice cloning models:
 - Training data management and preprocessing
 """
 
-import os
-import logging
-from datetime import datetime
-from typing import Dict, Any, Optional, List
-from enum import Enum
 import json
+import logging
+import os
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from celery import Celery
 from pydantic import BaseModel

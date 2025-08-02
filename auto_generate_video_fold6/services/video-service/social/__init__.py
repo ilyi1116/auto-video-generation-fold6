@@ -7,15 +7,8 @@ This module handles integration with social media platforms:
 - Social media analytics and statistics
 """
 
-from .platforms import (
-    InstagramClient,
-    PublishRequest,
-    PublishResult,
-    SocialMediaManager,
-    SocialPlatform,
-    TikTokClient,
-    YouTubeClient,
-)
+from .platforms import (InstagramClient, PublishRequest, PublishResult, SocialMediaManager,
+                        SocialPlatform, TikTokClient, YouTubeClient)
 
 __all__ = [
     "SocialMediaManager",

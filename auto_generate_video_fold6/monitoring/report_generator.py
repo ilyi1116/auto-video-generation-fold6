@@ -6,16 +6,17 @@
 
 import asyncio
 import json
+import logging
 import sqlite3
-from datetime import datetime, date, timedelta
-from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import asdict, dataclass
+from datetime import date, datetime, timedelta
 from pathlib import Path
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional, Tuple
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from jinja2 import Environment, FileSystemLoader
-import logging
 
 # 設置日誌
 logging.basicConfig(level=logging.INFO)

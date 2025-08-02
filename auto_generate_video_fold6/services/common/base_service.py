@@ -4,6 +4,7 @@ TDD Refactor 階段: 統一服務基礎架構
 """
 
 import asyncio
+import json
 import logging
 import time
 import uuid
@@ -11,10 +12,10 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Callable
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
+
 import structlog
-import json
 
 
 class ServiceState(Enum):

@@ -5,15 +5,16 @@ This module defines the database models for video generation projects,
 including status tracking, media associations, and user relationships.
 """
 
-# import asyncio  # Unused import
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
-
 # import asyncpg  # Unused import
 import json
 import logging
+
+# import asyncio  # Unused import
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 

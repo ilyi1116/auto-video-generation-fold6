@@ -8,11 +8,11 @@ This module handles video composition, rendering, and media processing:
 """
 
 from .composer import (
-    VideoComposer,
-    SceneComposition,
     CompositionRequest,
     CompositionResult,
     FinalRenderResult,
+    SceneComposition,
+    VideoComposer,
 )
 
 __all__ = [

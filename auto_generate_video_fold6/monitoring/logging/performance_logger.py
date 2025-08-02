@@ -4,18 +4,18 @@
 為監控系統提供優化的日誌記錄功能
 """
 
+import asyncio
 import json
-import time
-import threading
-import queue
 import logging
-from typing import Dict, Any, Optional
-from datetime import datetime, timezone
+import queue
+import threading
+import time
+import uuid
+from collections import deque
 from contextlib import contextmanager
 from contextvars import ContextVar
-import asyncio
-from collections import deque
-import uuid
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
 
 # 上下文變數
 correlation_id_context: ContextVar[Optional[str]] = ContextVar(

@@ -3,10 +3,11 @@
 移除 GitHub 分支保護規則的腳本
 """
 
-import requests
+import json
 import os
 import sys
-import json
+
+import requests
 
 
 def remove_branch_protection():

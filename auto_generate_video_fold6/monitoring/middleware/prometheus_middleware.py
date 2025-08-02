@@ -3,19 +3,14 @@ Prometheus 指標收集中介軟體
 為 FastAPI 應用程式提供自動指標收集功能
 """
 
+import asyncio
 import time
 from typing import Callable
-from prometheus_client import (
-    Counter,
-    Histogram,
-    Gauge,
-    generate_latest,
-    CONTENT_TYPE_LATEST,
-)
+
+import psutil
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import PlainTextResponse
-import psutil
-import asyncio
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 
 
 class PrometheusMiddleware:

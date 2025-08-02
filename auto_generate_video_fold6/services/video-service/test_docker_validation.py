@@ -5,15 +5,13 @@ Docker 環境驗證測試
 遵循 CLAUDE.md 中的 Docker 驗證要求
 """
 
-from workflow_engine_refactored import (
-    VideoWorkflowEngine,
-    VideoWorkflowRequest,
-)
 import os
+import subprocess
 import sys
 import time
-import subprocess
 from pathlib import Path
+
+from workflow_engine_refactored import VideoWorkflowEngine, VideoWorkflowRequest
 
 # 添加模組路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
@@ -215,8 +213,9 @@ def test_environment_variables_handling():
 
 def test_resource_limits_simulation():
     """測試：資源限制模擬"""
-    import psutil
     import sys
+
+    import psutil
 
     try:
         # 檢查記憶體使用情況

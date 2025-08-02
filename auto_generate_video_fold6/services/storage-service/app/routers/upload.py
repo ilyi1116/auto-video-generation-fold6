@@ -5,14 +5,7 @@ from typing import Dict, List, Optional
 
 import magic
 import structlog
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    UploadFile,
-)
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from ..auth import get_current_user

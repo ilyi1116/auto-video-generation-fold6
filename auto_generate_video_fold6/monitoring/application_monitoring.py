@@ -3,19 +3,21 @@
 整合 Prometheus、OpenTelemetry 和結構化日誌記錄
 """
 
+import asyncio
+import logging
 import os
 import time
-import logging
-import asyncio
-from typing import Dict, Any, Optional, Callable
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Response, HTTPException
-from prometheus_client import Counter, Histogram, Gauge, Info
-import structlog
-from opentelemetry import trace
-import psutil
+from typing import Any, Callable, Dict, Optional
+
 import asyncpg
+import psutil
 import redis.asyncio as redis
+import structlog
+from fastapi import FastAPI, HTTPException, Request, Response
+from opentelemetry import trace
+from prometheus_client import Counter, Gauge, Histogram, Info
+
 from .middleware.prometheus_middleware import PrometheusMiddleware
 from .tracing.opentelemetry_middleware import setup_tracing, trace_function
 
@@ -116,9 +118,7 @@ class ApplicationMonitoring:
         # 設定指標中介軟體
         if self.metrics_middleware:
             app.middleware("http")(self.metrics_middleware)
-            from .middleware.prometheus_middleware import (
-                setup_metrics_endpoint,
-            )
+            from .middleware.prometheus_middleware import setup_metrics_endpoint
 
             setup_metrics_endpoint(app, self.metrics_middleware)
 

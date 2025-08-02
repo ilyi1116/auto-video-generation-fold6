@@ -4,19 +4,14 @@ TDD Refactor 階段: 重構後的工作流程引擎
 """
 
 import asyncio
+import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, Any, Optional, List, Callable
-import time
+from typing import Any, Callable, Dict, List, Optional
 
-from base_service import (
-    BaseService,
-    ServiceError,
-    TraceContext,
-    handle_service_errors,
-)
+from base_service import BaseService, ServiceError, TraceContext, handle_service_errors
 
 
 class WorkflowState(Enum):

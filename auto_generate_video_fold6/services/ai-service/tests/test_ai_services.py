@@ -1,13 +1,14 @@
-from config import settings
-from services.text_generator import TextGenerator
-from services.suno_client import SunoClient
-from services.image_generator import ImageGenerator
-from services.audio_processor import AudioProcessor
 import os
 import sys
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from services.audio_processor import AudioProcessor
+from services.image_generator import ImageGenerator
+from services.suno_client import SunoClient
+from services.text_generator import TextGenerator
+
+from config import settings
 
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
