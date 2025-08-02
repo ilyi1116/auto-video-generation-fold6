@@ -10,6 +10,13 @@ on:
       - '**/package.json'
       - '**/Dockerfile'
 
+# 全域權限設定
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+  pull-requests: read
+
 jobs:
   dependency-check:
     name: Dependency Security Check

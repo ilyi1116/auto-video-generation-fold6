@@ -10,6 +10,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+
 jobs:
   # Code Quality Checks
   lint:

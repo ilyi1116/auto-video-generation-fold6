@@ -1,58 +1,58 @@
-# GitLeaks configuration for Auto Video Generation System
+# GitLeaks 配置檔案
+# 用於檢測程式碼中的敏感資訊洩露
 
-title = "GitLeaks config for Auto Video Generation System"
-
-[extend]
-# Extend default config
-useDefault = true
-
-[[rules]]
-description = "API Keys"
-id = "api-key"
-regex = '''(?i)(api_key|apikey|api-key)\s*[:=]\s*['""]?([a-z0-9\-_]{20,})['""]?'''
-tags = ["key", "API"]
-
-[[rules]]
-description = "Database URLs"
-id = "database-url"
-regex = '''(?i)(database_url|db_url)\s*[:=]\s*['""]?(postgresql|mysql|mongodb)://[^\s'"]+['""]?'''
-tags = ["database", "url"]
-
-[[rules]]
-description = "JWT Secrets"
-id = "jwt-secret"
-regex = '''(?i)(jwt_secret|jwt_key)\s*[:=]\s*['""]?([a-z0-9\-_]{16,})['""]?'''
-tags = ["jwt", "secret"]
-
-[[rules]]
-description = "OAuth Secrets"
-id = "oauth-secret"
-regex = '''(?i)(client_secret|oauth_secret)\s*[:=]\s*['""]?([a-z0-9\-_]{20,})['""]?'''
-tags = ["oauth", "secret"]
-
-[[rules]]
-description = "Redis URLs"
-id = "redis-url" 
-regex = '''(?i)(redis_url)\s*[:=]\s*['""]?redis://[^\s'"]+['""]?'''
-tags = ["redis", "url"]
-
-# Allowlist for test files and examples
-[[allowlist]]
-description = "Test files"
+[allowlist]
+description = "允許的檔案和目錄"
 paths = [
-    '''tests/.*''',
-    '''.*_test\.py''',
-    '''test_.*\.py''',
-    '''.env.example''',
-    '''docker-compose\.yml''',
+    '''\.md$''',
+    '''\.txt$''',
+    '''\.json$''',
+    '''\.yaml$''',
+    '''\.yml$''',
+    '''\.toml$''',
+    '''\.lock$''',
+    '''\.log$''',
+    '''\.gitignore$''',
+    '''\.dockerignore$''',
+    '''\.env\.example$''',
+    '''\.env\.template$''',
+    '''docs/''',
+    '''test-results/''',
+    '''coverage/''',
+    '''node_modules/''',
+    '''__pycache__/''',
+    '''\.git/''',
+    '''\.github/''',
+    '''\.vscode/''',
+    '''\.idea/'''
 ]
 
-[[allowlist]]
-description = "Example configurations"
-regexes = [
-    '''your_.*_here''',
-    '''example_.*''',
-    '''test_.*''',
-    '''fake_.*''',
-    '''dummy_.*''',
-]
+[detectors]
+# 啟用所有檢測器
+all = true
+
+# 自定義檢測規則
+[[rules]]
+id = "custom-api-key"
+description = "自定義 API 金鑰檢測"
+regex = '''(?i)(api[_-]?key|api[_-]?token|access[_-]?token|secret[_-]?key)['"]?\s*[:=]\s*['"]?[a-zA-Z0-9]{32,}['"]?'''
+tags = ["key", "api", "token"]
+
+[[rules]]
+id = "custom-database-url"
+description = "資料庫連線字串檢測"
+regex = '''(?i)(database_url|db_url|connection_string)['"]?\s*[:=]\s*['"]?[a-zA-Z]+://[^'"]+['"]?'''
+tags = ["database", "connection"]
+
+[[rules]]
+id = "custom-password"
+description = "密碼檢測"
+regex = '''(?i)(password|passwd|pwd)['"]?\s*[:=]\s*['"]?[^'"]{8,}['"]?'''
+tags = ["password", "credential"]
+
+# 排除規則
+[[rules]]
+id = "exclude-test-files"
+description = "排除測試檔案"
+regex = '''(?i)(test|mock|fake|dummy|example)'''
+tags = ["test", "mock"]
