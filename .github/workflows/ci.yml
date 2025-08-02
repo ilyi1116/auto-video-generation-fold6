@@ -169,7 +169,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [api-gateway, auth-service, data-service, inference-service, video-service]
+        service: [api-gateway, auth-service, data-service, inference-service, video-service, data-ingestion, training-worker, ai-service, graphql-gateway, trend-service, voice-enhancement, storage-service, scheduler-service, social-service]
 
     steps:
       - name: Checkout code
