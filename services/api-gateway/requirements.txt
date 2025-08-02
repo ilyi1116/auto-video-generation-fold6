@@ -6,7 +6,7 @@ httpx==0.25.2
 redis==5.0.1
 slowapi==0.1.9
 structlog==23.2.0
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]>=3.3.4
 grpcio==1.59.3
 grpcio-tools==1.59.3
 protobuf==4.25.1

@@ -15,11 +15,11 @@ httpx==0.25.2
 aiohttp==3.9.1
 
 # Authentication
-python-jose[cryptography]==3.3.4
-python-multipart==0.0.7
+python-jose[cryptography]>=3.3.4
+python-multipart>=0.0.8
 
 # Image Processing
-Pillow==10.1.0
+Pillow>=10.3.0
 opencv-python-headless==4.8.1.78
 
 # Audio Processing

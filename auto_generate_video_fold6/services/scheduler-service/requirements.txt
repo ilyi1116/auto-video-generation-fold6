@@ -18,7 +18,7 @@ sqlalchemy==2.0.25
 httpx==0.25.2
 
 # Authentication
-python-jose[cryptography]==3.3.4
+python-jose[cryptography]>=3.3.4
 pyjwt==2.8.0
 
 # Utilities
