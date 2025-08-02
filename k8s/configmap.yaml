@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: video-system-config
+  namespace: video-system
+data:
+  DATABASE_URL: "postgresql://user:password@postgres:5432/video_system"
+  REDIS_URL: "redis://redis:6379/0"
+  DEBUG: "False" 
