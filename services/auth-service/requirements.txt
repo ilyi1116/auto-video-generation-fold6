@@ -11,7 +11,7 @@ python-multipart>=0.0.8
 structlog==23.2.0
 redis==5.0.1
 grpcio==1.59.3
-grpcio-tools==1.59.3
+grpcio-tools==1.74.0
 protobuf>=4.25.2
 requests>=2.32.4
 Pillow>=10.3.0
