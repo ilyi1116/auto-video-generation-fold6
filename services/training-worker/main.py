@@ -146,9 +146,7 @@ def train_voice_model(self, task_data: Dict[str, Any]):
             )
 
             # Simulate training step
-            _ = simulate_training_step(
-                processed_data, model_config, epoch
-            )
+            _ = simulate_training_step(processed_data, model_config, epoch)
 
             # Check for early stopping or cancellation
             if self.is_aborted():
@@ -205,10 +203,8 @@ def train_voice_model(self, task_data: Dict[str, Any]):
 
     except Exception as e:
         logger.error(
-            (
-                f"Training failed for task "
-                f"{task_data.get('task_id', 'unknown')}: {str(e)}"
-            )
+            f"Training failed for task "
+            f"{task_data.get('task_id', 'unknown')}: {str(e)}"
         )
 
         task.status = TrainingStatus.FAILED

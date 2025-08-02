@@ -160,9 +160,7 @@ class GeminiClient:
             ),
         }
 
-        platform_desc = platform_specs.get(
-            platform, platform_specs["youtube"]
-        )
+        platform_desc = platform_specs.get(platform, platform_specs["youtube"])
 
         return f"""
 Generate a detailed video script for a {duration}-second video about "{theme}".
@@ -374,7 +372,7 @@ Please provide only the JSON array of caption segments.
                 # Fallback: split narration into chunks
                 words = narration.split()
                 return [
-                    " ".join(words[i:i + 5]) for i in range(0, len(words), 5)
+                    " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
                 ]
 
         except Exception as e:
@@ -382,7 +380,7 @@ Please provide only the JSON array of caption segments.
             # Fallback: simple word chunking
             words = narration.split()
             return [
-                " ".join(words[i:i + 5]) for i in range(0, len(words), 5)
+                " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
             ]
 
     async def close(self):

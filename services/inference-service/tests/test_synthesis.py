@@ -1,5 +1,3 @@
-
-
 class TestSynthesisEndpoints:
     """Test synthesis-related endpoints"""
 

@@ -234,7 +234,7 @@ class StableDiffusionClient:
         # Execute all tasks concurrently with some delay to avoid rate limits
         results = []
         for i in range(0, len(tasks), 3):  # Process 3 at a time
-            batch = tasks[i:i + 3]
+            batch = tasks[i : i + 3]
             batch_results = await asyncio.gather(
                 *batch, return_exceptions=True
             )
@@ -280,9 +280,7 @@ class StableDiffusionClient:
             "minimal": (
                 "minimal, simple, clean lines, uncluttered, geometric"
             ),
-            "vibrant": (
-                "vibrant colors, dynamic, energetic, bold, striking"
-            ),
+            "vibrant": ("vibrant colors, dynamic, energetic, bold, striking"),
         }
 
         keywords = style_keywords.get(style, "")

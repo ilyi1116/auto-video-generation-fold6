@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
+
 # import asyncpg  # Unused import
 import json
 import logging
@@ -74,9 +75,7 @@ class VideoProject(BaseModel):
 
     class Config:
         use_enum_values = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
 
     @classmethod
     async def create_table(cls, db_pool):
@@ -189,16 +188,10 @@ class VideoProject(BaseModel):
             self.progress,
             self.error_message,
             self.script_content,
-            (
-                json.dumps(self.script_scenes)
-                if self.script_scenes else None
-            ),
+            (json.dumps(self.script_scenes) if self.script_scenes else None),
             self.voice_url,
             self.music_url,
-            (
-                json.dumps(self.image_urls)
-                if self.image_urls else None
-            ),
+            (json.dumps(self.image_urls) if self.image_urls else None),
             self.preview_url,
             self.final_url,
             self.thumbnail_url,
@@ -244,16 +237,10 @@ class VideoProject(BaseModel):
             self.progress,
             self.error_message,
             self.script_content,
-            (
-                json.dumps(self.script_scenes)
-                if self.script_scenes else None
-            ),
+            (json.dumps(self.script_scenes) if self.script_scenes else None),
             self.voice_url,
             self.music_url,
-            (
-                json.dumps(self.image_urls)
-                if self.image_urls else None
-            ),
+            (json.dumps(self.image_urls) if self.image_urls else None),
             self.preview_url,
             self.final_url,
             self.thumbnail_url,
@@ -358,10 +345,7 @@ class VideoProject(BaseModel):
             voice_url=row["voice_url"],
             music_url=row["music_url"],
             image_urls=(
-                (
-                    json.loads(row["image_urls"])
-                    if row["image_urls"] else None
-                )
+                (json.loads(row["image_urls"]) if row["image_urls"] else None)
             ),
             preview_url=row["preview_url"],
             final_url=row["final_url"],

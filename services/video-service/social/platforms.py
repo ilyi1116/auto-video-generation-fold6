@@ -305,8 +305,7 @@ class YouTubeClient(SocialPlatform):
                 success=True,
                 platform_id=result["video_id"],
                 url=(
-                    f"https://www.youtube.com/watch?v="
-                    f"{result['video_id']}"
+                    f"https://www.youtube.com/watch?v=" f"{result['video_id']}"
                 ),
                 published_at=datetime.utcnow(),
                 metadata=result,
