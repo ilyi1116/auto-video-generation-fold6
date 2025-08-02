@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 import json
 import shutil
+import tarfile
+import gzip
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional

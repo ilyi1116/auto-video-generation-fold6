@@ -367,8 +367,7 @@ Format your response as a numbered list:
             action = "expand"
             difference = target_duration - current_duration
 
-        return f"""Optimize this video script to better match the \
-            target duration while maintaining engagement and key messages.
+        return f"""Optimize this video script to better match the target duration while maintaining engagement and key messages.
 
 CURRENT SCRIPT:
 {script_content}

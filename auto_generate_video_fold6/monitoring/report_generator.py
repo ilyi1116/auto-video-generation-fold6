@@ -122,7 +122,7 @@ class ReportGenerator:
             <h1>{{ report_title }}</h1>
             <p>{{ report_period }} | 生成時間: {{ generation_time }}</p>
         </div>
-        
+
         <div class="content">
             <!-- 關鍵指標 -->
             <div class="section">
@@ -136,7 +136,7 @@ class ReportGenerator:
                     {% endfor %}
                 </div>
             </div>
-            
+
             <!-- 成本分析 -->
             {% if cost_analysis %}
             <div class="section">
@@ -149,7 +149,7 @@ class ReportGenerator:
                     </div>
                     {% endfor %}
                 {% endif %}
-                
+
                 <table class="table">
                     <thead>
                         <tr>
@@ -172,7 +172,7 @@ class ReportGenerator:
                 </table>
             </div>
             {% endif %}
-            
+
             <!-- 生成統計 -->
             <div class="section">
                 <h2>🎬 生成統計</h2>
@@ -185,7 +185,7 @@ class ReportGenerator:
                     {% endfor %}
                 {% endif %}
             </div>
-            
+
             <!-- 詳細數據 -->
             {% if detailed_data %}
             <div class="section">
@@ -215,7 +215,7 @@ class ReportGenerator:
             </div>
             {% endif %}
         </div>
-        
+
         <div class="footer">
             <p>Auto Video Generation System - 報告生成於 {{ generation_time }}</p>
         </div>

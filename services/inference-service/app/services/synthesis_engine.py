@@ -3,7 +3,6 @@ import time
 import hashlib
 from typing import Dict, Any, Optional
 import structlog
-from datetime import datetime
 
 from .model_manager import model_manager
 from ..config import get_settings
@@ -101,7 +100,10 @@ class SynthesisEngine:
                 timeout=settings.synthesis_timeout,
             )
             raise RuntimeError(
-                f"Synthesis timed out after {settings.synthesis_timeout} seconds"
+                (
+                    f"Synthesis timed out after "
+                    f"{settings.synthesis_timeout} seconds"
+                )
             )
 
         except Exception as e:

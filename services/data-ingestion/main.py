@@ -1,7 +1,8 @@
 """
 Data Ingestion Service
 
-This service handles ingestion of external data for trend analysis and content generation:
+This service handles ingestion of external data for trend analysis and
+content generation:
 - Social media trend monitoring
 - Keyword analysis and tracking
 - Content performance metrics collection
@@ -10,11 +11,11 @@ This service handles ingestion of external data for trend analysis and content g
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import asyncio
 import logging
 from datetime import datetime
-import os
+# import os  # Unused import
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -440,7 +440,7 @@ class TestRunner:
         <p>Auto Video Generation System - 測試執行結果</p>
         <p>生成時間: {time.strftime("%Y-%m-%d %H:%M:%S")}</p>
     </div>
-    
+
     <div class="summary">
         <div class="stat">
             <div class="stat-value">{summary["total_tests"]}</div>
@@ -459,7 +459,7 @@ class TestRunner:
             <div>總耗時</div>
         </div>
     </div>
-    
+
     <h2>詳細結果</h2>
 """
 

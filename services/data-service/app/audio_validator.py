@@ -3,7 +3,7 @@ import soundfile as sf
 import magic
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any
 import structlog
 
 from app.config import settings
@@ -224,7 +224,9 @@ class AudioValidator:
     async def get_optimal_preprocessing_params(
         self, audio_metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Determine optimal preprocessing parameters based on audio analysis"""
+        """
+        Determine optimal preprocessing parameters based on audio analysis
+        """
         current_sr = audio_metadata.get(
             "sample_rate", settings.target_sample_rate
         )

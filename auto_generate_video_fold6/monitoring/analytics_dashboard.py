@@ -197,7 +197,7 @@ class AnalyticsDashboard:
             {%favicon%}
             {%css%}
             <style>
-                body { 
+                body {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     margin: 0; padding: 0; background: #f8f9fa;
                 }

@@ -171,7 +171,7 @@ def script_generation_response():
     """腳本生成回應數據"""
     return {
         "script_id": str(uuid.uuid4()),
-        "content": """🚀 Ready to supercharge your productivity with AI? 
+        "content": """🚀 Ready to supercharge your productivity with AI?
 
 Today I'm sharing 5 incredible AI tools that will transform how you work!
 

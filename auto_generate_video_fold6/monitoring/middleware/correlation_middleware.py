@@ -56,7 +56,7 @@ class CorrelationMiddleware:
     def __init__(self, app, service_name: str = "unknown"):
         self.app = app
         self.service_name = service_name
-        self.logger = get_logger(f"{service_name}.correlation")
+        self.logger = logging.getLogger(f"{service_name}.correlation")
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":

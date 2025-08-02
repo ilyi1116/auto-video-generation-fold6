@@ -279,8 +279,8 @@ class DatabaseSyncManager:
                 # 檢查外鍵約束
                 fk_result = await conn.execute(
                     text("""
-                    SELECT conname, conrelid::regclass, confrelid::regclass 
-                    FROM pg_constraint 
+                    SELECT conname, conrelid::regclass, confrelid::regclass
+                    FROM pg_constraint
                     WHERE contype = 'f'
                     """)
                 )
@@ -290,8 +290,8 @@ class DatabaseSyncManager:
                 # 檢查索引
                 idx_result = await conn.execute(
                     text("""
-                    SELECT indexname, tablename 
-                    FROM pg_indexes 
+                    SELECT indexname, tablename
+                    FROM pg_indexes
                     WHERE schemaname = 'public'
                     """)
                 )

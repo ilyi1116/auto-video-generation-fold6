@@ -538,8 +538,8 @@ class SecurityReportGenerator:
         """生成 Markdown 格式報告"""
         markdown = f"""# Security Scan Report
 
-**Generated:** {report["metadata"]["generated_at"]}  
-**Total Scanners:** {report["metadata"]["total_scanners"]}  
+**Generated:** {report["metadata"]["generated_at"]}
+**Total Scanners:** {report["metadata"]["total_scanners"]}
 **Total Findings:** {report["metadata"]["total_findings"]}
 
 ## Summary
@@ -553,8 +553,8 @@ class SecurityReportGenerator:
 
 ## Risk Assessment
 
-**Risk Level:** {report["risk_assessment"]["risk_level"]}  
-**Risk Score:** {report["risk_assessment"]["risk_score"]}/10  
+**Risk Level:** {report["risk_assessment"]["risk_level"]}
+**Risk Score:** {report["risk_assessment"]["risk_score"]}/10
 **Remediation Priority:** {report["risk_assessment"]["remediation_priority"]}
 
 ## Recommendations

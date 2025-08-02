@@ -7,7 +7,7 @@ import structlog
 from datetime import datetime
 
 from app.celery_app import app
-from app.storage import s3_storage, local_storage
+from app.storage import s3_storage
 from app.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -150,7 +150,7 @@ def start_preprocessing_task(
                 os.remove(local_path)
             if "processed_path" in locals() and os.path.exists(processed_path):
                 os.remove(processed_path)
-        except:
+        except (OSError, FileNotFoundError):
             pass
 
         raise

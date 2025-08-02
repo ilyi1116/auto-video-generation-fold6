@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 from typing import Optional
 from datetime import datetime
 from . import models, schemas, security

@@ -6,7 +6,6 @@ from typing import List
 from . import crud, schemas, security
 from .database import get_db
 from .dependencies import (
-    get_current_user,
     get_current_active_user,
     get_current_superuser,
 )
@@ -141,7 +140,9 @@ def request_password_reset(
     if not user:
         # Don't reveal if email exists or not
         return {
-            "message": "If the email exists, a password reset link has been sent"
+            "message": (
+                "If the email exists, a password reset link has been sent"
+            )
         }
 
     reset_token = security.create_password_reset_token(user.email)

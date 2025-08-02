@@ -1,6 +1,6 @@
 import httpx
-from fastapi import Request, HTTPException, status
-from typing import Dict, Any, Optional
+from fastapi import HTTPException, status
+from typing import Dict, Any
 import structlog
 from .config import settings
 

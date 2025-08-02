@@ -3,18 +3,14 @@ from fastapi import (
     Request,
     Depends,
     HTTPException,
-    status,
     UploadFile,
     File,
 )
 from fastapi.responses import JSONResponse
-from typing import Dict, Any, Optional
 import structlog
-from .auth import get_current_user, get_optional_user
+from .auth import get_current_user
 from .proxy import proxy
 from .rate_limiter import limiter
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 
 logger = structlog.get_logger()
 

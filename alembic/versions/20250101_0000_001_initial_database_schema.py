@@ -1,7 +1,7 @@
 """Initial database schema
 
 Revision ID: 001
-Revises: 
+Revises:
 Create Date: 2025-01-01 00:00:00.000000
 
 """
@@ -20,15 +20,15 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Create initial database schema with extensions, tables, and indexes."""
-    
+
     # Create extensions
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
     op.execute('CREATE EXTENSION IF NOT EXISTS "pg_trgm"')
-    
+
     # Users table (基礎認證系統)
     op.create_table(
         'users',
-        sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True, 
+        sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,
                  server_default=sa.text('gen_random_uuid()')),
         sa.Column('email', sa.String(255), unique=True, nullable=False),
         sa.Column('username', sa.String(100), unique=True, nullable=False),
@@ -37,12 +37,12 @@ def upgrade() -> None:
         sa.Column('is_active', sa.Boolean, default=True),
         sa.Column('is_verified', sa.Boolean, default=False),
         sa.Column('plan_type', sa.String(50), default='free'),
-        sa.Column('created_at', sa.TIMESTAMP(timezone=True), 
+        sa.Column('created_at', sa.TIMESTAMP(timezone=True),
                  server_default=sa.text('CURRENT_TIMESTAMP')),
-        sa.Column('updated_at', sa.TIMESTAMP(timezone=True), 
+        sa.Column('updated_at', sa.TIMESTAMP(timezone=True),
                  server_default=sa.text('CURRENT_TIMESTAMP')),
     )
-    
+
     # Video projects table
     op.create_table(
         'video_projects',
@@ -59,7 +59,7 @@ def upgrade() -> None:
                  server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     )
-    
+
     # Keywords table
     op.create_table(
         'keywords',
@@ -74,7 +74,7 @@ def upgrade() -> None:
         sa.Column('created_at', sa.TIMESTAMP(timezone=True),
                  server_default=sa.text('CURRENT_TIMESTAMP')),
     )
-    
+
     # Project keywords association table
     op.create_table(
         'project_keywords',
@@ -89,7 +89,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['keyword_id'], ['keywords.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('project_id', 'keyword_id'),
     )
-    
+
     # Scripts table
     op.create_table(
         'scripts',
@@ -106,7 +106,7 @@ def upgrade() -> None:
                  server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.ForeignKeyConstraint(['project_id'], ['video_projects.id'], ondelete='CASCADE'),
     )
-    
+
     # Voice synthesis table
     op.create_table(
         'voice_synthesis',
@@ -123,7 +123,7 @@ def upgrade() -> None:
                  server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.ForeignKeyConstraint(['script_id'], ['scripts.id'], ondelete='CASCADE'),
     )
-    
+
     # Image generation table
     op.create_table(
         'image_generation',
@@ -141,7 +141,7 @@ def upgrade() -> None:
                  server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.ForeignKeyConstraint(['project_id'], ['video_projects.id'], ondelete='CASCADE'),
     )
-    
+
     # Video generation table
     op.create_table(
         'video_generation',
@@ -165,7 +165,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['script_id'], ['scripts.id']),
         sa.ForeignKeyConstraint(['voice_id'], ['voice_synthesis.id']),
     )
-    
+
     # Social platforms table
     op.create_table(
         'social_platforms',
@@ -186,7 +186,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('user_id', 'platform'),
     )
-    
+
     # Publish schedule table
     op.create_table(
         'publish_schedule',
@@ -208,7 +208,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['project_id'], ['video_projects.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['platform_id'], ['social_platforms.id'], ondelete='CASCADE'),
     )
-    
+
     # Trend analysis table
     op.create_table(
         'trend_analysis',
@@ -228,7 +228,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['keyword_id'], ['keywords.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('keyword_id', 'platform', 'analysis_date'),
     )
-    
+
     # User credits table
     op.create_table(
         'user_credits',
@@ -243,7 +243,7 @@ def upgrade() -> None:
                  server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     )
-    
+
     # Credit transactions table
     op.create_table(
         'credit_transactions',
@@ -259,7 +259,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['project_id'], ['video_projects.id']),
     )
-    
+
     # System tasks table
     op.create_table(
         'system_tasks',
@@ -280,7 +280,7 @@ def upgrade() -> None:
         sa.Column('created_at', sa.TIMESTAMP(timezone=True),
                  server_default=sa.text('CURRENT_TIMESTAMP')),
     )
-    
+
     # Create indexes for performance
     op.create_index('idx_video_projects_user_id', 'video_projects', ['user_id'])
     op.create_index('idx_video_projects_status', 'video_projects', ['status'])
@@ -293,7 +293,7 @@ def upgrade() -> None:
     op.create_index('idx_trend_analysis_date', 'trend_analysis', ['analysis_date'], postgresql_using='btree', postgresql_ops={'analysis_date': 'DESC'})
     op.create_index('idx_system_tasks_status', 'system_tasks', ['status'])
     op.create_index('idx_system_tasks_scheduled_at', 'system_tasks', ['scheduled_at'])
-    
+
     # Create trigger function for updating updated_at columns
     op.execute("""
         CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -304,31 +304,31 @@ def upgrade() -> None:
         END;
         $$ language 'plpgsql';
     """)
-    
+
     # Create triggers
     op.execute("""
-        CREATE TRIGGER update_video_projects_updated_at 
-        BEFORE UPDATE ON video_projects 
-        FOR EACH ROW 
+        CREATE TRIGGER update_video_projects_updated_at
+        BEFORE UPDATE ON video_projects
+        FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column();
     """)
-    
+
     op.execute("""
-        CREATE TRIGGER update_social_platforms_updated_at 
-        BEFORE UPDATE ON social_platforms 
-        FOR EACH ROW 
+        CREATE TRIGGER update_social_platforms_updated_at
+        BEFORE UPDATE ON social_platforms
+        FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column();
     """)
 
 
 def downgrade() -> None:
     """Drop all tables and extensions."""
-    
+
     # Drop triggers first
     op.execute('DROP TRIGGER IF EXISTS update_video_projects_updated_at ON video_projects')
     op.execute('DROP TRIGGER IF EXISTS update_social_platforms_updated_at ON social_platforms')
     op.execute('DROP FUNCTION IF EXISTS update_updated_at_column()')
-    
+
     # Drop indexes
     op.drop_index('idx_system_tasks_scheduled_at')
     op.drop_index('idx_system_tasks_status')
@@ -341,7 +341,7 @@ def downgrade() -> None:
     op.drop_index('idx_keywords_trending_score')
     op.drop_index('idx_video_projects_status')
     op.drop_index('idx_video_projects_user_id')
-    
+
     # Drop tables in reverse order of dependencies
     op.drop_table('system_tasks')
     op.drop_table('credit_transactions')
@@ -357,7 +357,7 @@ def downgrade() -> None:
     op.drop_table('keywords')
     op.drop_table('video_projects')
     op.drop_table('users')
-    
+
     # Drop extensions (optional - usually kept for other databases)
     # op.execute('DROP EXTENSION IF EXISTS "pg_trgm"')
     # op.execute('DROP EXTENSION IF EXISTS "uuid-ossp"')

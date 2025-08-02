@@ -263,11 +263,11 @@ from {module_path} import *
 
 class TestModule:
     """模組整體測試"""
-    
+
     def setup_method(self):
         """測試設置"""
         pass
-    
+
     def teardown_method(self):
         """測試清理"""
         pass
@@ -279,11 +279,11 @@ class TestModule:
             template += f'''
 class Test{class_info["name"]}:
     """測試 {class_info["name"]} 類"""
-    
+
     def setup_method(self):
         """設置測試環境"""
         pass
-    
+
 '''
 
             # 為每個方法生成測試
@@ -293,7 +293,7 @@ class Test{class_info["name"]}:
         """測試 {method["name"]} 方法"""
         # TODO: 實現測試邏輯
         assert True
-    
+
 '''
 
         # 為函數生成測試

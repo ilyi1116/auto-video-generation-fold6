@@ -151,7 +151,7 @@ class TestConfigManager:
         cm = ConfigManager(str(temp_config_dir))
 
         # 預設應該始終在工作時間內
-        assert cm.is_within_work_hours() == True
+        assert cm.is_within_work_hours() is True
 
         # 設置工作時間限制
         cm.set("scheduling.enabled", True)
@@ -160,26 +160,26 @@ class TestConfigManager:
         # 這裡可以 mock datetime 來測試特定時間
         with patch("config.config_manager.datetime") as mock_datetime:
             mock_datetime.now.return_value.strftime.return_value = "12:00"
-            assert cm.is_within_work_hours() == True
+            assert cm.is_within_work_hours() is True
 
             mock_datetime.now.return_value.strftime.return_value = "20:00"
-            assert cm.is_within_work_hours() == False
+            assert cm.is_within_work_hours() is False
 
     def test_daily_limit_check(self, temp_config_dir):
         """測試每日限制檢查"""
         cm = ConfigManager(str(temp_config_dir))
 
         # 測試限制檢查
-        assert cm.check_daily_limit(5) == True
-        assert cm.check_daily_limit(15) == False
+        assert cm.check_daily_limit(5) is True
+        assert cm.check_daily_limit(15) is False
 
     def test_budget_limit_check(self, temp_config_dir):
         """測試預算限制檢查"""
         cm = ConfigManager(str(temp_config_dir))
 
         # 測試預算檢查
-        assert cm.check_budget_limit(30.0) == True
-        assert cm.check_budget_limit(60.0) == False
+        assert cm.check_budget_limit(30.0) is True
+        assert cm.check_budget_limit(60.0) is False
 
     def test_config_export_import(self, temp_config_dir):
         """測試配置匯出匯入"""

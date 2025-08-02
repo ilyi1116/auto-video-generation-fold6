@@ -1,16 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 import structlog
-import asyncio
 from datetime import datetime
 import io
 
 from ..auth import get_current_user
 from ..database import database, synthesis_jobs, voice_models
 from ..services.synthesis_engine import synthesis_engine
-from ..storage import s3_storage, local_storage
+from ..storage import s3_storage
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -286,7 +285,7 @@ async def get_synthesis_audio(
     # Stream audio file
     try:
         # Extract S3 key from URL
-        audio_key = job["audio_url"].split("/")[-1]
+        _ = job["audio_url"].split("/")[-1]
 
         # For demonstration, return mock audio
         mock_audio = (
@@ -297,7 +296,9 @@ async def get_synthesis_audio(
             io.BytesIO(mock_audio),
             media_type="audio/wav",
             headers={
-                "Content-Disposition": f"attachment; filename=synthesis_{job_id}.wav"
+                "Content-Disposition": (
+                    f"attachment; filename=synthesis_{job_id}.wav"
+                )
             },
         )
 

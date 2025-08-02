@@ -469,18 +469,18 @@ class TDDReportGenerator:
     <title>TDD 測試報告</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6; color: #333; background: #f5f7fa;
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { 
+        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .tdd-phase { 
+        .tdd-phase {
             display: inline-block; padding: 5px 15px; border-radius: 20px;
             font-weight: bold; text-transform: uppercase; margin-top: 10px;
         }
@@ -488,16 +488,16 @@ class TDDReportGenerator:
         .phase-green { background: #27ae60; }
         .phase-refactor { background: #3498db; }
         .phase-unknown { background: #95a5a6; }
-        
+
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { 
+        .card {
             background: white; border-radius: 10px; padding: 25px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.2s;
         }
         .card:hover { transform: translateY(-2px); }
         .card h2 { color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-        
-        .metric { 
+
+        .metric {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 0; border-bottom: 1px solid #ecf0f1;
         }
@@ -506,23 +506,23 @@ class TDDReportGenerator:
         .success { color: #27ae60; }
         .warning { color: #f39c12; }
         .error { color: #e74c3c; }
-        
-        .coverage-bar { 
+
+        .coverage-bar {
             width: 100%; height: 20px; background: #ecf0f1; border-radius: 10px;
             overflow: hidden; margin: 10px 0;
         }
-        .coverage-fill { 
+        .coverage-fill {
             height: 100%; background: linear-gradient(90deg, #e74c3c 0%, #f39c12 70%, #27ae60 90%);
             transition: width 0.3s ease;
         }
-        
+
         .compliance-score {
             font-size: 3em; font-weight: bold; text-align: center;
             color: {compliance_color}; margin: 20px 0;
         }
-        
-        .footer { 
-            text-align: center; padding: 30px; color: #7f8c8d; 
+
+        .footer {
+            text-align: center; padding: 30px; color: #7f8c8d;
             border-top: 1px solid #ecf0f1; margin-top: 40px;
         }
     </style>

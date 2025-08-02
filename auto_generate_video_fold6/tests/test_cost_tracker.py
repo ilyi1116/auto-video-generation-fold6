@@ -234,7 +234,7 @@ class TestBudgetController:
             estimated_cost=1.0
         )
 
-        assert decision.can_continue == True
+        assert decision.can_continue is True
         assert decision.status.value in ["normal", "warning"]
         assert decision.current_usage >= 0
         assert decision.remaining_budget >= 0
@@ -259,7 +259,7 @@ class TestBudgetController:
                 estimated_cost=1.0
             )
 
-            assert decision.can_continue == False or decision.action.value in [
+            assert decision.can_continue is False or decision.action.value in [
                 "pause",
                 "stop",
             ]

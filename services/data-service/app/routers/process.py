@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Dict, Any
 import structlog
 
 from app.database import database, voice_files, processing_jobs
@@ -41,7 +40,10 @@ async def start_processing(
     if file_record.status != "pending":
         raise HTTPException(
             status_code=400,
-            detail=f"File is not ready for processing. Current status: {file_record.status}",
+            detail=(
+                f"File is not ready for processing. "
+                f"Current status: {file_record.status}"
+            ),
         )
 
     # Check for existing processing job

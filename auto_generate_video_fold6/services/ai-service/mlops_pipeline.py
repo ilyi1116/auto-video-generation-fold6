@@ -348,9 +348,8 @@ class ExperimentTracker:
         duration_hours: int = 24,
     ) -> str:
         """啟動 A/B 測試"""
-        test_id = f"ab_test_{model_a.model_id}_{model_b.model_id}_{
-            int(datetime.utcnow().timestamp())
-        }"
+        timestamp = int(datetime.utcnow().timestamp())
+        test_id = f"ab_test_{model_a.model_id}_{model_b.model_id}_{timestamp}"
 
         ab_test = {
             "id": test_id,

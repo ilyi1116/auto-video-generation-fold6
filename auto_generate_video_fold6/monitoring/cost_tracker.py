@@ -169,14 +169,14 @@ class CostTracker:
 
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_api_calls_date 
+                CREATE INDEX IF NOT EXISTS idx_api_calls_date
                 ON api_calls(date(timestamp))
             """
             )
 
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_api_calls_provider 
+                CREATE INDEX IF NOT EXISTS idx_api_calls_provider
                 ON api_calls(provider)
             """
             )
@@ -289,8 +289,8 @@ class CostTracker:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO api_calls 
-                (timestamp, provider, model, operation_type, tokens_used, 
+                INSERT INTO api_calls
+                (timestamp, provider, model, operation_type, tokens_used,
                  cost_usd, request_id, success, metadata)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -322,12 +322,12 @@ class CostTracker:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT 
+                SELECT
                     SUM(cost_usd) as total_cost,
                     COUNT(*) as call_count,
                     provider,
                     operation_type
-                FROM api_calls 
+                FROM api_calls
                 WHERE date(timestamp) = ?
                 GROUP BY provider, operation_type
             """,
@@ -452,10 +452,10 @@ class CostTracker:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT 
+                SELECT
                     SUM(cost_usd) as total_cost,
                     COUNT(*) as call_count
-                FROM api_calls 
+                FROM api_calls
                 WHERE date(timestamp) = ?
             """,
                 (target_date.isoformat(),),
@@ -484,13 +484,13 @@ class CostTracker:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT 
+                SELECT
                     date(timestamp) as call_date,
                     SUM(cost_usd) as daily_cost,
                     COUNT(*) as daily_calls,
                     provider,
                     operation_type
-                FROM api_calls 
+                FROM api_calls
                 WHERE date(timestamp) BETWEEN ? AND ?
                 GROUP BY call_date, provider, operation_type
                 ORDER BY call_date DESC
@@ -576,7 +576,7 @@ class CostTracker:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT * FROM api_calls 
+                SELECT * FROM api_calls
                 WHERE date(timestamp) BETWEEN ? AND ?
                 ORDER BY timestamp DESC
             """,
