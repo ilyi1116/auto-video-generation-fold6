@@ -20,7 +20,7 @@ watchdog==3.0.0
 python-dotenv==1.0.0
 
 # ML model testing
-torch==2.1.1
+torch==2.7.1
 torchaudio==2.1.1
 
 # Type stubs
