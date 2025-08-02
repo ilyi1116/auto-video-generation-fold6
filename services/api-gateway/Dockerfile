@@ -2,7 +2,7 @@
 # Optimized for production with rate limiting and security features
 
 # Stage 1: Base image with system dependencies
-FROM python:3.11-slim as base
+FROM python:3.13-slim as base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -61,7 +61,7 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--proxy-headers"]
 
 # Stage 4: Production runtime
-FROM python:3.11-slim as production
+FROM python:3.13-slim as production
 
 # Set environment variables for production
 ENV PYTHONUNBUFFERED=1 \
