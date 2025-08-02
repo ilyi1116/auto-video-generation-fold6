@@ -12,7 +12,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 import asyncio
 import uuid
 import logging
@@ -357,7 +357,8 @@ async def generate_video_pipeline(
             )
             project.error_message = str(e)
             await project.save(db)
-        except:
+        except Exception:
+            # Ignore errors when updating status during error handling
             pass
 
 

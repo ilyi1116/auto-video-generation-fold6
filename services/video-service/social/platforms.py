@@ -160,7 +160,8 @@ class TikTokClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"TikTok upload API error: {response.status} - {error_text}"
+                    f"TikTok upload API error: {response.status} - "
+                    f"{error_text}"
                 )
 
             result = await response.json()
@@ -204,7 +205,8 @@ class TikTokClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"TikTok publish API error: {response.status} - {error_text}"
+                    f"TikTok publish API error: {response.status} - "
+                    f"{error_text}"
                 )
 
             result = await response.json()
@@ -302,7 +304,10 @@ class YouTubeClient(SocialPlatform):
                 platform="youtube",
                 success=True,
                 platform_id=result["video_id"],
-                url=f"https://www.youtube.com/watch?v={result['video_id']}",
+                url=(
+                    f"https://www.youtube.com/watch?v="
+                    f"{result['video_id']}"
+                ),
                 published_at=datetime.utcnow(),
                 metadata=result,
             )
@@ -375,14 +380,16 @@ class YouTubeClient(SocialPlatform):
         }
 
         async with session.post(
-            f"{self.upload_url}/videos?uploadType=multipart&part=snippet,status",
+            f"{self.upload_url}/videos?uploadType=multipart&"
+            f"part=snippet,status",
             data=body,
             headers=headers,
         ) as response:
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"YouTube upload API error: {response.status} - {error_text}"
+                    f"YouTube upload API error: {response.status} - "
+                    f"{error_text}"
                 )
 
             result = await response.json()
@@ -520,7 +527,8 @@ class InstagramClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"Instagram media creation error: {response.status} - {error_text}"
+                    f"Instagram media creation error: {response.status} - "
+                    f"{error_text}"
                 )
 
             result = await response.json()
@@ -546,7 +554,8 @@ class InstagramClient(SocialPlatform):
             if response.status != 200:
                 error_text = await response.text()
                 raise Exception(
-                    f"Instagram publish error: {response.status} - {error_text}"
+                    f"Instagram publish error: {response.status} - "
+                    f"{error_text}"
                 )
 
             result = await response.json()
@@ -590,7 +599,10 @@ class InstagramClient(SocialPlatform):
             session = await self._get_session()
 
             params = {
-                "fields": "insights.metric(reach,impressions,video_views,likes,comments,shares,saves)",
+                "fields": (
+                    "insights.metric(reach,impressions,video_views,"
+                    "likes,comments,shares,saves)"
+                ),
                 "access_token": self.api_key,
             }
 

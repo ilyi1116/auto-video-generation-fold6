@@ -5,7 +5,6 @@ This module handles PostgreSQL database connections, connection pooling,
 and database initialization for the video service.
 """
 
-import asyncio
 import asyncpg
 import logging
 from typing import Optional
@@ -31,7 +30,10 @@ class DatabaseManager:
         db_user = os.getenv("DB_USER", "postgres")
         db_password = os.getenv("DB_PASSWORD", "")
 
-        return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+        return (
+            f"postgresql://{db_user}:{db_password}@{db_host}:"
+            f"{db_port}/{db_name}"
+        )
 
     async def initialize(
         self, min_connections: int = 5, max_connections: int = 20
@@ -267,13 +269,16 @@ async def run_migrations():
                 """,
                 2: """
                     -- Add indexes for better performance
-                    CREATE INDEX IF NOT EXISTS idx_video_projects_theme ON video_projects(theme);
-                    CREATE INDEX IF NOT EXISTS idx_video_projects_platform ON video_projects(target_platform);
+                    CREATE INDEX IF NOT EXISTS idx_video_projects_theme "
+                    "ON video_projects(theme);
+                    CREATE INDEX IF NOT EXISTS idx_video_projects_platform "
+                    "ON video_projects(target_platform);
                 """,
                 3: """
                     -- Add analytics columns
-                    ALTER TABLE video_projects 
-                    ADD COLUMN IF NOT EXISTS processing_time INTEGER DEFAULT 0,
+                    ALTER TABLE video_projects
+                    ADD COLUMN IF NOT EXISTS processing_time "
+                    "INTEGER DEFAULT 0,
                     ADD COLUMN IF NOT EXISTS file_size BIGINT DEFAULT 0;
                 """,
             }
@@ -286,7 +291,8 @@ async def run_migrations():
                     async with conn.transaction():
                         await conn.execute(sql)
                         await conn.execute(
-                            "INSERT INTO schema_migrations (version) VALUES ($1)",
+                            "INSERT INTO schema_migrations (version) "
+                            "VALUES ($1)",
                             version,
                         )
 
@@ -313,8 +319,8 @@ async def cleanup_old_data(days: int = 30):
             # Delete old failed/cancelled projects
             result = await conn.execute(
                 """
-                DELETE FROM video_projects 
-                WHERE status IN ('failed', 'cancelled') 
+                DELETE FROM video_projects
+                WHERE status IN ('failed', 'cancelled')
                 AND created_at < NOW() - INTERVAL '%s days'
             """,
                 days,
@@ -332,7 +338,7 @@ async def startup_database():
     """Database startup handler"""
 
     try:
-        db_manager = await get_database_manager()
+        _ = await get_database_manager()
         await run_migrations()
         logger.info("Database startup completed")
 

@@ -5,12 +5,12 @@ This module defines the database models for video generation projects,
 including status tracking, media associations, and user relationships.
 """
 
-import asyncio
+# import asyncio  # Unused import
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
-import asyncpg
+from pydantic import BaseModel
+# import asyncpg  # Unused import
 import json
 import logging
 
@@ -74,7 +74,9 @@ class VideoProject(BaseModel):
 
     class Config:
         use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
     @classmethod
     async def create_table(cls, db_pool):
@@ -93,11 +95,11 @@ class VideoProject(BaseModel):
             music_genre VARCHAR(50) DEFAULT 'ambient',
             include_captions BOOLEAN DEFAULT TRUE,
             target_platform VARCHAR(20) DEFAULT 'youtube',
-            
+
             status VARCHAR(30) DEFAULT 'initializing',
             progress INTEGER DEFAULT 0,
             error_message TEXT,
-            
+
             script_content TEXT,
             script_scenes JSONB,
             voice_url VARCHAR(500),
@@ -106,22 +108,25 @@ class VideoProject(BaseModel):
             preview_url VARCHAR(500),
             final_url VARCHAR(500),
             thumbnail_url VARCHAR(500),
-            
+
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP,
             completed_at TIMESTAMP,
             estimated_completion TIMESTAMP,
-            
+
             view_count INTEGER DEFAULT 0,
             download_count INTEGER DEFAULT 0,
             like_count INTEGER DEFAULT 0,
-            
+
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );
-        
-        CREATE INDEX IF NOT EXISTS idx_video_projects_user_id ON video_projects(user_id);
-        CREATE INDEX IF NOT EXISTS idx_video_projects_status ON video_projects(status);
-        CREATE INDEX IF NOT EXISTS idx_video_projects_created_at ON video_projects(created_at DESC);
+
+        CREATE INDEX IF NOT EXISTS idx_video_projects_user_id
+            ON video_projects(user_id);
+        CREATE INDEX IF NOT EXISTS idx_video_projects_status
+            ON video_projects(status);
+        CREATE INDEX IF NOT EXISTS idx_video_projects_created_at
+            ON video_projects(created_at DESC);
         """
 
         async with db_pool.acquire() as conn:
@@ -184,10 +189,16 @@ class VideoProject(BaseModel):
             self.progress,
             self.error_message,
             self.script_content,
-            json.dumps(self.script_scenes) if self.script_scenes else None,
+            (
+                json.dumps(self.script_scenes)
+                if self.script_scenes else None
+            ),
             self.voice_url,
             self.music_url,
-            json.dumps(self.image_urls) if self.image_urls else None,
+            (
+                json.dumps(self.image_urls)
+                if self.image_urls else None
+            ),
             self.preview_url,
             self.final_url,
             self.thumbnail_url,
@@ -205,12 +216,14 @@ class VideoProject(BaseModel):
 
         update_sql = """
         UPDATE video_projects SET
-            title = $2, description = $3, theme = $4, style = $5, duration = $6,
-            voice_type = $7, music_genre = $8, include_captions = $9, target_platform = $10,
+            title = $2, description = $3, theme = $4, style = $5,
+            duration = $6, voice_type = $7, music_genre = $8,
+            include_captions = $9, target_platform = $10,
             status = $11, progress = $12, error_message = $13,
-            script_content = $14, script_scenes = $15, voice_url = $16, music_url = $17,
-            image_urls = $18, preview_url = $19, final_url = $20, thumbnail_url = $21,
-            updated_at = $22, completed_at = $23, estimated_completion = $24,
+            script_content = $14, script_scenes = $15, voice_url = $16,
+            music_url = $17, image_urls = $18, preview_url = $19,
+            final_url = $20, thumbnail_url = $21, updated_at = $22,
+            completed_at = $23, estimated_completion = $24,
             view_count = $25, download_count = $26, like_count = $27
         WHERE id = $1
         """
@@ -231,10 +244,16 @@ class VideoProject(BaseModel):
             self.progress,
             self.error_message,
             self.script_content,
-            json.dumps(self.script_scenes) if self.script_scenes else None,
+            (
+                json.dumps(self.script_scenes)
+                if self.script_scenes else None
+            ),
             self.voice_url,
             self.music_url,
-            json.dumps(self.image_urls) if self.image_urls else None,
+            (
+                json.dumps(self.image_urls)
+                if self.image_urls else None
+            ),
             self.preview_url,
             self.final_url,
             self.thumbnail_url,
@@ -293,10 +312,11 @@ class VideoProject(BaseModel):
                     param_nums = "$2, $3"
 
                 query = f"""
-                SELECT * FROM video_projects 
+                SELECT * FROM video_projects
                 {where_clause}
-                ORDER BY created_at DESC 
-                LIMIT {param_nums.split(", ")[0]} OFFSET {param_nums.split(", ")[1]}
+                ORDER BY created_at DESC
+                LIMIT {param_nums.split(", ")[0]}
+                OFFSET {param_nums.split(", ")[1]}
                 """
 
                 rows = await conn.fetch(query, *params)
@@ -305,7 +325,8 @@ class VideoProject(BaseModel):
 
         except Exception as e:
             logger.error(
-                f"Failed to get video projects for user {user_id}: {str(e)}"
+                f"Failed to get video projects for user {user_id}: "
+                f"{str(e)}"
             )
             return []
 
@@ -337,7 +358,10 @@ class VideoProject(BaseModel):
             voice_url=row["voice_url"],
             music_url=row["music_url"],
             image_urls=(
-                json.loads(row["image_urls"]) if row["image_urls"] else None
+                (
+                    json.loads(row["image_urls"])
+                    if row["image_urls"] else None
+                )
             ),
             preview_url=row["preview_url"],
             final_url=row["final_url"],
@@ -378,9 +402,8 @@ class VideoProject(BaseModel):
             VideoStatus.RENDERING,
         ]:
             # Rough estimation based on current progress
-            remaining_time = max(
-                0, (100 - progress) * 2
-            )  # 2 seconds per percent
+            # 2 seconds per percent
+            remaining_time = max(0, (100 - progress) * 2)
             self.estimated_completion = datetime.utcnow() + timedelta(
                 seconds=remaining_time
             )
@@ -408,7 +431,10 @@ class VideoProject(BaseModel):
         try:
             async with db_pool.acquire() as conn:
                 await conn.execute(
-                    "UPDATE video_projects SET view_count = view_count + 1 WHERE id = $1",
+                    (
+                        "UPDATE video_projects SET view_count = "
+                        "view_count + 1 WHERE id = $1"
+                    ),
                     self.id,
                 )
 
@@ -425,7 +451,10 @@ class VideoProject(BaseModel):
         try:
             async with db_pool.acquire() as conn:
                 await conn.execute(
-                    "UPDATE video_projects SET download_count = download_count + 1 WHERE id = $1",
+                    (
+                        "UPDATE video_projects SET download_count = "
+                        "download_count + 1 WHERE id = $1"
+                    ),
                     self.id,
                 )
 
@@ -443,7 +472,10 @@ class VideoProject(BaseModel):
             async with db_pool.acquire() as conn:
                 operation = "+" if increment else "-"
                 await conn.execute(
-                    f"UPDATE video_projects SET like_count = like_count {operation} 1 WHERE id = $1",
+                    (
+                        f"UPDATE video_projects SET like_count = "
+                        f"like_count {operation} 1 WHERE id = $1"
+                    ),
                     self.id,
                 )
 

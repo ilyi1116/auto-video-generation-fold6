@@ -1,21 +1,20 @@
 """
 Video Composer
 
-This module handles video composition, combining generated audio, images, and captions
-into final video content with proper timing, transitions, and effects.
+This module handles video composition, combining generated audio,
+images, and captions into final video content with proper timing,
+transitions, and effects.
 """
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
-import subprocess
 import json
 import tempfile
 import shutil
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +193,8 @@ class VideoComposer:
         try:
             logger.info(f"Starting final render: {composition_id}")
 
-            # Load composition data (in real implementation, this would be from database)
+            # Load composition data (in real implementation, this would be
+            # from database)
             composition_data = await self._load_composition_data(
                 composition_id
             )
@@ -428,7 +428,8 @@ class VideoComposer:
     ) -> str:
         """Build FFmpeg filter complex for video composition"""
 
-        # This is a simplified version - real implementation would be much more complex
+        # This is a simplified version - real implementation would be
+        # much more complex
         filter_parts = []
 
         # Scale and process images
@@ -437,7 +438,8 @@ class VideoComposer:
                 2 if music_path else 1
             )  # Account for audio inputs
             filter_parts.append(
-                f"[{input_idx}:v]scale={settings['resolution']}:force_original_aspect_ratio=increase,"
+                f"[{input_idx}:v]scale={settings['resolution']}:"
+                f"force_original_aspect_ratio=increase,"
                 f"crop={settings['resolution']},setsar=1[img{i}]"
             )
 
@@ -452,9 +454,10 @@ class VideoComposer:
             filter_parts.append(
                 "[0:a][1:a]amix=inputs=2:duration=first[audio]"
             )
-            audio_output = "[audio]"
+            # Audio output is mixed
         else:
-            audio_output = "[0:a]"
+            # Use original audio [0:a]
+            pass
 
         return ";".join(filter_parts)
 
@@ -563,7 +566,10 @@ class VideoComposer:
         return {
             "duration": float(format_info.get("duration", 0)),
             "file_size": int(format_info.get("size", 0)),
-            "resolution": f"{video_stream.get('width', 0)}x{video_stream.get('height', 0)}",
+            "resolution": (
+                f"{video_stream.get('width', 0)}x"
+                f"{video_stream.get('height', 0)}"
+            ),
             "format": format_info.get("format_name", "mp4").split(",")[0],
         }
 

@@ -11,7 +11,6 @@ import logging
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 from datetime import datetime
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +156,8 @@ class SunoAIClient:
                 ) as response:
                     if response.status != 200:
                         raise Exception(
-                            f"Failed to check generation status: {response.status}"
+                            f"Failed to check generation status: "
+                            f"{response.status}"
                         )
 
                     result = await response.json()
@@ -171,7 +171,8 @@ class SunoAIClient:
                         )
                     elif status == "failed":
                         raise Exception(
-                            f"Voice generation failed: {result.get('error', 'Unknown error')}"
+                            f"Voice generation failed: "
+                            f"{result.get('error', 'Unknown error')}"
                         )
                     elif status in ["queued", "processing"]:
                         # Check timeout
@@ -180,7 +181,8 @@ class SunoAIClient:
                         ).total_seconds()
                         if elapsed > max_wait:
                             raise Exception(
-                                f"Voice generation timeout after {max_wait} seconds"
+                                f"Voice generation timeout after "
+                                f"{max_wait} seconds"
                             )
 
                         logger.info(f"Voice generation in progress: {status}")
@@ -258,7 +260,8 @@ class SunoAIClient:
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(
-                        f"Voice cloning API error: {response.status} - {error_text}"
+                        f"Voice cloning API error: {response.status} - "
+                        f"{error_text}"
                     )
 
                 result = await response.json()

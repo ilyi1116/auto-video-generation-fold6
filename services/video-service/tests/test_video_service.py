@@ -5,15 +5,13 @@ Test suite for video generation service functionality
 """
 
 import pytest
-import asyncio
 from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
 
 from main import app
 from models.video_project import VideoProject, VideoStatus
-from ai.suno_client import SunoAIClient, VoiceGenerationResponse
+from ai.suno_client import SunoAIClient
 from ai.gemini_client import (
     GeminiClient,
     ScriptGenerationResponse,
@@ -88,7 +86,9 @@ def sample_script_response():
     return ScriptGenerationResponse(
         content="Full script content here...",
         scenes=scenes,
-        narration_text="Welcome to our technology overview. AI is transforming how we work. Thank you for watching.",
+        narration_text=("Welcome to our technology overview. "
+                        "AI is transforming how we work. "
+                        "Thank you for watching."),
         total_duration=60.0,
         theme="Technology trends in 2024",
         style="modern",
@@ -196,9 +196,8 @@ class TestAIIntegration:
         with patch.object(client, "_get_session") as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 200
-            mock_session.return_value.get.return_value.__aenter__.return_value = (
-                mock_response
-            )
+            mock_session.return_value.get.return_value.__aenter__.\
+                return_value = mock_response
 
             health = await client.health_check()
             assert health["status"] == "healthy"
@@ -251,14 +250,13 @@ class TestAIIntegration:
             mock_response.json.return_value = {
                 "artifacts": [
                     {
-                        "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+                        "base64": "test_base64_data",
                         "seed": 12345,
                     }
                 ]
             }
-            mock_session.return_value.post.return_value.__aenter__.return_value = (
-                mock_response
-            )
+            mock_session.return_value.post.return_value.__aenter__.\
+                return_value = mock_response
 
             with patch.object(
                 client,
@@ -361,7 +359,7 @@ class TestSocialMediaIntegration:
 
             result = await manager.publish_to_platform("tiktok", request)
 
-            assert result.success == True
+            assert result.success is True
             assert result.platform == "tiktok"
             assert result.platform_id == "tiktok123"
 
