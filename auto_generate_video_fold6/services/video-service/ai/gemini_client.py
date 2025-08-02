@@ -363,7 +363,7 @@ Please provide only the JSON array of caption segments.
                 # Fallback: split narration into chunks
                 words = narration.split()
                 return [
-                    " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
+                    " ".join(words[i : i + 5]) for i in range(0, len(words), 5)  # noqa: E203
                 ]
 
         except Exception as e:
@@ -371,7 +371,7 @@ Please provide only the JSON array of caption segments.
             # Fallback: simple word chunking
             words = narration.split()
             return [
-                " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
+                " ".join(words[i : i + 5]) for i in range(0, len(words), 5)  # noqa: E203
             ]
 
     async def close(self):

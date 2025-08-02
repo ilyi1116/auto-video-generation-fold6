@@ -359,7 +359,7 @@ class ShortVideoGenerator:
             audio_duration = len(script.split()) * 0.5  # 估算時長
 
             # 使用 moviepy 創建靜音
-            silent_audio = AudioFileClip(
+            _ = AudioFileClip(  # noqa: F841
                 None, duration=min(audio_duration, 30)
             )
             audio_path = work_dir / "audio.wav"

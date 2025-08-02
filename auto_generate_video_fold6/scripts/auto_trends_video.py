@@ -496,7 +496,7 @@ class AutoTrendsVideoGenerator:
 
             # 分批處理
             for i in range(0, len(keywords), batch_size):
-                batch = keywords[i : i + batch_size]
+                batch = keywords[i:i + batch_size]  # noqa: E203
                 logger.info(
                     f"處理批次 {i // batch_size + 1}, 包含 {len(batch)} 個關鍵字"
                 )
