@@ -49,6 +49,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 限流中間件
+app.add_middleware(RateLimitMiddleware, limiter=rate_limiter)
+
 # HTTP Bearer 認證
 security = HTTPBearer()
 
@@ -1274,6 +1277,12 @@ async def create_admin_user(
 
 # ============= 健康檢查和系統狀態 API =============
 
+# 引入監控模組
+from .monitoring.health_monitor import health_monitor
+
+# 引入安全模組
+from .security.rate_limiter import RateLimitMiddleware, rate_limiter
+
 @app.get("/admin/health")
 async def health_check():
     """系統健康檢查"""
@@ -1612,6 +1621,399 @@ async def get_system_tasks(
             message="獲取任務狀態失敗",
             errors=[str(e)]
         )
+
+
+# ============= 增強監控 API =============
+
+@app.get("/admin/monitoring/health")
+async def get_enhanced_health_status():
+    """獲取增強的系統健康狀態"""
+    try:
+        status = health_monitor.get_health_status()
+        return APIResponse(data=status)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/monitoring/health/components")
+@require_permission("system:dashboard")
+async def get_component_health(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取各組件健康狀態"""
+    try:
+        status = health_monitor.get_health_status()
+        if "components" not in status:
+            return APIResponse(data={})
+        
+        return APIResponse(data=status["components"])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/monitoring/alerts")
+@require_permission("system:dashboard")
+async def get_active_alerts(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取活躍告警"""
+    try:
+        alerts = health_monitor.get_active_alerts()
+        return APIResponse(data=alerts)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/monitoring/metrics/history")
+@require_permission("system:dashboard")
+async def get_metrics_history(
+    hours: int = 24,
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取指標歷史數據"""
+    try:
+        if hours > 168:  # 限制最多7天
+            hours = 168
+        
+        cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+        
+        # 過濾歷史數據
+        filtered_history = [
+            record for record in health_monitor.health_history
+            if datetime.fromisoformat(record["timestamp"]) > cutoff_time
+        ]
+        
+        return APIResponse(
+            data={
+                "history": filtered_history,
+                "timeframe_hours": hours,
+                "record_count": len(filtered_history)
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/admin/monitoring/health/check")
+@require_permission("system:dashboard")
+@audit_log("manual_health_check", "monitoring")
+async def trigger_health_check(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """手動觸發健康檢查"""
+    try:
+        await health_monitor.run_health_checks()
+        return APIResponse(message="健康檢查已完成")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/monitoring/metrics/summary")
+async def get_metrics_summary():
+    """獲取指標摘要"""
+    try:
+        status = health_monitor.get_health_status()
+        alerts = health_monitor.get_active_alerts()
+        
+        if "components" not in status:
+            return APIResponse(
+                data={
+                    "overall_status": "unknown",
+                    "total_components": 0,
+                    "healthy_components": 0,
+                    "warning_components": 0,
+                    "critical_components": 0,
+                    "active_alerts": 0,
+                    "last_check": None
+                }
+            )
+        
+        components = status["components"]
+        healthy_count = sum(1 for comp in components.values() if comp["status"] == "healthy")
+        warning_count = sum(1 for comp in components.values() if comp["status"] == "warning")
+        critical_count = sum(1 for comp in components.values() if comp["status"] == "critical")
+        
+        return APIResponse(
+            data={
+                "overall_status": status.get("overall_status", "unknown"),
+                "total_components": len(components),
+                "healthy_components": healthy_count,
+                "warning_components": warning_count,
+                "critical_components": critical_count,
+                "active_alerts": len(alerts),
+                "last_check": status.get("timestamp")
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/admin/monitoring/config/thresholds")
+@require_permission("system:settings")
+@audit_log("update_monitoring_thresholds", "monitoring")
+async def update_thresholds(
+    thresholds: dict,
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """更新監控閾值"""
+    try:
+        # 驗證閾值格式
+        valid_metrics = ["cpu_usage", "memory_usage", "disk_usage", "response_time", "error_rate", "queue_size"]
+        
+        for metric, values in thresholds.items():
+            if metric not in valid_metrics:
+                raise HTTPException(status_code=400, detail=f"無效的指標: {metric}")
+            
+            if not isinstance(values, dict) or "warning" not in values or "critical" not in values:
+                raise HTTPException(status_code=400, detail=f"指標 {metric} 格式錯誤")
+            
+            if values["warning"] >= values["critical"]:
+                raise HTTPException(status_code=400, detail=f"指標 {metric} 的警告閾值必須小於嚴重閾值")
+        
+        # 更新閾值
+        health_monitor.thresholds.update(thresholds)
+        
+        return APIResponse(
+            message="閾值更新成功",
+            data=health_monitor.thresholds
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/monitoring/config/thresholds")
+@require_permission("system:dashboard")
+async def get_thresholds(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取當前監控閾值"""
+    try:
+        return APIResponse(data=health_monitor.thresholds)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/admin/monitoring/start")
+@require_permission("system:settings")
+@audit_log("start_monitoring", "monitoring")
+async def start_monitoring(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """啟動監控"""
+    try:
+        if health_monitor.running:
+            return APIResponse(
+                success=False,
+                message="監控已在運行中"
+            )
+        
+        # 在背景啟動監控
+        import asyncio
+        asyncio.create_task(health_monitor.start_monitoring())
+        
+        return APIResponse(message="監控已啟動")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/admin/monitoring/stop")
+@require_permission("system:settings")
+@audit_log("stop_monitoring", "monitoring")
+async def stop_monitoring(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """停止監控"""
+    try:
+        health_monitor.stop_monitoring()
+        return APIResponse(message="監控已停止")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============= API 安全防護 =============
+
+@app.get("/admin/security/rate-limits/stats")
+@require_permission("system:dashboard")
+async def get_rate_limit_stats(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取限流統計"""
+    try:
+        stats = rate_limiter.get_stats()
+        return APIResponse(data=stats)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/security/threats/analysis")
+@require_permission("system:dashboard")
+async def get_threat_analysis(
+    hours: int = 24,
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取威脅分析"""
+    try:
+        from datetime import timedelta
+        
+        db = SessionLocal()
+        
+        try:
+            # 計算時間範圍
+            cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+            
+            # 查詢安全相關日誌
+            from sqlalchemy import and_
+            security_logs = db.query(SystemLog).filter(
+                and_(
+                    SystemLog.created_at >= cutoff_time,
+                    SystemLog.action.in_([
+                        "rate_limit_exceeded",
+                        "invalid_token", 
+                        "user_not_found",
+                        "login_failed"
+                    ])
+                )
+            ).all()
+            
+            # 統計分析
+            threat_stats = {
+                "total_threats": len(security_logs),
+                "rate_limit_violations": len([log for log in security_logs if log.action == "rate_limit_exceeded"]),
+                "invalid_tokens": len([log for log in security_logs if log.action == "invalid_token"]),
+                "failed_logins": len([log for log in security_logs if log.action == "login_failed"]),
+                "unique_ips": len(set(log.ip_address for log in security_logs if log.ip_address)),
+                "time_range_hours": hours
+            }
+            
+            # 計算威脅等級
+            if threat_stats["total_threats"] > 100:
+                threat_level = "high"
+            elif threat_stats["total_threats"] > 50:
+                threat_level = "medium"
+            elif threat_stats["total_threats"] > 10:
+                threat_level = "low"
+            else:
+                threat_level = "minimal"
+            
+            threat_stats["threat_level"] = threat_level
+            
+            # 獲取最活躍的 IP
+            ip_counts = {}
+            for log in security_logs:
+                if log.ip_address:
+                    ip_counts[log.ip_address] = ip_counts.get(log.ip_address, 0) + 1
+            
+            top_ips = sorted(ip_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+            threat_stats["top_threat_ips"] = [
+                {"ip": ip, "count": count} for ip, count in top_ips
+            ]
+            
+            return APIResponse(data=threat_stats)
+            
+        finally:
+            db.close()
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/admin/security/blacklist")
+@require_permission("system:settings")
+@audit_log("add_ip_blacklist", "security")
+async def add_to_blacklist(
+    request_data: dict,
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """添加 IP 到黑名單"""
+    try:
+        ip_address = request_data.get("ip_address")
+        duration_hours = request_data.get("duration_hours", 24)
+        
+        if not ip_address:
+            raise HTTPException(status_code=400, detail="IP 地址不能為空")
+        
+        rate_limiter.add_to_blacklist(ip_address, duration_hours)
+        
+        return APIResponse(
+            message=f"已將 IP {ip_address} 添加到黑名單",
+            data={
+                "ip_address": ip_address,
+                "duration_hours": duration_hours
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/admin/security/blacklist/{ip_address}")
+@require_permission("system:settings")
+@audit_log("remove_ip_blacklist", "security")
+async def remove_from_blacklist(
+    ip_address: str,
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """從黑名單移除 IP"""
+    try:
+        rate_limiter.remove_from_blacklist(ip_address)
+        
+        return APIResponse(
+            message=f"已將 IP {ip_address} 從黑名單移除",
+            data={"ip_address": ip_address}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/admin/security/blacklist")
+@require_permission("system:dashboard")
+async def get_blacklist(
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """獲取黑名單 IP"""
+    try:
+        blacklist = list(rate_limiter.blacklist_ips)
+        return APIResponse(data={"blacklist": blacklist, "count": len(blacklist)})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/admin/security/test-rate-limit")
+@require_permission("system:dashboard")
+async def test_rate_limit(
+    request: Request,
+    current_user: AdminUser = Depends(get_current_user)
+):
+    """測試限流功能"""
+    try:
+        # 檢查當前請求的限流狀態
+        limit_result = await rate_limiter.check_rate_limit(request)
+        
+        if limit_result and not limit_result.allowed:
+            return APIResponse(
+                success=False,
+                message="請求被限流",
+                data={
+                    "allowed": False,
+                    "limit": limit_result.limit,
+                    "remaining": limit_result.remaining,
+                    "reset_time": limit_result.reset_time.isoformat(),
+                    "retry_after": limit_result.retry_after
+                }
+            )
+        else:
+            return APIResponse(
+                message="請求通過限流檢查",
+                data={
+                    "allowed": True,
+                    "message": "當前請求未觸發任何限流規則"
+                }
+            )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

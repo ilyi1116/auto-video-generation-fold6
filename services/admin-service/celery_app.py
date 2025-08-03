@@ -17,7 +17,8 @@ celery_app = Celery(
         "services.admin-service.tasks.crawler_tasks",
         "services.admin-service.tasks.trends_tasks",
         "services.admin-service.tasks.maintenance_tasks",
-        "services.admin-service.tasks.notification_tasks"
+        "services.admin-service.tasks.notification_tasks",
+        "services.admin-service.tasks.monitoring_tasks"
     ]
 )
 
@@ -139,6 +140,13 @@ celery_app.conf.update(
             "task": "notifications.weekly_stats_report",
             "schedule": crontab(hour=9, minute=0, day_of_week=1),  # 每週一9:00
             "options": {"queue": "notifications"}
+        },
+        
+        # 健康監控 - 每分鐘檢查一次
+        "health-monitoring": {
+            "task": "monitoring.health_monitoring_task",
+            "schedule": crontab(minute="*"),  # 每分鐘
+            "options": {"queue": "maintenance"}
         }
     }
 )
