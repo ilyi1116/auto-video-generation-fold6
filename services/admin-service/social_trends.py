@@ -8,7 +8,7 @@ import re
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 
-from .models import SocialTrendConfig, TrendingKeyword, SocialPlatform, TrendTimeframe
+from .models import SocialTrendConfig, TrendingKeyword, KeywordTrend, SocialPlatform, TrendTimeframe
 from .database import SessionLocal
 from .schemas import TrendingKeywordCreate, SystemLogCreate
 from .crud import crud_trending_keyword, crud_system_log
@@ -373,6 +373,25 @@ class SocialTrendsManager:
             current_time = datetime.utcnow()
             
             for trend_data in trends:
+                # 同時保存到新舊兩個表格以確保相容性
+                
+                # 1. 保存到新的 keyword_trends 表格
+                keyword_trend = KeywordTrend(
+                    platform=config.platform.value if hasattr(config.platform, 'value') else str(config.platform),
+                    keyword=trend_data["keyword"],
+                    period=self._convert_timeframe_to_period(timeframe),
+                    rank=trend_data["rank"],
+                    search_volume=trend_data.get("score"),
+                    region=config.region,
+                    category=config.category,
+                    score=trend_data.get("score"),
+                    change_percentage=trend_data.get("change_percentage"),
+                    metadata=trend_data.get("metadata"),
+                    collected_at=current_time
+                )
+                db.add(keyword_trend)
+                
+                # 2. 保存到舊的 trending_keywords 表格 (保持相容性)
                 keyword_create = TrendingKeywordCreate(
                     platform=config.platform,
                     keyword=trend_data["keyword"],
@@ -388,15 +407,28 @@ class SocialTrendsManager:
                 crud_trending_keyword.create(db, obj_in=keyword_create.dict())
                 saved_count += 1
             
+            db.commit()
             logger.info(f"成功保存 {saved_count} 個 {config.platform} 趨勢關鍵字")
             
         except Exception as e:
+            db.rollback()
             logger.error(f"保存趨勢數據失敗: {e}")
         
         finally:
             db.close()
         
         return saved_count
+    
+    def _convert_timeframe_to_period(self, timeframe: TrendTimeframe) -> str:
+        """將 TrendTimeframe 轉換為 period 字串"""
+        timeframe_mapping = {
+            TrendTimeframe.ONE_DAY: "day",
+            TrendTimeframe.ONE_WEEK: "week", 
+            TrendTimeframe.ONE_MONTH: "month",
+            TrendTimeframe.THREE_MONTHS: "3_months",
+            TrendTimeframe.SIX_MONTHS: "6_months"
+        }
+        return timeframe_mapping.get(timeframe, "day")
     
     async def collect_platform_trends(self, platform: SocialPlatform, 
                                     region: str = "global") -> Dict[str, Any]:

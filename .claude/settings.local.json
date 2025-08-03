@@ -39,7 +39,8 @@
       "Bash(npm run build:*)",
       "Bash(rg:*)",
       "Bash(openssl genrsa:*)",
-      "Bash(openssl rsa:*)"
+      "Bash(openssl rsa:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

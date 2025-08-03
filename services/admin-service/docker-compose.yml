@@ -94,6 +94,16 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes
 
+  admin-frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - admin-api
+    networks:
+      - admin-network
+    restart: unless-stopped
+
   nginx:
     image: nginx:alpine
     ports:
@@ -104,6 +114,7 @@ services:
       - ./ssl:/etc/nginx/ssl
     depends_on:
       - admin-api
+      - admin-frontend
     networks:
       - admin-network
     restart: unless-stopped

@@ -133,8 +133,31 @@ class SocialTrendConfig(Base):
         return f"<SocialTrendConfig(platform={self.platform}, region={self.region})>"
 
 
+class KeywordTrend(Base):
+    """熱門關鍵字趨勢表 (主要資料表)"""
+    __tablename__ = "keyword_trends"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    platform = Column(String(50), nullable=False)  # "TikTok", "YouTube", "Instagram", "Facebook", "Twitter"
+    keyword = Column(String(500), nullable=False)
+    period = Column(String(20), nullable=False)  # "day", "week", "month", "3_months", "6_months"
+    rank = Column(Integer, nullable=False)
+    search_volume = Column(Integer, nullable=True)
+    collected_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # 額外欄位
+    region = Column(String(10), default="global")
+    category = Column(String(100), nullable=True)
+    score = Column(Integer, nullable=True)  # 熱門度分數
+    change_percentage = Column(String(10), nullable=True)  # 變化百分比
+    metadata = Column(JSON, nullable=True)  # 額外元數據
+    
+    def __repr__(self):
+        return f"<KeywordTrend(platform={self.platform}, keyword={self.keyword}, rank={self.rank})>"
+
+
 class TrendingKeyword(Base):
-    """熱門關鍵字數據表"""
+    """熱門關鍵字數據表 (舊版，保持相容性)"""
     __tablename__ = "trending_keywords"
     
     id = Column(Integer, primary_key=True, index=True)

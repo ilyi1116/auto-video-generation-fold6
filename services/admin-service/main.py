@@ -21,7 +21,7 @@ from .schemas import (
 )
 from .crud import (
     crud_ai_provider, crud_crawler_config, crud_social_trend_config,
-    crud_trending_keyword, crud_system_log, crud_admin_user
+    crud_trending_keyword, crud_keyword_trend, crud_system_log, crud_admin_user
 )
 from .security import (
     verify_token, create_access_token, PermissionChecker, require_permission,
@@ -1072,6 +1072,214 @@ async def get_system_info(
             "boot_time": datetime.fromtimestamp(psutil.boot_time()).isoformat()
         }
     )
+
+
+# ============= 關鍵字趨勢 API (新版本) =============
+
+@app.get("/admin/keyword-trends", response_model=APIResponse)
+@require_permission("trends:read")
+async def get_keyword_trends(
+    platform: Optional[str] = None,
+    period: str = "day", 
+    limit: int = 50,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取關鍵字趨勢數據"""
+    try:
+        trends = crud_keyword_trend.get_latest_trends(
+            db, platform=platform, period=period, limit=limit
+        )
+        
+        return APIResponse(
+            data={
+                "trends": [
+                    {
+                        "id": trend.id,
+                        "platform": trend.platform,
+                        "keyword": trend.keyword,
+                        "period": trend.period,
+                        "rank": trend.rank,
+                        "search_volume": trend.search_volume,
+                        "change_percentage": trend.change_percentage,
+                        "region": trend.region,
+                        "category": trend.category,
+                        "collected_at": trend.collected_at.isoformat(),
+                        "metadata": trend.metadata
+                    }
+                    for trend in trends
+                ],
+                "total": len(trends),
+                "platform": platform,
+                "period": period
+            }
+        )
+    except Exception as e:
+        logger.error(f"獲取關鍵字趨勢失敗: {e}")
+        raise HTTPException(status_code=500, detail="獲取趨勢數據失敗")
+
+
+@app.get("/admin/keyword-trends/platforms", response_model=APIResponse)
+@require_permission("trends:read")
+async def get_platforms_trends(
+    period: str = "day",
+    top_n: int = 10,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取各平台的熱門關鍵字排行榜"""
+    try:
+        platforms_data = crud_keyword_trend.get_top_keywords_by_period(
+            db, period=period, top_n=top_n
+        )
+        
+        return APIResponse(
+            data={
+                "platforms": platforms_data,
+                "period": period,
+                "top_n": top_n,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+    except Exception as e:
+        logger.error(f"獲取平台趨勢失敗: {e}")
+        raise HTTPException(status_code=500, detail="獲取平台趨勢失敗")
+
+
+@app.get("/admin/keyword-trends/statistics", response_model=APIResponse)
+@require_permission("trends:read")
+async def get_trends_statistics(
+    days: int = 7,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取趨勢統計數據"""
+    try:
+        stats = crud_keyword_trend.get_platform_statistics(db, days=days)
+        
+        return APIResponse(data=stats)
+    except Exception as e:
+        logger.error(f"獲取趨勢統計失敗: {e}")
+        raise HTTPException(status_code=500, detail="獲取統計數據失敗")
+
+
+@app.get("/admin/keyword-trends/search", response_model=APIResponse)
+@require_permission("trends:read")
+async def search_keyword_trends(
+    q: str,
+    platforms: Optional[str] = None,
+    limit: int = 100,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """搜尋關鍵字趨勢"""
+    try:
+        platform_list = platforms.split(",") if platforms else None
+        
+        trends = crud_keyword_trend.search_keywords(
+            db, search_term=q, platforms=platform_list, limit=limit
+        )
+        
+        return APIResponse(
+            data={
+                "results": [
+                    {
+                        "id": trend.id,
+                        "platform": trend.platform,
+                        "keyword": trend.keyword,
+                        "period": trend.period,
+                        "rank": trend.rank,
+                        "search_volume": trend.search_volume,
+                        "collected_at": trend.collected_at.isoformat()
+                    }
+                    for trend in trends
+                ],
+                "query": q,
+                "platforms": platform_list,
+                "total": len(trends)
+            }
+        )
+    except Exception as e:
+        logger.error(f"搜尋關鍵字趨勢失敗: {e}")
+        raise HTTPException(status_code=500, detail="搜尋失敗")
+
+
+@app.post("/admin/keyword-trends/collect", response_model=APIResponse)
+@require_permission("trends:write")
+async def trigger_trends_collection(
+    platforms: Optional[List[str]] = None,
+    period: str = "day",
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """手動觸發趨勢數據收集"""
+    try:
+        from .social_trends import collect_and_save_trends
+        
+        # 記錄操作日誌
+        await audit_log(
+            db, current_user.id, "trigger_trends_collection", "keyword_trends",
+            f"手動觸發趨勢收集 - 平台: {platforms}, 週期: {period}"
+        )
+        
+        # 執行收集任務
+        result = await collect_and_save_trends(platforms=platforms, period=period)
+        
+        return APIResponse(
+            data=result,
+            message="趨勢數據收集任務已觸發"
+        )
+    except Exception as e:
+        logger.error(f"觸發趨勢收集失敗: {e}")
+        raise HTTPException(status_code=500, detail="觸發收集任務失敗")
+
+
+@app.get("/admin/keyword-trends/date-range", response_model=APIResponse)
+@require_permission("trends:read")
+async def get_trends_by_date_range(
+    start_date: datetime,
+    end_date: datetime,
+    platform: Optional[str] = None,
+    period: str = "day",
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """根據日期範圍獲取趨勢數據"""
+    try:
+        trends = crud_keyword_trend.get_trending_keywords_by_date_range(
+            db, start_date=start_date, end_date=end_date, 
+            platform=platform, period=period
+        )
+        
+        # 按日期分組
+        trends_by_date = {}
+        for trend in trends:
+            date_key = trend.collected_at.date().isoformat()
+            if date_key not in trends_by_date:
+                trends_by_date[date_key] = []
+            
+            trends_by_date[date_key].append({
+                "id": trend.id,
+                "platform": trend.platform,
+                "keyword": trend.keyword,
+                "rank": trend.rank,
+                "search_volume": trend.search_volume,
+                "change_percentage": trend.change_percentage
+            })
+        
+        return APIResponse(
+            data={
+                "trends_by_date": trends_by_date,
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "platform": platform,
+                "period": period,
+                "total_records": len(trends)
+            }
+        )
+    except Exception as e:
+        logger.error(f"獲取日期範圍趨勢失敗: {e}")
+        raise HTTPException(status_code=500, detail="獲取趨勢數據失敗")
 
 
 @app.get("/admin/system/tasks")

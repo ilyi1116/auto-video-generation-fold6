@@ -6,7 +6,7 @@ from typing import Dict, Any, List
 
 from ..celery_app import celery_app, TaskRetryMixin
 from ..database import SessionLocal
-from ..models import SocialTrendConfig, SocialPlatform, TrendTimeframe
+from ..models import SocialTrendConfig, KeywordTrend, SocialPlatform, TrendTimeframe
 from ..social_trends import SocialTrendsManager
 from ..logging_system import AuditLogger, structured_logger
 
@@ -147,6 +147,52 @@ def collect_facebook_trends(self):
 
 
 @celery_app.task(bind=True, base=TrendsTask)
+def collect_keyword_trends_new(self, platforms: List[str] = None, period: str = "day"):
+    """收集關鍵字趨勢數據 (新版本 API)"""
+    try:
+        logger.info(f"開始收集關鍵字趨勢數據 - 平台: {platforms}, 週期: {period}")
+        
+        # 在新的事件循環中運行異步任務
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        async def run_collection():
+            from ..social_trends import collect_and_save_trends
+            return await collect_and_save_trends(platforms=platforms, period=period)
+        
+        result = loop.run_until_complete(run_collection())
+        loop.close()
+        
+        # 更新任務進度
+        if hasattr(self, 'update_state'):
+            self.update_state(
+                state='SUCCESS',
+                meta={
+                    'status': '收集完成',
+                    'platforms': platforms,
+                    'period': period,
+                    'total_records_saved': result.get('total_records_saved', 0)
+                }
+            )
+        
+        # 記錄成功日誌
+        asyncio.create_task(
+            structured_logger.log(
+                action="keyword_trends_collected",
+                resource_type="keyword_trends",
+                message=f"關鍵字趨勢收集完成 - {period}",
+                details=result
+            )
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"收集關鍵字趨勢失敗: {e}")
+        raise
+
+
+@celery_app.task(bind=True, base=TrendsTask)
 def cleanup_old_trends(self, days: int = 90):
     """清理舊的趨勢數據"""
     from ..models import TrendingKeyword
@@ -156,18 +202,26 @@ def cleanup_old_trends(self, days: int = 90):
     try:
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         
-        # 刪除舊趨勢數據
-        deleted_count = db.query(TrendingKeyword).filter(
+        # 清理舊的 trending_keywords 數據
+        deleted_old_count = db.query(TrendingKeyword).filter(
             TrendingKeyword.trend_date < cutoff_date
+        ).delete()
+        
+        # 清理舊的 keyword_trends 數據
+        deleted_new_count = db.query(KeywordTrend).filter(
+            KeywordTrend.collected_at < cutoff_date
         ).delete()
         
         db.commit()
         
-        logger.info(f"清理了 {deleted_count} 條超過 {days} 天的趨勢數據")
+        total_deleted = deleted_old_count + deleted_new_count
+        logger.info(f"清理了 {total_deleted} 條超過 {days} 天的趨勢數據 (舊格式: {deleted_old_count}, 新格式: {deleted_new_count})")
         
         return {
             "success": True,
-            "deleted_count": deleted_count,
+            "deleted_count": total_deleted,
+            "deleted_old_format": deleted_old_count,
+            "deleted_new_format": deleted_new_count,
             "cutoff_date": cutoff_date.isoformat()
         }
         
@@ -460,3 +514,28 @@ def get_trends_task_status(task_id: str):
     """獲取趨勢任務狀態"""
     from ..celery_app import get_task_status
     return get_task_status(task_id)
+
+
+# 新版本 API 的便利函數
+def schedule_keyword_trends_collection(platforms: List[str] = None, period: str = "day", delay_seconds: int = 0):
+    """排程關鍵字趨勢收集 (新版本)"""
+    if delay_seconds > 0:
+        return collect_keyword_trends_new.apply_async(
+            args=[platforms, period],
+            countdown=delay_seconds,
+            queue="trends"
+        )
+    else:
+        return collect_keyword_trends_new.delay(platforms, period)
+
+
+def trigger_daily_trends_collection():
+    """觸發每日趨勢收集"""
+    platforms = ["TikTok", "YouTube", "Instagram", "Facebook", "Twitter"]
+    return schedule_keyword_trends_collection(platforms=platforms, period="day")
+
+
+def trigger_weekly_trends_collection():
+    """觸發每週趨勢收集"""
+    platforms = ["TikTok", "YouTube", "Instagram", "Facebook", "Twitter"]
+    return schedule_keyword_trends_collection(platforms=platforms, period="week")

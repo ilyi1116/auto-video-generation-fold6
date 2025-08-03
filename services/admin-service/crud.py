@@ -6,7 +6,7 @@ import logging
 import uuid
 
 from .models import (
-    AIProvider, CrawlerConfig, SocialTrendConfig, TrendingKeyword,
+    AIProvider, CrawlerConfig, SocialTrendConfig, TrendingKeyword, KeywordTrend,
     SystemLog, AdminUser, CrawlerResult, AIProviderType, CrawlerStatus,
     ScheduleType, SocialPlatform, TrendTimeframe, LogLevel
 )
@@ -442,10 +442,158 @@ class CRUDAdminUser(CRUDBase):
         return db.query(AdminUser).filter(AdminUser.email == email).first()
 
 
+class CRUDKeywordTrend(CRUDBase):
+    """關鍵字趨勢 CRUD 操作 (新版本)"""
+    
+    def __init__(self):
+        super().__init__(KeywordTrend)
+    
+    def get_trends_by_platform(self, db: Session, platform: str, period: str = "day", limit: int = 50) -> List[KeywordTrend]:
+        """根據平台獲取趨勢數據"""
+        return db.query(KeywordTrend).filter(
+            KeywordTrend.platform == platform,
+            KeywordTrend.period == period
+        ).order_by(KeywordTrend.rank.asc()).limit(limit).all()
+    
+    def get_trends_by_period(self, db: Session, period: str, platforms: Optional[List[str]] = None, limit: int = 100) -> List[KeywordTrend]:
+        """根據時間週期獲取趨勢數據"""
+        query = db.query(KeywordTrend).filter(KeywordTrend.period == period)
+        
+        if platforms:
+            query = query.filter(KeywordTrend.platform.in_(platforms))
+        
+        return query.order_by(
+            KeywordTrend.platform,
+            KeywordTrend.rank.asc()
+        ).limit(limit).all()
+    
+    def get_latest_trends(self, db: Session, 
+                         platform: Optional[str] = None, 
+                         period: str = "day", 
+                         limit: int = 50) -> List[KeywordTrend]:
+        """獲取最新的趨勢數據"""
+        query = db.query(KeywordTrend)
+        
+        if platform:
+            query = query.filter(KeywordTrend.platform == platform)
+        
+        query = query.filter(KeywordTrend.period == period)
+        
+        return query.order_by(
+            desc(KeywordTrend.collected_at),
+            KeywordTrend.rank.asc()
+        ).limit(limit).all()
+    
+    def get_trending_keywords_by_date_range(self, db: Session, 
+                                          start_date: datetime, 
+                                          end_date: datetime,
+                                          platform: Optional[str] = None,
+                                          period: str = "day") -> List[KeywordTrend]:
+        """根據日期範圍獲取趨勢數據"""
+        query = db.query(KeywordTrend).filter(
+            KeywordTrend.collected_at >= start_date,
+            KeywordTrend.collected_at <= end_date,
+            KeywordTrend.period == period
+        )
+        
+        if platform:
+            query = query.filter(KeywordTrend.platform == platform)
+        
+        return query.order_by(
+            KeywordTrend.collected_at.desc(),
+            KeywordTrend.rank.asc()
+        ).all()
+    
+    def get_platform_statistics(self, db: Session, days: int = 7) -> Dict[str, Any]:
+        """獲取平台統計信息"""
+        since_date = datetime.utcnow() - timedelta(days=days)
+        
+        # 按平台統計關鍵字數量
+        platform_stats = db.query(
+            KeywordTrend.platform,
+            func.count(KeywordTrend.id).label('total_keywords'),
+            func.count(func.distinct(KeywordTrend.keyword)).label('unique_keywords'),
+            func.max(KeywordTrend.collected_at).label('last_update')
+        ).filter(
+            KeywordTrend.collected_at >= since_date
+        ).group_by(KeywordTrend.platform).all()
+        
+        return {
+            "statistics": [
+                {
+                    "platform": stat.platform,
+                    "total_keywords": stat.total_keywords,
+                    "unique_keywords": stat.unique_keywords,
+                    "last_update": stat.last_update.isoformat() if stat.last_update else None
+                }
+                for stat in platform_stats
+            ],
+            "period_days": days,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+    
+    def search_keywords(self, db: Session, search_term: str, platforms: Optional[List[str]] = None, limit: int = 100) -> List[KeywordTrend]:
+        """搜尋關鍵字"""
+        query = db.query(KeywordTrend).filter(
+            KeywordTrend.keyword.ilike(f"%{search_term}%")
+        )
+        
+        if platforms:
+            query = query.filter(KeywordTrend.platform.in_(platforms))
+        
+        return query.order_by(
+            KeywordTrend.rank.asc(),
+            desc(KeywordTrend.collected_at)
+        ).limit(limit).all()
+    
+    def get_top_keywords_by_period(self, db: Session, period: str, top_n: int = 10) -> Dict[str, List[Dict[str, Any]]]:
+        """獲取各平台的熱門關鍵字排行榜"""
+        # 獲取最新一次收集的數據
+        latest_collections = db.query(
+            KeywordTrend.platform,
+            func.max(KeywordTrend.collected_at).label('latest_collected_at')
+        ).filter(
+            KeywordTrend.period == period
+        ).group_by(KeywordTrend.platform).subquery()
+        
+        # 獲取每個平台最新的熱門關鍵字
+        result = {}
+        platforms = db.query(KeywordTrend.platform).filter(
+            KeywordTrend.period == period
+        ).distinct().all()
+        
+        for (platform,) in platforms:
+            latest_date = db.query(func.max(KeywordTrend.collected_at)).filter(
+                KeywordTrend.platform == platform,
+                KeywordTrend.period == period
+            ).scalar()
+            
+            if latest_date:
+                top_keywords = db.query(KeywordTrend).filter(
+                    KeywordTrend.platform == platform,
+                    KeywordTrend.period == period,
+                    KeywordTrend.collected_at == latest_date
+                ).order_by(KeywordTrend.rank.asc()).limit(top_n).all()
+                
+                result[platform] = [
+                    {
+                        "keyword": kw.keyword,
+                        "rank": kw.rank,
+                        "search_volume": kw.search_volume,
+                        "change_percentage": kw.change_percentage,
+                        "collected_at": kw.collected_at.isoformat()
+                    }
+                    for kw in top_keywords
+                ]
+        
+        return result
+
+
 # 實例化 CRUD 操作類
 crud_ai_provider = CRUDAIProvider()
 crud_crawler_config = CRUDCrawlerConfig()
 crud_social_trend_config = CRUDSocialTrendConfig()
 crud_trending_keyword = CRUDTrendingKeyword()
+crud_keyword_trend = CRUDKeywordTrend()  # 新增
 crud_system_log = CRUDSystemLog()
 crud_admin_user = CRUDAdminUser()

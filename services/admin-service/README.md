@@ -88,8 +88,8 @@ cp .env.example .env
 
 ### 3. 訪問系統
 
+- **前端管理介面**: http://localhost:3000
 - **API 文檔**: http://localhost:8080/docs
-- **管理介面**: http://localhost:8080/admin  
 - **Celery 監控**: http://localhost:5555
 
 **預設登錄信息**:

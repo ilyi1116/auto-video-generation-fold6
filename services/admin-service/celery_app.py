@@ -71,6 +71,13 @@ celery_app.conf.update(
             "options": {"queue": "trends"}
         },
         
+        # 關鍵字趨勢收集 (新版本) - 每小時一次
+        "collect-keyword-trends": {
+            "task": "trends.collect_keyword_trends_new",
+            "schedule": crontab(minute=15),  # 每小時15分
+            "options": {"queue": "trends"}
+        },
+        
         # YouTube 趨勢收集 - 每2小時一次
         "collect-youtube-trends": {
             "task": "trends.collect_youtube_trends",
