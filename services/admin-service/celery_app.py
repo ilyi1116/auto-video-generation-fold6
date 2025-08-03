@@ -18,7 +18,8 @@ celery_app = Celery(
         "services.admin-service.tasks.trends_tasks",
         "services.admin-service.tasks.maintenance_tasks",
         "services.admin-service.tasks.notification_tasks",
-        "services.admin-service.tasks.monitoring_tasks"
+        "services.admin-service.tasks.monitoring_tasks",
+        "services.admin-service.tasks.model_tasks"
     ]
 )
 
@@ -39,6 +40,7 @@ celery_app.conf.update(
         "trends.*": {"queue": "trends"}, 
         "maintenance.*": {"queue": "maintenance"},
         "notifications.*": {"queue": "notifications"},
+        "model.*": {"queue": "models"},
     },
     
     # 任務過期設置
@@ -147,6 +149,34 @@ celery_app.conf.update(
             "task": "monitoring.health_monitoring_task",
             "schedule": crontab(minute="*"),  # 每分鐘
             "options": {"queue": "maintenance"}
+        },
+        
+        # 模型健康檢查 - 每5分鐘
+        "model-health-check": {
+            "task": "model.model_health_check_task",
+            "schedule": crontab(minute="*/5"),  # 每5分鐘
+            "options": {"queue": "models"}
+        },
+        
+        # 模型指標收集 - 每30分鐘
+        "model-metrics-collection": {
+            "task": "model.model_metrics_collection_task", 
+            "schedule": crontab(minute="*/30"),  # 每30分鐘
+            "options": {"queue": "models"}
+        },
+        
+        # 模型優化分析 - 每天凌晨1點
+        "model-optimization-analysis": {
+            "task": "model.model_optimization_analysis_task",
+            "schedule": crontab(hour=1, minute=0),  # 每天1:00
+            "options": {"queue": "models"}
+        },
+        
+        # 模型清理 - 每週日凌晨4點
+        "model-cleanup": {
+            "task": "model.model_cleanup_task",
+            "schedule": crontab(hour=4, minute=0, day_of_week=0),  # 每週日4:00
+            "options": {"queue": "models"}
         }
     }
 )

@@ -1832,6 +1832,18 @@ async def stop_monitoring(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============= 語音模型管理 API =============
+
+# 包含語音模型管理 API
+from .api.voice_models import router as voice_models_router
+app.include_router(voice_models_router, prefix="/admin")
+
+# ============= 配置管理 API =============
+
+# 包含配置管理 API
+from .api.config import router as config_router
+app.include_router(config_router, prefix="/admin")
+
 # ============= API 安全防護 =============
 
 @app.get("/admin/security/rate-limits/stats")
