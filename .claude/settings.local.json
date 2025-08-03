@@ -40,7 +40,8 @@
       "Bash(rg:*)",
       "Bash(openssl genrsa:*)",
       "Bash(openssl rsa:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(alembic revision:*)"
     ],
     "deny": []
   }

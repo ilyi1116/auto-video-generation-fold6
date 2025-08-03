@@ -177,17 +177,171 @@ def require_permission(permission: str):
 
 # 審計日誌裝飾器
 def audit_log(action: str, resource_type: str):
-    """審計日誌裝飾器"""
+    """審計日誌裝飾器 - 記錄用戶操作到系統日誌"""
     def decorator(func):
-        def wrapper(*args, **kwargs):
-            try:
-                result = func(*args, **kwargs)
-                # 記錄成功的操作
-                # 這裡應該調用日誌記錄函數
-                return result
-            except Exception as e:
-                # 記錄失敗的操作
-                # 這裡應該調用錯誤日誌記錄函數
-                raise
-        return wrapper
+        import asyncio
+        import inspect
+        from functools import wraps
+        from fastapi import Request
+        
+        if inspect.iscoroutinefunction(func):
+            @wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                # 提取請求和用戶信息
+                request = None
+                current_user = None
+                
+                for arg in args:
+                    if isinstance(arg, Request):
+                        request = arg
+                        current_user = getattr(request.state, 'current_user', None)
+                        break
+                
+                # 獲取用戶信息
+                user_id = getattr(current_user, 'id', None) if current_user else None
+                username = getattr(current_user, 'username', None) if current_user else None
+                
+                # 提取資源ID（如果有的話）
+                resource_id = kwargs.get('id') or kwargs.get('task_id') or kwargs.get('config_id')
+                if resource_id is None and args:
+                    # 嘗試從位置參數中獲取ID
+                    for arg in args[1:]:  # 跳過第一個參數（通常是db或self）
+                        if isinstance(arg, int):
+                            resource_id = str(arg)
+                            break
+                
+                start_time = datetime.utcnow()
+                
+                try:
+                    result = await func(*args, **kwargs)
+                    
+                    # 計算執行時間
+                    end_time = datetime.utcnow()
+                    duration_ms = int((end_time - start_time).total_seconds() * 1000)
+                    
+                    # 記錄成功的操作
+                    from .logging_system import AuditLogger
+                    await AuditLogger.log_user_action(
+                        user_id=user_id,
+                        username=username or "system",
+                        action=action,
+                        resource_type=resource_type,
+                        resource_id=str(resource_id) if resource_id else None,
+                        details={
+                            "function": func.__name__,
+                            "success": True,
+                            "duration_ms": duration_ms
+                        },
+                        request=request
+                    )
+                    
+                    return result
+                    
+                except Exception as e:
+                    # 計算執行時間
+                    end_time = datetime.utcnow()
+                    duration_ms = int((end_time - start_time).total_seconds() * 1000)
+                    
+                    # 記錄失敗的操作
+                    from .logging_system import AuditLogger
+                    await AuditLogger.log_error(
+                        error=e,
+                        context=f"操作失敗: {action} - {resource_type}",
+                        user_id=user_id,
+                        username=username,
+                        request=request
+                    )
+                    
+                    raise
+            
+            return async_wrapper
+        else:
+            @wraps(func)
+            def sync_wrapper(*args, **kwargs):
+                # 提取請求和用戶信息
+                request = None
+                current_user = None
+                
+                for arg in args:
+                    if isinstance(arg, Request):
+                        request = arg
+                        current_user = getattr(request.state, 'current_user', None)
+                        break
+                
+                # 獲取用戶信息
+                user_id = getattr(current_user, 'id', None) if current_user else None
+                username = getattr(current_user, 'username', None) if current_user else None
+                
+                # 提取資源ID
+                resource_id = kwargs.get('id') or kwargs.get('task_id') or kwargs.get('config_id')
+                if resource_id is None and args:
+                    for arg in args[1:]:
+                        if isinstance(arg, int):
+                            resource_id = str(arg)
+                            break
+                
+                start_time = datetime.utcnow()
+                
+                try:
+                    result = func(*args, **kwargs)
+                    
+                    # 計算執行時間
+                    end_time = datetime.utcnow()
+                    duration_ms = int((end_time - start_time).total_seconds() * 1000)
+                    
+                    # 記錄成功的操作
+                    asyncio.create_task(
+                        _log_user_action_async(
+                            user_id=user_id,
+                            username=username or "system",
+                            action=action,
+                            resource_type=resource_type,
+                            resource_id=str(resource_id) if resource_id else None,
+                            details={
+                                "function": func.__name__,
+                                "success": True,
+                                "duration_ms": duration_ms
+                            },
+                            request=request
+                        )
+                    )
+                    
+                    return result
+                    
+                except Exception as e:
+                    # 記錄失敗的操作
+                    asyncio.create_task(
+                        _log_error_async(e, f"操作失敗: {action} - {resource_type}", user_id, username, request)
+                    )
+                    
+                    raise
+            
+            return sync_wrapper
+    
     return decorator
+
+
+async def _log_user_action_async(user_id, username, action, resource_type, resource_id, details, request):
+    """異步記錄用戶操作"""
+    from .logging_system import AuditLogger
+    await AuditLogger.log_user_action(
+        user_id=user_id,
+        username=username,
+        action=action,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        details=details,
+        request=request
+    )
+
+
+async def _log_error_async(error, context, user_id, username, request):
+    """異步記錄錯誤"""
+    from .logging_system import AuditLogger
+    await AuditLogger.log_error(
+        error=error,
+        context=context,
+        user_id=user_id,
+        username=username,
+        request=request
+    )
