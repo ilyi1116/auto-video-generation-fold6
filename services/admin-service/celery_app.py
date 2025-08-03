@@ -19,7 +19,8 @@ celery_app = Celery(
         "services.admin-service.tasks.maintenance_tasks",
         "services.admin-service.tasks.notification_tasks",
         "services.admin-service.tasks.monitoring_tasks",
-        "services.admin-service.tasks.model_tasks"
+        "services.admin-service.tasks.model_tasks",
+        "services.admin-service.tasks.tracing_tasks"
     ]
 )
 
@@ -41,6 +42,7 @@ celery_app.conf.update(
         "maintenance.*": {"queue": "maintenance"},
         "notifications.*": {"queue": "notifications"},
         "model.*": {"queue": "models"},
+        "tracing.*": {"queue": "tracing"},
     },
     
     # 任務過期設置
@@ -177,6 +179,27 @@ celery_app.conf.update(
             "task": "model.model_cleanup_task",
             "schedule": crontab(hour=4, minute=0, day_of_week=0),  # 每週日4:00
             "options": {"queue": "models"}
+        },
+        
+        # 追蹤健康檢查 - 每10分鐘
+        "tracing-health-check": {
+            "task": "tracing.health_check_task",
+            "schedule": crontab(minute="*/10"),  # 每10分鐘
+            "options": {"queue": "tracing"}
+        },
+        
+        # 追蹤資料清理 - 每天凌晨5點
+        "tracing-cleanup": {
+            "task": "tracing.cleanup_old_traces_task",
+            "schedule": crontab(hour=5, minute=0),  # 每天5:00
+            "options": {"queue": "tracing"}
+        },
+        
+        # 生成追蹤分析報告 - 每天早上9點
+        "tracing-daily-report": {
+            "task": "tracing.generate_report_task",
+            "schedule": crontab(hour=9, minute=0),  # 每天9:00
+            "options": {"queue": "tracing"}
         }
     }
 )
@@ -216,6 +239,11 @@ class CeleryConfig:
                 "exchange": "notifications",
                 "exchange_type": "direct",
                 "routing_key": "notifications"
+            },
+            "tracing": {
+                "exchange": "tracing",
+                "exchange_type": "direct",
+                "routing_key": "tracing"
             }
         }
     
@@ -242,6 +270,11 @@ class CeleryConfig:
                 "concurrency": 2,
                 "max_memory_per_child": 100000,  # 100MB
                 "queues": ["notifications"]
+            },
+            "tracing": {
+                "concurrency": 3,
+                "max_memory_per_child": 200000,  # 200MB
+                "queues": ["tracing"]
             }
         }
 

@@ -18,3 +18,29 @@ psutil>=5.9.0
 cryptography>=42.0.0
 structlog>=23.2.0
 python-dotenv>=1.0.0
+
+# 分散式追蹤
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+opentelemetry-exporter-jaeger-thrift>=1.20.0
+opentelemetry-instrumentation-fastapi>=0.41b0
+opentelemetry-instrumentation-requests>=0.41b0
+opentelemetry-instrumentation-celery>=0.41b0
+
+# 文件處理
+aiofiles>=23.2.1
+
+# 機器學習相關
+torch>=2.2.0
+transformers>=4.40.0
+scikit-learn>=1.4.0
+Pillow>=10.3.0
+
+# 數據處理
+orjson>=3.10.0
+protobuf>=4.25.2
+pymongo>=4.6.0
+
+# 開發工具
+black>=24.0.0
+flake8>=7.0.0

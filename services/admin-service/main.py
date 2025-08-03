@@ -28,6 +28,8 @@ from .security import (
     verify_token, create_access_token, PermissionChecker, require_permission,
     audit_log, hash_password
 )
+from .tracing import TracingMiddleware, trace_collector
+from .tracing.middleware import celery_tracing
 
 # 配置日誌
 logging.basicConfig(level=logging.INFO)
@@ -47,6 +49,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# 分散式追蹤中間件
+app.add_middleware(
+    TracingMiddleware,
+    service_name="admin-service",
+    exclude_paths=["/health", "/metrics", "/docs", "/redoc", "/openapi.json"]
 )
 
 # 限流中間件
@@ -1843,6 +1852,12 @@ app.include_router(voice_models_router, prefix="/admin")
 # 包含配置管理 API
 from .api.config import router as config_router
 app.include_router(config_router, prefix="/admin")
+
+# ============= 分散式追蹤 API =============
+
+# 包含分散式追蹤 API
+from .api.tracing import router as tracing_router
+app.include_router(tracing_router, prefix="/admin")
 
 # ============= API 安全防護 =============
 
