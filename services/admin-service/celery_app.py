@@ -20,7 +20,8 @@ celery_app = Celery(
         "services.admin-service.tasks.notification_tasks",
         "services.admin-service.tasks.monitoring_tasks",
         "services.admin-service.tasks.model_tasks",
-        "services.admin-service.tasks.tracing_tasks"
+        "services.admin-service.tasks.tracing_tasks",
+        "services.admin-service.tasks.log_tasks"
     ]
 )
 
@@ -43,6 +44,7 @@ celery_app.conf.update(
         "notifications.*": {"queue": "notifications"},
         "model.*": {"queue": "models"},
         "tracing.*": {"queue": "tracing"},
+        "logs.*": {"queue": "logs"},
     },
     
     # 任務過期設置
@@ -200,6 +202,51 @@ celery_app.conf.update(
             "task": "tracing.generate_report_task",
             "schedule": crontab(hour=9, minute=0),  # 每天9:00
             "options": {"queue": "tracing"}
+        },
+        
+        # 日誌系統健康檢查 - 每5分鐘
+        "logs-health-check": {
+            "task": "logs.log_health_check_task",
+            "schedule": crontab(minute="*/5"),  # 每5分鐘
+            "options": {"queue": "logs"}
+        },
+        
+        # 自動化日誌分析 - 每小時
+        "logs-automated-analysis": {
+            "task": "logs.automated_analysis_task",
+            "schedule": crontab(minute=0),  # 每小時整點
+            "options": {"queue": "logs"}
+        },
+        
+        # 日誌異常檢測 - 每15分鐘
+        "logs-anomaly-detection": {
+            "task": "logs.detect_anomalies_task",
+            "schedule": crontab(minute="*/15"),  # 每15分鐘
+            "options": {"queue": "logs"},
+            "kwargs": {"detection_params": {"hours": 1}}
+        },
+        
+        # 告警監控 - 每5分鐘
+        "logs-alert-monitoring": {
+            "task": "logs.alert_monitoring_task",
+            "schedule": crontab(minute="*/5"),  # 每5分鐘
+            "options": {"queue": "logs"}
+        },
+        
+        # 日誌清理 - 每天凌晨6點
+        "logs-cleanup": {
+            "task": "logs.cleanup_old_logs_task",
+            "schedule": crontab(hour=6, minute=0),  # 每天6:00
+            "options": {"queue": "logs"},
+            "kwargs": {"cleanup_params": {"days": 30}}
+        },
+        
+        # 生成日誌分析報告 - 每天早上10點
+        "logs-daily-report": {
+            "task": "logs.generate_report_task",
+            "schedule": crontab(hour=10, minute=0),  # 每天10:00
+            "options": {"queue": "logs"},
+            "kwargs": {"report_params": {"report_type": "daily"}}
         }
     }
 )
@@ -244,6 +291,11 @@ class CeleryConfig:
                 "exchange": "tracing",
                 "exchange_type": "direct",
                 "routing_key": "tracing"
+            },
+            "logs": {
+                "exchange": "logs",
+                "exchange_type": "direct",
+                "routing_key": "logs"
             }
         }
     
@@ -275,6 +327,11 @@ class CeleryConfig:
                 "concurrency": 3,
                 "max_memory_per_child": 200000,  # 200MB
                 "queues": ["tracing"]
+            },
+            "logs": {
+                "concurrency": 4,
+                "max_memory_per_child": 300000,  # 300MB
+                "queues": ["logs"]
             }
         }
 

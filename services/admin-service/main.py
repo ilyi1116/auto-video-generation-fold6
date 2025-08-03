@@ -1859,6 +1859,12 @@ app.include_router(config_router, prefix="/admin")
 from .api.tracing import router as tracing_router
 app.include_router(tracing_router, prefix="/admin")
 
+# ============= 智能日誌分析 API =============
+
+# 包含智能日誌分析 API
+from .api.logs import router as logs_router
+app.include_router(logs_router, prefix="/admin")
+
 # ============= API 安全防護 =============
 
 @app.get("/admin/security/rate-limits/stats")
