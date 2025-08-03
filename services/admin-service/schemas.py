@@ -335,6 +335,60 @@ class DashboardStats(BaseModel):
     last_24h_activity: Dict[str, int]
 
 
+# Crawler Task Schemas
+class CrawlerTaskBase(BaseModel):
+    task_name: str = Field(..., max_length=200)
+    keywords: List[str] = Field(..., min_items=1)
+    target_url: Optional[str] = Field(None, max_length=1000)
+    schedule_type: str = Field("daily", max_length=50)
+    schedule_time: Optional[str] = Field(None, max_length=100)
+    is_active: bool = True
+
+    @validator('keywords')
+    def validate_keywords(cls, v):
+        if not v or len(v) == 0:
+            raise ValueError('至少需要一個關鍵字')
+        return v
+    
+    @validator('schedule_type')
+    def validate_schedule_type(cls, v):
+        allowed_types = ["daily", "weekly", "hourly", "cron"]
+        if v not in allowed_types:
+            raise ValueError(f'排程類型必須是: {", ".join(allowed_types)}')
+        return v
+
+
+class CrawlerTaskCreate(CrawlerTaskBase):
+    pass
+
+
+class CrawlerTaskUpdate(BaseModel):
+    task_name: Optional[str] = Field(None, max_length=200)
+    keywords: Optional[List[str]] = None
+    target_url: Optional[str] = Field(None, max_length=1000)
+    schedule_type: Optional[str] = Field(None, max_length=50)
+    schedule_time: Optional[str] = Field(None, max_length=100)
+    is_active: Optional[bool] = None
+
+    @validator('schedule_type')
+    def validate_schedule_type(cls, v):
+        if v is not None:
+            allowed_types = ["daily", "weekly", "hourly", "cron"]
+            if v not in allowed_types:
+                raise ValueError(f'排程類型必須是: {", ".join(allowed_types)}')
+        return v
+
+
+class CrawlerTaskResponse(CrawlerTaskBase):
+    id: int
+    last_run_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+
 # API Response Wrappers
 class APIResponse(BaseModel):
     success: bool = True

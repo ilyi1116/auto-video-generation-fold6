@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 
 from ..celery_app import celery_app, TaskRetryMixin
 from ..database import SessionLocal
-from ..models import CrawlerConfig, CrawlerStatus
+from ..models import CrawlerConfig, CrawlerStatus, CrawlerTask
 from ..crawler_engine import WebCrawler
 from ..logging_system import AuditLogger, structured_logger
 from ..schemas import SystemLogCreate
@@ -35,7 +35,7 @@ class CrawlerTask(TaskRetryMixin):
 
 
 @celery_app.task(bind=True, base=CrawlerTask)
-def check_scheduled_crawlers(self):
+def check_scheduled_crawler_tasks(self):
     """檢查並執行計劃的爬蟲任務"""
     db = SessionLocal()
     executed_count = 0
@@ -383,3 +383,196 @@ def get_crawler_task_status(task_id: str):
     """獲取爬蟲任務狀態"""
     from ..celery_app import get_task_status
     return get_task_status(task_id)
+
+
+# ==================== CrawlerTask 新增任務處理 ====================
+
+def should_run_task(task: CrawlerTask, current_time: datetime) -> bool:
+    """判斷任務是否應該運行"""
+    if not task.is_active:
+        return False
+    
+    # 如果從未執行過，應該運行
+    if not task.last_run_at:
+        return True
+    
+    # 根據排程類型判斷
+    if task.schedule_type == "hourly":
+        # 每小時執行一次
+        return (current_time - task.last_run_at).total_seconds() >= 3600
+    
+    elif task.schedule_type == "daily":
+        # 每日執行一次
+        return (current_time - task.last_run_at).total_seconds() >= 86400
+    
+    elif task.schedule_type == "weekly":
+        # 每週執行一次
+        return (current_time - task.last_run_at).total_seconds() >= 604800
+    
+    elif task.schedule_type == "cron":
+        # Cron 表達式需要更複雜的邏輯
+        return should_run_cron_task(task, current_time)
+    
+    return False
+
+
+def should_run_cron_task(task: CrawlerTask, current_time: datetime) -> bool:
+    """檢查 Cron 任務是否應該運行"""
+    # 簡化實現，實際應該使用 croniter 庫
+    # 這裡先返回基本檢查
+    if not task.schedule_time:
+        return False
+    
+    # 如果超過1小時沒執行，先執行一次
+    if not task.last_run_at:
+        return True
+    
+    return (current_time - task.last_run_at).total_seconds() >= 3600
+
+
+@celery_app.task(bind=True, base=CrawlerTask)
+def run_crawler_task(self, task_id: int):
+    """執行指定的 CrawlerTask 任務"""
+    db = SessionLocal()
+    
+    try:
+        # 獲取爬蟲任務
+        task = db.query(CrawlerTask).filter(CrawlerTask.id == task_id).first()
+        if not task:
+            raise ValueError(f"爬蟲任務 {task_id} 不存在")
+        
+        if not task.is_active:
+            raise ValueError(f"爬蟲任務 {task.task_name} 未啟用")
+        
+        logger.info(f"開始執行爬蟲任務: {task.task_name}")
+        
+        # 解析關鍵字（從 JSON 字符串轉換為列表）
+        import json
+        try:
+            keywords = json.loads(task.keywords) if isinstance(task.keywords, str) else task.keywords
+        except (json.JSONDecodeError, TypeError):
+            keywords = []
+        
+        # 使用同步方式運行爬蟲
+        import asyncio
+        
+        async def run_task_crawler():
+            async with WebCrawler() as crawler:
+                # 構建爬蟲配置
+                crawler_config = {
+                    "task_id": task.id,  # 添加任務ID以便保存結果
+                    "task_name": task.task_name,
+                    "keywords": keywords,
+                    "target_url": task.target_url,
+                    "max_pages": 10,  # 默認值
+                    "delay_seconds": 1  # 默認值
+                }
+                return await crawler.crawl_task(crawler_config)
+        
+        # 在新的事件循環中運行
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(run_task_crawler())
+        loop.close()
+        
+        # 更新任務進度
+        if hasattr(self, 'update_state'):
+            self.update_state(
+                state='PROGRESS',
+                meta={
+                    'current': result.get('pages_crawled', 0),
+                    'total': result.get('total_pages', 10),
+                    'status': '爬取完成'
+                }
+            )
+        
+        # 記錄成功日誌
+        asyncio.create_task(
+            structured_logger.log(
+                action="crawler_task_executed",
+                resource_type="crawler_task",
+                resource_id=str(task_id),
+                message=f"爬蟲任務 {task.task_name} 執行完成",
+                details=result
+            )
+        )
+        
+        return {
+            "success": result["success"],
+            "task_id": task_id,
+            "task_name": task.task_name,
+            "pages_crawled": result.get("pages_crawled", 0),
+            "duration_seconds": result.get("duration_seconds", 0),
+            "error": result.get("error") if not result["success"] else None
+        }
+        
+    except Exception as e:
+        logger.error(f"執行爬蟲任務 {task_id} 失敗: {e}")
+        
+        # 記錄錯誤日誌
+        asyncio.create_task(
+            AuditLogger.log_error(
+                error=e,
+                context=f"Celery爬蟲任務執行失敗: task_id={task_id}"
+            )
+        )
+        
+        raise
+        
+    finally:
+        db.close()
+
+
+@celery_app.task(bind=True, base=CrawlerTask)
+def batch_run_crawler_tasks(self, task_ids: List[int]):
+    """批量執行 CrawlerTask 任務"""
+    results = []
+    
+    for task_id in task_ids:
+        try:
+            # 執行單個爬蟲任務
+            result = run_crawler_task.delay(task_id)
+            results.append({
+                "task_id": task_id,
+                "celery_task_id": result.id,
+                "status": "scheduled"
+            })
+            
+        except Exception as e:
+            logger.error(f"批量執行爬蟲任務 {task_id} 失敗: {e}")
+            results.append({
+                "task_id": task_id,
+                "status": "failed",
+                "error": str(e)
+            })
+    
+    return {
+        "success": True,
+        "total_tasks": len(task_ids),
+        "results": results
+    }
+
+
+# 手動觸發 CrawlerTask 任務的工具函數
+def schedule_crawler_task_run(task_id: int, delay_seconds: int = 0):
+    """排程 CrawlerTask 運行"""
+    if delay_seconds > 0:
+        return run_crawler_task.apply_async(
+            args=[task_id],
+            countdown=delay_seconds,
+            queue="crawler"
+        )
+    else:
+        return run_crawler_task.delay(task_id)
+
+
+def schedule_batch_crawler_task_run(task_ids: List[int], delay_seconds: int = 0):
+    """排程批量 CrawlerTask 運行"""
+    if delay_seconds > 0:
+        return batch_run_crawler_tasks.apply_async(
+            args=[task_ids],
+            countdown=delay_seconds,
+            queue="crawler"
+        )
+    else:
+        return batch_run_crawler_tasks.delay(task_ids)

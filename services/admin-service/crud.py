@@ -6,14 +6,14 @@ import logging
 import uuid
 
 from .models import (
-    AIProvider, CrawlerConfig, SocialTrendConfig, TrendingKeyword, KeywordTrend,
+    AIProvider, CrawlerConfig, CrawlerTask, SocialTrendConfig, TrendingKeyword, KeywordTrend,
     SystemLog, AdminUser, CrawlerResult, AIProviderType, CrawlerStatus,
     ScheduleType, SocialPlatform, TrendTimeframe, LogLevel
 )
 from .schemas import (
     AIProviderCreate, AIProviderUpdate, CrawlerConfigCreate, CrawlerConfigUpdate,
-    SocialTrendConfigCreate, SocialTrendConfigUpdate, TrendingKeywordCreate,
-    SystemLogCreate, AdminUserCreate, AdminUserUpdate, LogQueryParams,
+    CrawlerTaskCreate, CrawlerTaskUpdate, SocialTrendConfigCreate, SocialTrendConfigUpdate, 
+    TrendingKeywordCreate, SystemLogCreate, AdminUserCreate, AdminUserUpdate, LogQueryParams,
     TrendQueryParams, PaginationParams
 )
 from .security import hash_password, verify_password
@@ -589,9 +589,102 @@ class CRUDKeywordTrend(CRUDBase):
         return result
 
 
+class CRUDCrawlerTask(CRUDBase):
+    """爬蟲任務 CRUD 操作"""
+    
+    def __init__(self):
+        super().__init__(CrawlerTask)
+    
+    def create_crawler_task(self, db: Session, *, task_in: CrawlerTaskCreate) -> CrawlerTask:
+        # 檢查任務名稱是否已存在
+        existing = db.query(CrawlerTask).filter(CrawlerTask.task_name == task_in.task_name).first()
+        if existing:
+            raise ValueError(f"爬蟲任務 '{task_in.task_name}' 已存在")
+        
+        # 將關鍵字列表轉換為 JSON 字符串
+        import json
+        task_data = task_in.dict()
+        task_data["keywords"] = json.dumps(task_data["keywords"], ensure_ascii=False)
+        
+        return self.create(db, obj_in=task_data)
+    
+    def update_crawler_task(self, db: Session, *, task_id: int, task_in: CrawlerTaskUpdate) -> Optional[CrawlerTask]:
+        task = self.get(db, task_id)
+        if not task:
+            return None
+        
+        update_data = task_in.dict(exclude_unset=True)
+        
+        # 檢查任務名稱衝突
+        if "task_name" in update_data:
+            existing = db.query(CrawlerTask).filter(
+                and_(CrawlerTask.task_name == update_data["task_name"], CrawlerTask.id != task_id)
+            ).first()
+            if existing:
+                raise ValueError(f"爬蟲任務 '{update_data['task_name']}' 已存在")
+        
+        # 處理關鍵字列表
+        if "keywords" in update_data and update_data["keywords"]:
+            import json
+            update_data["keywords"] = json.dumps(update_data["keywords"], ensure_ascii=False)
+        
+        return self.update(db, db_obj=task, obj_in=update_data)
+    
+    def get_active_tasks(self, db: Session) -> List[CrawlerTask]:
+        """獲取所有活躍的爬蟲任務"""
+        return db.query(CrawlerTask).filter(CrawlerTask.is_active == True).all()
+    
+    def get_tasks_by_schedule_type(self, db: Session, schedule_type: str) -> List[CrawlerTask]:
+        """根據排程類型獲取任務"""
+        return db.query(CrawlerTask).filter(
+            and_(CrawlerTask.schedule_type == schedule_type, CrawlerTask.is_active == True)
+        ).all()
+    
+    def update_last_run_time(self, db: Session, task_id: int, run_time: datetime = None) -> bool:
+        """更新任務的最後運行時間"""
+        if run_time is None:
+            run_time = datetime.utcnow()
+        
+        task = self.get(db, task_id)
+        if task:
+            task.last_run_at = run_time
+            db.add(task)
+            db.commit()
+            return True
+        return False
+    
+    def get_due_tasks(self, db: Session, current_time: datetime = None) -> List[CrawlerTask]:
+        """獲取到期需要執行的任務"""
+        if current_time is None:
+            current_time = datetime.utcnow()
+        
+        # 這裡可以根據 schedule_type 和 schedule_time 來判斷哪些任務到期
+        # 簡化實現：返回所有活躍任務
+        return self.get_active_tasks(db)
+    
+    def get_task_statistics(self, db: Session) -> Dict[str, Any]:
+        """獲取任務統計信息"""
+        total_tasks = db.query(CrawlerTask).count()
+        active_tasks = db.query(CrawlerTask).filter(CrawlerTask.is_active == True).count()
+        
+        # 按排程類型統計
+        schedule_stats = db.query(
+            CrawlerTask.schedule_type,
+            func.count(CrawlerTask.id).label('count')
+        ).group_by(CrawlerTask.schedule_type).all()
+        
+        return {
+            "total_tasks": total_tasks,
+            "active_tasks": active_tasks,
+            "inactive_tasks": total_tasks - active_tasks,
+            "schedule_distribution": {stat.schedule_type: stat.count for stat in schedule_stats}
+        }
+
+
 # 實例化 CRUD 操作類
 crud_ai_provider = CRUDAIProvider()
 crud_crawler_config = CRUDCrawlerConfig()
+crud_crawler_task = CRUDCrawlerTask()  # 新增爬蟲任務 CRUD
 crud_social_trend_config = CRUDSocialTrendConfig()
 crud_trending_keyword = CRUDTrendingKeyword()
 crud_keyword_trend = CRUDKeywordTrend()  # 新增

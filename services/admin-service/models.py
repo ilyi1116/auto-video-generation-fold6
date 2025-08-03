@@ -223,6 +223,52 @@ class CrawlerResult(Base):
         return f"<CrawlerResult(config_id={self.config_id}, url={self.url[:50]}...)>"
 
 
+class CrawlerTask(Base):
+    """爬蟲任務表 - 符合用戶要求的資料模型"""
+    __tablename__ = "crawler_tasks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    task_name = Column(String(200), unique=True, nullable=False)
+    keywords = Column(Text, nullable=False)  # JSON 格式的關鍵字清單
+    target_url = Column(String(1000), nullable=True)  # 目標網址，可為空
+    schedule_type = Column(String(50), nullable=False, default="daily")  # daily, weekly, hourly, cron
+    schedule_time = Column(String(100), nullable=True)  # 排程時間
+    last_run_at = Column(DateTime(timezone=True), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # 關聯關係
+    task_results = relationship("CrawlerTaskResult", back_populates="task", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<CrawlerTask(task_name={self.task_name}, schedule_type={self.schedule_type})>"
+
+
+class CrawlerTaskResult(Base):
+    """爬蟲任務結果表"""
+    __tablename__ = "crawler_task_results"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("crawler_tasks.id"), nullable=False)
+    run_id = Column(String(100), nullable=False)  # 執行ID（UUID）
+    url = Column(String(2000), nullable=True)
+    title = Column(String(500), nullable=True)
+    description = Column(Text, nullable=True)
+    content = Column(Text, nullable=True)
+    matched_keywords = Column(Text, nullable=True)  # JSON 格式
+    page_number = Column(Integer, default=1)
+    success = Column(Boolean, default=True)
+    error_message = Column(Text, nullable=True)
+    scraped_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # 關聯關係
+    task = relationship("CrawlerTask", back_populates="task_results")
+    
+    def __repr__(self):
+        return f"<CrawlerTaskResult(task_id={self.task_id}, url={self.url[:50] if self.url else 'N/A'}...)>"
+
+
 class AdminUser(Base):
     """後台管理用戶表"""
     __tablename__ = "admin_users"

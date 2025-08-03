@@ -100,6 +100,36 @@ export const apiClient = {
 			api.get(`/admin/crawler-configs/${id}/export`, { params, responseType: 'blob' })
 	},
 
+	// 爬蟲任務管理
+	crawlerTasks: {
+		list: (params?: any) =>
+			api.get('/admin/crawler-tasks', { params }),
+		
+		get: (id: number) =>
+			api.get(`/admin/crawler-tasks/${id}`),
+		
+		create: (data: any) =>
+			api.post('/admin/crawler-tasks', data),
+		
+		update: (id: number, data: any) =>
+			api.put(`/admin/crawler-tasks/${id}`, data),
+		
+		delete: (id: number) =>
+			api.delete(`/admin/crawler-tasks/${id}`),
+		
+		run: (id: number) =>
+			api.post(`/admin/crawler-tasks/${id}/run`),
+		
+		getResults: (id: number, params?: any) =>
+			api.get(`/admin/crawler-tasks/${id}/results`, { params }),
+		
+		statistics: () =>
+			api.get('/admin/crawler-tasks/statistics'),
+		
+		active: () =>
+			api.get('/admin/crawler-tasks/active')
+	},
+
 	// 社交媒體趨勢
 	socialTrends: {
 		configs: {

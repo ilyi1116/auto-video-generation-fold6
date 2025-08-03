@@ -10,7 +10,7 @@ import re
 import uuid
 from sqlalchemy.orm import Session
 
-from .models import CrawlerConfig, CrawlerResult, CrawlerStatus, ScheduleType
+from .models import CrawlerConfig, CrawlerResult, CrawlerStatus, ScheduleType, CrawlerTaskResult
 from .database import SessionLocal
 from .schemas import SystemLogCreate
 from .crud import crud_system_log
@@ -283,6 +283,196 @@ class WebCrawler:
             db.close()
         except Exception as e:
             logger.error(f"記錄爬蟲錯誤日誌失敗: {e}")
+    
+    async def crawl_task(self, task_config: Dict[str, Any]) -> Dict[str, Any]:
+        """執行 CrawlerTask 任務"""
+        run_id = str(uuid.uuid4())
+        start_time = datetime.utcnow()
+        results = []
+        
+        task_name = task_config.get("task_name", "未命名任務")
+        keywords = task_config.get("keywords", [])
+        target_url = task_config.get("target_url")
+        max_pages = task_config.get("max_pages", 10)
+        delay_seconds = task_config.get("delay_seconds", 1)
+        
+        logger.info(f"開始執行爬蟲任務 {task_name}")
+        
+        try:
+            pages_crawled = 0
+            
+            # 如果有指定目標 URL，直接爬取
+            if target_url:
+                for page_num in range(min(max_pages, 100)):
+                    if pages_crawled >= max_pages:
+                        break
+                    
+                    page_result = await self._crawl_task_page(
+                        task_config, target_url, run_id, page_num + 1
+                    )
+                    
+                    if page_result:
+                        results.append(page_result)
+                        pages_crawled += 1
+                    
+                    if delay_seconds > 0:
+                        await asyncio.sleep(delay_seconds)
+                    
+                    break  # 暫時只爬取一頁
+            
+            # 如果沒有指定 URL，使用關鍵字搜尋
+            else:
+                for keyword in keywords[:3]:  # 限制關鍵字數量
+                    if pages_crawled >= max_pages:
+                        break
+                    
+                    search_results = await self._search_keyword(keyword, run_id)
+                    if search_results:
+                        results.extend(search_results)
+                        pages_crawled += len(search_results)
+                    
+                    if delay_seconds > 0:
+                        await asyncio.sleep(delay_seconds)
+            
+            end_time = datetime.utcnow()
+            duration = (end_time - start_time).total_seconds()
+            
+            logger.info(f"爬蟲任務 {task_name} 執行完成，爬取 {pages_crawled} 頁，耗時 {duration:.2f} 秒")
+            
+            return {
+                "run_id": run_id,
+                "task_name": task_name,
+                "start_time": start_time,
+                "end_time": end_time,
+                "duration_seconds": duration,
+                "pages_crawled": pages_crawled,
+                "total_pages": max_pages,
+                "results": results,
+                "success": True
+            }
+        
+        except Exception as e:
+            logger.error(f"爬蟲任務 {task_name} 執行失敗: {e}")
+            return {
+                "run_id": run_id,
+                "task_name": task_name,
+                "start_time": start_time,
+                "end_time": datetime.utcnow(),
+                "duration_seconds": 0,
+                "pages_crawled": 0,
+                "total_pages": max_pages,
+                "results": [],
+                "success": False,
+                "error": str(e)
+            }
+    
+    async def _crawl_task_page(self, task_config: Dict[str, Any], url: str, run_id: str, page_num: int) -> Optional[Dict[str, Any]]:
+        """爬取任務頁面"""
+        try:
+            async with self.session.get(url) as response:
+                if response.status == 200:
+                    content = await response.text()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    
+                    # 提取標題
+                    title = soup.find('title')
+                    title_text = title.get_text().strip() if title else "無標題"
+                    
+                    # 提取描述
+                    description = soup.find('meta', attrs={'name': 'description'})
+                    description_text = description.get('content', '') if description else ''
+                    
+                    # 提取正文內容
+                    body_text = self._extract_text_content(soup)
+                    
+                    # 檢查關鍵字匹配
+                    keywords = task_config.get("keywords", [])
+                    matched_keywords = []
+                    for keyword in keywords:
+                        if keyword.lower() in body_text.lower() or keyword.lower() in title_text.lower():
+                            matched_keywords.append(keyword)
+                    
+                    result_data = {
+                        "url": url,
+                        "title": title_text,
+                        "description": description_text,
+                        "content": body_text[:1000],  # 限制內容長度
+                        "matched_keywords": matched_keywords,
+                        "scraped_at": datetime.utcnow(),
+                        "page_number": page_num,
+                        "success": True
+                    }
+                    
+                    # 保存到資料庫
+                    self._save_task_result(task_config, result_data, run_id)
+                    
+                    return result_data
+                else:
+                    logger.warning(f"無法爬取頁面 {url}: HTTP {response.status}")
+                    return None
+        
+        except Exception as e:
+            logger.error(f"爬取頁面 {url} 失敗: {e}")
+            return None
+    
+    async def _search_keyword(self, keyword: str, run_id: str) -> List[Dict[str, Any]]:
+        """搜尋關鍵字（模擬實現）"""
+        # 這裡應該實現實際的搜尋邏輯
+        # 暫時返回模擬結果
+        return [{
+            "url": f"https://example.com/search?q={keyword}",
+            "title": f"搜尋結果：{keyword}",
+            "description": f"包含關鍵字 {keyword} 的內容",
+            "content": f"這是包含關鍵字 {keyword} 的模擬內容",
+            "matched_keywords": [keyword],
+            "scraped_at": datetime.utcnow(),
+            "page_number": 1,
+            "success": True
+        }]
+    
+    def _save_task_result(self, task_config: Dict[str, Any], result_data: Dict[str, Any], run_id: str):
+        """保存爬蟲任務結果到資料庫"""
+        try:
+            db = SessionLocal()
+            
+            # 獲取任務ID (如果有的話)
+            task_id = task_config.get("task_id")
+            if not task_id:
+                # 如果沒有 task_id，嘗試通過任務名稱查找
+                task_name = task_config.get("task_name")
+                if task_name:
+                    from .models import CrawlerTask
+                    task = db.query(CrawlerTask).filter(CrawlerTask.task_name == task_name).first()
+                    if task:
+                        task_id = task.id
+            
+            if task_id:
+                import json
+                matched_keywords_json = json.dumps(result_data.get("matched_keywords", []), ensure_ascii=False)
+                
+                crawler_result = CrawlerTaskResult(
+                    task_id=task_id,
+                    run_id=run_id,
+                    url=result_data.get("url"),
+                    title=result_data.get("title"),
+                    description=result_data.get("description"),
+                    content=result_data.get("content"),
+                    matched_keywords=matched_keywords_json,
+                    page_number=result_data.get("page_number", 1),
+                    success=result_data.get("success", True),
+                    error_message=result_data.get("error_message")
+                )
+                
+                db.add(crawler_result)
+                db.commit()
+                logger.info(f"已保存爬蟲任務結果：{result_data.get('url', 'N/A')}")
+            
+            db.close()
+        except Exception as e:
+            logger.error(f"保存爬蟲任務結果失敗: {e}")
+            if db:
+                db.rollback()
+                db.close()
 
 
 class CrawlerScheduler:

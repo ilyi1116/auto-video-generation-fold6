@@ -64,6 +64,13 @@ celery_app.conf.update(
             "options": {"queue": "crawler"}
         },
         
+        # CrawlerTask 任務檢查 - 每分鐘檢查一次
+        "check-crawler-task-schedules": {
+            "task": "crawler.check_scheduled_crawler_tasks",
+            "schedule": crontab(minute="*"),  # 每分鐘
+            "options": {"queue": "crawler"}
+        },
+        
         # 社交媒體趨勢收集 - 每小時一次
         "collect-social-trends": {
             "task": "trends.collect_all_trends",

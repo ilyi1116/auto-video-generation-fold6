@@ -14,13 +14,14 @@ from .models import AdminUser
 from .schemas import (
     AIProviderCreate, AIProviderUpdate, AIProviderResponse,
     CrawlerConfigCreate, CrawlerConfigUpdate, CrawlerConfigResponse,
+    CrawlerTaskCreate, CrawlerTaskUpdate, CrawlerTaskResponse,
     SocialTrendConfigCreate, SocialTrendConfigUpdate, SocialTrendConfigResponse,
     TrendingKeywordResponse, SystemLogResponse, AdminUserCreate, AdminUserResponse,
     LogQueryParams, TrendQueryParams, PaginationParams, DashboardStats,
     APIResponse, ErrorResponse, PaginatedResponse
 )
 from .crud import (
-    crud_ai_provider, crud_crawler_config, crud_social_trend_config,
+    crud_ai_provider, crud_crawler_config, crud_crawler_task, crud_social_trend_config,
     crud_trending_keyword, crud_keyword_trend, crud_system_log, crud_admin_user
 )
 from .security import (
@@ -614,6 +615,309 @@ async def get_crawler_results(
             "config_name": config.name
         }
     )
+
+
+# ============= 爬蟲任務 API =============
+
+@app.get("/admin/crawler-tasks", response_model=APIResponse)
+@require_permission("crawler:read")
+async def get_crawler_tasks(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取爬蟲任務列表"""
+    tasks = crud_crawler_task.get_multi(db, skip=skip, limit=limit)
+    
+    # 轉換關鍵字 JSON 字符串為列表
+    import json
+    task_responses = []
+    for task in tasks:
+        task_dict = {
+            "id": task.id,
+            "task_name": task.task_name,
+            "keywords": json.loads(task.keywords) if task.keywords else [],
+            "target_url": task.target_url,
+            "schedule_type": task.schedule_type,
+            "schedule_time": task.schedule_time,
+            "last_run_at": task.last_run_at,
+            "is_active": task.is_active,
+            "created_at": task.created_at,
+            "updated_at": task.updated_at
+        }
+        task_responses.append(task_dict)
+    
+    return APIResponse(data=task_responses)
+
+
+@app.post("/admin/crawler-tasks", response_model=APIResponse)
+@require_permission("crawler:create")
+@audit_log("create", "crawler_task")
+async def create_crawler_task(
+    task_in: CrawlerTaskCreate,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """創建爬蟲任務"""
+    try:
+        task = crud_crawler_task.create_crawler_task(db, task_in=task_in)
+        
+        # 轉換響應數據
+        import json
+        task_response = {
+            "id": task.id,
+            "task_name": task.task_name,
+            "keywords": json.loads(task.keywords) if task.keywords else [],
+            "target_url": task.target_url,
+            "schedule_type": task.schedule_type,
+            "schedule_time": task.schedule_time,
+            "last_run_at": task.last_run_at,
+            "is_active": task.is_active,
+            "created_at": task.created_at,
+            "updated_at": task.updated_at
+        }
+        
+        return APIResponse(
+            message="爬蟲任務創建成功",
+            data=task_response
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/admin/crawler-tasks/{task_id}", response_model=APIResponse)
+@require_permission("crawler:read")
+async def get_crawler_task(
+    task_id: int,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取指定爬蟲任務"""
+    task = crud_crawler_task.get(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="爬蟲任務不存在")
+    
+    # 轉換響應數據
+    import json
+    task_response = {
+        "id": task.id,
+        "task_name": task.task_name,
+        "keywords": json.loads(task.keywords) if task.keywords else [],
+        "target_url": task.target_url,
+        "schedule_type": task.schedule_type,
+        "schedule_time": task.schedule_time,
+        "last_run_at": task.last_run_at,
+        "is_active": task.is_active,
+        "created_at": task.created_at,
+        "updated_at": task.updated_at
+    }
+    
+    return APIResponse(data=task_response)
+
+
+@app.put("/admin/crawler-tasks/{task_id}", response_model=APIResponse)
+@require_permission("crawler:update")
+@audit_log("update", "crawler_task")
+async def update_crawler_task(
+    task_id: int,
+    task_in: CrawlerTaskUpdate,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """更新爬蟲任務"""
+    try:
+        task = crud_crawler_task.update_crawler_task(
+            db, task_id=task_id, task_in=task_in
+        )
+        if not task:
+            raise HTTPException(status_code=404, detail="爬蟲任務不存在")
+        
+        # 轉換響應數據
+        import json
+        task_response = {
+            "id": task.id,
+            "task_name": task.task_name,
+            "keywords": json.loads(task.keywords) if task.keywords else [],
+            "target_url": task.target_url,
+            "schedule_type": task.schedule_type,
+            "schedule_time": task.schedule_time,
+            "last_run_at": task.last_run_at,
+            "is_active": task.is_active,
+            "created_at": task.created_at,
+            "updated_at": task.updated_at
+        }
+        
+        return APIResponse(
+            message="爬蟲任務更新成功",
+            data=task_response
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.delete("/admin/crawler-tasks/{task_id}", response_model=APIResponse)
+@require_permission("crawler:delete")
+@audit_log("delete", "crawler_task")
+async def delete_crawler_task(
+    task_id: int,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """刪除爬蟲任務"""
+    task = crud_crawler_task.remove(db, id=task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="爬蟲任務不存在")
+    
+    return APIResponse(message="爬蟲任務刪除成功")
+
+
+@app.post("/admin/crawler-tasks/{task_id}/run", response_model=APIResponse)
+@require_permission("crawler:run")
+@audit_log("run", "crawler_task")
+async def run_crawler_task_manually(
+    task_id: int,
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """手動運行爬蟲任務"""
+    task = crud_crawler_task.get(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="爬蟲任務不存在")
+    
+    if not task.is_active:
+        raise HTTPException(status_code=400, detail="任務已停用，無法執行")
+    
+    try:
+        # 使用 Celery 任務執行
+        from .tasks.crawler_tasks import schedule_crawler_task_run
+        
+        celery_task = schedule_crawler_task_run(task_id)
+        
+        # 更新最後運行時間
+        crud_crawler_task.update_last_run_time(db, task_id)
+        
+        result = {
+            "task_id": task_id,
+            "task_name": task.task_name,
+            "celery_task_id": celery_task.id,
+            "status": "scheduled",
+            "message": "爬蟲任務已排程執行",
+            "scheduled_at": datetime.utcnow().isoformat()
+        }
+        
+        return APIResponse(
+            message="爬蟲任務已排程執行",
+            data=result
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"爬蟲任務運行失敗: {str(e)}")
+
+
+@app.get("/admin/crawler-tasks/{task_id}/results", response_model=APIResponse)
+@require_permission("crawler:read")
+async def get_crawler_task_results(
+    task_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取爬蟲任務執行結果"""
+    from .models import CrawlerTaskResult
+    import json
+    
+    # 檢查任務是否存在
+    task = crud_crawler_task.get(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="爬蟲任務不存在")
+    
+    # 查詢結果
+    results = db.query(CrawlerTaskResult).filter(
+        CrawlerTaskResult.task_id == task_id
+    ).order_by(
+        CrawlerTaskResult.scraped_at.desc()
+    ).offset(skip).limit(limit).all()
+    
+    # 格式化結果
+    formatted_results = []
+    for result in results:
+        try:
+            matched_keywords = json.loads(result.matched_keywords) if result.matched_keywords else []
+        except (json.JSONDecodeError, TypeError):
+            matched_keywords = []
+        
+        formatted_results.append({
+            "id": result.id,
+            "run_id": result.run_id,
+            "url": result.url,
+            "title": result.title,
+            "description": result.description,
+            "content": result.content,
+            "matched_keywords": matched_keywords,
+            "page_number": result.page_number,
+            "success": result.success,
+            "error_message": result.error_message,
+            "scraped_at": result.scraped_at
+        })
+    
+    # 獲取總數
+    total = db.query(CrawlerTaskResult).filter(
+        CrawlerTaskResult.task_id == task_id
+    ).count()
+    
+    return APIResponse(
+        message="獲取爬蟲任務結果成功",
+        data={
+            "task_id": task_id,
+            "task_name": task.task_name,
+            "results": formatted_results,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    )
+
+
+@app.get("/admin/crawler-tasks/statistics", response_model=APIResponse)
+@require_permission("crawler:read")
+async def get_crawler_task_statistics(
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取爬蟲任務統計信息"""
+    stats = crud_crawler_task.get_task_statistics(db)
+    return APIResponse(data=stats)
+
+
+@app.get("/admin/crawler-tasks/active", response_model=APIResponse)
+@require_permission("crawler:read")
+async def get_active_crawler_tasks(
+    current_user: AdminUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """獲取所有活躍的爬蟲任務"""
+    tasks = crud_crawler_task.get_active_tasks(db)
+    
+    # 轉換關鍵字 JSON 字符串為列表
+    import json
+    task_responses = []
+    for task in tasks:
+        task_dict = {
+            "id": task.id,
+            "task_name": task.task_name,
+            "keywords": json.loads(task.keywords) if task.keywords else [],
+            "target_url": task.target_url,
+            "schedule_type": task.schedule_type,
+            "schedule_time": task.schedule_time,
+            "last_run_at": task.last_run_at,
+            "is_active": task.is_active,
+            "created_at": task.created_at,
+            "updated_at": task.updated_at
+        }
+        task_responses.append(task_dict)
+    
+    return APIResponse(data=task_responses)
 
 
 # ============= 社交媒體趨勢配置 API =============
