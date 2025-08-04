@@ -1,0 +1,636 @@
+{
+  "timestamp": "2025-08-04T23:13:31.734859",
+  "services": {
+    "ai-service": {
+      "components": 12,
+      "existing_tests": 2,
+      "missing_tests": 11,
+      "coverage_score": 8.333333333333332,
+      "missing_test_details": [
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "audio_processing",
+          "test_name": "test_audio_processing",
+          "type": "router"
+        },
+        {
+          "component": "image_generation",
+          "test_name": "test_image_generation",
+          "type": "router"
+        },
+        {
+          "component": "music_generation",
+          "test_name": "test_music_generation",
+          "type": "router"
+        },
+        {
+          "component": "ai_manager",
+          "test_name": "test_ai_manager",
+          "type": "service"
+        },
+        {
+          "component": "suno_client",
+          "test_name": "test_suno_client",
+          "type": "service"
+        },
+        {
+          "component": "text_generator",
+          "test_name": "test_text_generator",
+          "type": "service"
+        },
+        {
+          "component": "image_generator",
+          "test_name": "test_image_generator",
+          "type": "service"
+        },
+        {
+          "component": "audio_processor",
+          "test_name": "test_audio_processor",
+          "type": "service"
+        }
+      ]
+    },
+    "api-gateway": {
+      "components": 8,
+      "existing_tests": 1,
+      "missing_tests": 7,
+      "coverage_score": 12.5,
+      "missing_test_details": [
+        {
+          "component": "routers",
+          "test_name": "test_routers",
+          "type": "module"
+        },
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "rate_limiter",
+          "test_name": "test_rate_limiter",
+          "type": "module"
+        },
+        {
+          "component": "middleware",
+          "test_name": "test_middleware",
+          "type": "module"
+        },
+        {
+          "component": "proxy",
+          "test_name": "test_proxy",
+          "type": "module"
+        },
+        {
+          "component": "security",
+          "test_name": "test_security",
+          "type": "module"
+        }
+      ]
+    },
+    "auth-service": {
+      "components": 9,
+      "existing_tests": 2,
+      "missing_tests": 8,
+      "coverage_score": 11.11111111111111,
+      "missing_test_details": [
+        {
+          "component": "dependencies",
+          "test_name": "test_dependencies",
+          "type": "module"
+        },
+        {
+          "component": "crud",
+          "test_name": "test_crud",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "database",
+          "test_name": "test_database",
+          "type": "module"
+        },
+        {
+          "component": "models",
+          "test_name": "test_models",
+          "type": "module"
+        },
+        {
+          "component": "schemas",
+          "test_name": "test_schemas",
+          "type": "module"
+        },
+        {
+          "component": "security",
+          "test_name": "test_security",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        }
+      ]
+    },
+    "cache-service": {
+      "components": 0,
+      "existing_tests": 0,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "common": {
+      "components": 0,
+      "existing_tests": 0,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "compliance-service": {
+      "components": 0,
+      "existing_tests": 0,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "data-ingestion": {
+      "components": 0,
+      "existing_tests": 0,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "data-service": {
+      "components": 11,
+      "existing_tests": 1,
+      "missing_tests": 10,
+      "coverage_score": 9.090909090909092,
+      "missing_test_details": [
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "database",
+          "test_name": "test_database",
+          "type": "module"
+        },
+        {
+          "component": "celery_app",
+          "test_name": "test_celery_app",
+          "type": "module"
+        },
+        {
+          "component": "celery_tasks",
+          "test_name": "test_celery_tasks",
+          "type": "module"
+        },
+        {
+          "component": "schemas",
+          "test_name": "test_schemas",
+          "type": "module"
+        },
+        {
+          "component": "storage",
+          "test_name": "test_storage",
+          "type": "module"
+        },
+        {
+          "component": "audio_validator",
+          "test_name": "test_audio_validator",
+          "type": "module"
+        },
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "process",
+          "test_name": "test_process",
+          "type": "router"
+        },
+        {
+          "component": "upload",
+          "test_name": "test_upload",
+          "type": "router"
+        }
+      ]
+    },
+    "graphql-gateway": {
+      "components": 6,
+      "existing_tests": 0,
+      "missing_tests": 6,
+      "coverage_score": 0.0,
+      "missing_test_details": [
+        {
+          "component": "schema",
+          "test_name": "test_schema",
+          "type": "module"
+        },
+        {
+          "component": "types",
+          "test_name": "test_types",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "middleware",
+          "test_name": "test_middleware",
+          "type": "module"
+        },
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        }
+      ]
+    },
+    "inference-service": {
+      "components": 9,
+      "existing_tests": 1,
+      "missing_tests": 8,
+      "coverage_score": 11.11111111111111,
+      "missing_test_details": [
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "database",
+          "test_name": "test_database",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "storage",
+          "test_name": "test_storage",
+          "type": "module"
+        },
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "models",
+          "test_name": "test_models",
+          "type": "router"
+        },
+        {
+          "component": "model_manager",
+          "test_name": "test_model_manager",
+          "type": "service"
+        },
+        {
+          "component": "synthesis_engine",
+          "test_name": "test_synthesis_engine",
+          "type": "service"
+        }
+      ]
+    },
+    "music-service": {
+      "components": 0,
+      "existing_tests": 0,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "payment-service": {
+      "components": 0,
+      "existing_tests": 0,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "scheduler-service": {
+      "components": 12,
+      "existing_tests": 4,
+      "missing_tests": 11,
+      "coverage_score": 8.333333333333332,
+      "missing_test_details": [
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "celery_app",
+          "test_name": "test_celery_app",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "database",
+          "test_name": "test_database",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "models",
+          "test_name": "test_models",
+          "type": "module"
+        },
+        {
+          "component": "schemas",
+          "test_name": "test_schemas",
+          "type": "module"
+        },
+        {
+          "component": "tasks",
+          "test_name": "test_tasks",
+          "type": "module"
+        },
+        {
+          "component": "entrepreneur_scheduler",
+          "test_name": "test_entrepreneur_scheduler",
+          "type": "module"
+        },
+        {
+          "component": "entrepreneur_scheduler_refactored",
+          "test_name": "test_entrepreneur_scheduler_refactored",
+          "type": "module"
+        },
+        {
+          "component": "entrepreneur_scheduler_routes",
+          "test_name": "test_entrepreneur_scheduler_routes",
+          "type": "router"
+        }
+      ]
+    },
+    "social-service": {
+      "components": 8,
+      "existing_tests": 1,
+      "missing_tests": 7,
+      "coverage_score": 12.5,
+      "missing_test_details": [
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "schemas",
+          "test_name": "test_schemas",
+          "type": "module"
+        },
+        {
+          "component": "entrepreneur_publisher",
+          "test_name": "test_entrepreneur_publisher",
+          "type": "module"
+        },
+        {
+          "component": "analytics",
+          "test_name": "test_analytics",
+          "type": "router"
+        },
+        {
+          "component": "entrepreneur_publishing",
+          "test_name": "test_entrepreneur_publishing",
+          "type": "router"
+        }
+      ]
+    },
+    "storage-service": {
+      "components": 9,
+      "existing_tests": 4,
+      "missing_tests": 5,
+      "coverage_score": 44.44444444444444,
+      "missing_test_details": [
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "crud",
+          "test_name": "test_crud",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "models",
+          "test_name": "test_models",
+          "type": "module"
+        },
+        {
+          "component": "database",
+          "test_name": "test_database",
+          "type": "module"
+        }
+      ]
+    },
+    "training-worker": {
+      "components": 0,
+      "existing_tests": 1,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "trend-service": {
+      "components": 14,
+      "existing_tests": 1,
+      "missing_tests": 13,
+      "coverage_score": 7.142857142857142,
+      "missing_test_details": [
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "database",
+          "test_name": "test_database",
+          "type": "module"
+        },
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "models",
+          "test_name": "test_models",
+          "type": "module"
+        },
+        {
+          "component": "schemas",
+          "test_name": "test_schemas",
+          "type": "module"
+        },
+        {
+          "component": "analysis",
+          "test_name": "test_analysis",
+          "type": "router"
+        },
+        {
+          "component": "keywords",
+          "test_name": "test_keywords",
+          "type": "router"
+        },
+        {
+          "component": "entrepreneur",
+          "test_name": "test_entrepreneur",
+          "type": "router"
+        },
+        {
+          "component": "competitor_analyzer",
+          "test_name": "test_competitor_analyzer",
+          "type": "service"
+        },
+        {
+          "component": "content_analyzer",
+          "test_name": "test_content_analyzer",
+          "type": "service"
+        },
+        {
+          "component": "keyword_analyzer",
+          "test_name": "test_keyword_analyzer",
+          "type": "service"
+        },
+        {
+          "component": "trend_analyzer",
+          "test_name": "test_trend_analyzer",
+          "type": "service"
+        }
+      ]
+    },
+    "video-service": {
+      "components": 0,
+      "existing_tests": 9,
+      "missing_tests": 0,
+      "coverage_score": 0,
+      "missing_test_details": []
+    },
+    "voice-enhancement": {
+      "components": 10,
+      "existing_tests": 0,
+      "missing_tests": 10,
+      "coverage_score": 0.0,
+      "missing_test_details": [
+        {
+          "component": "main",
+          "test_name": "test_main",
+          "type": "module"
+        },
+        {
+          "component": "middleware",
+          "test_name": "test_middleware",
+          "type": "module"
+        },
+        {
+          "component": "auth",
+          "test_name": "test_auth",
+          "type": "module"
+        },
+        {
+          "component": "config",
+          "test_name": "test_config",
+          "type": "module"
+        },
+        {
+          "component": "cloning",
+          "test_name": "test_cloning",
+          "type": "router"
+        },
+        {
+          "component": "emotions",
+          "test_name": "test_emotions",
+          "type": "router"
+        },
+        {
+          "component": "synthesis",
+          "test_name": "test_synthesis",
+          "type": "router"
+        },
+        {
+          "component": "enhancement",
+          "test_name": "test_enhancement",
+          "type": "router"
+        },
+        {
+          "component": "emotion_synthesizer",
+          "test_name": "test_emotion_synthesizer",
+          "type": "service"
+        },
+        {
+          "component": "voice_cloner",
+          "test_name": "test_voice_cloner",
+          "type": "service"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total_services": 19,
+    "total_components": 108,
+    "total_existing_tests": 27,
+    "total_missing_tests": 96,
+    "overall_coverage": 11.11111111111111
+  }
+}

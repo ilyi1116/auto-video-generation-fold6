@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-08-04T22:52:25.635343",
+  "summary": {
+    "total_validations": 7,
+    "passed_validations": 5,
+    "success_rate": 71.42857142857143
+  },
+  "results": [
+    {
+      "component": "專案結構",
+      "status": "✅ PASS",
+      "message": "所有關鍵目錄存在",
+      "details": {},
+      "timestamp": "2025-08-04T22:52:25.634204"
+    },
+    {
+      "component": "Docker docker-compose.yml",
+      "status": "✅ PASS",
+      "message": "路徑已更新為新結構",
+      "details": {},
+      "timestamp": "2025-08-04T22:52:25.634310"
+    },
+    {
+      "component": "Docker docker-compose.unified.yml",
+      "status": "✅ PASS",
+      "message": "路徑已更新為新結構",
+      "details": {},
+      "timestamp": "2025-08-04T22:52:25.634427"
+    },
+    {
+      "component": "服務 Dockerfile",
+      "status": "❌ FAIL",
+      "message": "14 個服務有 Dockerfile，5 個缺少",
+      "details": {
+        "with_dockerfile": [
+          "ai-service",
+          "api-gateway",
+          "auth-service",
+          "data-ingestion",
+          "data-service",
+          "graphql-gateway",
+          "inference-service",
+          "scheduler-service",
+          "social-service",
+          "storage-service",
+          "training-worker",
+          "trend-service",
+          "video-service",
+          "voice-enhancement"
+        ],
+        "without_dockerfile": [
+          "cache-service",
+          "common",
+          "compliance-service",
+          "music-service",
+          "payment-service"
+        ]
+      },
+      "timestamp": "2025-08-04T22:52:25.634935"
+    },
+    {
+      "component": "配置檔案",
+      "status": "✅ PASS",
+      "message": "所有關鍵配置檔案存在",
+      "details": {},
+      "timestamp": "2025-08-04T22:52:25.635031"
+    },
+    {
+      "component": "共享庫",
+      "status": "✅ PASS",
+      "message": "共享庫配置完整",
+      "details": {},
+      "timestamp": "2025-08-04T22:52:25.635089"
+    },
+    {
+      "component": "監控配置",
+      "status": "❌ FAIL",
+      "message": "發現 3 個問題",
+      "details": {
+        "issues": [
+          "Prometheus 配置缺少 storage-service:8009",
+          "Prometheus 配置缺少 api-gateway:8000",
+          "Prometheus 配置缺少 auth-service:8001"
+        ]
+      },
+      "timestamp": "2025-08-04T22:52:25.635243"
+    },
+    {
+      "component": "CI/CD 配置",
+      "status": "✅ PASS",
+      "message": "所有 CI/CD 工作流程配置完整",
+      "details": {},
+      "timestamp": "2025-08-04T22:52:25.635328"
+    }
+  ]
+}
