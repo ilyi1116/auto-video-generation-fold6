@@ -1865,6 +1865,12 @@ app.include_router(tracing_router, prefix="/admin")
 from .api.logs import router as logs_router
 app.include_router(logs_router, prefix="/admin")
 
+# ============= 用戶行為追蹤 API =============
+
+# 包含用戶行為追蹤 API
+from .api.behavior import router as behavior_router
+app.include_router(behavior_router, prefix="/admin")
+
 # ============= API 安全防護 =============
 
 @app.get("/admin/security/rate-limits/stats")

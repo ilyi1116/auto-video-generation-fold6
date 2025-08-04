@@ -21,7 +21,9 @@ celery_app = Celery(
         "services.admin-service.tasks.monitoring_tasks",
         "services.admin-service.tasks.model_tasks",
         "services.admin-service.tasks.tracing_tasks",
-        "services.admin-service.tasks.log_tasks"
+        "services.admin-service.tasks.log_tasks",
+        "services.admin-service.tasks.behavior_tasks",
+        "services.admin-service.tasks.auth_tasks"
     ]
 )
 
@@ -45,6 +47,8 @@ celery_app.conf.update(
         "model.*": {"queue": "models"},
         "tracing.*": {"queue": "tracing"},
         "logs.*": {"queue": "logs"},
+        "behavior.*": {"queue": "behavior"},
+        "auth.*": {"queue": "auth"},
     },
     
     # 任務過期設置
@@ -247,6 +251,117 @@ celery_app.conf.update(
             "schedule": crontab(hour=10, minute=0),  # 每天10:00
             "options": {"queue": "logs"},
             "kwargs": {"report_params": {"report_type": "daily"}}
+        },
+        
+        # 行為追蹤健康檢查 - 每10分鐘
+        "behavior-health-check": {
+            "task": "behavior.behavior_health_check_task",
+            "schedule": crontab(minute="*/10"),  # 每10分鐘
+            "options": {"queue": "behavior"}
+        },
+        
+        # 每日行為分析 - 每天早上6點
+        "behavior-daily-analysis": {
+            "task": "behavior.daily_behavior_analysis_task",
+            "schedule": crontab(hour=6, minute=0),  # 每天6:00
+            "options": {"queue": "behavior"}
+        },
+        
+        # 行為模式檢測 - 每4小時
+        "behavior-pattern-detection": {
+            "task": "behavior.detect_behavior_patterns_task",
+            "schedule": crontab(minute=0, hour="*/4"),  # 每4小時
+            "options": {"queue": "behavior"},
+            "kwargs": {"pattern_type": "all", "days": 1}
+        },
+        
+        # 行為洞察生成 - 每天早上8點
+        "behavior-insights-generation": {
+            "task": "behavior.generate_behavior_insights_task",
+            "schedule": crontab(hour=8, minute=0),  # 每天8:00
+            "options": {"queue": "behavior"},
+            "kwargs": {"days": 1}
+        },
+        
+        # 行為異常檢測 - 每30分鐘
+        "behavior-anomaly-detection": {
+            "task": "behavior.detect_behavior_anomalies_task",
+            "schedule": crontab(minute="*/30"),  # 每30分鐘
+            "options": {"queue": "behavior"},
+            "kwargs": {"hours": 2}
+        },
+        
+        # 每週行為報告 - 每週一早上9點
+        "behavior-weekly-report": {
+            "task": "behavior.weekly_behavior_report_task",
+            "schedule": crontab(hour=9, minute=0, day_of_week=1),  # 每週一9:00
+            "options": {"queue": "behavior"}
+        },
+        
+        # 行為數據清理 - 每天凌晨7點
+        "behavior-data-cleanup": {
+            "task": "behavior.cleanup_old_behavior_data_task",
+            "schedule": crontab(hour=7, minute=0),  # 每天7:00
+            "options": {"queue": "behavior"},
+            "kwargs": {"days": 30}
+        },
+        
+        # 認證系統健康檢查 - 每10分鐘
+        "auth-health-check": {
+            "task": "auth.auth_health_check_task",
+            "schedule": crontab(minute="*/10"),  # 每10分鐘
+            "options": {"queue": "auth"}
+        },
+        
+        # 會話清理 - 每小時
+        "auth-session-cleanup": {
+            "task": "auth.session_cleanup_task",
+            "schedule": crontab(minute=0),  # 每小時整點
+            "options": {"queue": "auth"}
+        },
+        
+        # 安全監控 - 每15分鐘
+        "auth-security-monitoring": {
+            "task": "auth.security_monitoring_task",
+            "schedule": crontab(minute="*/15"),  # 每15分鐘
+            "options": {"queue": "auth"}
+        },
+        
+        # 密碼策略檢查 - 每天早上9點
+        "auth-password-policy-check": {
+            "task": "auth.password_policy_check_task",
+            "schedule": crontab(hour=9, minute=0),  # 每天9:00
+            "options": {"queue": "auth"}
+        },
+        
+        # 角色審計 - 每週二早上10點
+        "auth-role-audit": {
+            "task": "auth.role_audit_task",
+            "schedule": crontab(hour=10, minute=0, day_of_week=2),  # 每週二10:00
+            "options": {"queue": "auth"}
+        },
+        
+        # 用戶活動分析 - 每6小時
+        "auth-user-activity-analysis": {
+            "task": "auth.user_activity_analysis_task",
+            "schedule": crontab(minute=0, hour="*/6"),  # 每6小時
+            "options": {"queue": "auth"},
+            "kwargs": {"hours": 6}
+        },
+        
+        # 安全報告生成 - 每天早上8點
+        "auth-security-report": {
+            "task": "auth.generate_security_report_task",
+            "schedule": crontab(hour=8, minute=0),  # 每天8:00
+            "options": {"queue": "auth"},
+            "kwargs": {"days": 1}
+        },
+        
+        # 認證配置備份 - 每天凌晨4點
+        "auth-config-backup": {
+            "task": "auth.backup_auth_config_task",
+            "schedule": crontab(hour=4, minute=0),  # 每天4:00
+            "options": {"queue": "auth"}
         }
     }
 )
@@ -296,6 +411,16 @@ class CeleryConfig:
                 "exchange": "logs",
                 "exchange_type": "direct",
                 "routing_key": "logs"
+            },
+            "behavior": {
+                "exchange": "behavior",
+                "exchange_type": "direct",
+                "routing_key": "behavior"
+            },
+            "auth": {
+                "exchange": "auth",
+                "exchange_type": "direct",
+                "routing_key": "auth"
             }
         }
     
@@ -332,6 +457,16 @@ class CeleryConfig:
                 "concurrency": 4,
                 "max_memory_per_child": 300000,  # 300MB
                 "queues": ["logs"]
+            },
+            "behavior": {
+                "concurrency": 3,
+                "max_memory_per_child": 250000,  # 250MB
+                "queues": ["behavior"]
+            },
+            "auth": {
+                "concurrency": 2,
+                "max_memory_per_child": 200000,  # 200MB
+                "queues": ["auth"]
             }
         }
 
