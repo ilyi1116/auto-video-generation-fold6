@@ -1,33 +1,34 @@
 import os
+import sys
+from pathlib import Path
 from typing import List
 
-from pydantic_settings import BaseSettings
+# 添加共享庫路徑
+sys.path.append(str(Path(__file__).parent.parent.parent.parent / "shared"))
+
+from config import BaseServiceSettings
 
 
-class Settings(BaseSettings):
+class Settings(BaseServiceSettings):
+    """API Gateway 配置 - 繼承統一基礎配置"""
+    service_name: str = "api-gateway"
+    api_port: int = int(os.getenv("API_PORT", "8000"))
+    
     # API Configuration
     project_name: str = os.getenv(
         "PROJECT_NAME", "Auto Video Generation API Gateway"
     )
     api_v1_str: str = "/api/v1"
-    debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
-    # CORS Configuration
+    # CORS Configuration (繼承自基類，但可以擴展)
     allowed_hosts: List[str] = os.getenv(
         "ALLOWED_HOSTS", "localhost,127.0.0.1"
     ).split(",")
-    cors_origins: List[str] = os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"
-    ).split(",")
 
-    # Logging
-    log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    # Logging (繼承自基類)
     structured_logging: bool = (
         os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
     )
-
-    # Redis Configuration
-    redis_url: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
 
     # Rate Limiting
     rate_limit_per_minute: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
