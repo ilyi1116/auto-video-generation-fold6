@@ -1,0 +1,651 @@
+<script>
+  import { onMount } from 'svelte';
+  import { apiClient } from '$lib/api/client';
+  import { toastStore } from '$lib/stores/toast';
+  import { 
+    Image, 
+    Wand2, 
+    RefreshCw, 
+    Download, 
+    Heart,
+    Share2,
+    Copy,
+    Settings,
+    Palette,
+    Camera,
+    Zap,
+    Grid,
+    List,
+    Filter,
+    Search,
+    Plus,
+    Trash2,
+    Edit3
+  } from 'lucide-svelte';
+
+  let isGenerating = false;
+  let generatedImages = [];
+  let imageHistory = [];
+  let selectedImages = new Set();
+  let viewMode = 'grid';
+  let showAdvanced = false;
+  
+  // Form data
+  let formData = {
+    prompt: '',
+    style: 'realistic',
+    aspect_ratio: '16:9',
+    quality: 'standard',
+    count: 4,
+    negative_prompt: '',
+    seed: '',
+    guidance_scale: 7.5,
+    steps: 20
+  };
+
+  // Configuration options
+  const styles = [
+    { value: 'realistic', label: 'Realistic', preview: '📸' },
+    { value: 'artistic', label: 'Artistic', preview: '🎨' },
+    { value: 'cartoon', label: 'Cartoon', preview: '🎭' },
+    { value: 'anime', label: 'Anime', preview: '👁️' },
+    { value: 'abstract', label: 'Abstract', preview: '🌀' },
+    { value: 'vintage', label: 'Vintage', preview: '📼' },
+    { value: 'futuristic', label: 'Futuristic', preview: '🚀' },
+    { value: 'minimalist', label: 'Minimalist', preview: '⚪' }
+  ];
+
+  const aspectRatios = [
+    { value: '1:1', label: 'Square (1:1)', description: 'Perfect for Instagram posts' },
+    { value: '16:9', label: 'Landscape (16:9)', description: 'Great for YouTube thumbnails' },
+    { value: '9:16', label: 'Portrait (9:16)', description: 'Ideal for TikTok and Stories' },
+    { value: '4:3', label: 'Classic (4:3)', description: 'Traditional photo format' },
+    { value: '21:9', label: 'Cinematic (21:9)', description: 'Widescreen format' }
+  ];
+
+  const qualityOptions = [
+    { value: 'draft', label: 'Draft', description: 'Fast generation, lower quality' },
+    { value: 'standard', label: 'Standard', description: 'Balanced speed and quality' },
+    { value: 'high', label: 'High', description: 'Slower but better quality' },
+    { value: 'ultra', label: 'Ultra', description: 'Best quality, longest wait' }
+  ];
+
+  const promptSuggestions = [
+    "A modern office workspace with natural lighting",
+    "Abstract colorful background for social media",
+    "Professional headshot of a confident businessperson",
+    "Minimalist product photography setup",
+    "Vibrant food photography with bokeh background",
+    "Cozy home interior with warm lighting",
+    "Technology and innovation concept art",
+    "Nature landscape with dramatic sky"
+  ];
+
+  onMount(() => {
+    loadImageHistory();
+  });
+
+  async function loadImageHistory() {
+    try {
+      // Simulate loading image history
+      imageHistory = [
+        {
+          id: 1,
+          prompt: 'Modern office workspace',
+          url: '/api/placeholder/400/300',
+          style: 'realistic',
+          createdAt: new Date().toISOString(),
+          liked: false,
+          downloads: 12
+        },
+        {
+          id: 2,
+          prompt: 'Abstract colorful background',
+          url: '/api/placeholder/400/300',
+          style: 'abstract',
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          liked: true,
+          downloads: 8
+        }
+      ];
+    } catch (error) {
+      console.error('Error loading image history:', error);
+    }
+  }
+
+  async function generateImages() {
+    if (!formData.prompt.trim()) {
+      toastStore.error('Please enter a prompt for your images');
+      return;
+    }
+
+    isGenerating = true;
+    generatedImages = [];
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      
+      const mockImages = Array.from({ length: formData.count }, (_, i) => ({
+        id: Date.now() + i,
+        url: `/api/placeholder/400/300?text=Generated+Image+${i + 1}`,
+        prompt: formData.prompt,
+        style: formData.style,
+        aspect_ratio: formData.aspect_ratio,
+        seed: Math.floor(Math.random() * 1000000),
+        liked: false,
+        createdAt: new Date().toISOString()
+      }));
+      
+      generatedImages = mockImages;
+      
+      // Add to history
+      imageHistory = [...mockImages.map(img => ({
+        ...img,
+        downloads: 0
+      })), ...imageHistory];
+      
+      toastStore.success(`Generated ${formData.count} images successfully!`);
+    } catch (error) {
+      console.error('Error generating images:', error);
+      toastStore.error('Failed to generate images. Please try again.');
+    } finally {
+      isGenerating = false;
+    }
+  }
+
+  function toggleImageSelection(imageId) {
+    if (selectedImages.has(imageId)) {
+      selectedImages.delete(imageId);
+    } else {
+      selectedImages.add(imageId);
+    }
+    selectedImages = selectedImages;
+  }
+
+  function toggleLike(imageId) {
+    const image = generatedImages.find(img => img.id === imageId) || 
+                  imageHistory.find(img => img.id === imageId);
+    if (image) {
+      image.liked = !image.liked;
+      generatedImages = generatedImages;
+      imageHistory = imageHistory;
+    }
+  }
+
+  async function downloadImage(image) {
+    try {
+      // In a real app, this would download the actual image
+      const link = document.createElement('a');
+      link.href = image.url;
+      link.download = `generated-image-${image.id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Update download count
+      const historyItem = imageHistory.find(img => img.id === image.id);
+      if (historyItem) {
+        historyItem.downloads++;
+        imageHistory = imageHistory;
+      }
+      
+      toastStore.success('Image downloaded!');
+    } catch (error) {
+      toastStore.error('Failed to download image');
+    }
+  }
+
+  function usePromptSuggestion(suggestion) {
+    formData.prompt = suggestion;
+  }
+
+  function copyPrompt(prompt) {
+    navigator.clipboard.writeText(prompt);
+    toastStore.success('Prompt copied to clipboard!');
+  }
+
+  function regenerateWithSeed(image) {
+    formData.prompt = image.prompt;
+    formData.style = image.style;
+    formData.seed = image.seed.toString();
+    generateImages();
+  }
+
+  function createVariations(image) {
+    formData.prompt = `${image.prompt}, variation`;
+    formData.style = image.style;
+    formData.seed = '';
+    generateImages();
+  }
+
+  function getStylePreview(style) {
+    const styleObj = styles.find(s => s.value === style);
+    return styleObj ? styleObj.preview : '🎨';
+  }
+
+  function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+</script>
+
+<svelte:head>
+  <title>AI Image Generator - AutoVideo</title>
+</svelte:head>
+
+<div class="max-w-7xl mx-auto space-y-8">
+  <!-- Header -->
+  <div class="text-center">
+    <div class="flex items-center justify-center mb-4">
+      <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+        <Image class="w-6 h-6 text-white" />
+      </div>
+    </div>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      AI Image Generator
+    </h1>
+    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+      Create stunning, professional images from text descriptions using advanced AI models
+    </p>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+    <!-- Main Form -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Image Generation Form -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Create Images</h2>
+        </div>
+        <div class="card-body space-y-6">
+          <!-- Prompt Input -->
+          <div>
+            <label for="prompt" class="form-label">
+              Describe your image *
+            </label>
+            <textarea
+              id="prompt"
+              bind:value={formData.prompt}
+              placeholder="e.g., A modern office workspace with natural lighting, professional photography style..."
+              rows="3"
+              class="form-input resize-none"
+              disabled={isGenerating}
+            ></textarea>
+          </div>
+
+          <!-- Style Selection -->
+          <div>
+            <label class="form-label">Style</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {#each styles as style}
+                <button
+                  type="button"
+                  class="p-3 border-2 rounded-lg text-center transition-colors {formData.style === style.value
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}"
+                  on:click={() => formData.style = style.value}
+                  disabled={isGenerating}
+                >
+                  <div class="text-2xl mb-1">{style.preview}</div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{style.label}</div>
+                </button>
+              {/each}
+            </div>
+          </div>
+
+          <!-- Aspect Ratio and Quality -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label for="aspect_ratio" class="form-label">Aspect Ratio</label>
+              <select id="aspect_ratio" bind:value={formData.aspect_ratio} class="form-input" disabled={isGenerating}>
+                {#each aspectRatios as ratio}
+                  <option value={ratio.value}>{ratio.label}</option>
+                {/each}
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {aspectRatios.find(r => r.value === formData.aspect_ratio)?.description}
+              </p>
+            </div>
+            
+            <div>
+              <label for="quality" class="form-label">Quality</label>
+              <select id="quality" bind:value={formData.quality} class="form-input" disabled={isGenerating}>
+                {#each qualityOptions as quality}
+                  <option value={quality.value}>{quality.label}</option>
+                {/each}
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {qualityOptions.find(q => q.value === formData.quality)?.description}
+              </p>
+            </div>
+          </div>
+
+          <!-- Number of Images -->
+          <div>
+            <label for="count" class="form-label">Number of Images</label>
+            <div class="flex items-center space-x-4">
+              <input
+                id="count"
+                type="range"
+                bind:value={formData.count}
+                min="1"
+                max="8"
+                class="flex-1"
+                disabled={isGenerating}
+              />
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-8">
+                {formData.count}
+              </span>
+            </div>
+          </div>
+
+          <!-- Advanced Options -->
+          <div>
+            <button
+              type="button"
+              class="flex items-center text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400"
+              on:click={() => showAdvanced = !showAdvanced}
+            >
+              <Settings class="w-4 h-4 mr-2" />
+              Advanced Settings
+              <div class="ml-1 transition-transform {showAdvanced ? 'rotate-180' : ''}">▼</div>
+            </button>
+            
+            {#if showAdvanced}
+              <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-4">
+                <div>
+                  <label for="negative_prompt" class="form-label">Negative Prompt</label>
+                  <textarea
+                    id="negative_prompt"
+                    bind:value={formData.negative_prompt}
+                    placeholder="Things you don't want in the image (e.g., blurry, low quality, distorted)"
+                    rows="2"
+                    class="form-input resize-none"
+                    disabled={isGenerating}
+                  ></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="seed" class="form-label">Seed (optional)</label>
+                    <input
+                      id="seed"
+                      type="number"
+                      bind:value={formData.seed}
+                      placeholder="Random"
+                      class="form-input"
+                      disabled={isGenerating}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label for="guidance_scale" class="form-label">Guidance Scale</label>
+                    <input
+                      id="guidance_scale"
+                      type="range"
+                      bind:value={formData.guidance_scale}
+                      min="1"
+                      max="20"
+                      step="0.5"
+                      class="form-input"
+                      disabled={isGenerating}
+                    />
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {formData.guidance_scale} (Higher = more prompt adherence)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Generate Button -->
+          <div>
+            <button
+              type="button"
+              class="btn-primary w-full flex items-center justify-center"
+              on:click={generateImages}
+              disabled={isGenerating || !formData.prompt.trim()}
+            >
+              {#if isGenerating}
+                <RefreshCw class="w-4 h-4 mr-2 animate-spin" />
+                Generating Images...
+              {:else}
+                <Wand2 class="w-4 h-4 mr-2" />
+                Generate Images
+              {/if}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated Images -->
+      {#if generatedImages.length > 0}
+        <div class="card">
+          <div class="card-header">
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Generated Images</h2>
+              <div class="flex items-center space-x-2">
+                {#if selectedImages.size > 0}
+                  <button class="btn-secondary flex items-center">
+                    <Download class="w-4 h-4 mr-2" />
+                    Download Selected ({selectedImages.size})
+                  </button>
+                {/if}
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {#each generatedImages as image}
+                <div class="relative group bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  <!-- Image -->
+                  <div class="aspect-video bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                    <Camera class="w-12 h-12 text-gray-400" />
+                  </div>
+                  
+                  <!-- Overlay Actions -->
+                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div class="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        class="p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+                        on:click={() => downloadImage(image)}
+                      >
+                        <Download class="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        class="p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100 transition-colors {image.liked ? 'text-red-500' : ''}"
+                        on:click={() => toggleLike(image.id)}
+                      >
+                        <Heart class="w-4 h-4 {image.liked ? 'fill-current' : ''}" />
+                      </button>
+                      <button
+                        type="button"
+                        class="p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+                        on:click={() => createVariations(image)}
+                      >
+                        <RefreshCw class="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Selection Checkbox -->
+                  <div class="absolute top-2 left-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedImages.has(image.id)}
+                      on:change={() => toggleImageSelection(image.id)}
+                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  
+                  <!-- Image Info -->
+                  <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                    <div class="text-white">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-medium">Seed: {image.seed}</span>
+                        <div class="flex items-center space-x-1">
+                          <span class="text-xs">{getStylePreview(image.style)}</span>
+                          <span class="text-xs">{image.style}</span>
+                        </div>
+                      </div>
+                      <p class="text-xs opacity-90 truncate">{image.prompt}</p>
+                    </div>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Prompt Suggestions -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Palette class="w-5 h-5 text-purple-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Prompt Ideas</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-2">
+            {#each promptSuggestions as suggestion}
+              <button
+                type="button"
+                class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                on:click={() => usePromptSuggestion(suggestion)}
+              >
+                {suggestion}
+              </button>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Images -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <Camera class="w-5 h-5 text-blue-500 mr-2" />
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Images</h3>
+            </div>
+            <div class="flex">
+              <button
+                type="button"
+                class="p-1 rounded {viewMode === 'grid' ? 'bg-gray-200 dark:bg-gray-600' : ''}"
+                on:click={() => viewMode = 'grid'}
+              >
+                <Grid class="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                class="p-1 rounded {viewMode === 'list' ? 'bg-gray-200 dark:bg-gray-600' : ''}"
+                on:click={() => viewMode = 'list'}
+              >
+                <List class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          {#if imageHistory.length > 0}
+            <div class="space-y-3">
+              {#each imageHistory.slice(0, 8) as image}
+                <div class="flex items-center space-x-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                  <div class="w-12 h-8 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center flex-shrink-0">
+                    <Image class="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {image.prompt}
+                    </p>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(image.createdAt)}
+                      </span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {image.downloads} downloads
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    <button
+                      type="button"
+                      class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      on:click={() => copyPrompt(image.prompt)}
+                    >
+                      <Copy class="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      class="p-1 text-gray-400 hover:text-red-500 {image.liked ? 'text-red-500' : ''}"
+                      on:click={() => toggleLike(image.id)}
+                    >
+                      <Heart class="w-3 h-3 {image.liked ? 'fill-current' : ''}" />
+                    </button>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="text-center py-4">
+              <Image class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Your generated images will appear here
+              </p>
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Zap class="w-5 h-5 text-yellow-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pro Tips</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-3 text-sm">
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Be specific about style, lighting, and composition
+              </p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Use artistic terms like "bokeh," "golden hour," "macro"
+              </p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Mention camera settings for photorealistic results
+              </p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Use negative prompts to avoid unwanted elements
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,537 @@
+version: '3.8'
+
+# Resource-optimized Docker Compose configuration
+# Fine-tuned resource limits and performance optimizations for production
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-healthcheck: &default-healthcheck
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 30s
+
+x-restart-policy: &default-restart
+  restart: unless-stopped
+
+services:
+  # Frontend - Lightweight static serving
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=256
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+          pids: 100
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=50M,noexec,nosuid,nodev
+
+  # API Gateway - Central routing with moderate resources
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - UVICORN_WORKERS=2
+      - UVICORN_MAX_REQUESTS=1000
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 512M
+          pids: 200
+        reservations:
+          cpus: '0.4'
+          memory: 256M
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # Trend Service - CPU intensive for web scraping
+  trend-service:
+    build:
+      context: ./services/trend-service
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8007:8007"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - UVICORN_WORKERS=2
+      - SELENIUM_TIMEOUT=30
+      - MAX_CONCURRENT_REQUESTS=5
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 768M
+          pids: 150
+        reservations:
+          cpus: '0.5'
+          memory: 384M
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 256M  # For Chrome/Selenium
+
+  # Video Service - High memory and CPU for video processing
+  video-service:
+    build:
+      context: ./services/video-service
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8003:8003"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - UVICORN_WORKERS=3
+      - FFMPEG_THREADS=4
+      - VIDEO_MEMORY_LIMIT=1024M
+      - TEMP_DIR=/tmp/video-processing
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - app-network
+    <<: *default-restart
+    volumes:
+      - video_temp:/tmp/video-processing:rw
+      - video_cache:/app/cache:rw
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+          pids: 300
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      timeout: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+
+  # Social Service - Moderate resources for API calls
+  social-service:
+    build:
+      context: ./services/social-service
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8006:8006"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - UVICORN_WORKERS=2
+      - RATE_LIMIT_PER_MINUTE=60
+      - MAX_CONCURRENT_UPLOADS=3
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+          pids: 100
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # Scheduler Service - Low to moderate resources
+  scheduler-service:
+    build:
+      context: ./services/scheduler-service
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8008:8008"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - UVICORN_WORKERS=1
+      - MAX_CONCURRENT_TASKS=5
+      - TASK_TIMEOUT=300
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    <<: *default-restart
+    volumes:
+      - scheduler_data:/app/storage:rw
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+          pids: 80
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # PostgreSQL - Database with optimized settings
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--data-checksums --auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+      - ./scripts/video_schema.sql:/docker-entrypoint-initdb.d/02-video-schema.sql:ro
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+          pids: 200
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: >
+      postgres
+      -c max_connections=100
+      -c shared_buffers=256MB
+      -c effective_cache_size=768MB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+      -c max_worker_processes=4
+      -c max_parallel_workers_per_gather=2
+      -c max_parallel_workers=4
+      -c max_parallel_maintenance_workers=2
+      -c log_min_duration_statement=1000
+      -c log_checkpoints=on
+      -c log_connections=on
+      -c log_disconnections=on
+      -c log_lock_waits=on
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # Redis - Memory store with optimizations
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1 300 10 60 10000
+      --tcp-keepalive 300
+      --timeout 300
+      --maxclients 1000
+      --tcp-backlog 511
+      --databases 16
+      --slowlog-log-slower-than 10000
+      --slowlog-max-len 128
+      --hash-max-ziplist-entries 512
+      --hash-max-ziplist-value 64
+      --list-max-ziplist-size -2
+      --list-compress-depth 0
+      --set-max-intset-entries 512
+      --zset-max-ziplist-entries 128
+      --zset-max-ziplist-value 64
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+          pids: 50
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # MinIO - Object storage with caching
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY}
+      MINIO_STORAGE_CLASS_STANDARD: EC:2
+      MINIO_CACHE_DRIVES: /cache
+      MINIO_CACHE_QUOTA: 80
+      MINIO_CACHE_AFTER: 1
+      MINIO_CACHE_WATERMARK_LOW: 70
+      MINIO_CACHE_WATERMARK_HIGH: 80
+    volumes:
+      - minio_data:/data
+      - minio_cache:/cache
+    networks:
+      - app-network
+    command: >
+      server /data
+      --console-address ":9001"
+      --address ":9000"
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 768M
+          pids: 100
+        reservations:
+          cpus: '0.3'
+          memory: 384M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 60s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # Nginx - Reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-optimized.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/cache:/var/cache/nginx:rw
+      - nginx_logs:/var/log/nginx:rw
+    depends_on:
+      - api-gateway
+      - frontend
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+          pids: 50
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+  # Resource monitoring
+  resource-monitor:
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile.monitor
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./monitoring:/app/config:ro
+    networks:
+      - app-network
+    <<: *default-restart
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 128M
+          pids: 20
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    environment:
+      - MONITOR_INTERVAL=30
+      - ALERT_THRESHOLD_CPU=80
+      - ALERT_THRESHOLD_MEMORY=85
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  app-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: auto-video-optimized
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/auto-video/data/postgres
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/auto-video/data/redis  
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/auto-video/data/minio
+  minio_cache:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=1G,uid=1000,gid=1000
+  video_temp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=2G,uid=1000,gid=1000
+  video_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/auto-video/cache/video
+  scheduler_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/auto-video/data/scheduler
+  nginx_logs:
+    driver: local

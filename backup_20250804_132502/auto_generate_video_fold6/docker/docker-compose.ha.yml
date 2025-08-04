@@ -1,0 +1,557 @@
+# 高可用性 Docker Compose 配置
+# 支援多副本、負載均衡和故障轉移
+
+version: '3.8'
+
+services:
+  # 負載均衡器 - HAProxy
+  load-balancer:
+    image: haproxy:2.8
+    container_name: auto-video-lb
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # API Gateway
+      - "8404:8404"  # HAProxy Stats
+    volumes:
+      - ./config/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./ssl:/etc/ssl/certs:ro
+    networks:
+      - auto-video-network
+    depends_on:
+      - api-gateway-1
+      - api-gateway-2
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8404/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway - 多副本
+  api-gateway-1:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: auto-video-api-1
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres-primary:5432/auto_video
+      - REDIS_URL=redis://redis-primary:6379
+      - INSTANCE_ID=api-gateway-1
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api-gateway-2:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: auto-video-api-2
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres-primary:5432/auto_video
+      - REDIS_URL=redis://redis-primary:6379
+      - INSTANCE_ID=api-gateway-2
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL 主從架構
+  postgres-primary:
+    image: postgres:15
+    container_name: auto-video-postgres-primary
+    environment:
+      - POSTGRES_DB=auto_video
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD}
+    volumes:
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./config/postgresql/primary:/docker-entrypoint-initdb.d
+      - ./config/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./config/postgresql/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    networks:
+      - auto-video-network
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: |
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+
+  postgres-replica:
+    image: postgres:15
+    container_name: auto-video-postgres-replica
+    environment:
+      - POSTGRES_DB=auto_video
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGUSER=postgres
+      - POSTGRES_PRIMARY_HOST=postgres-primary
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD}
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./config/postgresql/replica:/docker-entrypoint-initdb.d
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: |
+      bash -c "
+      until pg_basebackup -h postgres-primary -D /var/lib/postgresql/data -U replicator -v -P -W; do
+        echo 'Waiting for primary to be ready...'
+        sleep 5s
+      done
+      echo 'standby_mode = on' >> /var/lib/postgresql/data/recovery.conf
+      echo 'primary_conninfo = host=postgres-primary port=5432 user=replicator' >> /var/lib/postgresql/data/recovery.conf
+      postgres
+      "
+
+  # Redis 主從 + Sentinel
+  redis-primary:
+    image: redis:7-alpine
+    container_name: auto-video-redis-primary
+    command: |
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_primary_data:/data
+    networks:
+      - auto-video-network
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis-replica:
+    image: redis:7-alpine
+    container_name: auto-video-redis-replica
+    command: |
+      redis-server
+      --appendonly yes
+      --slaveof redis-primary 6379
+      --masterauth ${REDIS_PASSWORD}
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_replica_data:/data
+    networks:
+      - auto-video-network
+    depends_on:
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Sentinel
+  redis-sentinel-1:
+    image: redis:7-alpine
+    container_name: auto-video-redis-sentinel-1
+    command: |
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./config/redis/sentinel.conf:/etc/redis/sentinel.conf
+    networks:
+      - auto-video-network
+    depends_on:
+      - redis-primary
+      - redis-replica
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  redis-sentinel-2:
+    image: redis:7-alpine
+    container_name: auto-video-redis-sentinel-2
+    command: |
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./config/redis/sentinel.conf:/etc/redis/sentinel.conf
+    networks:
+      - auto-video-network
+    depends_on:
+      - redis-primary
+      - redis-replica
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  redis-sentinel-3:
+    image: redis:7-alpine
+    container_name: auto-video-redis-sentinel-3
+    command: |
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./config/redis/sentinel.conf:/etc/redis/sentinel.conf
+    networks:
+      - auto-video-network
+    depends_on:
+      - redis-primary
+      - redis-replica
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # AI Service - 多副本
+  ai-service-1:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    container_name: auto-video-ai-1
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres-primary:5432/auto_video
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - INSTANCE_ID=ai-service-1
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ai-service-2:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    container_name: auto-video-ai-2
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres-primary:5432/auto_video
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - INSTANCE_ID=ai-service-2
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Video Service - 多副本
+  video-service-1:
+    build:
+      context: ./services/video-service
+      dockerfile: Dockerfile
+    container_name: auto-video-video-1
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres-primary:5432/auto_video
+      - INSTANCE_ID=video-service-1
+    volumes:
+      - video_storage:/app/storage
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  video-service-2:
+    build:
+      context: ./services/video-service
+      dockerfile: Dockerfile
+    container_name: auto-video-video-2
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres-primary:5432/auto_video
+      - INSTANCE_ID=video-service-2
+    volumes:
+      - video_storage:/app/storage
+    networks:
+      - auto-video-network
+    depends_on:
+      - postgres-primary
+      - redis-primary
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 監控服務
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: auto-video-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - auto-video-network
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: auto-video-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - auto-video-network
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # 日誌聚合
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: auto-video-elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=auto-video-logs
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - auto-video-network
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: auto-video-logstash
+    volumes:
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./config/logstash/config:/usr/share/logstash/config
+    networks:
+      - auto-video-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: auto-video-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - auto-video-network
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  # 健康檢查和故障轉移服務
+  consul:
+    image: consul:1.16
+    container_name: auto-video-consul
+    command: >
+      consul agent
+      -server
+      -bootstrap-expect=1
+      -ui
+      -node=consul-server
+      -bind=0.0.0.0
+      -client=0.0.0.0
+      -datacenter=auto-video-dc
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - auto-video-network
+    ports:
+      - "8500:8500"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+networks:
+  auto-video-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_primary_data:
+    driver: local
+  postgres_replica_data:
+    driver: local
+  redis_primary_data:
+    driver: local
+  redis_replica_data:
+    driver: local
+  video_storage:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  consul_data:
+    driver: local

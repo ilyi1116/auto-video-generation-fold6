@@ -1,0 +1,140 @@
+apiVersion: 1
+
+# 數據源配置
+datasources:
+  # Prometheus 主要數據源
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "5s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+      keepCookies: []
+    secureJsonData: {}
+
+  # Elasticsearch 日誌數據源
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    database: "logs-*"
+    editable: true
+    jsonData:
+      interval: "Daily"
+      timeField: "@timestamp"
+      esVersion: "8.11.0"
+      maxConcurrentShardRequests: 5
+      logMessageField: "message"
+      logLevelField: "level"
+    secureJsonData: {}
+
+  # Redis 數據源（通過 Prometheus）
+  - name: Redis-Exporter
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      exemplarTraceIdDestinations:
+        - name: "trace_id"
+          datasourceUid: "jaeger"
+    secureJsonData: {}
+
+  # PostgreSQL 數據源（通過 Prometheus）
+  - name: PostgreSQL-Exporter
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    editable: true
+    jsonData:
+      timeInterval: "30s"
+    secureJsonData: {}
+
+  # Node Exporter 數據源
+  - name: Node-Exporter
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+    secureJsonData: {}
+
+  # Jaeger 分佈式追踪（如果啟用）
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    uid: "jaeger"
+    editable: true
+    jsonData:
+      tracesToLogs:
+        datasourceUid: "elasticsearch"
+        tags: ['job', 'instance', 'pod', 'namespace']
+        mappedTags: [
+          {
+            key: 'service.name',
+            value: 'service'
+          }
+        ]
+        mapTagNamesEnabled: false
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        filterByTraceID: false
+        filterBySpanID: false
+      nodeGraph:
+        enabled: true
+    secureJsonData: {}
+
+  # 測試數據源（JSON 格式用於演示）
+  - name: TestData
+    type: testdata
+    access: proxy
+    uid: "testdata"
+    editable: false
+    jsonData: {}
+
+# 通知渠道配置（舊版兼容性）
+notifiers:
+  - name: email-alerts
+    type: email
+    uid: email-alerts
+    org_id: 1
+    is_default: true
+    send_reminder: true
+    frequency: "1h"
+    settings:
+      addresses: "alerts@video-generation.com"
+      subject: "Grafana Alert: {{.Title}}"
+      body: |
+        Alert: {{.Title}}
+        Message: {{.Message}}
+        
+        State: {{.State}}
+        Date: {{.Date}}
+        
+        View Dashboard: {{.RuleUrl}}
+
+  - name: slack-alerts
+    type: slack
+    uid: slack-alerts
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    frequency: "30m"
+    settings:
+      url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+      channel: "#monitoring"
+      username: "Grafana"
+      title: "Grafana Alert"
+      text: |
+        **{{.Title}}**
+        {{.Message}}
+        
+        *State:* {{.State}}
+        *Date:* {{.Date}}

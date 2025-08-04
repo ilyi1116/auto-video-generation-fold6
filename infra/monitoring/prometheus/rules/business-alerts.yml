@@ -1,0 +1,145 @@
+groups:
+  - name: business-alerts
+    rules:
+      # Low Video Generation Success Rate Alert
+      - alert: LowVideoGenerationSuccessRate
+        expr: sum(rate(video_generation_total{status="success"}[1h])) / sum(rate(video_generation_total[1h])) * 100 < 90
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low video generation success rate"
+          description: "Video generation success rate is {{ $value }}% for more than 30 minutes"
+
+      # Critical Video Generation Success Rate Alert
+      - alert: CriticalVideoGenerationSuccessRate
+        expr: sum(rate(video_generation_total{status="success"}[1h])) / sum(rate(video_generation_total[1h])) * 100 < 70
+        for: 15m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "Critical video generation success rate"
+          description: "Video generation success rate is {{ $value }}% for more than 15 minutes"
+
+      # Low User Engagement Alert
+      - alert: LowUserEngagement
+        expr: sum(rate(user_action_total{action=~"like|share|comment"}[1h])) < 10
+        for: 2h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low user engagement detected"
+          description: "User engagement rate is {{ $value }} actions per second for more than 2 hours"
+
+      # Revenue Drop Alert
+      - alert: RevenueDropDetected
+        expr: sum(increase(subscription_revenue_total[1h])) < sum(increase(subscription_revenue_total[1h] offset 24h)) * 0.8
+        for: 2h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Revenue drop detected"
+          description: "Hourly revenue is 20% below yesterday's same hour for more than 2 hours"
+
+      # System Availability Alert
+      - alert: LowSystemAvailability
+        expr: avg(up{job=~".*-service"}) * 100 < 95
+        for: 10m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low system availability"
+          description: "System availability is {{ $value }}% for more than 10 minutes"
+
+      # Critical System Availability Alert
+      - alert: CriticalSystemAvailability
+        expr: avg(up{job=~".*-service"}) * 100 < 90
+        for: 5m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "Critical system availability"
+          description: "System availability is {{ $value }}% for more than 5 minutes"
+
+      # Low Trend Analysis Accuracy Alert
+      - alert: LowTrendAnalysisAccuracy
+        expr: sum(rate(trend_analysis_total{accuracy="high"}[1h])) / sum(rate(trend_analysis_total[1h])) * 100 < 80
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low trend analysis accuracy"
+          description: "Trend analysis accuracy is {{ $value }}% for more than 1 hour"
+
+      # High Customer Churn Risk Alert
+      - alert: HighCustomerChurnRisk
+        expr: sum(rate(user_last_activity_timestamp[24h])) < sum(rate(user_last_activity_timestamp[24h] offset 7d)) * 0.9
+        for: 6h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "High customer churn risk detected"
+          description: "Active user count is 10% below last week for more than 6 hours"
+
+      # Social Media Platform Failure Alert
+      - alert: SocialPlatformPublishingDown
+        expr: sum(rate(social_publish_total{status="success"}[30m])) by (platform) == 0 and sum(rate(social_publish_total[30m])) by (platform) > 0
+        for: 30m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "Social media platform publishing completely failed"
+          description: "Publishing to {{ $labels.platform }} has had 0% success rate for more than 30 minutes"
+
+      # Content Quality Degradation Alert
+      - alert: ContentQualityDegradation
+        expr: sum(rate(content_quality_score_total[1h])) / sum(rate(content_generation_total[1h])) < 7
+        for: 2h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Content quality degradation detected"
+          description: "Average content quality score is {{ $value }} (below 7) for more than 2 hours"
+
+      # API Usage Spike Alert
+      - alert: UnusualAPIUsageSpike
+        expr: sum(rate(http_requests_total{job=~".*-service"}[5m])) > sum(rate(http_requests_total{job=~".*-service"}[5m] offset 1h)) * 3
+        for: 15m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Unusual API usage spike detected"
+          description: "API request rate is 3x higher than 1 hour ago for more than 15 minutes"
+
+      # Storage Cost Alert
+      - alert: HighStorageCost
+        expr: sum(storage_usage_bytes) / 1024 / 1024 / 1024 > 1000  # > 1TB
+        for: 24h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "High storage usage detected"
+          description: "Storage usage is {{ $value }}GB for more than 24 hours"
+
+      # Processing Time SLA Breach Alert
+      - alert: ProcessingTimeSLABreach
+        expr: histogram_quantile(0.95, sum(rate(video_generation_duration_seconds_bucket[1h])) by (le)) > 300  # > 5 minutes
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Processing time SLA breach"
+          description: "95th percentile video generation time is {{ $value }}s (above 5 minute SLA) for more than 1 hour"

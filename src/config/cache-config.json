@@ -1,0 +1,233 @@
+{
+  "cache_type": "multi_tier",
+  "strategy": "cache_aside",
+  "global_ttl": 3600,
+  "compression": {
+    "enabled": true,
+    "threshold_bytes": 1024,
+    "algorithm": "zlib",
+    "level": 6
+  },
+  "memory": {
+    "max_size": 10000,
+    "eviction_policy": "lru",
+    "gc_interval": 300,
+    "max_memory_mb": 512
+  },
+  "redis_cluster": {
+    "enabled": true,
+    "nodes": [
+      "redis-1:7000",
+      "redis-2:7001", 
+      "redis-3:7002",
+      "redis-4:7003",
+      "redis-5:7004",
+      "redis-6:7005"
+    ],
+    "password": "${REDIS_CLUSTER_PASSWORD}",
+    "decode_responses": true,
+    "health_check_interval": 30,
+    "max_connections_per_node": 50,
+    "retry_on_timeout": true,
+    "socket_keepalive": true,
+    "socket_keepalive_options": {
+      "TCP_KEEPIDLE": 1,
+      "TCP_KEEPINTVL": 3,
+      "TCP_KEEPCNT": 5
+    }
+  },
+  "redis_sentinel": {
+    "enabled": false,
+    "sentinels": [
+      {"host": "sentinel-1", "port": 26379},
+      {"host": "sentinel-2", "port": 26379},
+      {"host": "sentinel-3", "port": 26379}
+    ],
+    "service_name": "auto-video-redis",
+    "password": "${REDIS_PASSWORD}",
+    "sentinel_password": "${REDIS_SENTINEL_PASSWORD}",
+    "decode_responses": true
+  },
+  "multi_tier": {
+    "l1_cache": {
+      "type": "memory",
+      "max_size": 5000,
+      "eviction_policy": "lru",
+      "ttl_default": 300
+    },
+    "l2_cache": {
+      "type": "redis_cluster",
+      "nodes": [
+        "redis-1:7000",
+        "redis-2:7001",
+        "redis-3:7002"
+      ],
+      "ttl_default": 3600
+    },
+    "promotion_policy": {
+      "access_threshold": 3,
+      "promotion_ttl": 1800
+    }
+  },
+  "sharding": {
+    "enabled": true,
+    "strategy": "consistent_hash",
+    "virtual_nodes": 150,
+    "nodes": [
+      "shard-1",
+      "shard-2", 
+      "shard-3",
+      "shard-4"
+    ],
+    "replication_factor": 2,
+    "auto_rebalance": true
+  },
+  "intelligent_preloading": {
+    "enabled": true,
+    "prediction_model": "collaborative_filtering",
+    "max_preload_keys": 50,
+    "preload_threshold": 0.7,
+    "background_workers": 4,
+    "learning_rate": 0.1,
+    "pattern_window_size": 100
+  },
+  "cache_patterns": {
+    "user_sessions": {
+      "pattern": "session:*",
+      "ttl": 1800,
+      "tier": "l1",
+      "preload": true
+    },
+    "user_profiles": {
+      "pattern": "user:*:profile",
+      "ttl": 7200,
+      "tier": "l2",
+      "compression": true
+    },
+    "ai_generations": {
+      "pattern": "ai:*:result",
+      "ttl": 86400,
+      "tier": "l2",
+      "compression": true,
+      "replicas": 2
+    },
+    "video_metadata": {
+      "pattern": "video:*:meta",
+      "ttl": 3600,
+      "tier": "l2",
+      "tags": ["video", "metadata"]
+    },
+    "trending_data": {
+      "pattern": "trends:*",
+      "ttl": 1800,
+      "tier": "l1",
+      "auto_refresh": true
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_interval": 60,
+    "detailed_logging": true,
+    "prometheus": {
+      "enabled": true,
+      "port": 9121,
+      "endpoint": "/metrics"
+    },
+    "alerts": {
+      "hit_ratio_threshold": 0.8,
+      "response_time_threshold_ms": 100,
+      "error_rate_threshold": 0.05,
+      "memory_usage_threshold": 0.9
+    },
+    "slow_query_log": {
+      "enabled": true,
+      "threshold_ms": 100,
+      "max_entries": 1000
+    }
+  },
+  "security": {
+    "encryption": {
+      "enabled": false,
+      "algorithm": "AES-256-GCM",
+      "key_rotation_hours": 24
+    },
+    "access_control": {
+      "enabled": true,
+      "auth_required": false,
+      "rate_limiting": {
+        "enabled": true,
+        "requests_per_second": 1000,
+        "burst_size": 2000
+      }
+    }
+  },
+  "backup": {
+    "enabled": true,
+    "strategy": "snapshot",
+    "interval_hours": 6,
+    "retention_days": 7,
+    "compress_backups": true,
+    "backup_location": "/var/backups/cache",
+    "s3_backup": {
+      "enabled": false,
+      "bucket": "auto-video-cache-backups",
+      "region": "us-west-2"
+    }
+  },
+  "warming": {
+    "enabled": true,
+    "strategies": ["popular_keys", "time_based", "dependency_graph"],
+    "warm_on_startup": true,
+    "popular_keys_count": 1000,
+    "warming_concurrency": 10,
+    "popular_keys_source": "analytics_api"
+  },
+  "invalidation": {
+    "strategies": ["tag_based", "pattern_based", "dependency_based"],
+    "tag_tracking": true,
+    "dependency_graph": true,
+    "broadcast_invalidation": true,
+    "invalidation_delay_ms": 100
+  },
+  "optimization": {
+    "memory_optimization": {
+      "enabled": true,
+      "object_pooling": true,
+      "lazy_serialization": true,
+      "batch_operations": true
+    },
+    "network_optimization": {
+      "connection_pooling": true,
+      "pipelining": true,
+      "multiplexing": true,
+      "compression_on_wire": true
+    },
+    "cpu_optimization": {
+      "async_operations": true,
+      "background_tasks": true,
+      "load_balancing": true
+    }
+  },
+  "testing": {
+    "chaos_engineering": {
+      "enabled": false,
+      "failure_rate": 0.01,
+      "scenarios": ["node_failure", "network_partition", "high_latency"]
+    },
+    "load_testing": {
+      "enabled": false,
+      "concurrent_connections": 1000,
+      "requests_per_second": 10000,
+      "test_duration_seconds": 300
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "file": "/var/log/auto-video/cache.log",
+    "max_size": "100MB",
+    "backup_count": 10,
+    "access_log": true,
+    "performance_log": true
+  }
+}

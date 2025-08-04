@@ -1,0 +1,167 @@
+# 代碼擁有者設定檔
+# 此檔案定義了各個檔案和目錄的代碼擁有者
+# 當有 Pull Request 涉及這些檔案時，會自動要求相應的擁有者進行審查
+
+# 全域擁有者 - 所有檔案都需要此用戶審查
+* @ilyi1116
+
+# ===========================================
+# 前端相關檔案
+# ===========================================
+
+# SvelteKit 應用程式
+/frontend/ @ilyi1116
+
+# Svelte 組件
+*.svelte @ilyi1116
+
+# TypeScript 檔案
+*.ts @ilyi1116
+
+# JavaScript 檔案  
+*.js @ilyi1116
+
+# 前端配置檔案
+/frontend/package.json @ilyi1116
+/frontend/vite.config.js @ilyi1116
+/frontend/svelte.config.js @ilyi1116
+/frontend/tailwind.config.js @ilyi1116
+/frontend/tsconfig.json @ilyi1116
+/frontend/vitest.config.js @ilyi1116
+
+# 前端樣式檔案
+*.css @ilyi1116
+*.scss @ilyi1116
+
+# ===========================================
+# 後端相關檔案
+# ===========================================
+
+# 微服務目錄
+/services/ @ilyi1116
+
+# Python 檔案
+*.py @ilyi1116
+
+# Python 配置檔案
+pyproject.toml @ilyi1116
+requirements*.txt @ilyi1116
+
+# ===========================================
+# 基礎設施與 DevOps
+# ===========================================
+
+# Docker 相關
+Dockerfile @ilyi1116
+docker-compose*.yml @ilyi1116
+.dockerignore @ilyi1116
+
+# Nginx 配置
+/nginx/ @ilyi1116
+
+# CI/CD 工作流程
+/.github/ @ilyi1116
+
+# 資料庫相關
+/database/ @ilyi1116
+/scripts/ @ilyi1116
+*.sql @ilyi1116
+
+# 協議緩衝區
+/protos/ @ilyi1116
+*.proto @ilyi1116
+
+# ===========================================
+# 配置檔案
+# ===========================================
+
+# JSON 配置檔案
+*.json @ilyi1116
+
+# YAML 配置檔案
+*.yaml @ilyi1116
+*.yml @ilyi1116
+
+# 環境配置
+.env* @ilyi1116
+
+# Git 配置
+.gitignore @ilyi1116
+.gitattributes @ilyi1116
+
+# ===========================================
+# 文檔與說明
+# ===========================================
+
+# Markdown 文檔
+*.md @ilyi1116
+
+# 文檔目錄
+/docs/ @ilyi1116
+
+# API 文檔
+/docs/api/ @ilyi1116
+
+# ===========================================
+# 測試檔案
+# ===========================================
+
+# 測試目錄和檔案
+/tests/ @ilyi1116
+**/tests/ @ilyi1116
+*.test.* @ilyi1116
+*.spec.* @ilyi1116
+
+# 測試配置
+jest.config.* @ilyi1116
+vitest.config.* @ilyi1116
+
+# ===========================================
+# 特殊重要檔案 - 需要額外審查
+# ===========================================
+
+# 專案根配置檔案 - 需要特別謹慎
+/package.json @ilyi1116
+/pyproject.toml @ilyi1116
+
+# 安全相關配置
+/.github/workflows/security.yml @ilyi1116
+
+# 分支保護腳本
+/.github/scripts/setup-branch-protection.sh @ilyi1116
+
+# 主要文檔檔案
+/README.md @ilyi1116
+/CLAUDE.md @ilyi1116
+
+# ===========================================
+# 第三方和外部整合
+# ===========================================
+
+# 依賴鎖定檔案
+package-lock.json @ilyi1116
+yarn.lock @ilyi1116
+poetry.lock @ilyi1116
+
+# ===========================================
+# 註釋說明
+# ===========================================
+
+# 語法說明:
+# - 每行定義一個規則
+# - 使用 glob 模式匹配檔案路徑
+# - @ 後面是 GitHub 用戶名或團隊名
+# - 可以指定多個擁有者，用空格分隔
+# - 更具體的規則會覆蓋一般性的規則
+# - 支援的模式:
+#   * 匹配任意字符（除了 /）
+#   ** 匹配任意字符（包括 /）
+#   ? 匹配單個字符
+#   [abc] 匹配方括號中的任一字符
+#   [a-z] 匹配範圍內的字符
+
+# 範例:
+# /frontend/**/*.js @frontend-team
+# *.py @backend-team @security-team
+# /docs/ @documentation-team
+# /security/ @security-team @admin-team

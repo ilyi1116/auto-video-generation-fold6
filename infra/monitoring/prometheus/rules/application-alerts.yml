@@ -1,0 +1,156 @@
+groups:
+  - name: application-alerts
+    rules:
+      # High HTTP Error Rate Alert
+      - alert: HighHTTPErrorRate
+        expr: sum(rate(http_requests_total{status=~"4..|5..", job=~".*-service|api-gateway"}[5m])) by (service) / sum(rate(http_requests_total{job=~".*-service|api-gateway"}[5m])) by (service) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High HTTP error rate detected"
+          description: "HTTP error rate for {{ $labels.service }} is {{ $value }}% for more than 5 minutes"
+
+      # Critical HTTP Error Rate Alert
+      - alert: CriticalHTTPErrorRate
+        expr: sum(rate(http_requests_total{status=~"5..", job=~".*-service|api-gateway"}[5m])) by (service) / sum(rate(http_requests_total{job=~".*-service|api-gateway"}[5m])) by (service) * 100 > 10
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "Critical HTTP error rate detected"
+          description: "HTTP 5xx error rate for {{ $labels.service }} is {{ $value }}% for more than 2 minutes"
+
+      # High Response Time Alert
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~".*-service"}[5m])) by (le, service)) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time for {{ $labels.service }} is {{ $value }}s for more than 10 minutes"
+
+      # Very High Response Time Alert
+      - alert: VeryHighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~".*-service"}[5m])) by (le, service)) > 5
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "Very high response time detected"
+          description: "95th percentile response time for {{ $labels.service }} is {{ $value }}s for more than 5 minutes"
+
+      # Database Connection Pool Alert
+      - alert: DatabaseConnectionPoolHigh
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database connection pool usage high"
+          description: "Database {{ $labels.datname }} connection pool usage is {{ $value }}% for more than 5 minutes"
+
+      # Redis Memory Usage Alert
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_config_maxmemory * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value }}% for more than 5 minutes"
+
+      # Video Generation Failure Rate Alert
+      - alert: VideoGenerationFailureRate
+        expr: sum(rate(video_generation_total{status="failed"}[5m])) / sum(rate(video_generation_total[5m])) * 100 > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: video-service
+        annotations:
+          summary: "High video generation failure rate"
+          description: "Video generation failure rate is {{ $value }}% for more than 5 minutes"
+
+      # Social Media Publishing Failure Alert
+      - alert: SocialPublishingFailureRate
+        expr: sum(rate(social_publish_total{status="failed"}[5m])) / sum(rate(social_publish_total[5m])) * 100 > 15
+        for: 10m
+        labels:
+          severity: warning
+          component: social-service
+        annotations:
+          summary: "High social media publishing failure rate"
+          description: "Social media publishing failure rate is {{ $value }}% for more than 10 minutes"
+
+      # Trend Analysis Performance Alert
+      - alert: TrendAnalysisSlowdown
+        expr: histogram_quantile(0.95, sum(rate(trend_analysis_duration_seconds_bucket[5m])) by (le)) > 30
+        for: 10m
+        labels:
+          severity: warning
+          component: trend-service
+        annotations:
+          summary: "Trend analysis performance degraded"
+          description: "95th percentile trend analysis duration is {{ $value }}s for more than 10 minutes"
+
+      # Task Scheduler Queue Size Alert
+      - alert: SchedulerQueueSizeHigh
+        expr: scheduler_queue_size > 100
+        for: 15m
+        labels:
+          severity: warning
+          component: scheduler-service
+        annotations:
+          summary: "Scheduler queue size high"
+          description: "Scheduler queue size is {{ $value }} for more than 15 minutes"
+
+      # Critical Scheduler Queue Size Alert
+      - alert: SchedulerQueueSizeCritical
+        expr: scheduler_queue_size > 500
+        for: 5m
+        labels:
+          severity: critical
+          component: scheduler-service
+        annotations:
+          summary: "Scheduler queue size critical"
+          description: "Scheduler queue size is {{ $value }} for more than 5 minutes"
+
+      # API Gateway Rate Limiting Alert
+      - alert: APIGatewayRateLimitHit
+        expr: sum(rate(api_gateway_rate_limit_hits_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: api-gateway
+        annotations:
+          summary: "API Gateway rate limits being hit frequently"
+          description: "API Gateway rate limits are being hit {{ $value }} times per second for more than 5 minutes"
+
+      # Application Log Error Rate Alert
+      - alert: ApplicationLogErrors
+        expr: sum(rate(log_entries_total{level="error"}[5m])) by (service) > 1
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High application error log rate"
+          description: "Service {{ $labels.service }} is logging {{ $value }} errors per second for more than 10 minutes"
+
+      # Critical Application Log Error Rate Alert
+      - alert: CriticalApplicationLogErrors
+        expr: sum(rate(log_entries_total{level="critical"}[5m])) by (service) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "Critical application errors detected"
+          description: "Service {{ $labels.service }} is logging {{ $value }} critical errors per second for more than 2 minutes"

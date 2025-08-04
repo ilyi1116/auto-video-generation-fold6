@@ -41,7 +41,13 @@
       "Bash(openssl genrsa:*)",
       "Bash(openssl rsa:*)",
       "Bash(grep:*)",
-      "Bash(alembic revision:*)"
+      "Bash(alembic revision:*)",
+      "Bash(./scripts/migrate-structure.sh:*)",
+      "Bash(bash:*)",
+      "Bash(cp:*)",
+      "Bash(tree:*)",
+      "Bash(docker-compose:*)",
+      "Bash(npm:*)"
     ],
     "deny": []
   }

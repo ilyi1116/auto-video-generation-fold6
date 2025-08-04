@@ -1,0 +1,52 @@
+# Dockerfile for Scheduler Service
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 安裝系統依賴
+RUN apt-get update && apt-get install -y \
+    cron \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 複製需求文件
+COPY requirements.txt .
+
+# 安裝 Python 依賴
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 複製排程器腳本
+COPY scheduler.py .
+COPY auto_trends_video.py .
+
+# 複製配置文件
+COPY ../config /app/config
+
+# 創建非特權用戶
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 創建必要目錄
+RUN mkdir -p /app/logs /app/data
+
+# 設置環境變數
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# 創建 crontab 文件
+RUN echo "0 */6 * * * cd /app && python scheduler.py >> /app/logs/scheduler.log 2>&1" > /etc/cron.d/video-scheduler
+RUN chmod 0644 /etc/cron.d/video-scheduler
+RUN crontab /etc/cron.d/video-scheduler
+
+# 健康檢查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8003/health || exit 1
+
+# 啟動腳本並設置權限
+COPY start_scheduler.sh .
+RUN chmod +x start_scheduler.sh && \
+    chown -R appuser:appuser /app
+
+# 切換到非特權用戶
+USER appuser
+
+CMD ["./start_scheduler.sh"]

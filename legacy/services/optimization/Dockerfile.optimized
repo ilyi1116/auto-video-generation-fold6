@@ -1,0 +1,185 @@
+# 高度優化的 Multi-stage Dockerfile 模板
+# Phase 6: 性能優化 - Docker 容器大小優化
+
+# =====================================
+# Stage 1: Base 最小化基礎映像
+# =====================================
+FROM python:3.11-alpine as base
+
+# 設置環境變數
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONPATH="/app"
+
+# 安裝系統依賴 (最小化)
+RUN apk add --no-cache \
+    curl \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# 創建非 root 用戶
+RUN addgroup -g 1000 appuser && \
+    adduser -u 1000 -G appuser -s /bin/sh -D appuser
+
+# =====================================
+# Stage 2: 依賴建構器
+# =====================================
+FROM base as builder
+
+# 安裝建構依賴
+RUN apk add --no-cache --virtual .build-deps \
+    gcc \
+    musl-dev \
+    postgresql-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev
+
+WORKDIR /app
+
+# 創建虛擬環境
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 複製依賴文件
+COPY requirements.txt .
+
+# 安裝 Python 依賴 (優化參數)
+RUN pip install --no-cache-dir \
+    --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir \
+    --compile \
+    --global-option=build_ext \
+    --global-option=-j4 \
+    -r requirements.txt
+
+# 清理建構依賴
+RUN apk del .build-deps
+
+# =====================================
+# Stage 3: 應用程式建構
+# =====================================
+FROM base as app-builder
+
+WORKDIR /app
+
+# 複製應用程式代碼
+COPY --from=builder /opt/venv /opt/venv
+COPY ./app ./app
+
+# 預編譯 Python 文件
+RUN python -m compileall -b app/ && \
+    find app/ -name "*.py" -delete
+
+# =====================================
+# Stage 4: 生產環境運行時
+# =====================================
+FROM python:3.11-alpine as production
+
+# 設置生產環境變數
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ENVIRONMENT=production \
+    PYTHONPATH="/app"
+
+# 安裝運行時依賴 (最小化)
+RUN apk add --no-cache \
+    curl \
+    libpq \
+    ca-certificates \
+    tini && \
+    rm -rf /var/cache/apk/*
+
+# 創建非 root 用戶
+RUN addgroup -g 1000 appuser && \
+    adduser -u 1000 -G appuser -s /bin/sh -D appuser
+
+WORKDIR /app
+
+# 複製虛擬環境和應用程式
+COPY --from=app-builder /opt/venv /opt/venv
+COPY --from=app-builder --chown=appuser:appuser /app/app ./app
+
+# 創建日誌目錄
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appuser /app/logs
+
+# 切換到非 root 用戶
+USER appuser
+
+# 設置路徑
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 健康檢查 (優化)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 使用 tini 作為 init 進程
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# 暴露端口
+EXPOSE 8000
+
+# 優化的生產命令
+CMD ["uvicorn", "app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "1", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--max-requests", "1000", \
+     "--max-requests-jitter", "100", \
+     "--preload", \
+     "--log-level", "info", \
+     "--access-log", \
+     "--no-server-header"]
+
+# =====================================
+# Stage 5: 測試環境
+# =====================================
+FROM production as testing
+
+USER root
+
+# 安裝測試依賴
+RUN apk add --no-cache --virtual .test-deps \
+    gcc \
+    musl-dev \
+    postgresql-dev
+
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    httpx \
+    coverage
+
+# 複製測試文件
+COPY tests/ tests/
+
+# 清理測試依賴
+RUN apk del .test-deps
+
+USER appuser
+
+# 測試命令
+CMD ["python", "-m", "pytest", "tests/", "-v", \
+     "--cov=app", \
+     "--cov-report=term-missing", \
+     "--cov-report=html:/app/htmlcov"]
+
+# =====================================
+# Metadata Labels
+# =====================================
+LABEL maintainer="ilyi1116@users.noreply.github.com" \
+      version="2.0.0" \
+      description="高度優化的微服務容器" \
+      org.opencontainers.image.title="Optimized Microservice" \
+      org.opencontainers.image.description="Ultra-lightweight Python microservice container" \
+      org.opencontainers.image.version="2.0.0" \
+      org.opencontainers.image.authors="ilyi1116@users.noreply.github.com" \
+      org.opencontainers.image.source="https://github.com/ilyi1116/auto-video-generation-fold6" \
+      org.opencontainers.image.licenses="MIT"

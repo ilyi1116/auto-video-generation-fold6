@@ -1,0 +1,132 @@
+groups:
+  - name: auto-video-system
+    rules:
+      # Service availability alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute."
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second for {{ $labels.job }}"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.job }}"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Disk space running low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space running low"
+          description: "Disk space is {{ $value }}% full on {{ $labels.instance }}"
+
+      # Database connection issues
+      - alert: DatabaseConnectionHigh
+        expr: postgresql_stat_database_numbackends > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of database connections"
+          description: "Database has {{ $value }} active connections"
+
+      # Redis connection issues
+      - alert: RedisConnectionHigh
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of Redis connections"
+          description: "Redis has {{ $value }} connected clients"
+
+      # Celery queue backup
+      - alert: CeleryQueueBackup
+        expr: celery_tasks_total{state="PENDING"} > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Celery queue backup"
+          description: "{{ $value }} tasks pending in Celery queue"
+
+      # AI Service prediction failures
+      - alert: AIServiceFailures
+        expr: rate(ai_predictions_failed_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI service prediction failures"
+          description: "AI service failing at {{ $value }} predictions per second"
+
+      # Social media API failures
+      - alert: SocialMediaAPIFailures
+        expr: rate(social_api_requests_failed_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Social media API failures"
+          description: "Social media API failing at {{ $value }} requests per second"
+
+      # Video processing failures
+      - alert: VideoProcessingFailures
+        expr: rate(video_processing_failed_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Video processing failures"
+          description: "Video processing failing at {{ $value }} videos per second"
+
+      # Storage space alerts
+      - alert: StorageSpaceLow
+        expr: minio_cluster_capacity_usable_free_bytes / minio_cluster_capacity_usable_total_bytes < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Storage space running low"
+          description: "Storage has less than 10% space remaining"

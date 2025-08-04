@@ -1,0 +1,176 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Business Metrics - Auto Video Generation",
+    "tags": ["auto-video", "business", "metrics"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Video Generation Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(video_generation_total{status=\"success\"}[1h])) / sum(rate(video_generation_total[1h])) * 100",
+            "legendFormat": "Success Rate %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 90}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Videos Generated Today",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(video_generation_total{status=\"success\"}[24h])",
+            "legendFormat": "Videos Generated"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Active Users",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(count by (user_id) (increase(http_requests_total{job=~\".*-service\"}[1h])))",
+            "legendFormat": "Active Users"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Social Media Posts Published",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(social_publish_total{status=\"success\"}[24h])",
+            "legendFormat": "Posts Published"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Video Generation Trend",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(video_generation_total{status=\"success\"}[5m]))",
+            "legendFormat": "Successful Generations/min"
+          },
+          {
+            "expr": "sum(rate(video_generation_total{status=\"failed\"}[5m]))",
+            "legendFormat": "Failed Generations/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Platform Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum(increase(social_publish_total{status=\"success\"}[24h])) by (platform)",
+            "legendFormat": "{{platform}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "User Engagement Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(user_action_total{action=\"like\"}[5m]))",
+            "legendFormat": "Likes/min"
+          },
+          {
+            "expr": "sum(rate(user_action_total{action=\"share\"}[5m]))",
+            "legendFormat": "Shares/min"
+          },
+          {
+            "expr": "sum(rate(user_action_total{action=\"comment\"}[5m]))",
+            "legendFormat": "Comments/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 8,
+        "title": "Trend Analysis Accuracy",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(trend_analysis_total{accuracy=\"high\"}[5m])) / sum(rate(trend_analysis_total[5m])) * 100",
+            "legendFormat": "High Accuracy Trends %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 9,
+        "title": "Revenue Metrics",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(increase(subscription_revenue_total[1h]))",
+            "legendFormat": "Subscription Revenue/hr"
+          },
+          {
+            "expr": "sum(increase(usage_revenue_total[1h]))",
+            "legendFormat": "Usage Revenue/hr"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 10,
+        "title": "System Availability",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(up{job=~\".*-service\"}) * 100",
+            "legendFormat": "System Availability %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 95},
+                {"color": "green", "value": 99}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "refresh": "1m"
+  }
+}

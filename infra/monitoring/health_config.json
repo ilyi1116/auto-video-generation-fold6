@@ -1,0 +1,97 @@
+{
+  "services": [
+    {
+      "name": "frontend",
+      "type": "http",
+      "target": "http://localhost:3000",
+      "timeout": 10,
+      "interval": 30,
+      "retries": 2,
+      "auto_restart": true,
+      "restart_command": "python scripts/service_manager.py restart frontend"
+    },
+    {
+      "name": "backend",
+      "type": "http", 
+      "target": "http://localhost:8000/health",
+      "timeout": 10,
+      "interval": 30,
+      "retries": 3,
+      "expected_response": "healthy",
+      "auto_restart": true,
+      "restart_command": "python scripts/service_manager.py restart backend"
+    },
+    {
+      "name": "ai_service",
+      "type": "http",
+      "target": "http://localhost:8001/health", 
+      "timeout": 15,
+      "interval": 60,
+      "retries": 2,
+      "auto_restart": true,
+      "restart_command": "python scripts/service_manager.py restart ai-service"
+    },
+    {
+      "name": "video_service",
+      "type": "http",
+      "target": "http://localhost:8002/health",
+      "timeout": 15,
+      "interval": 60,
+      "retries": 2,
+      "auto_restart": true,
+      "restart_command": "python scripts/service_manager.py restart video-service"
+    },
+    {
+      "name": "redis",
+      "type": "tcp",
+      "target": "localhost:6379",
+      "timeout": 5,
+      "interval": 60,
+      "retries": 3,
+      "auto_restart": true,
+      "restart_command": "python scripts/service_manager.py restart redis"
+    },
+    {
+      "name": "disk_space",
+      "type": "custom",
+      "target": "check_disk_space",
+      "interval": 300,
+      "retries": 1
+    },
+    {
+      "name": "memory_usage", 
+      "type": "custom",
+      "target": "check_memory_usage",
+      "interval": 120,
+      "retries": 1
+    },
+    {
+      "name": "cpu_usage",
+      "type": "custom",
+      "target": "python -c \"import psutil; print(f'CPU: {psutil.cpu_percent(interval=1):.1f}%')\"",
+      "interval": 120,
+      "retries": 1
+    },
+    {
+      "name": "load_average",
+      "type": "custom", 
+      "target": "python -c \"import os; print(f'Load: {os.getloadavg()[0]:.2f}')\"",
+      "interval": 180,
+      "retries": 1
+    }
+  ],
+  "global_settings": {
+    "check_interval": 30,
+    "alert_thresholds": {
+      "disk_usage": 85,
+      "memory_usage": 90,
+      "cpu_usage": 95,
+      "response_time": 5.0
+    },
+    "notification": {
+      "enabled": true,
+      "methods": ["log", "file"],
+      "alert_file": "monitoring/alerts.json"
+    }
+  }
+}

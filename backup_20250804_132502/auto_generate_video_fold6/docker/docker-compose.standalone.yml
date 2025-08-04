@@ -1,0 +1,141 @@
+# Auto Video Generation - 單機部署 Docker Compose 配置
+# 簡化版本，適用於開發和小規模生產環境
+
+version: '3.8'
+
+services:
+  # API 閘道器 & 主要後端服務
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=sqlite:///app/data/app.db
+      - JWT_SECRET=${JWT_SECRET:-fallback-secret-key}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+  # 前端服務
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PUBLIC_API_BASE_URL=http://localhost:8000
+    volumes:
+      - ./frontend/build:/app/build:ro
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+  # AI 服務 (整合版)
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - STABILITY_API_KEY=${STABILITY_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./data/ai-cache:/app/cache
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+  # 影片處理服務
+  video-service:
+    build:
+      context: ./services/video-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - TEMP_DIR=/app/temp
+    volumes:
+      - ./data/videos:/app/videos
+      - ./data/temp:/app/temp
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+  # Redis 快取
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+  # 監控與健康檢查 (輕量版)
+  monitoring:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./monitoring/nginx-standalone.conf:/etc/nginx/nginx.conf:ro
+      - ./monitoring/html:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+  # 工作排程器 (可選)
+  scheduler:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile.scheduler
+    environment:
+      - CONFIG_MODE=${CONFIG_MODE:-startup}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    depends_on:
+      - redis
+      - api-gateway
+    restart: unless-stopped
+    networks:
+      - auto-video-net
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  auto-video-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

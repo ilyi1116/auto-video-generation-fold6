@@ -1,0 +1,654 @@
+<script>
+  import { onMount } from 'svelte';
+  import { apiClient } from '$lib/api/client';
+  import { toastStore } from '$lib/stores/toast';
+  import { 
+    TrendingUp,
+    TrendingDown,
+    Search,
+    Filter,
+    Globe,
+    Clock,
+    Target,
+    Zap,
+    Star,
+    Eye,
+    Heart,
+    Share2,
+    Bookmark,
+    Play,
+    RefreshCw,
+    Calendar,
+    BarChart3,
+    Lightbulb,
+    Fire,
+    ArrowUpRight,
+    ArrowDownRight
+  } from 'lucide-svelte';
+
+  let isLoading = true;
+  let searchQuery = '';
+  let selectedCategory = 'all';
+  let selectedRegion = 'global';
+  let selectedTimeframe = '24h';
+  let trendsData = {
+    trending: [],
+    rising: [],
+    viral: [],
+    categories: [],
+    insights: {}
+  };
+
+  const categories = [
+    { value: 'all', label: 'All Categories', icon: '🌐' },
+    { value: 'technology', label: 'Technology', icon: '💻' },
+    { value: 'entertainment', label: 'Entertainment', icon: '🎭' },
+    { value: 'education', label: 'Education', icon: '📚' },
+    { value: 'lifestyle', label: 'Lifestyle', icon: '🌟' },
+    { value: 'business', label: 'Business', icon: '💼' },
+    { value: 'health', label: 'Health & Fitness', icon: '💪' },
+    { value: 'food', label: 'Food & Cooking', icon: '🍳' },
+    { value: 'travel', label: 'Travel', icon: '✈️' }
+  ];
+
+  const regions = [
+    { value: 'global', label: 'Global', flag: '🌍' },
+    { value: 'us', label: 'United States', flag: '🇺🇸' },
+    { value: 'uk', label: 'United Kingdom', flag: '🇬🇧' },
+    { value: 'ca', label: 'Canada', flag: '🇨🇦' },
+    { value: 'au', label: 'Australia', flag: '🇦🇺' },
+    { value: 'de', label: 'Germany', flag: '🇩🇪' },
+    { value: 'fr', label: 'France', flag: '🇫🇷' },
+    { value: 'jp', label: 'Japan', flag: '🇯🇵' }
+  ];
+
+  const timeframes = [
+    { value: '1h', label: 'Last Hour' },
+    { value: '24h', label: 'Last 24 Hours' },
+    { value: '7d', label: 'Last 7 Days' },
+    { value: '30d', label: 'Last 30 Days' }
+  ];
+
+  onMount(async () => {
+    await loadTrends();
+  });
+
+  async function loadTrends() {
+    try {
+      isLoading = true;
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      trendsData = {
+        trending: [
+          {
+            id: 1,
+            keyword: 'AI productivity tools 2024',
+            category: 'technology',
+            volume: 2450000,
+            growth: 156,
+            difficulty: 'medium',
+            competition: 'high',
+            cpc: 2.45,
+            relatedKeywords: ['ai tools', 'productivity', 'automation'],
+            platforms: ['youtube', 'tiktok', 'twitter'],
+            peakTime: '2024-01-15T14:30:00Z',
+            description: 'Latest AI tools transforming workplace productivity'
+          },
+          {
+            id: 2,
+            keyword: 'remote work setup ideas',
+            category: 'lifestyle',
+            volume: 1890000,
+            growth: 89,
+            difficulty: 'easy',
+            competition: 'medium',
+            cpc: 1.67,
+            relatedKeywords: ['home office', 'workspace', 'ergonomic'],
+            platforms: ['youtube', 'instagram', 'pinterest'],
+            peakTime: '2024-01-15T10:15:00Z',
+            description: 'Creative home office and workspace inspiration'
+          },
+          {
+            id: 3,
+            keyword: 'crypto investing guide 2024',
+            category: 'business',
+            volume: 3200000,
+            growth: 67,
+            difficulty: 'hard',
+            competition: 'very_high',
+            cpc: 8.92,
+            relatedKeywords: ['cryptocurrency', 'bitcoin', 'investing'],
+            platforms: ['youtube', 'twitter', 'linkedin'],
+            peakTime: '2024-01-15T16:45:00Z',
+            description: 'Comprehensive cryptocurrency investment strategies'
+          },
+          {
+            id: 4,
+            keyword: 'healthy meal prep recipes',
+            category: 'food',
+            volume: 1560000,
+            growth: 45,
+            difficulty: 'easy',
+            competition: 'medium',
+            cpc: 0.89,
+            relatedKeywords: ['meal prep', 'healthy recipes', 'nutrition'],
+            platforms: ['youtube', 'instagram', 'tiktok'],
+            peakTime: '2024-01-15T12:20:00Z',
+            description: 'Quick and nutritious meal preparation ideas'
+          }
+        ],
+        rising: [
+          {
+            keyword: 'sustainable living tips',
+            growth: 234,
+            urgency: 'high',
+            timeLeft: '2 hours'
+          },
+          {
+            keyword: 'social media detox',
+            growth: 189,
+            urgency: 'medium',
+            timeLeft: '6 hours'
+          },
+          {
+            keyword: 'minimalist wardrobe',
+            growth: 156,
+            urgency: 'medium',
+            timeLeft: '12 hours'
+          }
+        ],
+        viral: [
+          {
+            title: 'New AI Tool Breaks Internet',
+            views: 12500000,
+            engagement: 18.5,
+            platform: 'TikTok',
+            creator: '@techguru2024',
+            timeAgo: '4 hours ago'
+          },
+          {
+            title: 'Remote Work Revolution Continues',
+            views: 8900000,
+            engagement: 12.3,
+            platform: 'YouTube',
+            creator: 'WorkLifeBalance',
+            timeAgo: '8 hours ago'
+          }
+        ],
+        insights: {
+          bestTimes: [
+            { time: '8:00 AM', score: 92 },
+            { time: '12:00 PM', score: 87 },
+            { time: '6:00 PM', score: 94 },
+            { time: '9:00 PM', score: 89 }
+          ],
+          topHashtags: [
+            '#productivity', '#ai', '#remotework', '#lifestyle', '#tech'
+          ],
+          contentTypes: [
+            { type: 'How-to Videos', percentage: 35 },
+            { type: 'List Content', percentage: 28 },
+            { type: 'Reviews', percentage: 22 },
+            { type: 'Tutorials', percentage: 15 }
+          ]
+        }
+      };
+      
+    } catch (error) {
+      console.error('Error loading trends:', error);
+      toastStore.error('Failed to load trends data');
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function formatNumber(num) {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  }
+
+  function getDifficultyColor(difficulty) {
+    switch (difficulty) {
+      case 'easy': return 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'hard': return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+    }
+  }
+
+  function getCompetitionColor(competition) {
+    switch (competition) {
+      case 'low': return 'text-green-600';
+      case 'medium': return 'text-yellow-600';
+      case 'high': return 'text-orange-600';
+      case 'very_high': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
+  }
+
+  function getUrgencyColor(urgency) {
+    switch (urgency) {
+      case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+    }
+  }
+
+  function getPlatformIcon(platform) {
+    switch (platform.toLowerCase()) {
+      case 'youtube': return '📺';
+      case 'tiktok': return '🎵';
+      case 'instagram': return '📷';
+      case 'twitter': return '🐦';
+      case 'linkedin': return '💼';
+      case 'pinterest': return '📌';
+      default: return '🌐';
+    }
+  }
+
+  function getCategoryIcon(category) {
+    const cat = categories.find(c => c.value === category);
+    return cat ? cat.icon : '🌐';
+  }
+
+  function useKeyword(keyword) {
+    // Navigate to script generator with this keyword
+    toastStore.success(`Using "${keyword}" for content creation`);
+  }
+
+  function bookmarkTrend(trendId) {
+    toastStore.success('Trend bookmarked for later');
+  }
+
+  function formatTimeAgo(timeString) {
+    const now = new Date();
+    const time = new Date(timeString);
+    const diffInHours = Math.floor((now - time) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return `${Math.floor(diffInHours / 24)}d ago`;
+  }
+
+  // Filter trends based on search and category
+  $: filteredTrends = trendsData.trending.filter(trend => {
+    const matchesSearch = !searchQuery || 
+      trend.keyword.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      trend.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'all' || trend.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
+</script>
+
+<svelte:head>
+  <title>Trends - AutoVideo</title>
+</svelte:head>
+
+<div class="max-w-7xl mx-auto space-y-8">
+  <!-- Header -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Content Trends
+    </h1>
+    <p class="text-lg text-gray-600 dark:text-gray-300">
+      Discover what's trending and create viral content with data-driven insights
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Search -->
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search class="h-5 w-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          bind:value={searchQuery}
+          placeholder="Search trends..."
+          class="form-input pl-10"
+        />
+      </div>
+
+      <!-- Category Filter -->
+      <select bind:value={selectedCategory} class="form-input">
+        {#each categories as category}
+          <option value={category.value}>{category.icon} {category.label}</option>
+        {/each}
+      </select>
+
+      <!-- Region Filter -->
+      <select bind:value={selectedRegion} on:change={loadTrends} class="form-input">
+        {#each regions as region}
+          <option value={region.value}>{region.flag} {region.label}</option>
+        {/each}
+      </select>
+
+      <!-- Timeframe Filter -->
+      <select bind:value={selectedTimeframe} on:change={loadTrends} class="form-input">
+        {#each timeframes as timeframe}
+          <option value={timeframe.value}>{timeframe.label}</option>
+        {/each}
+      </select>
+    </div>
+  </div>
+
+  {#if isLoading}
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  {:else}
+    <!-- Quick Insights -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Rising Fast -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Fire class="w-5 h-5 text-red-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Rising Fast</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-3">
+            {#each trendsData.rising as trend}
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                   on:click={() => useKeyword(trend.keyword)}>
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">
+                    {trend.keyword}
+                  </div>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {getUrgencyColor(trend.urgency)}">
+                      {trend.urgency}
+                    </span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      {trend.timeLeft} left
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                  <TrendingUp class="w-4 h-4" />
+                  <span class="text-sm font-semibold">+{trend.growth}%</span>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- Viral Content -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Zap class="w-5 h-5 text-yellow-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Going Viral</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-3">
+            {#each trendsData.viral as content}
+              <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="flex items-start justify-between mb-2">
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                      {content.title}
+                    </h4>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {getPlatformIcon(content.platform)} {content.creator}
+                      </span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {content.timeAgo}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-4 text-xs text-gray-600 dark:text-gray-400">
+                  <div class="flex items-center">
+                    <Eye class="w-3 h-3 mr-1" />
+                    {formatNumber(content.views)}
+                  </div>
+                  <div class="flex items-center">
+                    <Heart class="w-3 h-3 mr-1" />
+                    {content.engagement}%
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- Best Times -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Clock class="w-5 h-5 text-blue-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Best Times to Post</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-3">
+            {#each trendsData.insights.bestTimes as timeSlot}
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">{timeSlot.time}</span>
+                <div class="flex items-center space-x-2">
+                  <div class="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: {timeSlot.score}%"></div>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white w-8">
+                    {timeSlot.score}
+                  </span>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Trends -->
+    <div class="card">
+      <div class="card-header">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Trending Keywords
+          </h2>
+          <button type="button" class="btn-secondary flex items-center" on:click={loadTrends}>
+            <RefreshCw class="w-4 h-4 mr-2" />
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        {#if filteredTrends.length > 0}
+          <div class="space-y-4">
+            {#each filteredTrends as trend}
+              <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-2">
+                      <span class="text-lg">{getCategoryIcon(trend.category)}</span>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        {trend.keyword}
+                      </h3>
+                      <div class="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                        <TrendingUp class="w-4 h-4" />
+                        <span class="text-sm font-semibold">+{trend.growth}%</span>
+                      </div>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      {trend.description}
+                    </p>
+                  </div>
+                  <div class="flex items-center space-x-2 ml-4">
+                    <button
+                      type="button"
+                      class="btn-secondary text-sm"
+                      on:click={() => bookmarkTrend(trend.id)}
+                    >
+                      <Bookmark class="w-4 h-4 mr-1" />
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-primary text-sm"
+                      on:click={() => useKeyword(trend.keyword)}
+                    >
+                      <Play class="w-4 h-4 mr-1" />
+                      Use
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                  <div class="text-center">
+                    <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                      {formatNumber(trend.volume)}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Monthly Searches</div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {getDifficultyColor(trend.difficulty)}">
+                      {trend.difficulty}
+                    </span>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Difficulty</div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="text-lg font-semibold {getCompetitionColor(trend.competition)}">
+                      {trend.competition.replace('_', ' ')}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Competition</div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                      ${trend.cpc}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">CPC</div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                      {formatTimeAgo(trend.peakTime)}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Peak Time</div>
+                  </div>
+                </div>
+
+                <!-- Platforms & Keywords -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Platforms:</span>
+                    {#each trend.platforms as platform}
+                      <span class="text-sm">{getPlatformIcon(platform)}</span>
+                    {/each}
+                  </div>
+                  
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Related:</span>
+                    {#each trend.relatedKeywords.slice(0, 3) as keyword}
+                      <span class="px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full text-xs">
+                        {keyword}
+                      </span>
+                    {/each}
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <div class="text-center py-12">
+            <Search class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No trends found
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Try adjusting your search or filter criteria
+            </p>
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    <!-- Content Insights -->
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Content Types -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <BarChart3 class="w-5 h-5 text-purple-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top Content Types</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-4">
+            {#each trendsData.insights.contentTypes as contentType}
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">{contentType.type}</span>
+                <div class="flex items-center space-x-2">
+                  <div class="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div class="bg-purple-600 h-2 rounded-full" style="width: {contentType.percentage}%"></div>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white w-12 text-right">
+                    {contentType.percentage}%
+                  </span>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Hashtags -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Target class="w-5 h-5 text-green-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Trending Hashtags</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="flex flex-wrap gap-2">
+            {#each trendsData.insights.topHashtags as hashtag}
+              <button
+                type="button"
+                class="px-3 py-2 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full text-sm hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
+                on:click={() => useKeyword(hashtag)}
+              >
+                {hashtag}
+              </button>
+            {/each}
+          </div>
+          
+          <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div class="flex items-start space-x-2">
+              <Lightbulb class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+              <div>
+                <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+                  Pro Tip
+                </h4>
+                <p class="text-sm text-blue-700 dark:text-blue-300">
+                  Use trending hashtags strategically - mix popular tags with niche ones for better reach and engagement.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
+</div>

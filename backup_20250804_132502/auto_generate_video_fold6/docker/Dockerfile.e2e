@@ -1,0 +1,35 @@
+FROM python:3.11-slim
+
+# 安裝系統依賴
+RUN apt-get update && apt-get install -y \
+    curl \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# 設定工作目錄
+WORKDIR /app
+
+# 複製 E2E 測試相關文件
+COPY test_e2e_entrepreneur_workflow.py .
+COPY requirements-e2e.txt .
+
+# 安裝 Python 依賴
+RUN pip install --no-cache-dir -r requirements-e2e.txt
+
+# 創建非特權用戶並設置權限
+RUN groupadd -r e2euser && useradd -r -g e2euser e2euser && \
+    chown -R e2euser:e2euser /app
+
+# 設定環境變數
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# 切換到非特權用戶
+USER e2euser
+
+# 健康檢查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import aiohttp; print('E2E test runner ready')"
+
+# 預設命令
+CMD ["python", "test_e2e_entrepreneur_workflow.py"]

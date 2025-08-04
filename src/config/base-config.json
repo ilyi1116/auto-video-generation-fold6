@@ -1,0 +1,265 @@
+{
+  "version": "1.0.0",
+  "config_type": "base",
+  "description": "基礎配置模板",
+  
+  "services": {
+    "trend_service": {
+      "url": "http://trend-service:8000",
+      "health_check_path": "/health",
+      "timeout": 30,
+      "retry_attempts": 3
+    },
+    "video_service": {
+      "url": "http://video-service:8000", 
+      "health_check_path": "/health",
+      "timeout": 120,
+      "retry_attempts": 2
+    },
+    "ai_service": {
+      "url": "http://ai-service:8000",
+      "health_check_path": "/health", 
+      "timeout": 60,
+      "retry_attempts": 3
+    },
+    "social_service": {
+      "url": "http://social-service:8000",
+      "health_check_path": "/health",
+      "timeout": 30,
+      "retry_attempts": 2
+    }
+  },
+  
+  "generation": {
+    "daily_video_limit": 20,
+    "batch_size": 3,
+    "max_concurrent_jobs": 4,
+    "quality_preset": "medium",
+    "duration_range": [15, 45],
+    "platforms": ["tiktok", "instagram_reels", "youtube_shorts"],
+    "categories": ["technology", "entertainment", "lifestyle", "sports", "business"],
+    "languages": ["zh-TW", "zh-CN"],
+    "quality_threshold": 0.7
+  },
+  
+  "scheduling": {
+    "enabled": true,
+    "mode": "auto_schedule",
+    "work_hours": {
+      "start": "09:00",
+      "end": "21:00", 
+      "timezone": "Asia/Taipei"
+    },
+    "peak_hours": ["09:00", "12:00", "18:00", "21:00"],
+    "auto_stop_after_daily_limit": true
+  },
+  
+  "resources": {
+    "max_memory_usage": "16GB",
+    "max_cpu_cores": 8,
+    "temp_storage_limit": "50GB",
+    "parallel_video_processing": 2,
+    "cleanup_interval": 3600
+  },
+  
+  "cost_control": {
+    "daily_budget_usd": 50,
+    "api_rate_limits": {
+      "openai_requests_per_hour": 100,
+      "stability_ai_requests_per_hour": 50,
+      "elevenlabs_requests_per_hour": 75,
+      "gemini_requests_per_hour": 120,
+      "suno_requests_per_hour": 20
+    },
+    "stop_on_budget_exceeded": true,
+    "cost_tracking_enabled": true,
+    "budget_alerts": {
+      "threshold_70": true,
+      "threshold_90": true
+    }
+  },
+  
+  "content": {
+    "trending_sources": ["google_trends", "youtube_api"],
+    "geo_locations": ["TW", "HK", "SG"],
+    "trending_topics_limit": 15,
+    "keyword_filters": {
+      "min_length": 2,
+      "max_length": 50,
+      "exclude_nsfw": true,
+      "exclude_patterns": ["covid", "death", "disaster"]
+    },
+    "language": "zh-TW",
+    "voice_synthesis": {
+      "provider": "elevenlabs",
+      "voice_id": "default",
+      "speed": 1.0,
+      "emotion": "neutral"
+    }
+  },
+  
+  "ai_services": {
+    "text_generation": {
+      "primary_provider": "openai",
+      "fallback_provider": "gemini",
+      "providers": {
+        "openai": {
+          "model": "gpt-3.5-turbo",
+          "max_tokens": 300,
+          "temperature": 0.8
+        },
+        "gemini": {
+          "model": "gemini-pro",
+          "max_tokens": 300,
+          "temperature": 0.8
+        }
+      },
+      "language_style": "conversational",
+      "target_audience": "young_adults"
+    },
+    "image_generation": {
+      "provider": "stability_ai",
+      "model": "stable-diffusion-xl",
+      "quality": "standard",
+      "style": "vivid",
+      "size": "1024x1792"
+    },
+    "music_generation": {
+      "provider": "suno",
+      "model": "chirp-v3",
+      "default_duration": 30,
+      "instrumental_only": true,
+      "quality": "standard"
+    }
+  },
+  
+  "video_styles": {
+    "tiktok": {
+      "aspect_ratio": "9:16",
+      "duration_range": [15, 60],
+      "effects": ["zoom_in", "text_overlay", "trending_hashtag"],
+      "fonts": ["Arial Bold", "Impact"],
+      "color_scheme": "vibrant"
+    },
+    "instagram_reels": {
+      "aspect_ratio": "9:16",
+      "duration_range": [15, 90], 
+      "effects": ["smooth_transition", "text_overlay"],
+      "fonts": ["Helvetica", "Roboto"],
+      "color_scheme": "modern"
+    },
+    "youtube_shorts": {
+      "aspect_ratio": "9:16",
+      "duration_range": [15, 60],
+      "effects": ["thumbnail_highlight", "subscribe_reminder"],
+      "fonts": ["YouTube Sans", "Roboto"],
+      "color_scheme": "youtube_brand"
+    }
+  },
+  
+  "content_templates": {
+    "technology": {
+      "intro_templates": [
+        "🔥 {keyword} 正在科技界掀起革命！",
+        "💡 {keyword} - 你不能錯過的科技趨勢！",
+        "🚀 {keyword} 將如何改變我們的未來？"
+      ],
+      "outro_templates": [
+        "想了解更多科技趨勢？關注我們！",
+        "科技改變生活，讓我們一起探索！",
+        "下次再為你帶來更多科技資訊！"
+      ]
+    },
+    "entertainment": {
+      "intro_templates": [
+        "✨ {keyword} 成為最新娛樂話題！",
+        "🎬 {keyword} - 娛樂圈的新寵兒！",
+        "🌟 為什麼 {keyword} 這麼火紅？"
+      ],
+      "outro_templates": [
+        "更多娛樂資訊，記得關注！",
+        "娛樂生活，精彩不斷！",
+        "下個熱門話題見！"
+      ]
+    },
+    "lifestyle": {
+      "intro_templates": [
+        "🌈 {keyword} 正在改變生活方式！",
+        "💫 {keyword} - 生活新風尚！",
+        "🎯 如何用 {keyword} 提升生活品質？"
+      ],
+      "outro_templates": [
+        "生活美學，從關注開始！",
+        "更多生活靈感，持續更新！",
+        "讓生活更美好，一起努力！"
+      ]
+    }
+  },
+  
+  "storage": {
+    "local_storage_enabled": true,
+    "output_dir": "./generated_videos",
+    "cloud_backup": false,
+    "retention_days": 14,
+    "auto_cleanup": true,
+    "max_storage_gb": 50
+  },
+  
+  "monitoring": {
+    "basic_logging": true,
+    "performance_metrics": false,
+    "detailed_analytics": false,
+    "notification_channels": ["console"],
+    "prometheus_enabled": false,
+    "grafana_enabled": false,
+    "metrics": ["generation_success_rate", "processing_time"],
+    "alerts": {
+      "low_success_rate": 0.5,
+      "high_processing_time": 300
+    }
+  },
+  
+  "social_publishing": {
+    "auto_publish": false,
+    "save_to_draft": true,
+    "platforms_config": {
+      "tiktok": {
+        "hashtags_limit": 5,
+        "privacy": "public",
+        "description_template": "{script}\n\n{hashtags}"
+      },
+      "instagram": {
+        "hashtags_limit": 20,
+        "privacy": "public",
+        "story_enabled": false
+      },
+      "youtube": {
+        "hashtags_limit": 10,
+        "privacy": "public",
+        "title_template": "{keyword} - 最新趨勢解析",
+        "description_template": "探索 {keyword} 的精彩世界！\n\n{script}\n\n#Shorts {hashtags}"
+      }
+    }
+  },
+  
+  "output_settings": {
+    "video_quality": "1080p",
+    "bitrate": "6000k",
+    "frame_rate": 30,
+    "audio_bitrate": "128k",
+    "format": "mp4",
+    "compression": "h264"
+  },
+  
+  "deployment": {
+    "mode": "docker",
+    "services_required": [
+      "trend-service",
+      "ai-service", 
+      "video-service",
+      "social-service"
+    ],
+    "database_mode": "postgresql",
+    "cache_mode": "redis"
+  }
+}

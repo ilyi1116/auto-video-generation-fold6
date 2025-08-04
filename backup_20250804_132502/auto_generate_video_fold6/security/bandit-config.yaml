@@ -1,0 +1,244 @@
+# Bandit 安全掃描配置
+# 針對 Python 程式碼的安全漏洞檢測
+
+# 掃描設定
+scan:
+  # 包含的檔案模式
+  include:
+    - "*.py"
+  
+  # 排除的檔案和目錄
+  exclude:
+    - "/tests/"
+    - "/test/"
+    - "*_test.py"
+    - "test_*.py"
+    - "/migrations/"
+    - "/venv/"
+    - "/.venv/"
+    - "/env/"
+    - "/.env/"
+    - "/node_modules/"
+    - "/.git/"
+    - "/__pycache__/"
+    - "/.pytest_cache/"
+    - "/build/"
+    - "/dist/"
+  
+  # 遞迴掃描目錄
+  recursive: true
+  
+  # 掃描級別 (1-3, 1為最嚴格)
+  level: 2
+  
+  # 信心級別 (LOW, MEDIUM, HIGH)
+  confidence: MEDIUM
+
+# 檢查規則
+tests:
+  # 啟用的測試
+  include:
+    # 注入攻擊
+    - B601  # shell_injection
+    - B602  # subprocess_popen_with_shell_equals_true
+    - B603  # subprocess_without_shell_equals_true
+    - B604  # any_other_function_with_shell_equals_true
+    - B605  # start_process_with_a_shell
+    - B606  # start_process_with_no_shell
+    - B607  # start_process_with_partial_path
+    - B608  # hardcoded_sql_expressions
+    - B609  # linux_commands_wildcard_injection
+    
+    # 密碼和金鑰
+    - B105  # hardcoded_password_string
+    - B106  # hardcoded_password_funcarg
+    - B107  # hardcoded_password_default
+    - B108  # hardcoded_tmp_directory
+    - B110  # try_except_pass
+    
+    # 加密和散列
+    - B301  # pickle_load
+    - B302  # pickle_loads
+    - B303  # pickle_dump_load
+    - B304  # cipher_modes
+    - B305  # cipher_modes_cryptography
+    - B306  # mktemp_q
+    - B307  # eval_use
+    - B308  # mark_safe_use
+    - B309  # httpsconnection_request
+    - B310  # urllib_urlopen
+    - B311  # random_module
+    - B312  # telnetlib_usage
+    - B313  # xml_bad_cElementTree
+    - B314  # xml_bad_ElementTree
+    - B315  # xml_bad_expatreader
+    - B316  # xml_bad_expatbuilder
+    - B317  # xml_bad_sax
+    - B318  # xml_bad_minidom
+    - B319  # xml_bad_pulldom
+    - B320  # xml_bad_xmlparser
+    - B321  # ftplib_usage
+    - B322  # input_usage
+    - B323  # unverified_context
+    - B324  # hashlib_insecure_functions
+    - B325  # tempfile_mktemp
+    
+    # Web 框架安全
+    - B501  # request_with_no_cert_validation
+    - B502  # ssl_with_bad_version
+    - B503  # ssl_with_bad_defaults
+    - B504  # ssl_with_no_version
+    - B505  # weak_cryptographic_key
+    - B506  # yaml_load
+    - B507  # ssh_no_host_key_verification
+    - B601  # paramiko_calls
+    - B602  # subprocess_popen_with_shell_equals_true
+    - B701  # jinja2_autoescape_false
+    - B702  # use_of_mako_templates
+    - B703  # django_mark_safe
+    
+    # 其他安全問題
+    - B901  # return_in_finally
+    - B902  # no_such_thing
+
+  # 跳過的測試
+  skip:
+    # 開發階段可能需要跳過的檢查
+    # - B101  # assert_used (在測試中常用)
+    # - B601  # 如果需要使用 shell 命令
+
+# 自訂規則
+custom_rules:
+  # 檢查自訂的不安全模式
+  patterns:
+    - pattern: "exec\\s*\\("
+      message: "Use of exec() function detected"
+      severity: HIGH
+      confidence: HIGH
+    
+    - pattern: "eval\\s*\\("
+      message: "Use of eval() function detected"
+      severity: HIGH
+      confidence: HIGH
+    
+    - pattern: "__import__\\s*\\("
+      message: "Dynamic import detected"
+      severity: MEDIUM
+      confidence: MEDIUM
+    
+    - pattern: "os\\.system\\s*\\("
+      message: "Use of os.system() detected"
+      severity: HIGH
+      confidence: HIGH
+    
+    - pattern: "shell\\s*=\\s*True"
+      message: "Shell=True in subprocess call"
+      severity: HIGH
+      confidence: HIGH
+
+# 報告設定
+reporting:
+  # 輸出格式
+  format: json
+  
+  # 輸出檔案
+  output: "/reports/bandit-report.json"
+  
+  # 詳細程度
+  verbose: true
+  
+  # 包含原始碼
+  include_source: true
+  
+  # 嚴重程度過濾
+  severity_filter:
+    - LOW
+    - MEDIUM
+    - HIGH
+  
+  # 信心級別過濾
+  confidence_filter:
+    - LOW
+    - MEDIUM
+    - HIGH
+
+# 自訂檢查器
+plugins:
+  # 啟用的外掛
+  enabled:
+    - bandit_django
+    - bandit_flask
+    - bandit_requests
+  
+  # 外掛特定設定
+  django:
+    check_debug: true
+    check_csrf: true
+    check_sql_injection: true
+  
+  flask:
+    check_debug: true
+    check_secret_key: true
+    check_csrf: true
+
+# 白名單設定
+whitelist:
+  # 檔案級別白名單
+  files:
+    - "config/settings.py"  # 配置檔案可能包含硬編碼值
+  
+  # 函數級別白名單
+  functions:
+    - "test_*"  # 測試函數
+    - "*_test"
+  
+  # 行級別白名單 (使用 # nosec 註釋)
+  inline_comments:
+    - "# nosec"
+    - "# bandit:skip"
+
+# 專案特定設定
+project_settings:
+  # Django 專案設定
+  django:
+    settings_module: "auto_video.settings"
+    check_migrations: false
+  
+  # Flask 專案設定
+  flask:
+    app_factory: "create_app"
+  
+  # FastAPI 專案設定
+  fastapi:
+    check_openapi: true
+    check_cors: true
+
+# 整合設定
+integrations:
+  # CI/CD 整合
+  ci_cd:
+    fail_on_high: true
+    fail_on_medium: false
+    fail_on_low: false
+  
+  # IDE 整合
+  ide:
+    enable_inline_warnings: true
+    show_confidence: true
+  
+  # 監控整合
+  monitoring:
+    send_metrics: true
+    metrics_endpoint: "http://prometheus:9090/metrics"
+
+# 快取設定
+cache:
+  enabled: true
+  directory: "/tmp/bandit_cache"
+  max_age: 86400  # 24 小時
+
+# 效能設定
+performance:
+  max_workers: 4
+  timeout: 300  # 5 分鐘
+  memory_limit: "1GB"

@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "json": {
+      "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+      "format": "%(timestamp)s %(level)s %(service)s %(event_type)s %(message)s %(correlation_id)s %(request_id)s %(user_id)s %(trace_id)s"
+    },
+    "detailed": {
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(correlation_id)s - %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "simple": {
+      "format": "%(levelname)s - %(message)s"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "INFO",
+      "formatter": "json",
+      "stream": "ext://sys.stdout"
+    },
+    "file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "json",
+      "filename": "logs/application.log",
+      "maxBytes": 10485760,
+      "backupCount": 5
+    },
+    "error_file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "ERROR",
+      "formatter": "json",
+      "filename": "logs/error.log",
+      "maxBytes": 10485760,
+      "backupCount": 5
+    },
+    "audit_file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "INFO",
+      "formatter": "json",
+      "filename": "logs/audit.log",
+      "maxBytes": 10485760,
+      "backupCount": 10
+    },
+    "performance_file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "INFO",
+      "formatter": "json",
+      "filename": "logs/performance.log",
+      "maxBytes": 10485760,
+      "backupCount": 5
+    },
+    "security_file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "WARNING",
+      "formatter": "json",
+      "filename": "logs/security.log",
+      "maxBytes": 10485760,
+      "backupCount": 10
+    },
+    "business_file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "INFO",
+      "formatter": "json",
+      "filename": "logs/business.log",
+      "maxBytes": 10485760,
+      "backupCount": 5
+    }
+  },
+  "loggers": {
+    "app": {
+      "level": "INFO",
+      "handlers": ["console", "file"],
+      "propagate": false
+    },
+    "app.error": {
+      "level": "ERROR",
+      "handlers": ["error_file"],
+      "propagate": false
+    },
+    "app.audit": {
+      "level": "INFO",
+      "handlers": ["audit_file"],
+      "propagate": false
+    },
+    "app.performance": {
+      "level": "INFO",
+      "handlers": ["performance_file"],
+      "propagate": false
+    },
+    "app.security": {
+      "level": "WARNING",
+      "handlers": ["security_file"],
+      "propagate": false
+    },
+    "app.business": {
+      "level": "INFO",
+      "handlers": ["business_file"],
+      "propagate": false
+    },
+    "trend-service": {
+      "level": "INFO",
+      "handlers": ["console", "file"],
+      "propagate": false
+    },
+    "video-service": {
+      "level": "INFO",
+      "handlers": ["console", "file"],
+      "propagate": false
+    },
+    "social-service": {
+      "level": "INFO",
+      "handlers": ["console", "file"],
+      "propagate": false
+    },
+    "scheduler-service": {
+      "level": "INFO",
+      "handlers": ["console", "file"],
+      "propagate": false
+    },
+    "api-gateway": {
+      "level": "INFO",
+      "handlers": ["console", "file"],
+      "propagate": false
+    }
+  },
+  "root": {
+    "level": "INFO",
+    "handlers": ["console"]
+  }
+}

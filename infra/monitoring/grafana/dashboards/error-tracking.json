@@ -1,0 +1,144 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Error Tracking - Auto Video Generation",
+    "tags": ["auto-video", "errors", "debugging"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Error Rate by Service",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"4..|5..\",job=~\".*-service\"}[5m])) by (service)",
+            "legendFormat": "{{service}} - Errors/s"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Error Status Code Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum(increase(http_requests_total{status=~\"4..|5..\"}[1h])) by (status)",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Application Errors",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(application_errors_total[5m])) by (service, error_type)",
+            "legendFormat": "{{service}} - {{error_type}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Database Errors",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(pg_stat_database_deadlocks[5m])",
+            "legendFormat": "{{datname}} - Deadlocks/s"
+          },
+          {
+            "expr": "rate(pg_stat_database_conflicts[5m])",
+            "legendFormat": "{{datname}} - Conflicts/s"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Video Generation Failures",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(video_generation_total{status=\"failed\"}[5m])) by (error_reason)",
+            "legendFormat": "{{error_reason}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "Social Media Publishing Failures",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(social_publish_total{status=\"failed\"}[5m])) by (platform, error_reason)",
+            "legendFormat": "{{platform}} - {{error_reason}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "Trend Analysis Failures",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(trend_analysis_total{status=\"failed\"}[5m])) by (source, error_reason)",
+            "legendFormat": "{{source}} - {{error_reason}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 8,
+        "title": "Task Scheduler Failures",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(scheduler_tasks_failed_total[5m])",
+            "legendFormat": "Failed Tasks/s"
+          },
+          {
+            "expr": "scheduler_failed_queue_size",
+            "legendFormat": "Failed Queue Size"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      },
+      {
+        "id": 9,
+        "title": "Critical Error Log Messages",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{level=\"error\",service=~\".*-service\"} |= \"critical\" or \"fatal\"",
+            "legendFormat": ""
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32}
+      },
+      {
+        "id": 10,
+        "title": "Error Rate Heatmap",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) by (service)",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 40}
+      }
+    ],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

@@ -1,0 +1,612 @@
+<script>
+  import { onMount } from 'svelte';
+  import { toastStore } from '$lib/stores/toast';
+  import { goto } from '$app/navigation';
+
+  // Import script components
+  import ScriptGenerator from '$lib/components/ai/script/ScriptGenerator.svelte';
+  import ScriptOutput from '$lib/components/ai/script/ScriptOutput.svelte';
+  import TrendingSuggestions from '$lib/components/ai/script/TrendingSuggestions.svelte';
+  import ScriptHistory from '$lib/components/ai/script/ScriptHistory.svelte';
+
+  let isGenerating = false;
+  let generatedScript = '';
+  let scriptHistory = [];
+  let showAdvanced = false;
+  
+  // Form data
+  let formData = {
+    topic: '',
+    style: 'educational',
+    tone: 'professional',
+    duration: 60,
+    platform: 'youtube',
+    audience: 'general',
+    keywords: '',
+    hook_type: 'question',
+    include_cta: true,
+    language: 'en'
+  };
+
+  // Configuration options
+  const styles = [
+    { value: 'educational', label: 'Educational', description: 'Informative and structured content' },
+    { value: 'entertaining', label: 'Entertaining', description: 'Fun and engaging content' },
+    { value: 'storytelling', label: 'Storytelling', description: 'Narrative-driven content' },
+    { value: 'tutorial', label: 'Tutorial', description: 'Step-by-step instructional content' },
+    { value: 'review', label: 'Review', description: 'Product or service evaluation' },
+    { value: 'news', label: 'News', description: 'Current events and updates' }
+  ];
+
+  const tones = [
+    { value: 'professional', label: 'Professional' },
+    { value: 'casual', label: 'Casual' },
+    { value: 'enthusiastic', label: 'Enthusiastic' },
+    { value: 'humorous', label: 'Humorous' },
+    { value: 'authoritative', label: 'Authoritative' },
+    { value: 'conversational', label: 'Conversational' }
+  ];
+
+  const platforms = [
+    { value: 'youtube', label: 'YouTube', icon: '📺' },
+    { value: 'tiktok', label: 'TikTok', icon: '🎵' },
+    { value: 'instagram', label: 'Instagram Reels', icon: '📷' },
+    { value: 'twitter', label: 'Twitter', icon: '🐦' },
+    { value: 'linkedin', label: 'LinkedIn', icon: '💼' }
+  ];
+
+  const hookTypes = [
+    { value: 'question', label: 'Question Hook', example: '"Did you know that...?"' },
+    { value: 'statistic', label: 'Statistic Hook', example: '"95% of people don\'t know..."' },
+    { value: 'story', label: 'Story Hook', example: '"Last week something incredible happened..."' },
+    { value: 'controversial', label: 'Controversial Hook', example: '"Everyone is wrong about..."' },
+    { value: 'how_to', label: 'How-to Hook', example: '"Here\'s exactly how to..."' }
+  ];
+
+  const trendingTopics = [
+    { topic: 'AI productivity tools for 2024', difficulty: 'easy', potential: 'high' },
+    { topic: 'Remote work best practices', difficulty: 'medium', potential: 'high' },
+    { topic: 'Sustainable living tips', difficulty: 'easy', potential: 'medium' },
+    { topic: 'Cryptocurrency investing guide', difficulty: 'hard', potential: 'high' },
+    { topic: 'Social media marketing strategies', difficulty: 'medium', potential: 'high' }
+  ];
+
+  onMount(() => {
+    loadScriptHistory();
+  });
+
+  async function loadScriptHistory() {
+    try {
+      // Simulate loading script history
+      scriptHistory = [
+        {
+          id: 1,
+          topic: 'AI Tools for Content Creators',
+          script: 'Are you tired of spending hours creating content? What if I told you...',
+          createdAt: new Date().toISOString(),
+          performance: { score: 92, engagement: 8.5 }
+        },
+        {
+          id: 2,
+          topic: 'Remote Work Productivity Hacks',
+          script: 'Working from home can be challenging, but these 5 simple tricks...',
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          performance: { score: 87, engagement: 7.2 }
+        }
+      ];
+    } catch (error) {
+      console.error('Error loading script history:', error);
+    }
+  }
+
+  async function generateScript() {
+    if (!formData.topic.trim()) {
+      toastStore.error('Please enter a topic for your script');
+      return;
+    }
+
+    isGenerating = true;
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const mockScript = generateMockScript();
+      generatedScript = mockScript;
+      
+      // Add to history
+      scriptHistory.unshift({
+        id: Date.now(),
+        topic: formData.topic,
+        script: mockScript.substring(0, 100) + '...',
+        createdAt: new Date().toISOString(),
+        performance: { score: Math.floor(Math.random() * 20) + 80, engagement: Math.random() * 3 + 7 }
+      });
+      
+      toastStore.success('Script generated successfully!');
+    } catch (error) {
+      console.error('Error generating script:', error);
+      toastStore.error('Failed to generate script. Please try again.');
+    } finally {
+      isGenerating = false;
+    }
+  }
+
+  function generateMockScript() {
+    const hooks = {
+      question: `Did you know that ${formData.topic.toLowerCase()} could completely change your life?`,
+      statistic: `97% of people don't know this secret about ${formData.topic.toLowerCase()}.`,
+      story: `Last month, I discovered something incredible about ${formData.topic.toLowerCase()} that I have to share with you.`,
+      controversial: `Everything you think you know about ${formData.topic.toLowerCase()} is wrong.`,
+      how_to: `Here's exactly how to master ${formData.topic.toLowerCase()} in just ${formData.duration} seconds.`
+    };
+
+    const hook = hooks[formData.hook_type] || hooks.question;
+    
+    return `${hook}
+
+In this video, I'm going to show you the most effective strategies for ${formData.topic.toLowerCase()} that actually work in ${new Date().getFullYear()}.
+
+First, let me tell you why this matters. Most people struggle with ${formData.topic.toLowerCase()} because they're using outdated methods that simply don't work anymore.
+
+Here's what you need to know:
+
+1. The biggest mistake people make is [specific mistake related to topic]
+2. The secret that industry experts don't want you to know
+3. A simple 3-step process that delivers results
+
+Let me break this down for you...
+
+[Detailed explanation with actionable steps]
+
+The results speak for themselves. People who implement these strategies see improvements within the first week.
+
+${formData.include_cta ? `If you found this helpful, make sure to subscribe and hit the notification bell for more content like this. And if you're ready to take your ${formData.topic.toLowerCase()} to the next level, check out the link in the description for our free guide.` : ''}
+
+What's your experience with ${formData.topic.toLowerCase()}? Let me know in the comments below!`;
+  }
+
+  function copyScript() {
+    navigator.clipboard.writeText(generatedScript);
+    toastStore.success('Script copied to clipboard!');
+  }
+
+  function downloadScript() {
+    const blob = new Blob([generatedScript], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `script-${formData.topic.replace(/\s+/g, '-').toLowerCase()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toastStore.success('Script downloaded!');
+  }
+
+  function saveScript() {
+    // In a real app, this would save to the database
+    toastStore.success('Script saved to your projects!');
+  }
+
+  function useTrendingTopic(topic) {
+    formData.topic = topic.topic;
+  }
+
+  function optimizeForPlatform(platform) {
+    formData.platform = platform;
+    
+    // Adjust duration based on platform
+    switch (platform) {
+      case 'tiktok':
+        formData.duration = 30;
+        formData.tone = 'enthusiastic';
+        break;
+      case 'youtube':
+        formData.duration = 120;
+        formData.tone = 'professional';
+        break;
+      case 'instagram':
+        formData.duration = 45;
+        formData.tone = 'casual';
+        break;
+      case 'twitter':
+        formData.duration = 30;
+        formData.tone = 'conversational';
+        break;
+      case 'linkedin':
+        formData.duration = 90;
+        formData.tone = 'authoritative';
+        break;
+    }
+  }
+
+  function getDifficultyColor(difficulty) {
+    switch (difficulty) {
+      case 'easy': return 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'hard': return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+    }
+  }
+
+  function getPotentialColor(potential) {
+    switch (potential) {
+      case 'high': return 'text-green-600';
+      case 'medium': return 'text-yellow-600';
+      case 'low': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
+  }
+</script>
+
+<svelte:head>
+  <title>AI Script Generator - AutoVideo</title>
+</svelte:head>
+
+<div class="max-w-7xl mx-auto space-y-8">
+  <!-- Header -->
+  <div class="text-center">
+    <div class="flex items-center justify-center mb-4">
+      <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+        <Wand2 class="w-6 h-6 text-white" />
+      </div>
+    </div>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      AI Script Generator
+    </h1>
+    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+      Generate engaging, viral-ready scripts tailored to your audience and platform in seconds
+    </p>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+    <!-- Main Form -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Script Configuration -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Script Configuration</h2>
+        </div>
+        <div class="card-body space-y-6">
+          <!-- Topic Input -->
+          <div>
+            <label for="topic" class="form-label">
+              What's your video about? *
+            </label>
+            <input
+              id="topic"
+              type="text"
+              bind:value={formData.topic}
+              placeholder="e.g., AI productivity tools, cooking tips, fitness routines..."
+              class="form-input"
+              disabled={isGenerating}
+            />
+          </div>
+
+          <!-- Platform Selection -->
+          <div>
+            <label class="form-label">Target Platform</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {#each platforms as platform}
+                <button
+                  type="button"
+                  class="p-3 border-2 rounded-lg text-center transition-colors {formData.platform === platform.value
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}"
+                  on:click={() => optimizeForPlatform(platform.value)}
+                  disabled={isGenerating}
+                >
+                  <div class="text-2xl mb-1">{platform.icon}</div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{platform.label}</div>
+                </button>
+              {/each}
+            </div>
+          </div>
+
+          <!-- Style and Tone -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label for="style" class="form-label">Content Style</label>
+              <select id="style" bind:value={formData.style} class="form-input" disabled={isGenerating}>
+                {#each styles as style}
+                  <option value={style.value}>{style.label}</option>
+                {/each}
+              </select>
+            </div>
+            
+            <div>
+              <label for="tone" class="form-label">Tone</label>
+              <select id="tone" bind:value={formData.tone} class="form-input" disabled={isGenerating}>
+                {#each tones as tone}
+                  <option value={tone.value}>{tone.label}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+
+          <!-- Duration and Hook Type -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label for="duration" class="form-label">Target Duration (seconds)</label>
+              <input
+                id="duration"
+                type="number"
+                bind:value={formData.duration}
+                min="15"
+                max="600"
+                class="form-input"
+                disabled={isGenerating}
+              />
+            </div>
+            
+            <div>
+              <label for="hook_type" class="form-label">Hook Type</label>
+              <select id="hook_type" bind:value={formData.hook_type} class="form-input" disabled={isGenerating}>
+                {#each hookTypes as hook}
+                  <option value={hook.value}>{hook.label}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+
+          <!-- Advanced Options Toggle -->
+          <div>
+            <button
+              type="button"
+              class="flex items-center text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400"
+              on:click={() => showAdvanced = !showAdvanced}
+            >
+              <Settings class="w-4 h-4 mr-2" />
+              Advanced Options
+              <div class="ml-1 transition-transform {showAdvanced ? 'rotate-180' : ''}">▼</div>
+            </button>
+            
+            {#if showAdvanced}
+              <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-4">
+                <div>
+                  <label for="keywords" class="form-label">Target Keywords (comma-separated)</label>
+                  <input
+                    id="keywords"
+                    type="text"
+                    bind:value={formData.keywords}
+                    placeholder="SEO, viral content, engagement"
+                    class="form-input"
+                    disabled={isGenerating}
+                  />
+                </div>
+                
+                <div>
+                  <label for="audience" class="form-label">Target Audience</label>
+                  <select id="audience" bind:value={formData.audience} class="form-input" disabled={isGenerating}>
+                    <option value="general">General Audience</option>
+                    <option value="beginners">Beginners</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="professionals">Professionals</option>
+                    <option value="students">Students</option>
+                  </select>
+                </div>
+                
+                <div class="flex items-center">
+                  <input
+                    id="include_cta"
+                    type="checkbox"
+                    bind:checked={formData.include_cta}
+                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    disabled={isGenerating}
+                  />
+                  <label for="include_cta" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    Include call-to-action
+                  </label>
+                </div>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Generate Button -->
+          <div>
+            <button
+              type="button"
+              class="btn-primary w-full flex items-center justify-center"
+              on:click={generateScript}
+              disabled={isGenerating || !formData.topic.trim()}
+            >
+              {#if isGenerating}
+                <RefreshCw class="w-4 h-4 mr-2 animate-spin" />
+                Generating Script...
+              {:else}
+                <Sparkles class="w-4 h-4 mr-2" />
+                Generate Script
+              {/if}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated Script -->
+      {#if generatedScript}
+        <div class="card">
+          <div class="card-header">
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Generated Script</h2>
+              <div class="flex items-center space-x-2">
+                <button
+                  type="button"
+                  class="btn-secondary flex items-center"
+                  on:click={copyScript}
+                >
+                  <Copy class="w-4 h-4 mr-2" />
+                  Copy
+                </button>
+                <button
+                  type="button"
+                  class="btn-secondary flex items-center"
+                  on:click={downloadScript}
+                >
+                  <Download class="w-4 h-4 mr-2" />
+                  Download
+                </button>
+                <button
+                  type="button"
+                  class="btn-primary flex items-center"
+                  on:click={saveScript}
+                >
+                  <Save class="w-4 h-4 mr-2" />
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <pre class="whitespace-pre-wrap text-sm text-gray-900 dark:text-white font-mono">{generatedScript}</pre>
+            </div>
+            
+            <!-- Script Analysis -->
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div class="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">92</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Viral Score</div>
+              </div>
+              <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div class="text-2xl font-bold text-green-600 dark:text-green-400">{Math.floor(generatedScript.split(' ').length / 2)}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Est. Duration (s)</div>
+              </div>
+              <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{generatedScript.split(' ').length}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Word Count</div>
+              </div>
+              <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">A+</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Readability</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Trending Topics -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <TrendingUp class="w-5 h-5 text-orange-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Trending Topics</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-3">
+            {#each trendingTopics as topic}
+              <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors"
+                   on:click={() => useTrendingTopic(topic)}>
+                <div class="flex items-start justify-between mb-2">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white flex-1">
+                    {topic.topic}
+                  </h4>
+                  <button class="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 ml-2">
+                    Use
+                  </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {getDifficultyColor(topic.difficulty)}">
+                    {topic.difficulty}
+                  </span>
+                  <span class="text-xs {getPotentialColor(topic.potential)}">
+                    {topic.potential} potential
+                  </span>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- Script History -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Clock class="w-5 h-5 text-blue-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Scripts</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          {#if scriptHistory.length > 0}
+            <div class="space-y-3">
+              {#each scriptHistory.slice(0, 5) as script}
+                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                    {script.topic}
+                  </h4>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    {script.script}
+                  </p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs">
+                      <span class="text-green-600 dark:text-green-400">
+                        Score: {script.performance.score}
+                      </span>
+                      <span class="text-blue-600 dark:text-blue-400">
+                        Engagement: {script.performance.engagement}%
+                      </span>
+                    </div>
+                    <button class="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400">
+                      Reuse
+                    </button>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="text-center py-4">
+              <Lightbulb class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Your generated scripts will appear here
+              </p>
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex items-center">
+            <Lightbulb class="w-5 h-5 text-yellow-500 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pro Tips</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="space-y-3 text-sm">
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Start with a compelling hook in the first 3 seconds
+              </p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Use power words like "secret," "proven," "exclusive"
+              </p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                Include specific numbers and statistics
+              </p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-gray-600 dark:text-gray-300">
+                End with a clear call-to-action
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

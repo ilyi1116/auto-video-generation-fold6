@@ -1,0 +1,205 @@
+groups:
+- name: auto-video-system-alerts
+  rules:
+  # 系統層面告警
+  - alert: HighCPUUsage
+    expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+    for: 2m
+    labels:
+      severity: warning
+      service: system
+    annotations:
+      summary: "高 CPU 使用率警告"
+      description: "實例 {{ $labels.instance }} 的 CPU 使用率超過 80%，當前值: {{ $value }}%"
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+    for: 2m
+    labels:
+      severity: warning
+      service: system
+    annotations:
+      summary: "高記憶體使用率警告"
+      description: "實例 {{ $labels.instance }} 的記憶體使用率超過 85%，當前值: {{ $value }}%"
+
+  - alert: DiskSpaceLow
+    expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"} * 100) < 15
+    for: 1m
+    labels:
+      severity: critical
+      service: system
+    annotations:
+      summary: "磁碟空間不足警告"
+      description: "實例 {{ $labels.instance }} 的磁碟 {{ $labels.mountpoint }} 可用空間少於 15%，當前值: {{ $value }}%"
+
+- name: auto-video-application-alerts
+  rules:
+  # 應用服務告警
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "服務停止運行"
+      description: "服務 {{ $labels.job }} 在實例 {{ $labels.instance }} 上停止運行"
+
+  - alert: HighErrorRate
+    expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+    for: 2m
+    labels:
+      severity: warning
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "高錯誤率警告"
+      description: "服務 {{ $labels.job }} 的 5xx 錯誤率超過 5%，當前值: {{ $value }}%"
+
+  - alert: HighResponseTime
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+    for: 3m
+    labels:
+      severity: warning
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "高回應時間警告"
+      description: "服務 {{ $labels.job }} 的 95% 回應時間超過 2 秒，當前值: {{ $value }}s"
+
+  - alert: HighRequestRate
+    expr: rate(http_requests_total[5m]) > 1000
+    for: 2m
+    labels:
+      severity: warning
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "高請求率警告"
+      description: "服務 {{ $labels.job }} 的請求率超過 1000 req/s，當前值: {{ $value }} req/s"
+
+- name: auto-video-database-alerts
+  rules:
+  # 資料庫告警
+  - alert: PostgreSQLDown
+    expr: pg_up == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: postgresql
+    annotations:
+      summary: "PostgreSQL 資料庫停止運行"
+      description: "PostgreSQL 資料庫在實例 {{ $labels.instance }} 上停止運行"
+
+  - alert: PostgreSQLTooManyConnections
+    expr: pg_stat_activity_count / pg_settings_max_connections * 100 > 80
+    for: 2m
+    labels:
+      severity: warning
+      service: postgresql
+    annotations:
+      summary: "PostgreSQL 連接數過高"
+      description: "PostgreSQL 連接數使用率超過 80%，當前值: {{ $value }}%"
+
+  - alert: PostgreSQLSlowQueries
+    expr: rate(pg_stat_database_blks_read[5m]) / rate(pg_stat_database_blks_hit[5m]) < 0.1
+    for: 3m
+    labels:
+      severity: warning
+      service: postgresql
+    annotations:
+      summary: "PostgreSQL 慢查詢警告"
+      description: "PostgreSQL 快取命中率過低，可能存在慢查詢問題"
+
+  - alert: RedisDown
+    expr: redis_up == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: redis
+    annotations:
+      summary: "Redis 停止運行"
+      description: "Redis 在實例 {{ $labels.instance }} 上停止運行"
+
+  - alert: RedisHighMemoryUsage
+    expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 85
+    for: 2m
+    labels:
+      severity: warning
+      service: redis
+    annotations:
+      summary: "Redis 記憶體使用率過高"
+      description: "Redis 記憶體使用率超過 85%，當前值: {{ $value }}%"
+
+- name: auto-video-business-alerts
+  rules:
+  # 業務邏輯告警
+  - alert: VideoGenerationFailureRate
+    expr: rate(video_generation_failures_total[5m]) / rate(video_generation_total[5m]) * 100 > 10
+    for: 3m
+    labels:
+      severity: warning
+      service: video-service
+    annotations:
+      summary: "影片生成失敗率過高"
+      description: "影片生成失敗率超過 10%，當前值: {{ $value }}%"
+
+  - alert: AIServiceLatency
+    expr: histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[5m])) > 10
+    for: 2m
+    labels:
+      severity: warning
+      service: ai-service
+    annotations:
+      summary: "AI 服務延遲過高"
+      description: "AI 服務 95% 回應時間超過 10 秒，當前值: {{ $value }}s"
+
+  - alert: QueueBacklog
+    expr: celery_queue_length > 1000
+    for: 5m
+    labels:
+      severity: warning
+      service: scheduler
+    annotations:
+      summary: "任務佇列積壓過多"
+      description: "任務佇列長度超過 1000，當前值: {{ $value }}"
+
+  - alert: StorageQuotaExceeded
+    expr: storage_usage_bytes / storage_quota_bytes * 100 > 90
+    for: 1m
+    labels:
+      severity: critical
+      service: storage
+    annotations:
+      summary: "儲存配額即將用盡"
+      description: "儲存使用量超過配額的 90%，當前值: {{ $value }}%"
+
+- name: auto-video-security-alerts
+  rules:
+  # 安全相關告警
+  - alert: UnauthorizedAccess
+    expr: rate(http_requests_total{status="401"}[5m]) > 10
+    for: 1m
+    labels:
+      severity: warning
+      service: security
+    annotations:
+      summary: "未授權訪問嘗試過多"
+      description: "服務 {{ $labels.job }} 收到過多 401 未授權請求，每秒 {{ $value }} 次"
+
+  - alert: SuspiciousActivity
+    expr: rate(http_requests_total{status="403"}[5m]) > 5
+    for: 2m
+    labels:
+      severity: warning
+      service: security
+    annotations:
+      summary: "可疑活動警告"
+      description: "服務 {{ $labels.job }} 收到過多 403 禁止訪問請求，每秒 {{ $value }} 次"
+
+  - alert: TooManyFailedLogins
+    expr: rate(auth_login_failures_total[5m]) > 20
+    for: 1m
+    labels:
+      severity: critical
+      service: auth
+    annotations:
+      summary: "登入失敗次數過多"
+      description: "登入失敗率過高，每秒 {{ $value }} 次，可能存在暴力破解攻擊"

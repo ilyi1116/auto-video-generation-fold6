@@ -1,0 +1,174 @@
+global:
+  # SMTP 配置
+  smtp_smarthost: '${SMTP_SMARTHOST:-localhost:587}'
+  smtp_from: 'alerts@auto-video-system.com'
+  smtp_auth_username: '${SMTP_USERNAME:-alerts@auto-video-system.com}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+  
+  # Slack 配置
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  
+  # 解析超時
+  resolve_timeout: 5m
+
+# 路由配置
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'web.hook'
+  routes:
+    # 關鍵系統告警 - 立即通知
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 5m
+    
+    # 安全相關告警
+    - match:
+        alertname: SecurityAlert
+      receiver: 'security-team'
+      group_wait: 0s
+      repeat_interval: 30m
+    
+    # 效能告警
+    - match:
+        category: performance
+      receiver: 'performance-team'
+      group_wait: 2m
+      repeat_interval: 1h
+    
+    # 業務指標告警
+    - match:
+        category: business
+      receiver: 'product-team'
+      group_wait: 5m
+      repeat_interval: 4h
+
+# 接收器配置
+receivers:
+  - name: 'web.hook'
+    webhook_configs:
+      - url: 'http://localhost:5001/webhook'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'ops-team@auto-video-system.com'
+        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }} - {{ .GroupLabels.service }}'
+        body: |
+          ⚠️ 關鍵系統告警
+
+          告警名稱: {{ .GroupLabels.alertname }}
+          服務: {{ .GroupLabels.service }}
+          集群: {{ .GroupLabels.cluster }}
+          嚴重程度: {{ .CommonLabels.severity }}
+
+          詳細資訊:
+          {{ range .Alerts }}
+          - 實例: {{ .Labels.instance }}
+          - 描述: {{ .Annotations.description }}
+          - 開始時間: {{ .StartsAt }}
+          {{ end }}
+
+          立即處理: {{ .ExternalURL }}
+        headers:
+          Priority: 'high'
+    
+    webhook_configs:
+      - url: 'http://slack-webhook-service:8080/critical'
+        send_resolved: true
+        title: '🚨 Critical Alert'
+        text: '{{ .CommonAnnotations.description }}'
+
+  - name: 'security-team'
+    email_configs:
+      - to: 'security@auto-video-system.com'
+        subject: '🔒 Security Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          🔒 安全告警通知
+
+          告警類型: {{ .GroupLabels.alertname }}
+          受影響服務: {{ .GroupLabels.service }}
+          時間: {{ .CommonAnnotations.timestamp }}
+
+          安全事件詳情:
+          {{ range .Alerts }}
+          - 來源 IP: {{ .Labels.source_ip }}
+          - 用戶: {{ .Labels.user_id }}
+          - 動作: {{ .Labels.action }}
+          - 描述: {{ .Annotations.description }}
+          {{ end }}
+
+          請立即檢查系統安全狀態。
+    
+    webhook_configs:
+      - url: 'http://security-webhook:8080/alert'
+        send_resolved: true
+
+  - name: 'performance-team'
+    email_configs:
+      - to: 'performance@auto-video-system.com'
+        subject: '📊 Performance Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          📊 效能告警通知
+
+          服務: {{ .GroupLabels.service }}
+          指標: {{ .GroupLabels.alertname }}
+          
+          效能問題:
+          {{ range .Alerts }}
+          - 實例: {{ .Labels.instance }}
+          - 當前值: {{ .Labels.value }}
+          - 閾值: {{ .Labels.threshold }}
+          - 影響: {{ .Annotations.impact }}
+          {{ end }}
+
+          建議檢查系統資源使用情況。
+
+  - name: 'product-team'
+    email_configs:
+      - to: 'product@auto-video-system.com'
+        subject: '📈 Business Metrics Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          📈 業務指標告警
+
+          業務指標: {{ .GroupLabels.alertname }}
+          影響範圍: {{ .GroupLabels.service }}
+          
+          業務影響分析:
+          {{ range .Alerts }}
+          - 指標變化: {{ .Annotations.description }}
+          - 當前狀態: {{ .Labels.status }}
+          - 建議動作: {{ .Annotations.recommendation }}
+          {{ end }}
+
+# 抑制規則
+inhibit_rules:
+  # 抑制低級別告警如果有相同服務的高級別告警
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service', 'instance']
+
+  # 抑制相同實例的重複告警
+  - source_match:
+      alertname: 'InstanceDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+
+  # 抑制依賴服務的告警
+  - source_match:
+      alertname: 'DatabaseDown'
+    target_match:
+      category: 'database_dependent'
+    equal: ['cluster']
+
+# 模板配置
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

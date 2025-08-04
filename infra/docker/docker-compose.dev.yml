@@ -1,0 +1,435 @@
+version: '3.8'
+
+# Auto Video System - Development Environment
+# 開發環境專用配置，包含熱重載和開發工具
+
+services:
+  # GraphQL Gateway Service - 統一 API 端點
+  graphql-gateway:
+    build: 
+      context: ./services/graphql-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - VIDEO_SERVICE_URL=http://video-service:8000
+      - AI_SERVICE_URL=http://ai-service:8000
+      - TREND_SERVICE_URL=http://trend-service:8000
+      - STORAGE_SERVICE_URL=http://storage-service:8000
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key}
+    depends_on:
+      - redis
+      - auth-service
+      - video-service
+      - ai-service
+    volumes:
+      - ./services/graphql-gateway:/app
+    networks:
+      - auto-video-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Voice Enhancement Service - 進階語音合成與克隆
+  voice-enhancement:
+    build: 
+      context: ./services/voice-enhancement
+      dockerfile: Dockerfile
+    ports:
+      - "8095:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key}
+    depends_on:
+      - redis
+    volumes:
+      - ./services/voice-enhancement:/app
+      - voice_models:/app/voices
+    networks:
+      - auto-video-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      target: development
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/api-gateway/app:/app/app:rw
+      - ./logs:/app/logs
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      - HOT_RELOAD=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Development Auth Service
+  auth-service:
+    build:
+      context: ./services/auth-service
+      target: development
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/auth-service/app:/app/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+  # Development Data Service
+  data-service:
+    build:
+      context: ./services/data-service
+      target: development
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./services/data-service/app:/app/app:rw
+      - ./uploads:/app/uploads
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+
+  # Development Inference Service
+  inference-service:
+    build:
+      context: ./services/inference-service
+      target: development
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./services/inference-service/app:/app/app:rw
+      - ./models:/app/models
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8003 --reload
+
+  # Development Video Service
+  video-service:
+    build:
+      context: ./services/video-service
+      target: development
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./services/video-service:/app:rw
+      - ./generated_videos:/app/generated_videos
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    command: uvicorn main:app --host 0.0.0.0 --port 8004 --reload
+
+  # Development AI Service
+  ai-service:
+    build:
+      context: ./services/ai-service
+      target: development
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./services/ai-service/app:/app/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8005 --reload
+
+  # Development Social Service
+  social-service:
+    build:
+      context: ./services/social-service
+      target: development
+    ports:
+      - "8006:8006"
+    volumes:
+      - ./services/social-service/app:/app/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8006 --reload
+
+  # Development Trend Service
+  trend-service:
+    build:
+      context: ./services/trend-service
+      target: development
+    ports:
+      - "8007:8007"
+    volumes:
+      - ./services/trend-service/app:/app/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8007 --reload
+
+  # Development Scheduler Service
+  scheduler-service:
+    build:
+      context: ./services/scheduler-service
+      target: development
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./services/scheduler-service/app:/app/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8008 --reload
+
+  # Development Frontend
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    ports:
+      - "3000:3000"
+      - "24678:24678"  # Vite HMR
+    volumes:
+      - ./frontend:/app:rw
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    networks:
+      - auto-video-dev
+    command: npm run dev
+
+  # Development PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: autovideo_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./database/schemas:/docker-entrypoint-initdb.d/schemas:ro
+    networks:
+      - auto-video-dev
+
+  # Development Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass dev_redis_password
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - auto-video-dev
+
+  # Development MinIO
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: dev_access_key
+      MINIO_ROOT_PASSWORD: dev_secret_key
+    volumes:
+      - minio_dev_data:/data
+    networks:
+      - auto-video-dev
+    command: server /data --console-address ":9001"
+
+  # Development Tools
+
+  # MailHog (Email testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - auto-video-dev
+
+  # pgAdmin (Database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@autovideo.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+
+  # Redis Commander (Redis management)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:dev_redis_password
+    networks:
+      - auto-video-dev
+    depends_on:
+      - redis
+
+  # Development Celery Worker
+  celery-worker:
+    build:
+      context: ./services/training-worker
+      target: development
+    volumes:
+      - ./services/training-worker:/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A main worker --loglevel=debug --reload
+
+  # Development Celery Beat
+  celery-beat:
+    build:
+      context: ./services/training-worker
+      target: development
+    volumes:
+      - ./services/training-worker:/app:rw
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A main beat --loglevel=debug
+
+  # Flower (Celery monitoring)
+  flower:
+    build:
+      context: ./services/training-worker
+      target: development
+    ports:
+      - "5555:5555"
+    environment:
+      - ENVIRONMENT=development
+    env_file:
+      - .env.development
+    networks:
+      - auto-video-dev
+    depends_on:
+      - redis
+    command: celery -A main flower --address=0.0.0.0 --port=5555
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  minio_dev_data:
+    driver: local
+  pgadmin_dev_data:
+    driver: local
+  voice_models:
+    driver: local
+
+networks:
+  auto-video-dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

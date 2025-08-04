@@ -1,0 +1,136 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Focus styles */
+:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
+}
+
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    to right,
+    #f3f4f6 8%,
+    #e5e7eb 18%,
+    #f3f4f6 33%
+  );
+  background-size: 800px 104px;
+}
+
+/* Dark mode shimmer */
+.dark .shimmer {
+  background: linear-gradient(
+    to right,
+    #374151 8%,
+    #4b5563 18%,
+    #374151 33%
+  );
+}
+
+/* Custom components */
+.btn-primary {
+  @apply bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md font-medium 
+         transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 
+         focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-900 px-4 py-2 rounded-md font-medium 
+         transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 
+         focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.input-field {
+  @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+         placeholder-gray-400 focus:outline-none focus:ring-primary-500 
+         focus:border-primary-500 sm:text-sm;
+}
+
+.card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 
+         dark:border-gray-700 p-6;
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Responsive video container */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.video-container iframe,
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Toast notification styles */
+.toast {
+  @apply fixed top-4 right-4 z-50 max-w-sm w-full bg-white dark:bg-gray-800 
+         shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 p-4;
+}
+
+.toast.success {
+  @apply border-green-500 bg-green-50 dark:bg-green-900/20;
+}
+
+.toast.error {
+  @apply border-red-500 bg-red-50 dark:bg-red-900/20;
+}
+
+.toast.warning {
+  @apply border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20;
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5;
+}
+
+.progress-bar-fill {
+  @apply bg-primary-600 h-2.5 rounded-full transition-all duration-300 ease-in-out;
+}

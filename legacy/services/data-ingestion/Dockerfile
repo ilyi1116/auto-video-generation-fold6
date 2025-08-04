@@ -1,0 +1,97 @@
+# Multi-stage Dockerfile for Data Ingestion Service
+# Optimized for production with web scraping and data processing capabilities
+
+# Stage 1: Base image with system dependencies
+FROM python:3.11-slim as base
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r appuser && useradd --no-log-init -r -g appuser appuser
+
+# Stage 2: Dependencies builder
+FROM base as dependencies
+
+# Set work directory
+WORKDIR /app
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements and install dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 3: Production runtime
+FROM python:3.11-slim as production
+
+# Set environment variables for production
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ENVIRONMENT=production
+
+# Install runtime system dependencies only
+RUN apt-get update && apt-get install -y \
+    curl \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r appuser && useradd --no-log-init -r -g appuser appuser
+
+# Set work directory
+WORKDIR /app
+
+# Copy virtual environment from dependencies stage
+COPY --from=dependencies /opt/venv /opt/venv
+
+# Copy application code
+COPY main.py .
+
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Set environment variables
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8005/health || exit 1
+
+# Expose port
+EXPOSE 8005
+
+# Production command
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8005", \
+     "--workers", "2", \
+     "--access-log", \
+     "--log-level", "info"]
+
+# Labels for metadata
+LABEL maintainer="ilyi1116@users.noreply.github.com" \
+      version="1.0.0" \
+      description="Data ingestion service for trend analysis and content monitoring" \
+      org.opencontainers.image.title="Data Ingestion Service" \
+      org.opencontainers.image.description="FastAPI service for social media data ingestion and trend analysis" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.authors="ilyi1116@users.noreply.github.com" \
+      org.opencontainers.image.source="https://github.com/ilyi1116/auto-video-generation-fold6" \
+      org.opencontainers.image.licenses="MIT"

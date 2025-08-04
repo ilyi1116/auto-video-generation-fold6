@@ -1,0 +1,122 @@
+groups:
+  - name: system-alerts
+    rules:
+      # High CPU Usage Alert
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on instance {{ $labels.instance }}"
+
+      # High Memory Usage Alert
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes on instance {{ $labels.instance }}"
+
+      # Critical Memory Usage Alert
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is above 95% for more than 2 minutes on instance {{ $labels.instance }}"
+
+      # High Disk Usage Alert
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is above 90% for more than 10 minutes on {{ $labels.mountpoint }} ({{ $labels.instance }})"
+
+      # Critical Disk Usage Alert
+      - alert: CriticalDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical disk usage detected"
+          description: "Disk usage is above 95% for more than 5 minutes on {{ $labels.mountpoint }} ({{ $labels.instance }})"
+
+      # High Load Average Alert
+      - alert: HighLoadAverage
+        expr: node_load5 > 2 * count(count by (cpu)(node_cpu_seconds_total{mode="idle"}))
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High load average detected"
+          description: "Load average is {{ $value }} for more than 10 minutes on instance {{ $labels.instance }}"
+
+      # Service Down Alert
+      - alert: ServiceDown
+        expr: up{job=~".*-service|frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: service
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.job }} on instance {{ $labels.instance }} has been down for more than 1 minute"
+
+      # High Network Traffic Alert
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 100 * 1024 * 1024  # 100MB/s
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High network traffic detected"
+          description: "Network receive traffic is above 100MB/s for more than 10 minutes on interface {{ $labels.device }} ({{ $labels.instance }})"
+
+      # Container Resource Limit Alert
+      - alert: ContainerHighCPU
+        expr: sum(rate(container_cpu_usage_seconds_total{name=~".*-service|frontend"}[5m])) by (name) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container high CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is above 80% for more than 5 minutes"
+
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes{name=~".*-service|frontend"} / container_spec_memory_limit_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container high memory usage"
+          description: "Container {{ $labels.name }} memory usage is above 85% of limit for more than 5 minutes"
+
+      # Container Restart Alert
+      - alert: ContainerRestarted
+        expr: increase(container_start_time_seconds{name=~".*-service|frontend"}[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container restarted"
+          description: "Container {{ $labels.name }} has restarted"

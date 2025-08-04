@@ -1,0 +1,174 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  # 增強效能配置
+  query_log_file: /prometheus/query.log
+  external_labels:
+    cluster: 'auto-video-production'
+    environment: 'production'
+
+# 存儲和效能配置
+# --storage.tsdb.retention.time=30d
+# --storage.tsdb.retention.size=50GB
+# --storage.tsdb.min-block-duration=2h
+# --storage.tsdb.max-block-duration=25h
+# --storage.tsdb.wal-compression
+# --web.enable-remote-write-receiver
+# --query.max-concurrency=20
+# --query.timeout=2m
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "rules/*.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # API Gateway metrics
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Auth Service metrics
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8001']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Data Service metrics
+  - job_name: 'data-service'
+    static_configs:
+      - targets: ['data-service:8002']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Inference Service metrics
+  - job_name: 'inference-service'
+    static_configs:
+      - targets: ['inference-service:8003']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Video Service metrics
+  - job_name: 'video-service'
+    static_configs:
+      - targets: ['video-service:8004']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # AI Service metrics
+  - job_name: 'ai-service'
+    static_configs:
+      - targets: ['ai-service:8005']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Social Service metrics
+  - job_name: 'social-service'
+    static_configs:
+      - targets: ['social-service:8006']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Trend Service metrics
+  - job_name: 'trend-service'
+    static_configs:
+      - targets: ['trend-service:8007']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Scheduler Service metrics
+  - job_name: 'scheduler-service'
+    static_configs:
+      - targets: ['scheduler-service:8008']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # PostgreSQL metrics
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  # Redis metrics
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+  # Node Exporter (system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+  # Docker Exporter (container metrics)
+  - job_name: 'docker-exporter'  
+    static_configs:
+      - targets: ['cadvisor:8080']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Application metrics aggregation
+  - job_name: 'application-metrics'
+    static_configs:
+      - targets: 
+        - 'api-gateway:8000'
+        - 'trend-service:8007'
+        - 'video-service:8003'
+        - 'social-service:8006'
+        - 'scheduler-service:8008'
+    metrics_path: /metrics
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [instance]
+        regex: '([^:]+):.*'
+        target_label: service
+        replacement: '${1}'
+
+  # MinIO metrics
+  - job_name: 'minio'
+    static_configs:
+      - targets: ['minio:9000']
+    metrics_path: /minio/v2/metrics/cluster
+    scrape_interval: 30s
+    bearer_token_file: /etc/prometheus/minio-token
+
+  # Nginx metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+
+  # Frontend metrics (if implemented)
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['frontend:3000']
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+# Remote write configuration for long-term storage
+# remote_write:
+#   - url: "https://your-remote-storage/api/v1/write"
+#     basic_auth:
+#       username: "username"
+#       password: "password"

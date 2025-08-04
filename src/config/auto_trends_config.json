@@ -1,0 +1,22 @@
+{
+  "generation": {
+    "daily_video_limit": 5,
+    "batch_size": 1,
+    "max_concurrent_jobs": 2,
+    "quality_preset": "medium",
+    "platforms": ["tiktok", "instagram_reels"]
+  },
+  "cost_control": {
+    "daily_budget_usd": 10,
+    "stop_on_budget_exceeded": true
+  },
+  "resources": {
+    "max_memory_usage": "8GB",
+    "max_cpu_cores": 4
+  },
+  "scheduling": {
+    "work_hours_only": true,
+    "start_time": "18:00",
+    "end_time": "22:00"
+  }
+}
