@@ -1,89 +1,152 @@
-# Auto Video Generation System
+# 現代化聲音克隆系統 - 生產級解決方案
 
-## 項目結構
+## 🚀 專案概述
 
-```
-auto-video-generation-system/
-├── backend/           # 後端應用程式
-├── frontend/          # 前端應用程式
-├── scripts/           # 部署與維護腳本
-├── docs/              # 文件
-└── tests/             # 測試
-```
+本專案是一個先進的聲音克隆系統，採用現代化的微服務架構和最佳安全實踐。系統設計堅持 DevSecOps 理念，提供高度模組化、可擴展且安全的解決方案。
 
-## 快速開始
-
-### 開發環境
-
-```bash
-# 1. 啟動開發環境
-./scripts/deploy/dev.sh
-
-# 2. 執行測試
-./scripts/test/run_tests.py
-```
-
-### 生產部署
-
-```bash
-# 使用 Docker
-./scripts/deploy/docker.sh
-
-# 使用 Kubernetes
-./scripts/deploy/k8s.sh
-```
-
-## 配置
-
-使用 `env.development` 和 `env.production` 進行環境配置。
-
-## 測試
-
-```bash
-# 執行所有測試
-python scripts/test/run_tests.py
-```
-
-## 服務架構
-
-- **API Gateway (8000)**: 統一入口點
-- **Auth Service (8001)**: 用戶認證
-- **Video Service (8004)**: 影片處理
-- **AI Service (8005)**: AI 模型管理
-- **Social Service (8006)**: 社群媒體整合
-- **Trend Service (8007)**: 趨勢分析
-- **Scheduler Service (8008)**: 任務排程
-
-## 技術棧
+## 🔧 技術棧
 
 ### 後端
-- FastAPI
-- PostgreSQL
-- Redis
-- Celery
+- **主框架**: FastAPI (Python)
+- **非同步任務**: Celery
+- **資料庫**: 
+  - PostgreSQL (主資料庫)
+  - Redis (快取與工作隊列)
+  - S3 (儲存服務)
 
 ### 前端
-- React/TypeScript
-- Material-UI
+- **框架**: SvelteKit (Node.js)
+- **狀態管理**: 原生 Svelte Store
+- **樣式**: Tailwind CSS
 
-### 部署
+### 基礎設施
+- **容器化**: Docker
+- **編排**: Kubernetes
+- **CI/CD**: GitHub Actions
+
+## 🗂️ 專案結構
+
+```
+├── src/
+│   ├── services/                # 17 個微服務
+│   │   ├── auth_service/
+│   │   ├── voice_processing/
+│   │   ├── model_training/
+│   │   └── ... 
+│   ├── frontend/                # SvelteKit 前端
+│   │   ├── src/
+│   │   │   ├── routes/
+│   │   │   ├── lib/
+│   │   │   └── components/
+│   └── shared/                  # 共享元件
+├── infra/                       # 基礎設施配置
+│   ├── docker/
+│   ├── kubernetes/
+│   └── monitoring/
+├── tests/                       # 全面測試套件
+├── docs/                        # 技術文檔
+└── scripts/                     # 輔助腳本
+```
+
+## 🔒 安全最佳實踐
+
+### 依賴安全
+- 定期更新依賴
+- 自動安全掃描
+- 最低風險依賴版本管理
+
+### 安全框架
+- 多層次身份驗證
+- API 端點保護
+- 資料加密
+- 日誌安全監控
+
+## 🛠️ 快速開始
+
+### 前提條件
+- Python 3.10+
+- Node.js 18+
 - Docker
-- Kubernetes
+- Kubernetes (可選)
 
-## 文檔
+### 本地開發環境
 
-- [開發者指南](docs/DEVELOPER_GUIDE.md)
-- [架構文檔](docs/ARCHITECTURE.md)
-- [API 參考](docs/API_REFERENCE.md)
-- [部署指南](docs/DEPLOYMENT.md)
+1. 克隆倉庫
+```bash
+git clone https://github.com/your-org/voice-cloning-system.git
+cd voice-cloning-system
+```
 
-## 貢獻
+2. 安裝依賴
+```bash
+# 後端依賴
+poetry install
 
-1. Fork 專案
-2. 創建功能分支
+# 前端依賴
+cd src/frontend
+npm install
+```
+
+3. 啟動開發服務
+```bash
+# 啟動後端開發服務器
+poetry run uvicorn main:app --reload
+
+# 啟動前端開發服務器
+cd src/frontend
+npm run dev
+```
+
+## 📦 部署
+
+### Docker
+```bash
+docker-compose up --build
+```
+
+### Kubernetes
+```bash
+kubectl apply -f infra/kubernetes/
+```
+
+## 🧪 測試
+
+```bash
+# 運行後端測試
+poetry run pytest
+
+# 運行前端測試
+cd src/frontend
+npm test
+```
+
+## 🚨 故障排除
+
+### 常見問題
+- 依賴衝突
+- 微服務通信問題
+- 性能瓶頸
+
+### 日誌與監控
+- 使用 OpenTelemetry 追蹤
+- 整合 Prometheus 和 Grafana
+
+## 📝 貢獻指南
+
+1. Fork 倉庫
+2. 建立功能分支
 3. 提交變更
-4. 發起 Pull Request
+4. 創建 Pull Request
 
-## 授權
+## 📄 授權
 
-MIT License
+本專案採用 MIT 授權。詳見 LICENSE 文件。
+
+## 聯繫方式
+
+- 電子郵件：support@voice-cloning.com
+- GitHub Issues：[提交問題](https://github.com/your-org/voice-cloning-system/issues)
+
+---
+
+**🔐 安全提示**：我們重視系統安全。如發現任何安全漏洞，請立即通過安全郵箱通知我們。

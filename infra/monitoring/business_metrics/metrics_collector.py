@@ -407,7 +407,7 @@ class BusinessMetricsCollector:
 
 # 全域業務指標收集器實例
 business_metrics = BusinessMetricsCollector(
-    "/data/data/com.termux/files/home/myProject/auto_generate_video_fold6/monitoring/business_metrics/metrics_definition.json"
+    "/data/data/com.termux/files/home/myProject/infra/monitoring/business_metrics/metrics_definition.json"
 )
 
 

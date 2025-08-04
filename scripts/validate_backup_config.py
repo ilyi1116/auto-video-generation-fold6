@@ -356,14 +356,14 @@ class BackupConfigValidator:
             # 檢查 .env.example 文件中是否包含這些變數
             env_example_files = [
                 ".env.example",
-                "auto_generate_video_fold6/.env.example",
+                "src/.env.example",
             ]
 
             documented_vars = []
             for env_file in env_example_files:
                 env_path = (
                     self.project_root / env_file
-                    if not env_file.startswith("auto_generate_video_fold6")
+                    if not env_file.startswith("src")
                     else self.project_root.parent / env_file
                 )
                 if env_path.exists():

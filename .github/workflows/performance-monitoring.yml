@@ -1,0 +1,493 @@
+# 性能监控和基准测试工作流程
+name: ⚡ Performance Monitoring & Benchmarks
+
+on:
+  schedule:
+    # 每日凌晨 2:00 UTC 运行性能测试
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - api-only
+          - frontend-only
+          - load-test
+      duration:
+        description: 'Test duration in minutes'
+        required: false
+        default: '10'
+        type: string
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize]
+    paths:
+      - 'src/services/**'
+      - 'src/frontend/**'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  # ===========================================
+  # API 性能基准测试
+  # ===========================================
+  api-performance-test:
+    name: 🚀 API Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.test_type == 'full' || inputs.test_type == 'api-only'
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_auto_video_generation
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,test]"
+        pip install locust pytest-benchmark
+
+    - name: 🗄️ Setup Test Database
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_auto_video_generation
+        REDIS_URL: redis://localhost:6379/0
+      run: |
+        python scripts/db-migration-manager.py create-db --env=test
+        alembic upgrade head
+
+    - name: 🚀 Start API Services
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_auto_video_generation
+        REDIS_URL: redis://localhost:6379/0
+        TESTING: true
+      run: |
+        # 启动核心 API 服务进行测试
+        cd src/services/api-gateway && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        cd src/services/auth-service && python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 &
+        
+        # 等待服务启动
+        sleep 15
+        
+        # 验证服务运行状态
+        curl -f http://localhost:8000/health || exit 1
+        curl -f http://localhost:8001/health || exit 1
+
+    - name: ⚡ Run API Performance Tests
+      run: |
+        # 创建性能测试脚本
+        cat > performance_test.py << 'EOF'
+        import time
+        import requests
+        import statistics
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import json
+
+        def test_endpoint(url, method="GET", data=None, headers=None):
+            """测试单个端点的性能"""
+            try:
+                start_time = time.time()
+                response = requests.request(method, url, json=data, headers=headers, timeout=10)
+                end_time = time.time()
+                
+                return {
+                    'url': url,
+                    'status_code': response.status_code,
+                    'response_time': end_time - start_time,
+                    'success': response.status_code < 400
+                }
+            except Exception as e:
+                return {
+                    'url': url,
+                    'status_code': 0,
+                    'response_time': 10.0,
+                    'success': False,
+                    'error': str(e)
+                }
+
+        def run_load_test(endpoints, concurrent_users=10, total_requests=100):
+            """运行负载测试"""
+            results = []
+            
+            with ThreadPoolExecutor(max_workers=concurrent_users) as executor:
+                futures = []
+                
+                for i in range(total_requests):
+                    endpoint = endpoints[i % len(endpoints)]
+                    future = executor.submit(test_endpoint, endpoint['url'], endpoint.get('method', 'GET'))
+                    futures.append(future)
+                
+                for future in as_completed(futures):
+                    result = future.result()
+                    results.append(result)
+            
+            return results
+
+        # 定义测试端点
+        endpoints = [
+            {'url': 'http://localhost:8000/health', 'method': 'GET'},
+            {'url': 'http://localhost:8001/health', 'method': 'GET'},
+        ]
+
+        print("开始 API 性能测试...")
+        results = run_load_test(endpoints, concurrent_users=5, total_requests=50)
+
+        # 分析结果
+        successful_requests = [r for r in results if r['success']]
+        failed_requests = [r for r in results if not r['success']]
+
+        if successful_requests:
+            response_times = [r['response_time'] for r in successful_requests]
+            
+            performance_metrics = {
+                'total_requests': len(results),
+                'successful_requests': len(successful_requests),
+                'failed_requests': len(failed_requests),
+                'success_rate': len(successful_requests) / len(results) * 100,
+                'avg_response_time': statistics.mean(response_times),
+                'median_response_time': statistics.median(response_times),
+                'p95_response_time': sorted(response_times)[int(len(response_times) * 0.95)] if len(response_times) > 0 else 0,
+                'p99_response_time': sorted(response_times)[int(len(response_times) * 0.99)] if len(response_times) > 0 else 0,
+                'min_response_time': min(response_times),
+                'max_response_time': max(response_times)
+            }
+            
+            print("=== 性能测试结果 ===")
+            for key, value in performance_metrics.items():
+                if 'time' in key:
+                    print(f"{key}: {value:.3f}s")
+                elif 'rate' in key:
+                    print(f"{key}: {value:.2f}%")
+                else:
+                    print(f"{key}: {value}")
+            
+            # 保存详细结果
+            with open('api_performance_results.json', 'w') as f:
+                json.dump({
+                    'metrics': performance_metrics,
+                    'detailed_results': results
+                }, f, indent=2)
+            
+            # 设置性能基准
+            if performance_metrics['avg_response_time'] > 2.0:
+                print("❌ 警告：平均响应时间超过 2 秒")
+                exit(1)
+            
+            if performance_metrics['success_rate'] < 95:
+                print("❌ 警告：成功率低于 95%")
+                exit(1)
+            
+            print("✅ 所有性能指标达标")
+        else:
+            print("❌ 所有请求都失败了")
+            exit(1)
+        EOF
+        
+        python performance_test.py
+
+    - name: 📊 Upload Performance Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: api-performance-results
+        path: api_performance_results.json
+
+  # ===========================================
+  # 前端性能测试
+  # ===========================================
+  frontend-performance-test:
+    name: 🌐 Frontend Performance Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.test_type == 'full' || inputs.test_type == 'frontend-only'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'src/frontend/package-lock.json'
+
+    - name: 📦 Install Dependencies
+      working-directory: src/frontend
+      run: |
+        npm ci
+        npm install --save-dev lighthouse @lhci/cli
+
+    - name: 🏗️ Build Frontend
+      working-directory: src/frontend
+      run: npm run build
+
+    - name: 🚀 Start Frontend Server
+      working-directory: src/frontend
+      run: |
+        npm run preview &
+        sleep 10
+
+    - name: 🔍 Run Lighthouse Performance Audit
+      working-directory: src/frontend
+      run: |
+        npx lighthouse http://localhost:4173 \
+          --output=json \
+          --output-path=lighthouse-results.json \
+          --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+          --only-categories=performance
+
+    - name: 📊 Analyze Lighthouse Results
+      working-directory: src/frontend
+      run: |
+        node -e "
+        const fs = require('fs');
+        const results = JSON.parse(fs.readFileSync('lighthouse-results.json', 'utf8'));
+        const performance = results.categories.performance.score * 100;
+        
+        console.log('=== Lighthouse 性能测试结果 ===');
+        console.log(\`性能分数: \${performance}/100\`);
+        
+        const metrics = results.audits;
+        if (metrics['first-contentful-paint']) {
+          console.log(\`首次内容绘制: \${metrics['first-contentful-paint'].displayValue}\`);
+        }
+        if (metrics['largest-contentful-paint']) {
+          console.log(\`最大内容绘制: \${metrics['largest-contentful-paint'].displayValue}\`);
+        }
+        if (metrics['cumulative-layout-shift']) {
+          console.log(\`累计布局偏移: \${metrics['cumulative-layout-shift'].displayValue}\`);
+        }
+        if (metrics['total-blocking-time']) {
+          console.log(\`总阻塞时间: \${metrics['total-blocking-time'].displayValue}\`);
+        }
+        
+        // 性能基准检查
+        if (performance < 80) {
+          console.log('❌ 警告：Lighthouse 性能分数低于 80');
+          process.exit(1);
+        } else {
+          console.log('✅ Lighthouse 性能测试通过');
+        }
+        "
+
+    - name: 📊 Upload Frontend Performance Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: frontend-performance-results
+        path: src/frontend/lighthouse-results.json
+
+  # ===========================================
+  # 负载测试 (使用 Locust)
+  # ===========================================
+  load-test:
+    name: 🏋️ Load Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.test_type == 'load-test'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 📦 Install Locust
+      run: |
+        pip install locust requests
+
+    - name: 🐳 Start Services with Docker Compose
+      run: |
+        cp .env.template .env
+        docker-compose -f docker-compose.unified.yml up -d postgres redis
+        
+        # 等待服务准备
+        sleep 30
+
+    - name: 🏋️ Create Locust Test File
+      run: |
+        cat > locustfile.py << 'EOF'
+        from locust import HttpUser, task, between
+        import random
+
+        class APIUser(HttpUser):
+            wait_time = between(1, 3)
+            
+            def on_start(self):
+                """用户开始时的初始化"""
+                pass
+            
+            @task(3)
+            def health_check(self):
+                """健康检查端点"""
+                self.client.get("/health")
+            
+            @task(1)
+            def api_info(self):
+                """API 信息端点"""
+                self.client.get("/", catch_response=True)
+
+        class WebsiteUser(HttpUser):
+            wait_time = between(2, 5)
+            host = "http://localhost:3000"
+            
+            @task
+            def index_page(self):
+                """访问首页"""
+                self.client.get("/")
+        EOF
+
+    - name: 🚀 Run Load Test
+      run: |
+        # 设置测试持续时间
+        DURATION="${{ inputs.duration || '5' }}"
+        
+        echo "开始负载测试，持续时间：${DURATION} 分钟"
+        
+        # 运行 Locust 负载测试
+        locust -f locustfile.py \
+          --host=http://localhost:8000 \
+          --users=50 \
+          --spawn-rate=5 \
+          --run-time=${DURATION}m \
+          --html=load-test-report.html \
+          --csv=load-test-results \
+          --headless
+
+    - name: 📊 Upload Load Test Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: load-test-results
+        path: |
+          load-test-report.html
+          load-test-results*.csv
+
+  # ===========================================
+  # 性能报告汇总
+  # ===========================================
+  performance-summary:
+    name: 📊 Performance Summary
+    runs-on: ubuntu-latest
+    needs: [api-performance-test, frontend-performance-test, load-test]
+    if: always()
+    
+    steps:
+    - name: 📥 Download All Results
+      uses: actions/download-artifact@v3
+      with:
+        path: performance-results
+
+    - name: 📋 Generate Performance Report
+      run: |
+        echo "# ⚡ 性能测试报告" > performance-summary.md
+        echo "**测试时间:** $(date)" >> performance-summary.md
+        echo "" >> performance-summary.md
+        
+        echo "## API 性能测试" >> performance-summary.md
+        if [ -f "performance-results/api-performance-results/api_performance_results.json" ]; then
+          echo "- ✅ API 性能测试完成" >> performance-summary.md
+          
+          # 提取关键指标
+          python3 -c "
+          import json
+          try:
+              with open('performance-results/api-performance-results/api_performance_results.json', 'r') as f:
+                  data = json.load(f)
+              metrics = data['metrics']
+              print(f'- 平均响应时间: {metrics[\"avg_response_time\"]:.3f}s')
+              print(f'- 成功率: {metrics[\"success_rate\"]:.2f}%')
+              print(f'- 95th 百分位响应时间: {metrics[\"p95_response_time\"]:.3f}s')
+          except:
+              print('- 无法解析 API 测试结果')
+          " >> performance-summary.md
+        else
+          echo "- ❌ API 性能测试未运行或失败" >> performance-summary.md
+        fi
+        
+        echo "" >> performance-summary.md
+        echo "## 前端性能测试" >> performance-summary.md
+        if [ -f "performance-results/frontend-performance-results/lighthouse-results.json" ]; then
+          echo "- ✅ Lighthouse 性能测试完成" >> performance-summary.md
+        else
+          echo "- ❌ 前端性能测试未运行或失败" >> performance-summary.md
+        fi
+        
+        echo "" >> performance-summary.md
+        echo "## 负载测试" >> performance-summary.md
+        if [ -f "performance-results/load-test-results/load-test-report.html" ]; then
+          echo "- ✅ 负载测试完成" >> performance-summary.md
+        else
+          echo "- ❌ 负载测试未运行或失败" >> performance-summary.md
+        fi
+        
+        echo "" >> performance-summary.md
+        echo "## 建议" >> performance-summary.md
+        echo "1. 定期监控性能指标变化" >> performance-summary.md
+        echo "2. 关注响应时间和成功率趋势" >> performance-summary.md
+        echo "3. 优化高延迟的 API 端点" >> performance-summary.md
+        echo "4. 持续优化前端资源加载" >> performance-summary.md
+
+    - name: 📊 Upload Summary Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-summary-report
+        path: performance-summary.md
+
+    - name: 💬 Comment Performance Results on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('performance-summary.md')) {
+            const summary = fs.readFileSync('performance-summary.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: \`## ⚡ 性能测试结果\\n\\n\${summary}\\n\\n详细报告请查看 [Actions 页面](\${context.payload.repository.html_url}/actions/runs/\${context.runId})\`
+            });
+          }

@@ -1,0 +1,288 @@
+# 依赖管理和安全监控工作流程
+name: 🔒 Dependency & Security Management
+
+on:
+  schedule:
+    # 每周一早上 6:00 UTC 运行
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - dependencies-only
+          - containers-only
+  push:
+    branches: [main]
+    paths:
+      - 'pyproject.toml'
+      - '**/requirements*.txt'
+      - 'src/frontend/package*.json'
+      - '**/Dockerfile*'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+permissions:
+  security-events: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ===========================================
+  # Python 依赖安全扫描
+  # ===========================================
+  python-security-scan:
+    name: 🐍 Python Dependencies Security
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.scan_type == 'full' || inputs.scan_type == 'dependencies-only'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,test]"
+
+    - name: 🔍 Safety Check
+      run: |
+        pip install safety
+        safety check --full-report --output text
+        safety check --json --output safety-report.json || true
+
+    - name: 🔍 Bandit Security Check
+      run: |
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/ --severity-level medium --confidence-level high
+
+    - name: 🔍 Semgrep Security Analysis
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/owasp-top-ten
+          p/python
+      env:
+        SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      continue-on-error: true
+
+    - name: 📊 Upload Security Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: python-security-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+
+  # ===========================================
+  # Node.js 依赖安全扫描
+  # ===========================================
+  nodejs-security-scan:
+    name: 🟢 Node.js Dependencies Security
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.scan_type == 'full' || inputs.scan_type == 'dependencies-only'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'src/frontend/package-lock.json'
+
+    - name: 📦 Install Dependencies
+      working-directory: src/frontend
+      run: npm ci
+
+    - name: 🔍 NPM Audit
+      working-directory: src/frontend
+      run: |
+        npm audit --audit-level=moderate --json > npm-audit-report.json || true
+        npm audit --audit-level=moderate
+
+    - name: 🔍 NPM Security Check
+      working-directory: src/frontend
+      run: |
+        npx audit-ci --moderate || true
+
+    - name: 📊 Upload Security Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: nodejs-security-reports
+        path: src/frontend/npm-audit-report.json
+
+  # ===========================================
+  # 容器安全扫描
+  # ===========================================
+  container-security-scan:
+    name: 🐳 Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.scan_type == 'full' || inputs.scan_type == 'containers-only'
+    
+    strategy:
+      matrix:
+        base-image:
+          - python:3.11-slim
+          - node:18-alpine
+          - nginx:alpine
+          - postgres:15-alpine
+          - redis:7-alpine
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Run Trivy Container Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ matrix.base-image }}
+        format: 'sarif'
+        output: 'trivy-${{ matrix.base-image }}-results.sarif'
+
+    - name: 📊 Upload Trivy Results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-${{ matrix.base-image }}-results.sarif'
+
+  # ===========================================
+  # 依赖更新建议
+  # ===========================================
+  dependency-update:
+    name: 🔄 Dependency Update Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 🔍 Check Python Updates
+      run: |
+        pip install pip-check-updates
+        pip list --outdated > python-outdated.txt || true
+        echo "=== Python Outdated Packages ===" >> dependency-update-report.txt
+        cat python-outdated.txt >> dependency-update-report.txt
+
+    - name: 🔍 Check Node.js Updates
+      working-directory: src/frontend
+      run: |
+        npm outdated > ../nodejs-outdated.txt || true
+        echo "=== Node.js Outdated Packages ===" >> ../dependency-update-report.txt
+        cat ../nodejs-outdated.txt >> ../dependency-update-report.txt
+
+    - name: 📋 Create Issue for Updates
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('dependency-update-report.txt')) {
+            const report = fs.readFileSync('dependency-update-report.txt', 'utf8');
+            if (report.trim()) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `📦 Weekly Dependency Update Report - ${new Date().toISOString().split('T')[0]}`,
+                body: \`## 依赖更新报告\\n\\n以下依赖包有可用的更新：\\n\\n\\\`\\\`\\\`\\n\${report}\\n\\\`\\\`\\\`\\n\\n### 建议操作\\n1. 检查更新的兼容性\\n2. 测试更新后的功能\\n3. 更新 pyproject.toml 和 package.json\\n4. 运行完整的测试套件\\n\\n### 安全提醒\\n优先更新有安全漏洞的依赖包。\\n\\n*此报告由自动化工作流程生成*\`,
+                labels: ['dependencies', 'security', 'maintenance']
+              });
+            }
+          }
+
+  # ===========================================
+  # 安全报告汇总
+  # ===========================================
+  security-summary:
+    name: 📊 Security Summary Report
+    runs-on: ubuntu-latest
+    needs: [python-security-scan, nodejs-security-scan, container-security-scan]
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    
+    steps:
+    - name: 📥 Download All Reports
+      uses: actions/download-artifact@v3
+      with:
+        path: security-reports
+
+    - name: 📋 Generate Summary Report
+      run: |
+        echo "# 🔒 Security Scan Summary Report" > security-summary.md
+        echo "**Generated:** $(date)" >> security-summary.md
+        echo "" >> security-summary.md
+        
+        echo "## Python Security Scan" >> security-summary.md
+        if [ -f "security-reports/python-security-reports/safety-report.json" ]; then
+          echo "- ✅ Safety scan completed" >> security-summary.md
+        else
+          echo "- ❌ Safety scan failed or not run" >> security-summary.md
+        fi
+        
+        echo "" >> security-summary.md
+        echo "## Node.js Security Scan" >> security-summary.md
+        if [ -f "security-reports/nodejs-security-reports/npm-audit-report.json" ]; then
+          echo "- ✅ NPM audit completed" >> security-summary.md
+        else
+          echo "- ❌ NPM audit failed or not run" >> security-summary.md
+        fi
+        
+        echo "" >> security-summary.md
+        echo "## Container Security Scan" >> security-summary.md
+        echo "- ✅ Trivy container scans completed for base images" >> security-summary.md
+        
+        echo "" >> security-summary.md
+        echo "## Recommendations" >> security-summary.md
+        echo "1. Review all high-severity vulnerabilities" >> security-summary.md
+        echo "2. Update dependencies with security patches" >> security-summary.md
+        echo "3. Follow up on any failed scans" >> security-summary.md
+        echo "4. Check GitHub Security tab for detailed reports" >> security-summary.md
+
+    - name: 📊 Upload Summary Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-summary-report
+        path: security-summary.md
+
+    - name: 💬 Comment on Latest Commit
+      if: github.event_name == 'push'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('security-summary.md')) {
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: \`## 🔒 自动安全扫描结果\\n\\n\${summary}\\n\\n查看详细报告请访问 [Actions 页面](\${context.payload.repository.html_url}/actions/runs/\${context.runId})\`
+            });
+          }

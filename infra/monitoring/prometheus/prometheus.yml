@@ -101,6 +101,13 @@ scrape_configs:
     metrics_path: /metrics
     scrape_interval: 30s
 
+  # Storage Service metrics
+  - job_name: 'storage-service'
+    static_configs:
+      - targets: ['storage-service:8009']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
   # PostgreSQL metrics
   - job_name: 'postgres-exporter'
     static_configs:
@@ -131,10 +138,13 @@ scrape_configs:
     static_configs:
       - targets: 
         - 'api-gateway:8000'
-        - 'trend-service:8007'
-        - 'video-service:8003'
+        - 'auth-service:8001'
+        - 'video-service:8004'
+        - 'ai-service:8005'
         - 'social-service:8006'
+        - 'trend-service:8007'
         - 'scheduler-service:8008'
+        - 'storage-service:8009'
     metrics_path: /metrics
     scrape_interval: 15s
     relabel_configs:
