@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+.svelte-kit/
+
+# Coverage reports
+coverage/
+
+# Generated files
+*.d.ts
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Docker files
+Dockerfile* 

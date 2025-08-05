@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+.svelte-kit/
+
+# Coverage reports
+coverage/
+
+# Test files
+tests/
+**/*.test.js
+**/*.test.ts
+**/*.spec.js
+**/*.spec.ts
+
+# Config files
+vite.config.js
+vitest.config.js
+svelte.config.js
+tailwind.config.js
+postcss.config.js
+playwright.config.js
+
+# Static files
+static/
+
+# Generated files
+*.d.ts
+
+# Docker files
+Dockerfile* 
