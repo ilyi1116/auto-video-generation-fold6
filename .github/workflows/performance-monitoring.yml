@@ -249,6 +249,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: 'src/frontend/package-lock.json'
 
     - name: 📦 Install Dependencies
       working-directory: src/frontend
