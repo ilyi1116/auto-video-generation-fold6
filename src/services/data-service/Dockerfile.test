@@ -1,7 +1,7 @@
 # 資料服務測試專用 Dockerfile
 # 針對 TDD 工作流程優化
 
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
