@@ -20,7 +20,7 @@ watchdog==3.0.0
 python-dotenv==1.0.0
 
 # Celery testing
-celery[pytest]==5.3.4
+celery[pytest]==5.5.3
 
 # Type stubs
 types-requests==2.31.0.10
