@@ -222,8 +222,8 @@ jobs:
         if: steps.check-dockerfile.outputs.dockerfile-exists == 'false'
         uses: docker/build-push-action@v5
         with:
-          context: ./services/${{ matrix.service }}
-          file: ./services/${{ matrix.service }}/Dockerfile
+          context: ./src/services/${{ matrix.service }}
+          file: ./src/services/${{ matrix.service }}/Dockerfile
           push: false
           tags: ${{ matrix.service }}:latest
           cache-from: type=gha

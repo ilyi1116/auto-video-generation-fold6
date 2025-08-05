@@ -37,7 +37,7 @@ jobs:
       - name: Run Safety check on all requirements
         run: |
           # Find and check all requirements.txt files
-          for req_file in $(find services -name "requirements.txt"); do
+          for req_file in $(find src/services -name "requirements.txt"); do
             echo "Checking $req_file"
             safety check -r "$req_file" || echo "Safety check failed for $req_file"
           done
