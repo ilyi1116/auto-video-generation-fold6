@@ -1,25 +1,76 @@
 version: '3.8'
 
+# ARM64/M4 平台配置
+x-common-config: &common-config
+  platform: linux/arm64
+
 services:
   api-gateway:
-    build: ./src/services/api-gateway
+    <<: *common-config
+    build: 
+      context: ./src/services/api-gateway
+      platform: linux/arm64
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:///./app.db
       - REDIS_URL=redis://redis:6379/0
+      - PYTHONOPTIMIZE=2
+      - PYTHONHASHSEED=random
     depends_on:
       - redis
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redis:
-    image: redis:alpine
+    <<: *common-config
+    image: redis:7-alpine
     ports:
       - "6379:6379"
     networks:
       - app-network
+    command: >
+      redis-server 
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+    driver: local
 
 networks:
   app-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

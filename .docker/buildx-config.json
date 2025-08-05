@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "description": "Docker BuildKit multi-platform build configuration",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64",
+    "linux/arm/v7"
+  ],
+  "builders": {
+    "multi-platform": {
+      "driver": "docker-container",
+      "platforms": ["linux/amd64", "linux/arm64"]
+    }
+  },
+  "build_args": {
+    "BUILDPLATFORM": "linux/arm64",
+    "TARGETPLATFORM": "linux/arm64",
+    "BUILDARCH": "arm64",
+    "TARGETARCH": "arm64"
+  },
+  "optimizations": {
+    "cache": {
+      "type": "registry",
+      "ref": "voice-clone-cache"
+    },
+    "inline_cache": true,
+    "compress": true
+  }
+}

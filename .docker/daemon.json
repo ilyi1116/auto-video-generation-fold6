@@ -1,0 +1,92 @@
+{
+  "features": {
+    "buildkit": true
+  },
+  "builder": {
+    "gc": {
+      "enabled": true,
+      "defaultKeepStorage": "20GB",
+      "policy": [
+        {
+          "keepDuration": "48h"
+        },
+        {
+          "keepBytes": "1GB",
+          "keepDuration": "24h"
+        }
+      ]
+    }
+  },
+  "experimental": true,
+  "debug": false,
+  "log-level": "info",
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ],
+  "registry-mirrors": [],
+  "insecure-registries": [
+    "localhost:5000"
+  ],
+  "default-runtime": "runc",
+  "runtimes": {
+    "runc": {
+      "path": "runc"
+    }
+  },
+  "containerd": "/var/run/docker/containerd/containerd.sock",
+  "containerd-namespace": "moby",
+  "containerd-plugins": {
+    "io.containerd.grpc.v1.cri": {
+      "containerd": {
+        "default_runtime_name": "runc"
+      }
+    }
+  },
+  "max-concurrent-downloads": 6,
+  "max-concurrent-uploads": 5,
+  "default-address-pools": [
+    {
+      "base": "172.17.0.0/12",
+      "size": 20
+    },
+    {
+      "base": "192.168.0.0/16", 
+      "size": 24
+    }
+  ],
+  "userland-proxy": false,
+  "live-restore": true,
+  "group": "docker",
+  "hosts": [
+    "unix:///var/run/docker.sock"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-file": "3",
+    "max-size": "10m"
+  },
+  "pidfile": "/var/run/docker.pid",
+  "data-root": "/var/lib/docker",
+  "exec-root": "/var/run/docker",
+  "bridge": "docker0",
+  "fixed-cidr": "",
+  "fixed-cidr-v6": "",
+  "default-gateway": "",
+  "default-gateway-v6": "",
+  "selinux-enabled": false,
+  "ip-forward": true,
+  "ip-masq": true,
+  "iptables": true,
+  "ipv6": false,
+  "ip6tables": false,
+  "dns": [],
+  "dns-search": [],
+  "dns-opt": [],
+  "mtu": 0,
+  "userland-proxy-path": "/usr/lib/docker/docker-proxy",
+  "init": false,
+  "init-path": "/usr/lib/docker/docker-init",
+  "seccomp-profile": "",
+  "shutdown-timeout": 15
+}
