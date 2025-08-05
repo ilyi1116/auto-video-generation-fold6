@@ -1,41 +1,44 @@
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
 // Mock SvelteKit runtime
-vi.mock('$app/environment', () => ({
+vi.mock("$app/environment", () => ({
   browser: false,
   dev: true,
-  building: false
+  building: false,
 }));
 
-vi.mock('$app/navigation', () => ({
+vi.mock("$app/navigation", () => ({
   goto: vi.fn(),
   invalidate: vi.fn(),
   invalidateAll: vi.fn(),
   preloadData: vi.fn(),
   preloadCode: vi.fn(),
   beforeNavigate: vi.fn(),
-  afterNavigate: vi.fn()
+  afterNavigate: vi.fn(),
 }));
 
-vi.mock('$app/stores', () => ({
+vi.mock("$app/stores", () => ({
   page: {
-    subscribe: vi.fn()
+    subscribe: vi.fn(),
   },
   navigating: {
-    subscribe: vi.fn()
+    subscribe: vi.fn(),
   },
   updated: {
-    subscribe: vi.fn()
-  }
+    subscribe: vi.fn(),
+  },
 }));
 
 // Mock Lucide icons
-vi.mock('lucide-svelte', () => {
-  const mockIcon = () => 'div';
-  return new Proxy({}, {
-    get: () => mockIcon
-  });
+vi.mock("lucide-svelte", () => {
+  const mockIcon = () => "div";
+  return new Proxy(
+    {},
+    {
+      get: () => mockIcon,
+    },
+  );
 });
 
 // Global test utilities
@@ -52,9 +55,9 @@ global.IntersectionObserver = vi.fn(() => ({
 }));
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

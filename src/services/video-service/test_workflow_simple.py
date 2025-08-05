@@ -19,9 +19,7 @@ class SimpleTest:
 
     def assert_equal(self, actual, expected, message=""):
         if actual != expected:
-            raise AssertionError(
-                f"{message}: Expected {expected}, got {actual}"
-            )
+            raise AssertionError(f"{message}: Expected {expected}, got {actual}")
 
     def assert_not_none(self, value, message=""):
         if value is None:
@@ -37,18 +35,14 @@ class SimpleTest:
             test_func()
             print(f"❌ 測試應該失敗但沒有失敗: {test_name}")
             self.failed += 1
-            self.errors.append(
-                f"Test {test_name} should have failed but passed"
-            )
+            self.errors.append(f"Test {test_name} should have failed but passed")
         except (ImportError, AttributeError, NameError) as e:
             print(f"✅ 測試按預期失敗: {test_name} - {str(e)}")
             self.passed += 1
         except Exception as e:
             print(f"⚠️  測試出現意外錯誤: {test_name} - {str(e)}")
             self.failed += 1
-            self.errors.append(
-                f"Test {test_name} failed with unexpected error: {str(e)}"
-            )
+            self.errors.append(f"Test {test_name} failed with unexpected error: {str(e)}")
 
     def summary(self):
         total = self.passed + self.failed
@@ -129,9 +123,7 @@ def test_should_execute_complete_workflow_pipeline():
     engine = VideoWorkflowEngine()
     executor = PipelineExecutor()
 
-    workflow_result = engine.initialize_workflow(
-        request, user_id="test_user_456"
-    )
+    workflow_result = engine.initialize_workflow(request, user_id="test_user_456")
     pipeline_result = executor.execute_pipeline(
         workflow_result.workflow_id,
         stages=[
@@ -178,13 +170,9 @@ def test_should_track_workflow_progress_accurately():
     engine = VideoWorkflowEngine()
     tracker = ProgressTracker()
 
-    workflow_result = engine.initialize_workflow(
-        request, user_id="test_user_progress"
-    )
+    workflow_result = engine.initialize_workflow(request, user_id="test_user_progress")
 
-    tracker.update_progress(
-        workflow_result.workflow_id, "script_generation", 25
-    )
+    tracker.update_progress(workflow_result.workflow_id, "script_generation", 25)
     final_status = tracker.get_current_status(workflow_result.workflow_id)
 
     assert final_status.progress_percentage == 25
@@ -222,9 +210,7 @@ def test_should_support_workflow_cancellation():
 
     engine = VideoWorkflowEngine()
 
-    workflow_result = engine.initialize_workflow(
-        request, user_id="test_cancel_user"
-    )
+    workflow_result = engine.initialize_workflow(request, user_id="test_cancel_user")
     cancel_result = engine.cancel_workflow(workflow_result.workflow_id)
 
     assert cancel_result.status == "cancelled"
@@ -244,9 +230,7 @@ def test_should_cleanup_resources_after_workflow_completion():
     engine = VideoWorkflowEngine()
     resource_manager = ResourceManager()
 
-    workflow_result = engine.initialize_workflow(
-        request, user_id="test_cleanup_user"
-    )
+    workflow_result = engine.initialize_workflow(request, user_id="test_cleanup_user")
 
     initial_temp_files = resource_manager.count_temporary_files()
 

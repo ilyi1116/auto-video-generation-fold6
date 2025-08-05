@@ -11,52 +11,33 @@ from config import BaseServiceSettings
 
 class Settings(BaseServiceSettings):
     """API Gateway 配置 - 繼承統一基礎配置"""
+
     service_name: str = "api-gateway"
     api_port: int = int(os.getenv("API_PORT", "8000"))
-    
+
     # API Configuration
-    project_name: str = os.getenv(
-        "PROJECT_NAME", "Auto Video Generation API Gateway"
-    )
+    project_name: str = os.getenv("PROJECT_NAME", "Auto Video Generation API Gateway")
     api_v1_str: str = "/api/v1"
 
     # CORS Configuration (繼承自基類，但可以擴展)
-    allowed_hosts: List[str] = os.getenv(
-        "ALLOWED_HOSTS", "localhost,127.0.0.1"
-    ).split(",")
+    allowed_hosts: List[str] = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
     # Logging (繼承自基類)
-    structured_logging: bool = (
-        os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
-    )
+    structured_logging: bool = os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
 
     # Rate Limiting
     rate_limit_per_minute: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
     rate_limit_burst: int = int(os.getenv("RATE_LIMIT_BURST", "10"))
 
     # Service URLs
-    auth_service_url: str = os.getenv(
-        "AUTH_SERVICE_URL", "http://auth-service:8001"
-    )
-    data_service_url: str = os.getenv(
-        "DATA_SERVICE_URL", "http://data-service:8002"
-    )
-    inference_service_url: str = os.getenv(
-        "INFERENCE_SERVICE_URL", "http://inference-service:8003"
-    )
-    video_service_url: str = os.getenv(
-        "VIDEO_SERVICE_URL", "http://video-service:8004"
-    )
+    auth_service_url: str = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
+    data_service_url: str = os.getenv("DATA_SERVICE_URL", "http://data-service:8002")
+    inference_service_url: str = os.getenv("INFERENCE_SERVICE_URL", "http://inference-service:8003")
+    video_service_url: str = os.getenv("VIDEO_SERVICE_URL", "http://video-service:8004")
     ai_service_url: str = os.getenv("AI_SERVICE_URL", "http://ai-service:8005")
-    social_service_url: str = os.getenv(
-        "SOCIAL_SERVICE_URL", "http://social-service:8006"
-    )
-    trend_service_url: str = os.getenv(
-        "TREND_SERVICE_URL", "http://trend-service:8007"
-    )
-    scheduler_service_url: str = os.getenv(
-        "SCHEDULER_SERVICE_URL", "http://scheduler-service:8008"
-    )
+    social_service_url: str = os.getenv("SOCIAL_SERVICE_URL", "http://social-service:8006")
+    trend_service_url: str = os.getenv("TREND_SERVICE_URL", "http://trend-service:8007")
+    scheduler_service_url: str = os.getenv("SCHEDULER_SERVICE_URL", "http://scheduler-service:8008")
 
     # JWT Configuration (for token verification)
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
@@ -72,9 +53,7 @@ class Settings(BaseServiceSettings):
     ).split(",")
 
     # Security Headers
-    security_headers_enabled: bool = (
-        os.getenv("SECURITY_HEADERS_ENABLED", "true").lower() == "true"
-    )
+    security_headers_enabled: bool = os.getenv("SECURITY_HEADERS_ENABLED", "true").lower() == "true"
     hsts_max_age: int = int(os.getenv("HSTS_MAX_AGE", "31536000"))
     csp_policy: str = os.getenv(
         "CSP_POLICY",
@@ -90,9 +69,7 @@ class Settings(BaseServiceSettings):
 
     # Monitoring
     sentry_dsn: str = os.getenv("SENTRY_DSN", "")
-    prometheus_enabled: bool = (
-        os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
-    )
+    prometheus_enabled: bool = os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
     metrics_port: int = int(os.getenv("METRICS_PORT", "9090"))
 
     def __init__(self, **kwargs):

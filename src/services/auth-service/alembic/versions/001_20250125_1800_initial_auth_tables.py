@@ -9,8 +9,9 @@ Create Date: 2025-01-25 18:00:00.000000
 from typing import Sequence, Union
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "001"
@@ -42,13 +43,9 @@ def upgrade() -> None:
         sa.Column("location", sa.String(100), nullable=True),
         sa.Column("birth_date", sa.Date(), nullable=True),
         sa.Column("phone_number", sa.String(20), nullable=True),
-        sa.Column(
-            "preferred_language", sa.String(10), default="en", nullable=False
-        ),
+        sa.Column("preferred_language", sa.String(10), default="en", nullable=False),
         sa.Column("timezone", sa.String(50), default="UTC", nullable=False),
-        sa.Column(
-            "notification_preferences", sa.JSON(), default={}, nullable=False
-        ),
+        sa.Column("notification_preferences", sa.JSON(), default={}, nullable=False),
         sa.Column("last_login_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("login_count", sa.Integer(), default=0, nullable=False),
         sa.Column(
@@ -87,12 +84,8 @@ def upgrade() -> None:
             sa.ForeignKey("users.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column(
-            "session_token", sa.String(255), nullable=False, unique=True
-        ),
-        sa.Column(
-            "refresh_token", sa.String(255), nullable=False, unique=True
-        ),
+        sa.Column("session_token", sa.String(255), nullable=False, unique=True),
+        sa.Column("refresh_token", sa.String(255), nullable=False, unique=True),
         sa.Column("device_info", sa.JSON(), default={}, nullable=False),
         sa.Column("ip_address", sa.String(45), nullable=True),
         sa.Column("user_agent", sa.String(500), nullable=True),
@@ -114,15 +107,9 @@ def upgrade() -> None:
 
     # Create indexes for user_sessions table
     op.create_index("idx_user_sessions_user_id", "user_sessions", ["user_id"])
-    op.create_index(
-        "idx_user_sessions_session_token", "user_sessions", ["session_token"]
-    )
-    op.create_index(
-        "idx_user_sessions_expires_at", "user_sessions", ["expires_at"]
-    )
-    op.create_index(
-        "idx_user_sessions_is_active", "user_sessions", ["is_active"]
-    )
+    op.create_index("idx_user_sessions_session_token", "user_sessions", ["session_token"])
+    op.create_index("idx_user_sessions_expires_at", "user_sessions", ["expires_at"])
+    op.create_index("idx_user_sessions_is_active", "user_sessions", ["is_active"])
 
     # Create user_roles table
     op.create_table(
@@ -221,9 +208,7 @@ def upgrade() -> None:
         "password_reset_tokens",
         ["user_id"],
     )
-    op.create_index(
-        "idx_password_reset_tokens_token", "password_reset_tokens", ["token"]
-    )
+    op.create_index("idx_password_reset_tokens_token", "password_reset_tokens", ["token"])
     op.create_index(
         "idx_password_reset_tokens_expires_at",
         "password_reset_tokens",
@@ -278,9 +263,7 @@ def upgrade() -> None:
         sa.Column("details", sa.JSON(), default={}, nullable=False),
         sa.Column("ip_address", sa.String(45), nullable=True),
         sa.Column("user_agent", sa.String(500), nullable=True),
-        sa.Column(
-            "status", sa.String(20), nullable=False
-        ),  # success, failure, error
+        sa.Column("status", sa.String(20), nullable=False),  # success, failure, error
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),

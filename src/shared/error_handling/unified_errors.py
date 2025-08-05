@@ -4,12 +4,13 @@
 提供一致的錯誤格式和處理機制
 """
 
-from enum import Enum
-from typing import Dict, Any, Optional, List, Union
-from datetime import datetime
-import traceback
 import json
 import logging
+import traceback
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
+
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 
@@ -148,9 +149,7 @@ class ErrorBuilder:
         self.error_data["details"] = details
         return self
 
-    def add_detail(
-        self, field: str = None, message: str = "", code: str = None
-    ) -> "ErrorBuilder":
+    def add_detail(self, field: str = None, message: str = "", code: str = None) -> "ErrorBuilder":
         """添加錯誤詳情"""
         if "details" not in self.error_data:
             self.error_data["details"] = []
@@ -245,31 +244,29 @@ class ErrorHandler:
 
         # 根據異常類型設置錯誤信息
         if isinstance(error, ValueError):
-            builder.code(ErrorCode.VALIDATION_ERROR).message(
-                str(error)
-            ).category(ErrorCategory.USER_ERROR)
+            builder.code(ErrorCode.VALIDATION_ERROR).message(str(error)).category(
+                ErrorCategory.USER_ERROR
+            )
         elif isinstance(error, FileNotFoundError):
             builder.code(ErrorCode.NOT_FOUND).message("資源未找到").category(
                 ErrorCategory.USER_ERROR
             )
         elif isinstance(error, PermissionError):
-            builder.code(ErrorCode.AUTHORIZATION_ERROR).message(
-                "權限不足"
-            ).category(ErrorCategory.USER_ERROR)
+            builder.code(ErrorCode.AUTHORIZATION_ERROR).message("權限不足").category(
+                ErrorCategory.USER_ERROR
+            )
         elif isinstance(error, ConnectionError):
-            builder.code(ErrorCode.EXTERNAL_API_ERROR).message(
-                "外部服務連接失敗"
-            ).category(ErrorCategory.EXTERNAL_ERROR).severity(
+            builder.code(ErrorCode.EXTERNAL_API_ERROR).message("外部服務連接失敗").category(
+                ErrorCategory.EXTERNAL_ERROR
+            ).severity(ErrorSeverity.HIGH)
+        elif isinstance(error, TimeoutError):
+            builder.code(ErrorCode.SERVICE_TIMEOUT).message("服務超時").category(
+                ErrorCategory.SYSTEM_ERROR
+            ).severity(ErrorSeverity.HIGH)
+        else:
+            builder.code(ErrorCode.UNKNOWN_ERROR).message(f"未知錯誤: {str(error)}").severity(
                 ErrorSeverity.HIGH
             )
-        elif isinstance(error, TimeoutError):
-            builder.code(ErrorCode.SERVICE_TIMEOUT).message(
-                "服務超時"
-            ).category(ErrorCategory.SYSTEM_ERROR).severity(ErrorSeverity.HIGH)
-        else:
-            builder.code(ErrorCode.UNKNOWN_ERROR).message(
-                f"未知錯誤: {str(error)}"
-            ).severity(ErrorSeverity.HIGH)
 
         # 在開發模式下添加堆疊追蹤
         import os
@@ -323,9 +320,7 @@ class ErrorHandler:
             ErrorCode.SERVICE_UNAVAILABLE.value: status.HTTP_503_SERVICE_UNAVAILABLE,
         }
 
-        status_code = status_code_mapping.get(
-            error.code, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        status_code = status_code_mapping.get(error.code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return HTTPException(status_code=status_code, detail=error.to_dict())
 
@@ -352,9 +347,7 @@ def create_error(error_code: ErrorCode, message: str = None) -> ErrorBuilder:
 # 常用錯誤快捷函數
 def validation_error(message: str, field: str = None) -> UnifiedError:
     """創建驗證錯誤"""
-    builder = create_error(ErrorCode.VALIDATION_ERROR, message).category(
-        ErrorCategory.USER_ERROR
-    )
+    builder = create_error(ErrorCode.VALIDATION_ERROR, message).category(ErrorCategory.USER_ERROR)
     if field:
         builder.add_detail(field=field, message=message)
     return builder.build()
@@ -380,11 +373,7 @@ def unauthorized_error(message: str = "未授權訪問") -> UnifiedError:
 
 def internal_error(message: str = "內部服務錯誤") -> UnifiedError:
     """創建內部錯誤"""
-    return (
-        create_error(ErrorCode.UNKNOWN_ERROR, message)
-        .severity(ErrorSeverity.HIGH)
-        .build()
-    )
+    return create_error(ErrorCode.UNKNOWN_ERROR, message).severity(ErrorSeverity.HIGH).build()
 
 
 def external_service_error(service: str, message: str = None) -> UnifiedError:
@@ -464,9 +453,7 @@ if __name__ == "__main__":
     try:
         raise ValueError("測試錯誤")
     except Exception as e:
-        handled_error = handler.handle_error(
-            e, request_id="req-123", user_id="user-456"
-        )
+        handled_error = handler.handle_error(e, request_id="req-123", user_id="user-456")
         print("\n處理後的錯誤:")
         print(handled_error.to_json())
 

@@ -33,9 +33,7 @@ def mock_auth_service():
 def mock_s3_storage():
     """Mock S3 storage operations"""
     with patch("app.storage.s3_storage") as mock:
-        mock.upload_file = AsyncMock(
-            return_value="http://minio:9000/voice-data/test-file.wav"
-        )
+        mock.upload_file = AsyncMock(return_value="http://minio:9000/voice-data/test-file.wav")
         mock.delete_file = AsyncMock(return_value=True)
         mock.file_exists = AsyncMock(return_value=True)
         yield mock

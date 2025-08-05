@@ -70,9 +70,7 @@ class TestSocialMediaAPI:
 
             yield mock_manager
 
-    def test_get_available_platforms(
-        self, client, mock_auth, mock_social_manager
-    ):
+    def test_get_available_platforms(self, client, mock_auth, mock_social_manager):
         """Test getting available platforms"""
         response = client.get(
             "/api/v1/social/platforms",
@@ -90,9 +88,7 @@ class TestSocialMediaAPI:
         assert "name" in platform
         assert "connected" in platform
 
-    def test_publish_to_social_media(
-        self, client, mock_auth, mock_social_manager
-    ):
+    def test_publish_to_social_media(self, client, mock_auth, mock_social_manager):
         """Test publishing to social media platforms"""
         request_data = {
             "video_url": "https://example.com/video.mp4",
@@ -124,9 +120,7 @@ class TestSocialMediaAPI:
         assert "platform_id" in result
         assert "url" in result
 
-    def test_publish_invalid_platforms(
-        self, client, mock_auth, mock_social_manager
-    ):
+    def test_publish_invalid_platforms(self, client, mock_auth, mock_social_manager):
         """Test publishing to invalid platforms"""
         request_data = {
             "video_url": "https://example.com/video.mp4",
@@ -143,9 +137,7 @@ class TestSocialMediaAPI:
         assert response.status_code == 400
         assert "Invalid platforms" in response.json()["detail"]
 
-    def test_scheduled_publishing(
-        self, client, mock_auth, mock_social_manager
-    ):
+    def test_scheduled_publishing(self, client, mock_auth, mock_social_manager):
         """Test scheduled publishing"""
         future_time = datetime.utcnow() + timedelta(hours=1)
 
@@ -181,9 +173,7 @@ class TestSocialMediaAPI:
         assert "views" in data["stats"]
         assert "likes" in data["stats"]
 
-    def test_platform_health_check(
-        self, client, mock_auth, mock_social_manager
-    ):
+    def test_platform_health_check(self, client, mock_auth, mock_social_manager):
         """Test platform health check"""
         response = client.get(
             "/api/v1/social/platforms/health",
@@ -305,9 +295,7 @@ class TestSocialMediaPlatforms:
         """Test TikTok client initialization"""
         from social.platforms import TikTokClient
 
-        client = TikTokClient(
-            "test_api_key", "test_client_id", "test_client_secret"
-        )
+        client = TikTokClient("test_api_key", "test_client_id", "test_client_secret")
         assert client.api_key == "test_api_key"
         assert client.client_id == "test_client_id"
         assert client.client_secret == "test_client_secret"
@@ -346,13 +334,9 @@ class TestSocialMediaPlatforms:
         """Test publishing to unconfigured platform"""
         manager = SocialMediaManager()
 
-        request = PublishRequest(
-            video_url="https://example.com/video.mp4", title="Test Video"
-        )
+        request = PublishRequest(video_url="https://example.com/video.mp4", title="Test Video")
 
-        result = await manager.publish_to_platform(
-            "unconfigured_platform", request
-        )
+        result = await manager.publish_to_platform("unconfigured_platform", request)
 
         assert result.success is False
         assert "not configured" in result.error_message
@@ -381,9 +365,7 @@ class TestSocialMediaPlatforms:
             mock_client.publish_video.return_value = mock_result
             manager.platforms["youtube"] = mock_client
 
-            request = PublishRequest(
-                video_url="https://example.com/video.mp4", title="Test Video"
-            )
+            request = PublishRequest(video_url="https://example.com/video.mp4", title="Test Video")
 
             results = await manager.publish_to_all(request, ["youtube"])
 
@@ -396,9 +378,7 @@ class TestSocialMediaPlatforms:
         """Test getting stats from unconfigured platform"""
         manager = SocialMediaManager()
 
-        stats = await manager.get_platform_stats(
-            "unconfigured_platform", "test_id"
-        )
+        stats = await manager.get_platform_stats("unconfigured_platform", "test_id")
 
         assert "error" in stats
         assert "not configured" in stats["error"]
@@ -408,9 +388,7 @@ class TestSocialMediaPlatforms:
         """Test deleting from unconfigured platform"""
         manager = SocialMediaManager()
 
-        result = await manager.delete_from_platform(
-            "unconfigured_platform", "test_id"
-        )
+        result = await manager.delete_from_platform("unconfigured_platform", "test_id")
 
         assert result is False
 

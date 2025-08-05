@@ -1,9 +1,9 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap");
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -39,23 +39,13 @@
 
 .shimmer {
   animation: shimmer 1.5s ease-in-out infinite;
-  background: linear-gradient(
-    to right,
-    #f3f4f6 8%,
-    #e5e7eb 18%,
-    #f3f4f6 33%
-  );
+  background: linear-gradient(to right, #f3f4f6 8%, #e5e7eb 18%, #f3f4f6 33%);
   background-size: 800px 104px;
 }
 
 /* Dark mode shimmer */
 .dark .shimmer {
-  background: linear-gradient(
-    to right,
-    #374151 8%,
-    #4b5563 18%,
-    #374151 33%
-  );
+  background: linear-gradient(to right, #374151 8%, #4b5563 18%, #374151 33%);
 }
 
 /* Custom components */

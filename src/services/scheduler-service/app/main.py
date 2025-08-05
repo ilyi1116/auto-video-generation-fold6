@@ -40,9 +40,7 @@ app.add_middleware(
     ],
 )
 
-app.include_router(
-    scheduler.router, prefix="/api/v1/schedule", tags=["schedule"]
-)
+app.include_router(scheduler.router, prefix="/api/v1/schedule", tags=["schedule"])
 app.include_router(
     entrepreneur_scheduler_routes.router,
     prefix="/api/v1/entrepreneur-scheduler",

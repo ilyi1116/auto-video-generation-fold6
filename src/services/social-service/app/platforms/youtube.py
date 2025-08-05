@@ -38,9 +38,7 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://oauth2.googleapis.com/token", data=data
-        ) as response:
+        async with session.post("https://oauth2.googleapis.com/token", data=data) as response:
             if response.status == 200:
                 result = await response.json()
                 return {
@@ -82,9 +80,7 @@ async def publish_video(
                 "categoryId": "22",  # People & Blogs
             },
             "status": {
-                "privacyStatus": (
-                    settings.get("privacy", "public") if settings else "public"
-                ),
+                "privacyStatus": (settings.get("privacy", "public") if settings else "public"),
                 "embeddable": True,
                 "license": "youtube",
             },
@@ -95,9 +91,7 @@ async def publish_video(
 
         async with aiohttp.ClientSession() as session:
             # 初始化上傳
-            async with session.post(
-                upload_url, headers=headers, json=video_metadata
-            ) as response:
+            async with session.post(upload_url, headers=headers, json=video_metadata) as response:
                 if response.status == 200:
                     upload_session_url = response.headers.get("Location")
 
@@ -237,9 +231,7 @@ async def _get_video_file_url(video_id: int) -> str:
                 result = await response.json()
                 return result["file_url"]
             else:
-                raise Exception(
-                    f"Failed to get video file URL: {response.status}"
-                )
+                raise Exception(f"Failed to get video file URL: {response.status}")
 
 
 async def _get_video_file_data(video_url: str) -> bytes:
@@ -250,6 +242,4 @@ async def _get_video_file_data(video_url: str) -> bytes:
             if response.status == 200:
                 return await response.read()
             else:
-                raise Exception(
-                    f"Failed to download video file: {response.status}"
-                )
+                raise Exception(f"Failed to download video file: {response.status}")

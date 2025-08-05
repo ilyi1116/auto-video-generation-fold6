@@ -95,9 +95,7 @@ class EmotionSynthesizer:
             self.emotion_processor = Wav2Vec2Processor.from_pretrained(
                 "facebook/wav2vec2-base-960h"
             )
-            self.emotion_model = Wav2Vec2Model.from_pretrained(
-                "facebook/wav2vec2-base-960h"
-            )
+            self.emotion_model = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
             logger.info("已載入情感嵌入模型")
         except Exception as e:
             logger.warning("無法載入情感嵌入模型", error=str(e))
@@ -141,9 +139,7 @@ class EmotionSynthesizer:
                 language = "zh-TW"
 
             # 根據情感調整文字
-            enhanced_text = self._enhance_text_for_emotion(
-                text, emotion, intensity
-            )
+            enhanced_text = self._enhance_text_for_emotion(text, emotion, intensity)
 
             # 選擇合適的 TTS 模型
             tts_model = self.tts_models.get(language)
@@ -156,9 +152,7 @@ class EmotionSynthesizer:
                 tts_model.tts_to_file(
                     text=enhanced_text,
                     file_path=audio_buffer,
-                    emotion=(
-                        emotion if hasattr(tts_model, "emotions") else None
-                    ),
+                    emotion=(emotion if hasattr(tts_model, "emotions") else None),
                 )
                 base_audio = audio_buffer.getvalue()
 
@@ -174,9 +168,7 @@ class EmotionSynthesizer:
             logger.error("情感語音合成失敗", error=str(e))
             raise
 
-    def _enhance_text_for_emotion(
-        self, text: str, emotion: str, intensity: float
-    ) -> str:
+    def _enhance_text_for_emotion(self, text: str, emotion: str, intensity: float) -> str:
         """根據情感增強文字"""
 
         # 情感標記映射
@@ -230,18 +222,14 @@ class EmotionSynthesizer:
         # 調整語速
         speed_factor = speed * emotion_params.get("speed_factor", 1.0)
         if speed_factor != 1.0:
-            audio_array = librosa.effects.time_stretch(
-                audio_array, rate=speed_factor
-            )
+            audio_array = librosa.effects.time_stretch(audio_array, rate=speed_factor)
 
         # 調整音量
         volume_factor = emotion_params.get("volume_factor", 1.0)
         audio_array = audio_array * volume_factor
 
         # 添加情感相關的音訊效果
-        audio_array = self._apply_emotion_effects(
-            audio_array, emotion, intensity
-        )
+        audio_array = self._apply_emotion_effects(audio_array, emotion, intensity)
 
         # 轉換回 bytes
         with io.BytesIO() as output:
@@ -324,9 +312,7 @@ class EmotionSynthesizer:
 
         return audio
 
-    def _add_echo(
-        self, audio: np.ndarray, delay: float, decay: float
-    ) -> np.ndarray:
+    def _add_echo(self, audio: np.ndarray, delay: float, decay: float) -> np.ndarray:
         """添加回聲效果"""
         delay_samples = int(delay * 22050)  # 假設 22050 Hz
         echo = np.zeros_like(audio)
@@ -344,9 +330,7 @@ class EmotionSynthesizer:
         """添加失真效果"""
         return np.tanh(audio * (1 + factor))
 
-    def _add_tremolo(
-        self, audio: np.ndarray, rate: float, depth: float
-    ) -> np.ndarray:
+    def _add_tremolo(self, audio: np.ndarray, rate: float, depth: float) -> np.ndarray:
         """添加顫音效果"""
         t = np.arange(len(audio)) / 22050
         tremolo = 1 + depth * np.sin(2 * np.pi * rate * t)
@@ -364,9 +348,7 @@ class EmotionSynthesizer:
                 temp_file.flush()
 
                 # 分析情感
-                emotion_result = self.emotion_classifier.predict_emotion(
-                    temp_file.name
-                )
+                emotion_result = self.emotion_classifier.predict_emotion(temp_file.name)
 
                 return {
                     "emotion": emotion_result.get("emotion", "neutral"),
@@ -395,32 +377,24 @@ class EmotionSynthesizer:
             }
 
             # 音調特徵
-            pitches, magnitudes = librosa.piptrack(
-                y=audio_array, sr=sample_rate
-            )
+            pitches, magnitudes = librosa.piptrack(y=audio_array, sr=sample_rate)
             pitch_values = pitches[magnitudes > np.median(magnitudes)]
             if len(pitch_values) > 0:
                 features["pitch"] = {
                     "mean": float(np.mean(pitch_values)),
                     "std": float(np.std(pitch_values)),
-                    "range": float(
-                        np.max(pitch_values) - np.min(pitch_values)
-                    ),
+                    "range": float(np.max(pitch_values) - np.min(pitch_values)),
                 }
 
             # 頻譜特徵
-            mfccs = librosa.feature.mfcc(
-                y=audio_array, sr=sample_rate, n_mfcc=13
-            )
+            mfccs = librosa.feature.mfcc(y=audio_array, sr=sample_rate, n_mfcc=13)
             features["mfcc"] = {
                 "mean": mfccs.mean(axis=1).tolist(),
                 "std": mfccs.std(axis=1).tolist(),
             }
 
             # 節奏特徵
-            tempo, beats = librosa.beat.beat_track(
-                y=audio_array, sr=sample_rate
-            )
+            tempo, beats = librosa.beat.beat_track(y=audio_array, sr=sample_rate)
             features["rhythm"] = {
                 "tempo": float(tempo),
                 "beat_count": len(beats),

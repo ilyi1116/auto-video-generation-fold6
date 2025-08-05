@@ -117,43 +117,31 @@ class VideoComposer:
             logger.info(f"Starting video composition: {composition_id}")
 
             # Download all media assets
-            voice_path = await self._download_media(
-                voice_url, f"{composition_id}_voice.mp3"
-            )
+            voice_path = await self._download_media(voice_url, f"{composition_id}_voice.mp3")
             music_path = (
-                await self._download_media(
-                    music_url, f"{composition_id}_music.mp3"
-                )
+                await self._download_media(music_url, f"{composition_id}_music.mp3")
                 if music_url
                 else None
             )
 
             image_paths = []
             for i, image_url in enumerate(image_urls):
-                image_path = await self._download_media(
-                    image_url, f"{composition_id}_img_{i}.png"
-                )
+                image_path = await self._download_media(image_url, f"{composition_id}_img_{i}.png")
                 image_paths.append(image_path)
 
             # Create scene compositions
             scenes = []
             current_time = 0.0
 
-            for i, (script_scene, image_path) in enumerate(
-                zip(script_scenes, image_paths)
-            ):
+            for i, (script_scene, image_path) in enumerate(zip(script_scenes, image_paths)):
                 scene = SceneComposition(
                     sequence=i,
                     start_time=current_time,
                     duration=script_scene.duration,
                     image_url=image_path,
                     narration_text=script_scene.narration_text,
-                    visual_effects=self._get_scene_effects(
-                        script_scene.scene_type
-                    ),
-                    transition_type=self._get_transition_type(
-                        i, len(script_scenes)
-                    ),
+                    visual_effects=self._get_scene_effects(script_scene.scene_type),
+                    transition_type=self._get_transition_type(i, len(script_scenes)),
                 )
                 scenes.append(scene)
                 current_time += script_scene.duration
@@ -185,9 +173,7 @@ class VideoComposer:
             logger.error(f"Video composition failed: {str(e)}")
             raise Exception(f"Failed to create video composition: {str(e)}")
 
-    async def render_final(
-        self, composition_id: str, quality: str = "high"
-    ) -> FinalRenderResult:
+    async def render_final(self, composition_id: str, quality: str = "high") -> FinalRenderResult:
         """Render final high-quality video"""
 
         try:
@@ -195,9 +181,7 @@ class VideoComposer:
 
             # Load composition data
             # (in real implementation, this would be from database)
-            composition_data = await self._load_composition_data(
-                composition_id
-            )
+            composition_data = await self._load_composition_data(composition_id)
 
             if not composition_data:
                 raise Exception(f"Composition {composition_id} not found")
@@ -208,18 +192,14 @@ class VideoComposer:
             )
 
             # Generate thumbnail
-            thumbnail_path = await self._generate_thumbnail(
-                final_video_path, composition_id
-            )
+            thumbnail_path = await self._generate_thumbnail(final_video_path, composition_id)
 
             # Get video metadata
             metadata = await self._get_video_metadata(final_video_path)
 
             # Upload final video and thumbnail
             video_url = await self._upload_media(final_video_path, "videos")
-            thumbnail_url = await self._upload_media(
-                thumbnail_path, "thumbnails"
-            )
+            thumbnail_url = await self._upload_media(thumbnail_path, "thumbnails")
 
             logger.info(f"Final render completed: {composition_id}")
 
@@ -246,9 +226,7 @@ class VideoComposer:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status != 200:
-                        raise Exception(
-                            f"Failed to download media: {response.status}"
-                        )
+                        raise Exception(f"Failed to download media: {response.status}")
 
                     file_path = os.path.join(self.temp_dir, filename)
                     with open(file_path, "wb") as f:
@@ -272,9 +250,7 @@ class VideoComposer:
         """Create preview video with lower quality for quick review"""
 
         settings = self.platform_settings[target_platform]
-        preview_path = os.path.join(
-            self.temp_dir, f"{composition_id}_preview.mp4"
-        )
+        preview_path = os.path.join(self.temp_dir, f"{composition_id}_preview.mp4")
 
         # Create FFmpeg filter complex for preview
         filter_complex = await self._build_filter_complex(
@@ -343,9 +319,7 @@ class VideoComposer:
     ) -> str:
         """Render final high-quality video"""
 
-        final_path = os.path.join(
-            self.output_dir, f"{composition_id}_final.mp4"
-        )
+        final_path = os.path.join(self.output_dir, f"{composition_id}_final.mp4")
 
         # Quality settings
         quality_settings = {
@@ -356,9 +330,7 @@ class VideoComposer:
         }
 
         settings = quality_settings.get(quality, quality_settings["high"])
-        platform_settings = self.platform_settings[
-            composition_data["target_platform"]
-        ]
+        platform_settings = self.platform_settings[composition_data["target_platform"]]
 
         # Build comprehensive FFmpeg command for final render
         cmd = ["ffmpeg", "-y", "-i", composition_data["voice_path"]]
@@ -434,9 +406,7 @@ class VideoComposer:
 
         # Scale and process images
         for i, scene in enumerate(scenes):
-            input_idx = i + (
-                2 if music_path else 1
-            )  # Account for audio inputs
+            input_idx = i + (2 if music_path else 1)  # Account for audio inputs
             filter_parts.append(
                 f"[{input_idx}:v]scale={settings['resolution']}:force_original_aspect_ratio=increase,"
                 f"crop={settings['resolution']},setsar=1[img{i}]"
@@ -444,15 +414,11 @@ class VideoComposer:
 
         # Concatenate video segments
         concat_inputs = "".join(f"[img{i}]" for i in range(len(scenes)))
-        filter_parts.append(
-            f"{concat_inputs}concat=n={len(scenes)}:v=1:a=0[video]"
-        )
+        filter_parts.append(f"{concat_inputs}concat=n={len(scenes)}:v=1:a=0[video]")
 
         # Audio mixing
         if music_path:
-            filter_parts.append(
-                "[0:a][1:a]amix=inputs=2:duration=first[audio]"
-            )
+            filter_parts.append("[0:a][1:a]amix=inputs=2:duration=first[audio]")
             audio_output = "[audio]"
         else:
             audio_output = "[0:a]"
@@ -481,14 +447,10 @@ class VideoComposer:
         else:
             return "crossfade"
 
-    async def _generate_thumbnail(
-        self, video_path: str, composition_id: str
-    ) -> str:
+    async def _generate_thumbnail(self, video_path: str, composition_id: str) -> str:
         """Generate thumbnail from video"""
 
-        thumbnail_path = os.path.join(
-            self.temp_dir, f"{composition_id}_thumb.jpg"
-        )
+        thumbnail_path = os.path.join(self.temp_dir, f"{composition_id}_thumb.jpg")
 
         cmd = [
             "ffmpeg",
@@ -553,11 +515,7 @@ class VideoComposer:
         # Extract relevant information
         format_info = metadata.get("format", {})
         video_stream = next(
-            (
-                s
-                for s in metadata.get("streams", [])
-                if s["codec_type"] == "video"
-            ),
+            (s for s in metadata.get("streams", []) if s["codec_type"] == "video"),
             {},
         )
 
@@ -587,9 +545,7 @@ class VideoComposer:
         base_url = os.getenv("MEDIA_BASE_URL", "http://localhost:8003")
         return f"{base_url}/media/{media_type}/{filename}"
 
-    async def _load_composition_data(
-        self, composition_id: str
-    ) -> Optional[Dict[str, Any]]:
+    async def _load_composition_data(self, composition_id: str) -> Optional[Dict[str, Any]]:
         """Load composition data (placeholder - would be from database)"""
 
         # This is a placeholder - in real implementation,

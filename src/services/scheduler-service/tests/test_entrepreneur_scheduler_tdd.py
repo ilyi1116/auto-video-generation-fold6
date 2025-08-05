@@ -118,9 +118,7 @@ class TestEntrepreneurSchedulerTDD:
 
         assert task_id is not None
         assert len(scheduler.scheduled_tasks) == 1
-        assert (
-            scheduler.scheduled_tasks[task_id].status == TaskStatus.SCHEDULED
-        )
+        assert scheduler.scheduled_tasks[task_id].status == TaskStatus.SCHEDULED
 
     @pytest.mark.asyncio
     async def test_schedule_task_exceeds_daily_limit(self, scheduler):
@@ -156,9 +154,7 @@ class TestEntrepreneurSchedulerTDD:
             status=TaskStatus.SCHEDULED,
         )
 
-        with patch.object(
-            scheduler, "_call_video_service"
-        ) as mock_video_service:
+        with patch.object(scheduler, "_call_video_service") as mock_video_service:
             mock_video_service.return_value = {
                 "success": True,
                 "videos_generated": 2,
@@ -183,9 +179,7 @@ class TestEntrepreneurSchedulerTDD:
             retry_count=0,
         )
 
-        with patch.object(
-            scheduler, "_call_video_service"
-        ) as mock_video_service:
+        with patch.object(scheduler, "_call_video_service") as mock_video_service:
             # 第一次失敗，第二次成功
             mock_video_service.side_effect = [
                 Exception("API 呼叫失敗"),
@@ -211,9 +205,7 @@ class TestEntrepreneurSchedulerTDD:
             retry_count=3,  # 已達最大重試次數
         )
 
-        with patch.object(
-            scheduler, "_call_video_service"
-        ) as mock_video_service:
+        with patch.object(scheduler, "_call_video_service") as mock_video_service:
             mock_video_service.side_effect = Exception("持續失敗")
 
             await scheduler.execute_task(task)
@@ -300,9 +292,7 @@ class TestEntrepreneurSchedulerTDD:
             "recent_task": recent_task,
         }
 
-        cleaned_count = await scheduler.cleanup_completed_tasks(
-            max_age_hours=24
-        )
+        cleaned_count = await scheduler.cleanup_completed_tasks(max_age_hours=24)
 
         assert cleaned_count == 1
         assert "old_task" not in scheduler.scheduled_tasks

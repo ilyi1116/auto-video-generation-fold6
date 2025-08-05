@@ -31,16 +31,6 @@
       "$app/*": ["./.svelte-kit/ambient.d.ts"]
     }
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte"
-  ],
-  "exclude": [
-    "node_modules/**",
-    ".svelte-kit/**",
-    "dist/**",
-    "build/**"
-  ]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+  "exclude": ["node_modules/**", ".svelte-kit/**", "dist/**", "build/**"]
 }

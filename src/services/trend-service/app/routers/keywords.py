@@ -23,18 +23,14 @@ async def research_keyword(
     try:
         # 檢查是否已有近期研究結果
         existing_research = (
-            db.query(KeywordResearch)
-            .filter(KeywordResearch.keyword == request.keyword)
-            .first()
+            db.query(KeywordResearch).filter(KeywordResearch.keyword == request.keyword).first()
         )
 
         if existing_research:
             # 如果研究結果在24小時內，直接返回
             from datetime import datetime, timedelta
 
-            if existing_research.research_date > datetime.utcnow() - timedelta(
-                hours=24
-            ):
+            if existing_research.research_date > datetime.utcnow() - timedelta(hours=24):
                 return existing_research
 
         # 執行新的關鍵字研究
@@ -53,18 +49,14 @@ async def research_keyword(
             db.refresh(existing_research)
             return existing_research
         else:
-            keyword_research = KeywordResearch(
-                keyword=request.keyword, **research_data
-            )
+            keyword_research = KeywordResearch(keyword=request.keyword, **research_data)
             db.add(keyword_research)
             db.commit()
             db.refresh(keyword_research)
             return keyword_research
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Keyword research failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Keyword research failed: {str(e)}")
 
 
 @router.get("/suggestions/{seed_keyword}")
@@ -88,12 +80,8 @@ async def get_keyword_suggestions(
         return {
             "seed_keyword": seed_keyword,
             "suggestions": suggestions["keywords"],
-            "questions": (
-                suggestions.get("questions", []) if include_questions else []
-            ),
-            "long_tail": (
-                suggestions.get("long_tail", []) if include_long_tail else []
-            ),
+            "questions": (suggestions.get("questions", []) if include_questions else []),
+            "long_tail": (suggestions.get("long_tail", []) if include_long_tail else []),
             "total_suggestions": len(suggestions["keywords"]),
         }
 
@@ -165,9 +153,7 @@ async def get_keyword_volume(
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get keyword volume: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get keyword volume: {str(e)}")
 
 
 @router.get("/comparison")
@@ -202,9 +188,7 @@ async def compare_keywords(
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Keyword comparison failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Keyword comparison failed: {str(e)}")
 
 
 @router.get("/gaps/{competitor_domain}")
@@ -233,9 +217,7 @@ async def find_keyword_gaps(
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Keyword gap analysis failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Keyword gap analysis failed: {str(e)}")
 
 
 @router.get("/content-ideas/{keyword}")
@@ -267,6 +249,4 @@ async def get_content_ideas(
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Content idea generation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Content idea generation failed: {str(e)}")

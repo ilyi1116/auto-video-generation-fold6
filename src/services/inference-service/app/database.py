@@ -32,9 +32,7 @@ voice_models = Table(
     Column("description", Text),
     Column("model_type", String(50), nullable=False, default="tacotron2"),
     Column("language", String(10), nullable=False, default="en"),
-    Column(
-        "status", String(20), nullable=False, default="training"
-    ),  # training, ready, failed
+    Column("status", String(20), nullable=False, default="training"),  # training, ready, failed
     Column("model_path", String(500)),  # S3 path to model files
     Column("config_data", Text),  # JSON config for model
     Column("training_data_size", Integer, default=0),

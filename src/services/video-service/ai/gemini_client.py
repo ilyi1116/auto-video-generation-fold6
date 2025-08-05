@@ -56,9 +56,7 @@ class GeminiClient:
                 "User-Agent": "AutoVideoGeneration/1.0",
             }
             timeout = aiohttp.ClientTimeout(total=120)  # 2 minutes timeout
-            self.session = aiohttp.ClientSession(
-                headers=headers, timeout=timeout
-            )
+            self.session = aiohttp.ClientSession(headers=headers, timeout=timeout)
         return self.session
 
     async def health_check(self) -> Dict[str, Any]:
@@ -94,9 +92,7 @@ class GeminiClient:
 
         try:
             # Create detailed prompt for script generation
-            prompt = self._create_script_prompt(
-                theme, duration, style, target_platform
-            )
+            prompt = self._create_script_prompt(theme, duration, style, target_platform)
 
             logger.info(
                 f"Generating script with Gemini Pro: theme='{theme}', \
@@ -140,9 +136,7 @@ class GeminiClient:
             logger.error(f"Script generation failed: {str(e)}")
             raise Exception(f"Failed to generate script: {str(e)}")
 
-    def _create_script_prompt(
-        self, theme: str, duration: int, style: str, platform: str
-    ) -> str:
+    def _create_script_prompt(self, theme: str, duration: int, style: str, platform: str) -> str:
         """Create detailed prompt for script generation"""
 
         platform_specs = {
@@ -230,9 +224,7 @@ Make sure the total duration of all scenes equals {duration} seconds.
         async with session.post(url, json=payload) as response:
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(
-                    f"Gemini API error: {response.status} - {error_text}"
-                )
+                raise Exception(f"Gemini API error: {response.status} - {error_text}")
 
             result = await response.json()
 
@@ -291,19 +283,11 @@ Make sure the total duration of all scenes equals {duration} seconds.
 
         for i in range(scene_count):
             start_idx = i * sentences_per_scene
-            end_idx = (
-                start_idx + sentences_per_scene
-                if i < scene_count - 1
-                else len(sentences)
-            )
+            end_idx = start_idx + sentences_per_scene if i < scene_count - 1 else len(sentences)
 
             scene_text = ". ".join(sentences[start_idx:end_idx])
 
-            scene_type = (
-                "intro"
-                if i == 0
-                else "outro" if i == scene_count - 1 else "main"
-            )
+            scene_type = "intro" if i == 0 else "outro" if i == scene_count - 1 else "main"
 
             scenes.append(
                 {
@@ -318,9 +302,7 @@ Make sure the total duration of all scenes equals {duration} seconds.
 
         return {"full_script": text, "scenes": scenes}
 
-    async def generate_caption_text(
-        self, narration: str, style: str = "modern"
-    ) -> List[str]:
+    async def generate_caption_text(self, narration: str, style: str = "modern") -> List[str]:
         """Generate formatted captions for video"""
 
         prompt = f"""
@@ -360,19 +342,13 @@ Please provide only the JSON array of caption segments.
             else:
                 # Fallback: split narration into chunks
                 words = narration.split()
-                return [
-                    " ".join(words[i : i + 5])
-                    for i in range(0, len(words), 5)  # noqa: E203
-                ]
+                return [" ".join(words[i : i + 5]) for i in range(0, len(words), 5)]  # noqa: E203
 
         except Exception as e:
             logger.error(f"Caption generation failed: {e}")
             # Fallback: simple word chunking
             words = narration.split()
-            return [
-                " ".join(words[i : i + 5])
-                for i in range(0, len(words), 5)  # noqa: E203
-            ]
+            return [" ".join(words[i : i + 5]) for i in range(0, len(words), 5)]  # noqa: E203
 
     async def close(self):
         """Close the HTTP session"""

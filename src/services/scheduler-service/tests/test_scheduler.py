@@ -19,9 +19,7 @@ def test_root_endpoint(client):
 
 
 @patch("app.auth.verify_token")
-def test_schedule_post_success(
-    mock_verify_token, client, sample_schedule_data, auth_headers
-):
+def test_schedule_post_success(mock_verify_token, client, sample_schedule_data, auth_headers):
     """測試成功建立排程貼文"""
     mock_verify_token.return_value = {"user_id": "1"}
 
@@ -43,9 +41,7 @@ def test_schedule_post_success(
 
 
 @patch("app.auth.verify_token")
-def test_schedule_post_past_time(
-    mock_verify_token, client, sample_schedule_data, auth_headers
-):
+def test_schedule_post_past_time(mock_verify_token, client, sample_schedule_data, auth_headers):
     """測試排程過去時間應該失敗"""
     mock_verify_token.return_value = {"user_id": "1"}
 
@@ -79,9 +75,7 @@ def test_get_scheduled_posts(mock_verify_token, client, auth_headers):
 
 
 @patch("app.auth.verify_token")
-def test_get_scheduled_posts_with_filters(
-    mock_verify_token, client, auth_headers
-):
+def test_get_scheduled_posts_with_filters(mock_verify_token, client, auth_headers):
     """測試帶篩選條件的排程列表"""
     mock_verify_token.return_value = {"user_id": "1"}
 
@@ -107,15 +101,11 @@ def test_get_scheduled_post_not_found(mock_verify_token, client, auth_headers):
 
 
 @patch("app.auth.verify_token")
-def test_cancel_scheduled_post_not_found(
-    mock_verify_token, client, auth_headers
-):
+def test_cancel_scheduled_post_not_found(mock_verify_token, client, auth_headers):
     """測試取消不存在的排程貼文"""
     mock_verify_token.return_value = {"user_id": "1"}
 
-    response = client.delete(
-        "/api/v1/schedule/posts/999", headers=auth_headers
-    )
+    response = client.delete("/api/v1/schedule/posts/999", headers=auth_headers)
 
     assert response.status_code == 404
 
@@ -133,9 +123,7 @@ def test_connect_platform_account(mock_verify_token, client, auth_headers):
         "refresh_token": "refresh_token_123",
     }
 
-    response = client.post(
-        "/api/v1/schedule/accounts", json=account_data, headers=auth_headers
-    )
+    response = client.post("/api/v1/schedule/accounts", json=account_data, headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -156,30 +144,22 @@ def test_get_platform_accounts(mock_verify_token, client, auth_headers):
 
 
 @patch("app.auth.verify_token")
-def test_disconnect_platform_account_not_found(
-    mock_verify_token, client, auth_headers
-):
+def test_disconnect_platform_account_not_found(mock_verify_token, client, auth_headers):
     """測試斷開不存在的平台帳號"""
     mock_verify_token.return_value = {"user_id": "1"}
 
-    response = client.delete(
-        "/api/v1/schedule/accounts/999", headers=auth_headers
-    )
+    response = client.delete("/api/v1/schedule/accounts/999", headers=auth_headers)
 
     assert response.status_code == 404
 
 
 @patch("app.tasks.publish_post.delay")
 @patch("app.auth.verify_token")
-def test_publish_now_not_found(
-    mock_verify_token, mock_publish_task, client, auth_headers
-):
+def test_publish_now_not_found(mock_verify_token, mock_publish_task, client, auth_headers):
     """測試立即發布不存在的貼文"""
     mock_verify_token.return_value = {"user_id": "1"}
 
-    response = client.post(
-        "/api/v1/schedule/posts/999/publish", headers=auth_headers
-    )
+    response = client.post("/api/v1/schedule/posts/999/publish", headers=auth_headers)
 
     assert response.status_code == 404
 
@@ -207,15 +187,10 @@ def test_invalid_platform_enum(client, auth_headers):
         invalid_data = {
             "video_id": 1,
             "platform": "invalid_platform",
-            "scheduled_time": (
-                datetime.utcnow() + timedelta(hours=2)
-            ).isoformat()
-            + "Z",
+            "scheduled_time": (datetime.utcnow() + timedelta(hours=2)).isoformat() + "Z",
         }
 
-        response = client.post(
-            "/api/v1/schedule/posts", json=invalid_data, headers=auth_headers
-        )
+        response = client.post("/api/v1/schedule/posts", json=invalid_data, headers=auth_headers)
 
         assert response.status_code == 422  # Validation error
 

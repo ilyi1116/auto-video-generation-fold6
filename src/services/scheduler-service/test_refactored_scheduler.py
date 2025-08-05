@@ -183,9 +183,7 @@ async def test_failure_and_retry():
             {mock_client.call_count}"
     )
     # 實際的重試邏輯：配置的 retry_attempts=2，所以總共會嘗試 3 次（初始 + 2次重試）
-    assert (
-        task.metrics.retry_attempts_used == 2
-    )  # 最後記錄的是最後一次嘗試的索引
+    assert task.metrics.retry_attempts_used == 2  # 最後記錄的是最後一次嘗試的索引
     assert mock_client.call_count == 3  # 初始 + 2次重試
     print("✅ 失敗和重試機制測試通過")
 

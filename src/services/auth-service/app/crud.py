@@ -18,9 +18,7 @@ def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
 
 def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
     """Get user by username"""
-    return (
-        db.query(models.User).filter(models.User.username == username).first()
-    )
+    return db.query(models.User).filter(models.User.username == username).first()
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
@@ -73,9 +71,7 @@ def delete_user(db: Session, user_id: int) -> bool:
     return True
 
 
-def authenticate_user(
-    db: Session, email: str, password: str
-) -> Optional[models.User]:
+def authenticate_user(db: Session, email: str, password: str) -> Optional[models.User]:
     """Authenticate user with email and password"""
     user = get_user_by_email(db, email)
     if not user:
@@ -112,9 +108,7 @@ def increment_api_calls(db: Session, user_id: int) -> None:
         db.commit()
 
 
-def check_user_exists(
-    db: Session, email: str = None, username: str = None
-) -> bool:
+def check_user_exists(db: Session, email: str = None, username: str = None) -> bool:
     """Check if user exists by email or username"""
     query = db.query(models.User)
 

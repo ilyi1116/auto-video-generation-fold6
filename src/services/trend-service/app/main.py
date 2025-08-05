@@ -41,15 +41,9 @@ app.add_middleware(
 )
 
 app.include_router(trends.router, prefix="/api/v1/trends", tags=["trends"])
-app.include_router(
-    keywords.router, prefix="/api/v1/keywords", tags=["keywords"]
-)
-app.include_router(
-    analysis.router, prefix="/api/v1/analysis", tags=["analysis"]
-)
-app.include_router(
-    entrepreneur.router, prefix="/api/v1/entrepreneur", tags=["entrepreneur"]
-)
+app.include_router(keywords.router, prefix="/api/v1/keywords", tags=["keywords"])
+app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
+app.include_router(entrepreneur.router, prefix="/api/v1/entrepreneur", tags=["entrepreneur"])
 
 
 @app.get("/health")

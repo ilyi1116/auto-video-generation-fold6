@@ -150,21 +150,12 @@ class EntrepreneurScheduler:
     def is_within_work_hours(self) -> bool:
         """檢查是否在工作時間內"""
         current_time = datetime.now().strftime("%H:%M")
-        return (
-            self.config.work_hours_start
-            <= current_time
-            <= self.config.work_hours_end
-        )
+        return self.config.work_hours_start <= current_time <= self.config.work_hours_end
 
-    async def schedule_entrepreneur_task(
-        self, task_config: Dict[str, Any]
-    ) -> str:
+    async def schedule_entrepreneur_task(self, task_config: Dict[str, Any]) -> str:
         """排程創業者任務"""
         # 檢查每日限制
-        if (
-            self.daily_stats["videos_generated"]
-            >= self.config.daily_video_limit
-        ):
+        if self.daily_stats["videos_generated"] >= self.config.daily_video_limit:
             raise ValueError("已達每日影片限制")
 
         # 檢查預算限制
@@ -226,25 +217,20 @@ class EntrepreneurScheduler:
         finally:
             self.current_tasks_count -= 1
 
-    async def _call_video_service(
-        self, config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _call_video_service(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """呼叫影片生成服務"""
         # 模擬 API 呼叫
         video_service_url = "http://localhost:8003/api/v1/entrepreneur/create"
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    video_service_url, json=config
-                ) as response:
+                async with session.post(video_service_url, json=config) as response:
                     if response.status == 200:
                         result = await response.json()
                         return {
                             "success": True,
                             "videos_generated": config.get("video_count", 1),
-                            "cost": config.get("video_count", 1)
-                            * 2.5,  # 估算成本
+                            "cost": config.get("video_count", 1) * 2.5,  # 估算成本
                             "workflow_id": result.get("workflow_id"),
                         }
                     else:
@@ -259,9 +245,7 @@ class EntrepreneurScheduler:
 
     def get_next_execution_time(self) -> datetime:
         """計算下次執行時間"""
-        return datetime.utcnow() + timedelta(
-            minutes=self.config.check_interval_minutes
-        )
+        return datetime.utcnow() + timedelta(minutes=self.config.check_interval_minutes)
 
     def update_daily_stats(self, videos_generated: int, budget_used: float):
         """更新每日統計"""
@@ -344,10 +328,7 @@ class EntrepreneurScheduler:
 
                 # 並行執行任務（受限於併發數量）
                 if tasks_to_execute:
-                    available_slots = (
-                        self.config.max_concurrent_tasks
-                        - self.current_tasks_count
-                    )
+                    available_slots = self.config.max_concurrent_tasks - self.current_tasks_count
                     tasks_to_run = tasks_to_execute[:available_slots]
 
                     await asyncio.gather(

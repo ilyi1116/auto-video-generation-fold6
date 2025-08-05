@@ -20,7 +20,7 @@
       "label": "桌面版主介面"
     },
     {
-      "src": "/screenshots/mobile-1.png", 
+      "src": "/screenshots/mobile-1.png",
       "sizes": "375x812",
       "type": "image/png",
       "form_factor": "narrow",
@@ -36,7 +36,7 @@
     },
     {
       "src": "/icons/icon-96.png",
-      "sizes": "96x96", 
+      "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
@@ -84,7 +84,7 @@
     },
     {
       "src": "/icons/icon-maskable-512.png",
-      "sizes": "512x512", 
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
@@ -111,7 +111,7 @@
       "icons": [
         {
           "src": "/icons/shortcut-script.png",
-          "sizes": "96x96", 
+          "sizes": "96x96",
           "type": "image/png"
         }
       ]
@@ -125,7 +125,7 @@
         {
           "src": "/icons/shortcut-voice.png",
           "sizes": "96x96",
-          "type": "image/png" 
+          "type": "image/png"
         }
       ]
     },
@@ -171,7 +171,7 @@
     "enctype": "multipart/form-data",
     "params": {
       "title": "title",
-      "text": "text", 
+      "text": "text",
       "url": "url",
       "files": [
         {

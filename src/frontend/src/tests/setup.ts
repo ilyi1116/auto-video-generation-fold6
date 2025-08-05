@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
-import { beforeAll, afterAll, afterEach } from 'vitest';
-import { server } from './mocks/server';
+import "@testing-library/jest-dom";
+import { beforeAll, afterAll, afterEach } from "vitest";
+import { server } from "./mocks/server";
 
 // 建立 API mocking 在所有測試之前
 beforeAll(() => server.listen());

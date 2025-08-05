@@ -3,12 +3,13 @@ trend-service 服務測試配置
 提供通用的測試 fixtures 和配置
 """
 
-import pytest
 import asyncio
+from unittest.mock import Mock
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from unittest.mock import Mock
 
 # TODO: 導入應用相關模組
 # from app.main import app
@@ -69,11 +70,7 @@ def auth_headers():
 @pytest.fixture
 def sample_user_data():
     """示例用戶數據 fixture"""
-    return {
-        "username": "testuser",
-        "email": "test@example.com",
-        "password": "testpassword123"
-    }
+    return {"username": "testuser", "email": "test@example.com", "password": "testpassword123"}
 
 
 @pytest.fixture

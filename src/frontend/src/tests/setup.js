@@ -3,14 +3,14 @@
  * 用於配置全域測試環境和工具
  */
 
-import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { vi } from 'vitest';
-import '@testing-library/jest-dom';
+import { beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { vi } from "vitest";
+import "@testing-library/jest-dom";
 
 // 模擬瀏覽器 API
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -45,7 +45,7 @@ global.IntersectionObserver = vi.fn(() => ({
 beforeEach(() => {
   // 清理所有 mock
   vi.clearAllMocks();
-  
+
   // 重置 localStorage
   localStorageMock.getItem.mockClear();
   localStorageMock.setItem.mockClear();
@@ -56,7 +56,7 @@ beforeEach(() => {
 // 測試後清理
 afterEach(() => {
   // 清理 DOM
-  document.body.innerHTML = '';
+  document.body.innerHTML = "";
 });
 
 // 全域測試工具
@@ -71,31 +71,31 @@ export const testUtils = {
       status,
       json: async () => data,
       headers: {
-        get: (name) => name === 'content-type' ? 'application/json' : null
-      }
+        get: (name) => (name === "content-type" ? "application/json" : null),
+      },
     });
   },
 
   // 模擬 API 錯誤
-  mockApiError: (status = 500, message = 'Internal Server Error') => {
+  mockApiError: (status = 500, message = "Internal Server Error") => {
     global.fetch.mockRejectedValueOnce(new Error(message));
   },
 
   // 等待 DOM 更新
   waitForDOM: async () => {
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   },
 
   // 模擬用戶
   mockUser: {
     id: 1,
-    email: 'test@example.com',
-    name: 'Test User',
-    avatar: 'https://example.com/avatar.jpg',
-    subscription: 'pro',
+    email: "test@example.com",
+    name: "Test User",
+    avatar: "https://example.com/avatar.jpg",
+    subscription: "pro",
     preferences: {
-      theme: 'light',
-      language: 'zh-TW'
-    }
-  }
+      theme: "light",
+      language: "zh-TW",
+    },
+  },
 };

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import structlog
 from fastapi import (
     APIRouter,
@@ -8,7 +10,6 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import JSONResponse
-from datetime import datetime
 
 from .auth import get_current_user
 from .proxy import proxy
@@ -38,9 +39,7 @@ async def register(request: Request):
     )
 
     if result["status_code"] == 201:
-        return JSONResponse(
-            status_code=result["status_code"], content=result["data"]
-        )
+        return JSONResponse(status_code=result["status_code"], content=result["data"])
     else:
         raise HTTPException(
             status_code=result["status_code"],
@@ -62,9 +61,7 @@ async def login(request: Request):
     )
 
     if result["status_code"] == 200:
-        return JSONResponse(
-            status_code=result["status_code"], content=result["data"]
-        )
+        return JSONResponse(status_code=result["status_code"], content=result["data"])
     else:
         raise HTTPException(
             status_code=result["status_code"],
@@ -74,9 +71,7 @@ async def login(request: Request):
 
 @auth_router.get("/me")
 @limiter.limit("30/minute")
-async def get_profile(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def get_profile(request: Request, current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
     result = await proxy.forward_request(
         service="auth",
@@ -85,16 +80,12 @@ async def get_profile(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @auth_router.put("/me")
 @limiter.limit("10/minute")
-async def update_profile(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def update_profile(request: Request, current_user: dict = Depends(get_current_user)):
     """Update user profile"""
     body = await request.json()
     result = await proxy.forward_request(
@@ -105,16 +96,12 @@ async def update_profile(
         json_data=body,
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @auth_router.post("/change-password")
 @limiter.limit("5/minute")
-async def change_password(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def change_password(request: Request, current_user: dict = Depends(get_current_user)):
     """Change user password"""
     body = await request.json()
     result = await proxy.forward_request(
@@ -125,9 +112,7 @@ async def change_password(
         json_data=body,
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 # Data ingestion routes
@@ -148,16 +133,12 @@ async def upload_audio(
         file=file,
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @data_router.get("/files")
 @limiter.limit("30/minute")
-async def get_user_files(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def get_user_files(request: Request, current_user: dict = Depends(get_current_user)):
     """Get user's uploaded files"""
     result = await proxy.forward_request(
         service="data",
@@ -167,9 +148,7 @@ async def get_user_files(
         params=dict(request.query_params),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @data_router.delete("/files/{file_id}")
@@ -187,9 +166,7 @@ async def delete_file(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @data_router.post("/process/{file_id}")
@@ -209,16 +186,12 @@ async def start_processing(
         json_data=body,
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @data_router.get("/jobs")
 @limiter.limit("30/minute")
-async def get_processing_jobs(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def get_processing_jobs(request: Request, current_user: dict = Depends(get_current_user)):
     """Get user's processing jobs"""
     result = await proxy.forward_request(
         service="data",
@@ -228,9 +201,7 @@ async def get_processing_jobs(
         params=dict(request.query_params),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @data_router.get("/jobs/{job_id}")
@@ -248,9 +219,7 @@ async def get_job_status(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @data_router.delete("/jobs/{job_id}")
@@ -268,17 +237,13 @@ async def cancel_job(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 # Inference routes
 @inference_router.post("/synthesize")
 @limiter.limit("20/minute")
-async def synthesize_voice(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def synthesize_voice(request: Request, current_user: dict = Depends(get_current_user)):
     """Synthesize voice from text"""
     body = await request.json()
     result = await proxy.forward_request(
@@ -289,16 +254,12 @@ async def synthesize_voice(
         json_data=body,
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.post("/synthesize/batch")
 @limiter.limit("10/minute")
-async def batch_synthesize_voice(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def batch_synthesize_voice(request: Request, current_user: dict = Depends(get_current_user)):
     """Batch synthesize multiple texts"""
     body = await request.json()
     result = await proxy.forward_request(
@@ -309,9 +270,7 @@ async def batch_synthesize_voice(
         json_data=body,
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.get("/synthesize/audio/{job_id}")
@@ -329,16 +288,12 @@ async def get_synthesis_audio(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.get("/jobs")
 @limiter.limit("30/minute")
-async def get_synthesis_jobs(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def get_synthesis_jobs(request: Request, current_user: dict = Depends(get_current_user)):
     """Get user's synthesis jobs"""
     result = await proxy.forward_request(
         service="inference",
@@ -348,9 +303,7 @@ async def get_synthesis_jobs(
         params=dict(request.query_params),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.get("/jobs/{job_id}")
@@ -368,16 +321,12 @@ async def get_synthesis_job(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.get("/models")
 @limiter.limit("30/minute")
-async def get_available_models(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def get_available_models(request: Request, current_user: dict = Depends(get_current_user)):
     """Get available voice models for user"""
     result = await proxy.forward_request(
         service="inference",
@@ -387,16 +336,12 @@ async def get_available_models(
         params=dict(request.query_params),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.get("/models/ready")
 @limiter.limit("30/minute")
-async def get_ready_models(
-    request: Request, current_user: dict = Depends(get_current_user)
-):
+async def get_ready_models(request: Request, current_user: dict = Depends(get_current_user)):
     """Get ready-to-use voice models"""
     result = await proxy.forward_request(
         service="inference",
@@ -405,9 +350,7 @@ async def get_ready_models(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.get("/models/{model_id}")
@@ -425,9 +368,7 @@ async def get_model_details(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 @inference_router.post("/models/{model_id}/preload")
@@ -445,9 +386,7 @@ async def preload_model(
         headers=dict(request.headers),
     )
 
-    return JSONResponse(
-        status_code=result["status_code"], content=result["data"]
-    )
+    return JSONResponse(status_code=result["status_code"], content=result["data"])
 
 
 # Admin routes
@@ -490,14 +429,13 @@ async def get_metrics(request: Request):
         return JSONResponse(status_code=200, content=metrics)
     except Exception as e:
         logger.error(f"Failed to collect metrics: {e}")
-        return JSONResponse(
-            status_code=500, content={"error": "Failed to collect metrics"}
-        )
+        return JSONResponse(status_code=500, content={"error": "Failed to collect metrics"})
 
 
 def get_uptime() -> str:
     """Get system uptime"""
     import time
+
     import psutil
 
     try:

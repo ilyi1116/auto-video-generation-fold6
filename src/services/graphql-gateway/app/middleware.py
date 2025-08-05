@@ -38,9 +38,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
         # 記錄指標
         duration = time.time() - start_time
         REQUEST_DURATION.labels(method=method, endpoint=path).observe(duration)
-        REQUEST_COUNT.labels(
-            method=method, endpoint=path, status_code=response.status_code
-        ).inc()
+        REQUEST_COUNT.labels(method=method, endpoint=path, status_code=response.status_code).inc()
 
         # 結構化日誌
         logger.info(
@@ -69,18 +67,14 @@ class CacheMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # 生成快取鍵
-        cache_key = (
-            f"graphql_gateway:{request.url.path}:{str(request.query_params)}"
-        )
+        cache_key = f"graphql_gateway:{request.url.path}:{str(request.query_params)}"
 
         # 檢查快取
         try:
             cached_response = await self.cache_client.get(cache_key)
             if cached_response:
                 logger.info("使用快取回應", cache_key=cache_key)
-                return Response(
-                    content=cached_response, media_type="application/json"
-                )
+                return Response(content=cached_response, media_type="application/json")
         except Exception as e:
             logger.warning("快取讀取失敗", error=str(e))
 

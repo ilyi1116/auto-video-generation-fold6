@@ -49,9 +49,7 @@ async def analyze_trend_potential(
     return analysis_result
 
 
-async def analyze_viral_potential(
-    content_url: str, platform: str = "youtube"
-) -> Dict[str, Any]:
+async def analyze_viral_potential(content_url: str, platform: str = "youtube") -> Dict[str, Any]:
     """分析病毒式傳播潛力"""
 
     return {

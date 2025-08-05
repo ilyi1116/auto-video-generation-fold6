@@ -73,14 +73,10 @@ class TestTextGeneration:
             }
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.generate_script"
-        ) as mock_generate:
+        with patch("app.services.text_generator.TextGenerator.generate_script") as mock_generate:
             mock_generate.return_value = mock_response["script"]
 
-            response = await client.post(
-                "/ai/text/generate-script", json=request_data
-            )
+            response = await client.post("/ai/text/generate-script", json=request_data)
 
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
@@ -89,9 +85,7 @@ class TestTextGeneration:
             assert data["script"]["metadata"]["duration"] == 13
 
     @pytest.mark.asyncio
-    async def test_generate_script_with_invalid_platform(
-        self, client: AsyncClient
-    ):
+    async def test_generate_script_with_invalid_platform(self, client: AsyncClient):
         """測試腳本生成 - 無效平台"""
         request_data = {
             "topic": "測試主題",
@@ -100,9 +94,7 @@ class TestTextGeneration:
             "tone": "professional",
         }
 
-        response = await client.post(
-            "/ai/text/generate-script", json=request_data
-        )
+        response = await client.post("/ai/text/generate-script", json=request_data)
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -132,20 +124,14 @@ class TestTextGeneration:
             }
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.improve_script"
-        ) as mock_improve:
+        with patch("app.services.text_generator.TextGenerator.improve_script") as mock_improve:
             mock_improve.return_value = mock_response["improved_script"]
 
-            response = await client.post(
-                "/ai/text/improve-script", json=request_data
-            )
+            response = await client.post("/ai/text/improve-script", json=request_data)
 
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
-            assert (
-                data["improved_script"]["metrics"]["engagement_score"] == 9.2
-            )
+            assert data["improved_script"]["metrics"]["engagement_score"] == 9.2
             assert len(data["improved_script"]["improvements"]) == 3
 
     @pytest.mark.asyncio
@@ -169,14 +155,10 @@ class TestTextGeneration:
             }
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.analyze_sentiment"
-        ) as mock_analyze:
+        with patch("app.services.text_generator.TextGenerator.analyze_sentiment") as mock_analyze:
             mock_analyze.return_value = mock_response["sentiment"]
 
-            response = await client.post(
-                "/ai/text/analyze-sentiment", json=request_data
-            )
+            response = await client.post("/ai/text/analyze-sentiment", json=request_data)
 
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
@@ -202,14 +184,10 @@ class TestTextGeneration:
             ]
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.extract_keywords"
-        ) as mock_extract:
+        with patch("app.services.text_generator.TextGenerator.extract_keywords") as mock_extract:
             mock_extract.return_value = mock_response["keywords"]
 
-            response = await client.post(
-                "/ai/text/generate-keywords", json=request_data
-            )
+            response = await client.post("/ai/text/generate-keywords", json=request_data)
 
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
@@ -235,14 +213,10 @@ class TestTextGeneration:
             }
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.summarize_text"
-        ) as mock_summarize:
+        with patch("app.services.text_generator.TextGenerator.summarize_text") as mock_summarize:
             mock_summarize.return_value = mock_response["summary"]
 
-            response = await client.post(
-                "/ai/text/summarize", json=request_data
-            )
+            response = await client.post("/ai/text/summarize", json=request_data)
 
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
@@ -259,15 +233,11 @@ class TestTextGeneration:
     @pytest.mark.asyncio
     async def test_text_generator_error_handling(self, text_generator):
         """測試文本生成器錯誤處理"""
-        with patch(
-            "app.services.text_generator.TextGenerator._call_ai_model"
-        ) as mock_call:
+        with patch("app.services.text_generator.TextGenerator._call_ai_model") as mock_call:
             mock_call.side_effect = Exception("AI service unavailable")
 
             with pytest.raises(Exception) as exc_info:
-                await text_generator.generate_script(
-                    {"topic": "測試主題", "platform": "youtube"}
-                )
+                await text_generator.generate_script({"topic": "測試主題", "platform": "youtube"})
 
             assert "AI service unavailable" in str(exc_info.value)
 
@@ -293,20 +263,14 @@ class TestTextGenerationIntegration:
             "tone": "educational",
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.generate_script"
-        ) as mock_generate:
+        with patch("app.services.text_generator.TextGenerator.generate_script") as mock_generate:
             mock_generate.return_value = {
                 "title": "環保科技的未來",
                 "content": "初始腳本內容",
-                "scenes": [
-                    {"id": 1, "text": "開場", "duration": 3, "type": "intro"}
-                ],
+                "scenes": [{"id": 1, "text": "開場", "duration": 3, "type": "intro"}],
             }
 
-            initial_response = await client.post(
-                "/ai/text/generate-script", json=initial_request
-            )
+            initial_response = await client.post("/ai/text/generate-script", json=initial_request)
             assert initial_response.status_code == status.HTTP_200_OK
             initial_script = initial_response.json()["script"]
 
@@ -316,33 +280,23 @@ class TestTextGenerationIntegration:
             "improvement_type": "engagement",
         }
 
-        with patch(
-            "app.services.text_generator.TextGenerator.improve_script"
-        ) as mock_improve:
+        with patch("app.services.text_generator.TextGenerator.improve_script") as mock_improve:
             mock_improve.return_value = {
                 "title": "環保科技的未來 - 改進版",
                 "content": "改進後的腳本內容",
                 "improvements": ["增加互動性"],
             }
 
-            improve_response = await client.post(
-                "/ai/text/improve-script", json=improve_request
-            )
+            improve_response = await client.post("/ai/text/improve-script", json=improve_request)
             assert improve_response.status_code == status.HTTP_200_OK
 
         # 第三步：生成關鍵字
         keyword_request = {"content": initial_script["content"], "count": 5}
 
-        with patch(
-            "app.services.text_generator.TextGenerator.extract_keywords"
-        ) as mock_keywords:
-            mock_keywords.return_value = [
-                {"keyword": "環保", "relevance": 0.9}
-            ]
+        with patch("app.services.text_generator.TextGenerator.extract_keywords") as mock_keywords:
+            mock_keywords.return_value = [{"keyword": "環保", "relevance": 0.9}]
 
-            keyword_response = await client.post(
-                "/ai/text/generate-keywords", json=keyword_request
-            )
+            keyword_response = await client.post("/ai/text/generate-keywords", json=keyword_request)
             assert keyword_response.status_code == status.HTTP_200_OK
 
     @pytest.mark.slow
@@ -361,9 +315,7 @@ class TestTextGenerationIntegration:
             for i in range(5)
         ]
 
-        with patch(
-            "app.services.text_generator.TextGenerator.generate_script"
-        ) as mock_generate:
+        with patch("app.services.text_generator.TextGenerator.generate_script") as mock_generate:
             mock_generate.return_value = {
                 "title": "測試腳本",
                 "content": "測試內容",
@@ -371,10 +323,7 @@ class TestTextGenerationIntegration:
             }
 
             # 並發執行多個請求
-            tasks = [
-                client.post("/ai/text/generate-script", json=req)
-                for req in requests
-            ]
+            tasks = [client.post("/ai/text/generate-script", json=req) for req in requests]
 
             responses = await asyncio.gather(*tasks)
 

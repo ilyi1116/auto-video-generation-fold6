@@ -132,24 +132,14 @@ class AIManager:
     async def _update_health_status(self):
         """Update health status for all services"""
         self.service_health = {
-            "text_generation": (
-                self.text_generator.is_healthy()
-                if self.text_generator
-                else False
-            ),
+            "text_generation": (self.text_generator.is_healthy() if self.text_generator else False),
             "image_generation": (
-                self.image_generator.is_healthy()
-                if self.image_generator
-                else False
+                self.image_generator.is_healthy() if self.image_generator else False
             ),
             "audio_processing": (
-                self.audio_processor.is_healthy()
-                if self.audio_processor
-                else False
+                self.audio_processor.is_healthy() if self.audio_processor else False
             ),
-            "music_generation": (
-                self.suno_client.is_healthy() if self.suno_client else False
-            ),
+            "music_generation": (self.suno_client.is_healthy() if self.suno_client else False),
         }
 
     def get_health_status(self) -> Dict[str, Any]:
@@ -158,9 +148,7 @@ class AIManager:
         total_count = len(self.service_health)
 
         return {
-            "overall_status": (
-                "healthy" if healthy_count >= total_count // 2 else "degraded"
-            ),
+            "overall_status": ("healthy" if healthy_count >= total_count // 2 else "degraded"),
             "healthy_services": healthy_count,
             "total_services": total_count,
             "services": self.service_health,
@@ -233,11 +221,7 @@ class AIManager:
                 media_tasks.append(("image", image_task))
 
             # Step 4: Generate voice (if requested and available)
-            if (
-                include_voice
-                and self.audio_processor
-                and self.audio_processor.is_healthy()
-            ):
+            if include_voice and self.audio_processor and self.audio_processor.is_healthy():
                 voice_task = self.audio_processor.synthesize_voice(
                     text=script_result["content"],
                     voice_style="natural",
@@ -247,11 +231,7 @@ class AIManager:
                 media_tasks.append(("voice", voice_task))
 
             # Step 5: Generate music (if requested and available)
-            if (
-                include_music
-                and self.suno_client
-                and self.suno_client.is_healthy()
-            ):
+            if include_music and self.suno_client and self.suno_client.is_healthy():
                 music_task = self.suno_client.generate_music(
                     prompt=f"Background music for {script_topic}",
                     style="background",
@@ -325,9 +305,7 @@ class AIManager:
                     else []
                 ),
                 "supported_languages": (
-                    ["en", "zh", "ja", "ko", "es", "fr", "de"]
-                    if self.text_generator
-                    else []
+                    ["en", "zh", "ja", "ko", "es", "fr", "de"] if self.text_generator else []
                 ),
             },
             "image_generation": {
@@ -356,22 +334,16 @@ class AIManager:
                     else []
                 ),
                 "supported_voices": (
-                    ["natural", "professional", "energetic"]
-                    if self.audio_processor
-                    else []
+                    ["natural", "professional", "energetic"] if self.audio_processor else []
                 ),
             },
             "music_generation": {
                 "available": self.service_health["music_generation"],
                 "features": (
-                    ["music_generation", "variations", "extension"]
-                    if self.suno_client
-                    else []
+                    ["music_generation", "variations", "extension"] if self.suno_client else []
                 ),
                 "supported_styles": (
-                    ["background", "energetic", "cinematic"]
-                    if self.suno_client
-                    else []
+                    ["background", "energetic", "cinematic"] if self.suno_client else []
                 ),
             },
         }

@@ -3,43 +3,39 @@
  * 單元測試和覆蓋率報告設定
  */
 
-import { defineConfig } from 'vitest/config';
-import { sveltekit } from '@sveltejs/kit/vite';
-import { resolve } from 'path';
+import { defineConfig } from "vitest/config";
+import { sveltekit } from "@sveltejs/kit/vite";
+import { resolve } from "path";
 
 export default defineConfig({
   plugins: [sveltekit()],
 
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['src/tests/setup.js'],
+    setupFiles: ["src/tests/setup.js"],
 
     include: [
-      'src/**/*.{test,spec}.{js,ts}',
-      'src/tests/**/*.{test,spec}.{js,ts}'
+      "src/**/*.{test,spec}.{js,ts}",
+      "src/tests/**/*.{test,spec}.{js,ts}",
     ],
-    exclude: [
-      'src/tests/e2e/**/*',
-      'node_modules/**/*',
-      'dist/**/*'
-    ],
+    exclude: ["src/tests/e2e/**/*", "node_modules/**/*", "dist/**/*"],
 
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'json', 'lcov'],
-      reportsDirectory: './coverage',
+      provider: "v8",
+      reporter: ["text", "html", "json", "lcov"],
+      reportsDirectory: "./coverage",
 
       include: [
-        'src/lib/**/*.{js,ts,svelte}',
-        'src/routes/**/*.{js,ts,svelte}'
+        "src/lib/**/*.{js,ts,svelte}",
+        "src/routes/**/*.{js,ts,svelte}",
       ],
 
       exclude: [
-        '**/*.test.{js,ts}',
-        '**/*.spec.{js,ts}',
-        '**/tests/**',
-        '**/__tests__/**'
+        "**/*.test.{js,ts}",
+        "**/*.spec.{js,ts}",
+        "**/tests/**",
+        "**/__tests__/**",
       ],
 
       // TDD 標準: 90%+ 覆蓋率要求
@@ -49,16 +45,16 @@ export default defineConfig({
       lines: 90,
 
       check: true,
-      all: true
+      all: true,
     },
 
     testTimeout: 10000,
-    hookTimeout: 10000
+    hookTimeout: 10000,
   },
 
   resolve: {
     alias: {
-      $lib: resolve('./src/lib')
-    }
-  }
+      $lib: resolve("./src/lib"),
+    },
+  },
 });

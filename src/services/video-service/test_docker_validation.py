@@ -154,10 +154,7 @@ def test_docker_compose_configuration():
                     content = f.read()
 
                 # 基本驗證
-                assert (
-                    "version" in content.lower()
-                    or "services" in content.lower()
-                )
+                assert "version" in content.lower() or "services" in content.lower()
                 print("✅ Docker Compose 格式驗證通過")
             except Exception as e:
                 print(f"⚠️  Docker Compose 格式驗證失敗: {e}")
@@ -231,9 +228,7 @@ def test_resource_limits_simulation():
         # 檢查 Python 版本（Docker 兼容性）
         python_version = sys.version_info
         assert python_version.major >= 3 and python_version.minor >= 8
-        print(
-            f"✅ Python 版本兼容: {python_version.major}.{python_version.minor}"
-        )
+        print(f"✅ Python 版本兼容: {python_version.major}.{python_version.minor}")
 
         # 檢查可用磁碟空間
         disk_usage = psutil.disk_usage("/")
@@ -260,9 +255,7 @@ def test_logging_configuration():
 
     # 創建測試處理器
     handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
@@ -276,10 +269,7 @@ def test_logging_configuration():
 
 def test_docker_build_simulation():
     """測試：Docker 構建模擬"""
-    if (
-        not subprocess.run(["which", "docker"], capture_output=True).returncode
-        == 0
-    ):
+    if not subprocess.run(["which", "docker"], capture_output=True).returncode == 0:
         print("⚠️  Docker 不可用，跳過構建測試")
         return
 
@@ -304,9 +294,7 @@ def test_docker_build_simulation():
                 required_instructions = ["FROM"]
                 for instruction in required_instructions:
                     if instruction not in content:
-                        raise Exception(
-                            f"Dockerfile 缺少必要指令: {instruction}"
-                        )
+                        raise Exception(f"Dockerfile 缺少必要指令: {instruction}")
 
                 print("✅ Dockerfile 語法基本驗證通過")
                 break

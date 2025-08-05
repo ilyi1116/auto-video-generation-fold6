@@ -44,9 +44,7 @@ class TestVideoGenerationAPI:
     @pytest.fixture
     def mock_video_service(self):
         """Mock video generation service"""
-        with patch(
-            "routers.video_generation.video_generation_service"
-        ) as mock_service:
+        with patch("routers.video_generation.video_generation_service") as mock_service:
             # Mock generate_video method
             mock_result = MagicMock()
             mock_result.generation_id = "gen_123"
@@ -74,9 +72,7 @@ class TestVideoGenerationAPI:
         assert data["status"] == "healthy"
         assert data["service"] == "video-generation"
 
-    def test_quick_video_generation(
-        self, client, mock_auth, mock_video_service
-    ):
+    def test_quick_video_generation(self, client, mock_auth, mock_video_service):
         """Test quick video generation endpoint"""
         request_data = {
             "topic": "AI and Machine Learning",
@@ -100,9 +96,7 @@ class TestVideoGenerationAPI:
         assert data["status"] == "processing"
         assert "estimated_completion" in data
 
-    def test_custom_video_generation(
-        self, client, mock_auth, mock_video_service
-    ):
+    def test_custom_video_generation(self, client, mock_auth, mock_video_service):
         """Test custom video generation endpoint"""
         request_data = {
             "topic": "Future of Technology",
@@ -239,9 +233,7 @@ class TestVideoGenerationAPI:
 
     def test_unauthorized_access(self, client):
         """Test unauthorized access"""
-        response = client.post(
-            "/api/v1/video/generate/quick", json={"topic": "Test"}
-        )
+        response = client.post("/api/v1/video/generate/quick", json={"topic": "Test"})
 
         assert response.status_code == 403  # Expecting auth error
 
@@ -286,18 +278,14 @@ class TestVideoGenerationService:
 
             mock_client_instance = AsyncMock()
             mock_client_instance.post.return_value = mock_response
-            mock_client.return_value.__aenter__.return_value = (
-                mock_client_instance
-            )
+            mock_client.return_value.__aenter__.return_value = mock_client_instance
 
             yield mock_client_instance
 
     @pytest.fixture
     def mock_composer(self):
         """Mock video composer"""
-        with patch(
-            "video.video_generator.VideoComposer"
-        ) as mock_composer_class:
+        with patch("video.video_generator.VideoComposer") as mock_composer_class:
             mock_composer = AsyncMock()
 
             # Mock composition result
@@ -321,9 +309,7 @@ class TestVideoGenerationService:
             yield mock_composer
 
     @pytest.mark.asyncio
-    async def test_video_generation_process(
-        self, mock_http_client, mock_composer
-    ):
+    async def test_video_generation_process(self, mock_http_client, mock_composer):
         """Test complete video generation process"""
         request = VideoGenerationRequest(
             topic="AI Technology",
@@ -332,9 +318,7 @@ class TestVideoGenerationService:
             include_music=True,
         )
 
-        result = await video_generation_service.generate_video(
-            request, "user_123"
-        )
+        result = await video_generation_service.generate_video(request, "user_123")
 
         assert result.status == "processing"
         assert "generation_id" in result.generation_id
@@ -365,9 +349,7 @@ class TestVideoGenerationService:
             "image_url": "https://example.com/image.jpg"
         }
 
-        image_urls = await video_generation_service._generate_images(
-            scenes, "realistic"
-        )
+        image_urls = await video_generation_service._generate_images(scenes, "realistic")
 
         assert len(image_urls) == 2
         assert all(url.startswith("http") for url in image_urls)
@@ -394,9 +376,7 @@ class TestVideoGenerationService:
             "audio_url": "https://example.com/music.mp3"
         }
 
-        music_url = await video_generation_service._generate_music(
-            "AI Technology", "professional"
-        )
+        music_url = await video_generation_service._generate_music("AI Technology", "professional")
 
         assert music_url == "https://example.com/music.mp3"
 
@@ -409,9 +389,7 @@ class TestVideoGenerationService:
             include_music=True,
         )
 
-        estimated_time = video_generation_service._estimate_completion_time(
-            request
-        )
+        estimated_time = video_generation_service._estimate_completion_time(request)
 
         # Should be more than base time due to long length, ultra quality, and
         # music
@@ -428,9 +406,7 @@ class TestVideoGenerationService:
         )
 
         # Get status
-        status = await video_generation_service.get_generation_status(
-            generation_id
-        )
+        status = await video_generation_service.get_generation_status(generation_id)
 
         assert status["status"] == "processing"
         assert status["progress"] == 50
@@ -442,9 +418,7 @@ class TestVideoGenerationService:
         generation_id = "test_gen_456"
 
         # Add to status tracking
-        video_generation_service.generation_status[generation_id] = {
-            "status": "completed"
-        }
+        video_generation_service.generation_status[generation_id] = {"status": "completed"}
 
         # Cleanup
         await video_generation_service.cleanup_generation(generation_id)

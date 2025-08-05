@@ -25,9 +25,7 @@ class Query:
         settings = get_settings()
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(
-                    f"{settings.AUTH_SERVICE_URL}/users/{id}"
-                )
+                response = await client.get(f"{settings.AUTH_SERVICE_URL}/users/{id}")
                 if response.status_code == 200:
                     data = response.json()
                     return User(**data)
@@ -52,25 +50,18 @@ class Query:
                 if status:
                     params["status"] = status
 
-                response = await client.get(
-                    f"{settings.VIDEO_SERVICE_URL}/projects", params=params
-                )
+                response = await client.get(f"{settings.VIDEO_SERVICE_URL}/projects", params=params)
 
                 if response.status_code == 200:
                     data = response.json()
-                    return [
-                        VideoProject(**item)
-                        for item in data.get("projects", [])
-                    ]
+                    return [VideoProject(**item) for item in data.get("projects", [])]
                 return []
             except Exception as e:
                 logger.error("獲取影片專案失敗", user_id=user_id, error=str(e))
                 return []
 
     @strawberry.field
-    async def ai_scripts(
-        self, user_id: strawberry.ID, limit: int = 10
-    ) -> List[AIScript]:
+    async def ai_scripts(self, user_id: strawberry.ID, limit: int = 10) -> List[AIScript]:
         """獲取 AI 腳本列表"""
         settings = get_settings()
         async with httpx.AsyncClient() as client:
@@ -82,9 +73,7 @@ class Query:
 
                 if response.status_code == 200:
                     data = response.json()
-                    return [
-                        AIScript(**item) for item in data.get("scripts", [])
-                    ]
+                    return [AIScript(**item) for item in data.get("scripts", [])]
                 return []
             except Exception as e:
                 logger.error("獲取 AI 腳本失敗", user_id=user_id, error=str(e))
@@ -103,10 +92,7 @@ class Query:
 
                 if response.status_code == 200:
                     data = response.json()
-                    return [
-                        TrendAnalysis(**item)
-                        for item in data.get("trends", [])
-                    ]
+                    return [TrendAnalysis(**item) for item in data.get("trends", [])]
                 return []
             except Exception as e:
                 logger.error("獲取趨勢主題失敗", error=str(e))
@@ -134,9 +120,7 @@ class Mutation:
                     "description": description,
                 }
 
-                response = await client.post(
-                    f"{settings.VIDEO_SERVICE_URL}/projects", json=payload
-                )
+                response = await client.post(f"{settings.VIDEO_SERVICE_URL}/projects", json=payload)
 
                 if response.status_code == 201:
                     data = response.json()
