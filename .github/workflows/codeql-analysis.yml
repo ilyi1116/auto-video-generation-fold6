@@ -59,7 +59,7 @@ jobs:
 
     - name: Install Node.js dependencies
       if: matrix.language == 'javascript'
-      working-directory: frontend
+      working-directory: src/frontend
       run: npm ci
 
     - name: Perform CodeQL Analysis
