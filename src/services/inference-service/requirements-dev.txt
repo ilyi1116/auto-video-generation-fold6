@@ -16,7 +16,7 @@ bandit==1.7.5
 pre-commit==3.5.0
 
 # Development utilities
-watchdog==3.0.0
+watchdog==6.0.0
 python-dotenv==1.0.0
 
 # ML model testing
