@@ -67,6 +67,9 @@ where = ["src"]
 include = ["*"]
 exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
 
+[tool.setuptools.package-dir]
+"" = "src"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
