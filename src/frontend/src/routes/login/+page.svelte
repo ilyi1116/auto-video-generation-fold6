@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { authStore } from '$lib/stores/auth';
-  import { toastStore } from '$lib/stores/toast';
+  import { authStore } from '$lib/stores/auth.js';
   import { Eye, EyeOff, Mail, Lock, ArrowLeft, Github, Google } from 'lucide-svelte';
 
   let email = '';
@@ -46,14 +45,17 @@
     try {
       const result = await authStore.login(email, password);
       
-      if (!result.success) {
-        // Error handling is done in the auth store
+      if (result.success) {
+        // Redirect to dashboard on success
+        goto('/dashboard');
+      } else {
+        // Show error message
+        errors.general = result.error || 'Login failed. Please try again.';
         isLoading = false;
       }
-      // Success redirect is handled in auth store
     } catch (error) {
       console.error('Login error:', error);
-      toastStore.error('An unexpected error occurred. Please try again.');
+      errors.general = 'An unexpected error occurred. Please try again.';
       isLoading = false;
     }
   }
@@ -66,11 +68,11 @@
 
   // Social login handlers
   function handleGoogleLogin() {
-    toastStore.info('Google login coming soon!');
+    alert('Google login coming soon!');
   }
 
   function handleGithubLogin() {
-    toastStore.info('GitHub login coming soon!');
+    alert('GitHub login coming soon!');
   }
 
   // Toggle password visibility
@@ -167,6 +169,13 @@
           </span>
         </div>
       </div>
+
+      <!-- General error message -->
+      {#if errors.general}
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 mb-6">
+          <p class="text-sm text-red-800 dark:text-red-200">{errors.general}</p>
+        </div>
+      {/if}
 
       <!-- Login form -->
       <form on:submit|preventDefault={handleSubmit} class="space-y-6">

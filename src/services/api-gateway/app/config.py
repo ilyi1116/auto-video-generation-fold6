@@ -10,23 +10,20 @@ class Settings(BaseSettings):
     service_name: str = "api-gateway"
     
     # 基本設定
-    environment: str = "development"
-    debug: bool = True
-    log_level: str = "info"
+    environment: str = os.getenv("ENVIRONMENT", "development")
+    debug: bool = os.getenv("DEBUG", "true").lower() == "true"
+    log_level: str = os.getenv("LOG_LEVEL", "info")
     
     # API 設定
-    api_host: str = "0.0.0.0"
-    api_port: int = 8000
+    api_host: str = os.getenv("API_HOST", "0.0.0.0")
+    api_port: int = int(os.getenv("API_PORT", "8000"))
     
     # 資料庫設定
-    database_url: str = "sqlite:///./app.db"
-    redis_url: str = "redis://redis:6379/0"
+    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+    redis_url: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
     
-    # JWT 設定
-    jwt_secret_key: str = "development-secret-key"
-    jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 1440
-    api_port: int = int(os.getenv("API_PORT", "8000"))
+    # JWT 設定 (legacy, use the new one below)
+    jwt_expire_minutes: int = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
 
     # API Configuration
     project_name: str = os.getenv("PROJECT_NAME", "Auto Video Generation API Gateway")
@@ -34,6 +31,7 @@ class Settings(BaseSettings):
 
     # CORS Configuration (繼承自基類，但可以擴展)
     allowed_hosts: List[str] = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    cors_origins: List[str] = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
 
     # Logging (繼承自基類)
     structured_logging: bool = os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
@@ -53,8 +51,8 @@ class Settings(BaseSettings):
     scheduler_service_url: str = os.getenv("SCHEDULER_SERVICE_URL", "http://scheduler-service:8008")
 
     # JWT Configuration (for token verification)
-    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
-    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "RS256")
+    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "development-jwt-secret-key-change-in-production")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
 
     # Request Configuration
     service_timeout: int = int(os.getenv("SERVICE_TIMEOUT", "30"))
@@ -87,9 +85,9 @@ class Settings(BaseSettings):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Validate required settings
-        if not self.jwt_secret_key:
-            raise ValueError("JWT_SECRET_KEY environment variable is required")
+        # Validate required settings - only in production
+        if self.environment == "production" and not os.getenv("JWT_SECRET_KEY"):
+            raise ValueError("JWT_SECRET_KEY environment variable is required in production")
 
     class Config:
         env_file = ".env"
