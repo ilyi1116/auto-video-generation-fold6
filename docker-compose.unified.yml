@@ -49,7 +49,7 @@ services:
     ports:
       - "${API_GATEWAY_PORT:-8000}:8000"
     volumes:
-      - ./services/api-gateway/app:/app/app
+      - ./src/services/api-gateway/app:/app/app
       - ${SSL_CERT_DIR:-./certs}:/app/certs:ro
     env_file:
       - .env
@@ -94,7 +94,7 @@ services:
     ports:
       - "${AUTH_SERVICE_PORT:-8001}:8001"
     volumes:
-      - ./services/auth-service/app:/app/app
+      - ./src/services/auth-service/app:/app/app
     env_file:
       - .env
     environment:
@@ -124,7 +124,7 @@ services:
     ports:
       - "${TREND_SERVICE_PORT:-8007}:8007"
     volumes:
-      - ./services/trend-service/app:/app/app
+      - ./src/services/trend-service/app:/app/app
     env_file:
       - .env
     environment:
@@ -149,7 +149,7 @@ services:
     ports:
       - "${STORAGE_SERVICE_PORT:-8009}:8009"
     volumes:
-      - ./services/storage-service/app:/app/app
+      - ./src/services/storage-service/app:/app/app
       - /tmp:/tmp
     env_file:
       - .env
@@ -178,7 +178,7 @@ services:
     ports:
       - "${VIDEO_SERVICE_PORT:-8004}:8004"
     volumes:
-      - ./services/video-service/app:/app/app
+      - ./src/services/video-service/app:/app/app
       - /tmp:/tmp
     env_file:
       - .env
@@ -209,7 +209,7 @@ services:
     ports:
       - "${AI_SERVICE_PORT:-8005}:8005"
     volumes:
-      - ./services/ai-service/app:/app/app
+      - ./src/services/ai-service/app:/app/app
       - /tmp:/tmp
     env_file:
       - .env
@@ -243,7 +243,7 @@ services:
     ports:
       - "${SOCIAL_SERVICE_PORT:-8006}:8006"
     volumes:
-      - ./services/social-service/app:/app/app
+      - ./src/services/social-service/app:/app/app
     env_file:
       - .env
     environment:
@@ -268,7 +268,7 @@ services:
     ports:
       - "${SCHEDULER_SERVICE_PORT:-8008}:8008"
     volumes:
-      - ./services/scheduler-service/app:/app/app
+      - ./src/services/scheduler-service/app:/app/app
     env_file:
       - .env
     environment:
@@ -295,7 +295,7 @@ services:
       context: ./src/services/data-service
       dockerfile: Dockerfile
     volumes:
-      - ./services/data-service/app:/app/app
+      - ./src/services/data-service/app:/app/app
       - /tmp:/tmp
     env_file:
       - .env
@@ -325,7 +325,7 @@ services:
       context: ./src/services/video-service
       dockerfile: Dockerfile
     volumes:
-      - ./services/video-service/app:/app/app
+      - ./src/services/video-service/app:/app/app
       - /tmp:/tmp
     env_file:
       - .env
@@ -357,7 +357,7 @@ services:
       context: ./src/services/ai-service
       dockerfile: Dockerfile
     volumes:
-      - ./services/ai-service/app:/app/app
+      - ./src/services/ai-service/app:/app/app
       - /tmp:/tmp
     env_file:
       - .env
@@ -385,7 +385,7 @@ services:
       context: ./src/services/scheduler-service
       dockerfile: Dockerfile
     volumes:
-      - ./services/scheduler-service/app:/app/app
+      - ./src/services/scheduler-service/app:/app/app
       - celery_beat_data:/app/celerybeat-schedule
     env_file:
       - .env

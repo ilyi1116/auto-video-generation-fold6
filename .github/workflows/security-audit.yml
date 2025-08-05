@@ -43,11 +43,32 @@ jobs:
           done
         continue-on-error: true
 
-      - name: Run Bandit security linter
+      - name: 🔍 Python Security Check (Bandit)
         run: |
-          pip install bandit
-          bandit -r services/ -f json -o bandit-report.json
-        continue-on-error: true
+          bandit -r src/services/ -f json -o bandit-report.json
+          bandit -r src/services/ --severity-level medium --confidence-level high
+
+      - name: 🔍 Docker Security Scan
+        run: |
+          # 掃描所有服務的 Dockerfile
+          for service in src/services/*/; do
+            if [ -f "$service/Dockerfile" ]; then
+              echo "Scanning $service"
+              docker run --rm -v "$(pwd)/$service:/app" aquasec/trivy config /app
+            fi
+          done
+
+      - name: 🐳 Build and Scan Docker Images
+        run: |
+          # 構建並掃描 Docker 映像
+          for service in src/services/*/; do
+            if [ -f "$service/Dockerfile" ]; then
+              service_name=$(basename "$service")
+              echo "Building and scanning $service_name"
+              docker build -t $service_name:latest ./src/services/$service_name
+              docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image $service_name:latest
+            fi
+          done
 
       - name: Upload security reports
         uses: actions/upload-artifact@v3
@@ -56,46 +77,6 @@ jobs:
           name: security-reports
           path: |
             bandit-report.json
-
-  docker-security:
-    name: Docker Security Scan
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [api-gateway, auth-service, data-service, inference-service, video-service]
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check if service has Dockerfile
-        id: check_dockerfile
-        run: |
-          if [ -f "./services/${{ matrix.service }}/Dockerfile" ]; then
-            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
-            echo "Skipping ${{ matrix.service }} - no Dockerfile found"
-          fi
-
-      - name: Build Docker image
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        run: |
-          docker build -t ${{ matrix.service }}:latest ./services/${{ matrix.service }}
-
-      - name: Run Trivy vulnerability scanner
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: '${{ matrix.service }}:latest'
-          format: 'sarif'
-          output: 'trivy-results-${{ matrix.service }}.sarif'
-
-      - name: Upload Trivy scan results
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true' && always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
 
   secret-scan:
     name: Secret Detection
@@ -130,7 +111,7 @@ jobs:
 
       - name: Check licenses in services
         run: |
-          for service in services/*/; do
+          for service in src/services/*/; do
             if [ -f "$service/requirements.txt" ]; then
               echo "Checking licenses for $service"
               cd "$service"

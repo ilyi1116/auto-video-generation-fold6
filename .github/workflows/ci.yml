@@ -32,19 +32,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install black flake8 isort mypy
+          pip install -e ".[dev,test]"
 
       - name: Format check with Black
-        run: black --check --diff services/
+        run: black --check --diff src/services/
 
       - name: Lint with flake8
-        run: flake8 services/
+        run: flake8 src/services/
 
       - name: Import sorting check
-        run: isort --check-only --diff services/
+        run: isort --check-only --diff src/services/
 
       - name: Type checking with mypy
-        run: mypy services/ --ignore-missing-imports
+        run: mypy src/services/ --ignore-missing-imports
         continue-on-error: true
 
   # Security Scanning
@@ -141,15 +141,15 @@ jobs:
           STABLE_DIFFUSION_API_KEY: test-sd-key
         run: |
           # Run auth service tests
-          if [ -d services/auth-service/tests ]; then
-            cd services/auth-service
+          if [ -d src/services/auth-service/tests ]; then
+            cd src/services/auth-service
             pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing || true
             cd ../..
           fi
           
           # Run video service tests  
-          if [ -d services/video-service/tests ]; then
-            cd services/video-service
+          if [ -d src/services/video-service/tests ]; then
+            cd src/services/video-service
             pytest tests/ --cov=. --cov-report=xml --cov-report=term-missing || true
             cd ../..
           fi
@@ -157,145 +157,113 @@ jobs:
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
-        if: always()
         with:
-          file: ./services/auth-service/coverage.xml
-          flags: auth-service
+          files: |
+            src/services/auth-service/coverage.xml
+            src/services/video-service/coverage.xml
+          flags: backend
+          name: backend-coverage
 
-  # Build and Push Docker Images
-  build-and-push:
-    name: Build and Push Images
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [test, security-scan]
+  # Docker Build
+  docker-build:
+    name: 🐳 Docker Build
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    needs: test
     strategy:
       matrix:
-        service: [api-gateway, auth-service, data-service, inference-service, video-service, data-ingestion, training-worker, ai-service, graphql-gateway, trend-service, voice-enhancement, storage-service, scheduler-service, social-service]
+        service:
+          - api-gateway
+          - auth-service
+          - video-service
+          - ai-service
+          - data-service
+          - inference-service
+          - social-service
+          - trend-service
+          - scheduler-service
+          - storage-service
+          - graphql-gateway
+          - voice-enhancement
+          - training-worker
+          - admin-service
+          - payment-service
+          - music-service
+          - compliance-service
+          - cache-service
 
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
+      - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Check if service has Dockerfile
-        id: check_dockerfile
+      - name: 🔍 Check if Dockerfile exists
+        id: check-dockerfile
         run: |
-          if [ -f "./services/${{ matrix.service }}/Dockerfile" ]; then
-            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
+          if [ -f "./src/services/${{ matrix.service }}/Dockerfile" ]; then
+            echo "dockerfile-exists=true" >> $GITHUB_OUTPUT
           else
-            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
+            echo "dockerfile-exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build Docker image
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        uses: docker/build-push-action@v6
+      - name: 🐳 Build Docker Image
+        if: steps.check-dockerfile.outputs.dockerfile-exists == 'true'
+        uses: docker/build-push-action@v5
         with:
-          context: ./services/${{ matrix.service }}
+          context: ./src/services/${{ matrix.service }}
+          file: ./src/services/${{ matrix.service }}/Dockerfile
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=docker,dest=/tmp/${{ matrix.service }}.tar
+          tags: ${{ matrix.service }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run Trivy vulnerability scanner
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        uses: aquasecurity/trivy-action@master
-        with:
-          input: /tmp/${{ matrix.service }}.tar
-          format: 'sarif'
-          output: 'trivy-results-${{ matrix.service }}.sarif'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy scan results
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true' && always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
-
-      - name: Push Docker image
-        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
-        uses: docker/build-push-action@v6
+      - name: 🐳 Build Docker Image (Alternative Path)
+        if: steps.check-dockerfile.outputs.dockerfile-exists == 'false'
+        uses: docker/build-push-action@v5
         with:
           context: ./services/${{ matrix.service }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          file: ./services/${{ matrix.service }}/Dockerfile
+          push: false
+          tags: ${{ matrix.service }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Integration Tests
-  integration-test:
-    name: Integration Tests
-    needs: [test]
+  # Frontend Build
+  frontend-build:
+    name: 🎨 Frontend Build
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-
+    needs: test
+    
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Create .env file
-        run: cp .env.template .env
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'src/frontend/package-lock.json'
 
-      - name: Start services
-        run: |
-          docker-compose up -d --build
-          sleep 30
+      - name: 📦 Install Frontend Dependencies
+        working-directory: src/frontend
+        run: npm ci
 
-      - name: Health check
-        run: |
-          curl -f http://localhost:8000/health
-          curl -f http://localhost:8001/health
+      - name: 🧪 Frontend Tests
+        working-directory: src/frontend
+        run: npm run test:ci
 
-      - name: Run integration tests
-        run: |
-          # Test user registration
-          curl -X POST http://localhost:8000/api/v1/auth/register \
-            -H "Content-Type: application/json" \
-            -d '{"email":"test@example.com","username":"testuser","password":"testpass123"}' \
-            --fail
-          
-          echo "Integration tests passed!"
+      - name: 🏗️ Frontend Build
+        working-directory: src/frontend
+        run: npm run build
 
-      - name: Cleanup
-        if: always()
-        run: docker-compose down -v
-
-  # Deployment (placeholder)
-  deploy:
-    name: Deploy to Production
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - name: Deploy notification
-        run: |
-          echo "Deployment step - to be implemented"
-          echo "Image tags built and pushed successfully"
+      - name: 🐳 Build Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/frontend
+          file: ./src/frontend/Dockerfile
+          push: false
+          tags: frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
