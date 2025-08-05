@@ -71,12 +71,23 @@ jobs:
           done
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-reports
           path: |
             bandit-report.json
+            safety-report.json
+          retention-days: 30
+
+      - name: Upload Docker security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: docker-security-reports
+          path: |
+            trivy-results-*.sarif
+          retention-days: 30
 
   secret-scan:
     name: Secret Detection

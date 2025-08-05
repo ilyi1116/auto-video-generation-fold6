@@ -1,3 +1,4 @@
+
 # Auto Video Generation System - 主要 CI/CD 流水線
 # 整合 Phase 2 資料庫系統和 Phase 3 部署策略
 
@@ -139,7 +140,7 @@ jobs:
     - name: 📦 Install Frontend Dependencies
       if: steps.changes.outputs.frontend == 'true'
       working-directory: src/frontend
-      run: npm ci --legacy-peer-deps
+      run: npm install --legacy-peer-deps
 
     - name: 🧹 Frontend Code Formatting (Prettier)
       if: steps.changes.outputs.frontend == 'true'
@@ -421,10 +422,13 @@ jobs:
 
     - name: 📤 Upload E2E Artifacts
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: e2e-failure-logs
-        path: e2e-logs.txt
+        path: |
+          e2e-results/
+          playwright-report/
+        retention-days: 7
 
   # ===========================================
   # 发现微服务并准备构建

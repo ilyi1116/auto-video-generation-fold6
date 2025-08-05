@@ -226,7 +226,7 @@ jobs:
         python performance_test.py
 
     - name: 📊 Upload Performance Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: api-performance-results
@@ -311,7 +311,7 @@ jobs:
         "
 
     - name: 📊 Upload Frontend Performance Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: frontend-performance-results
@@ -397,7 +397,7 @@ jobs:
           --headless
 
     - name: 📊 Upload Load Test Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: load-test-results
@@ -471,7 +471,7 @@ jobs:
         echo "4. 持续优化前端资源加载" >> performance-summary.md
 
     - name: 📊 Upload Summary Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-summary-report
         path: performance-summary.md

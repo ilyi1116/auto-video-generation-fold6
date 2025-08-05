@@ -81,7 +81,7 @@ jobs:
       continue-on-error: true
 
     - name: 📊 Upload Security Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: python-security-reports
@@ -124,7 +124,7 @@ jobs:
         npx audit-ci --moderate || true
 
     - name: 📊 Upload Security Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: nodejs-security-reports
@@ -266,7 +266,7 @@ jobs:
         echo "4. Check GitHub Security tab for detailed reports" >> security-summary.md
 
     - name: 📊 Upload Summary Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-summary-report
         path: security-summary.md

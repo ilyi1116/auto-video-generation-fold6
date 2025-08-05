@@ -153,15 +153,14 @@ jobs:
             echo "Load test results not found."
           fi
 
-      - name: Upload performance reports
-        uses: actions/upload-artifact@v3
-        if: always()
+      - name: 📤 Upload Performance Test Results
+        uses: actions/upload-artifact@v4
         with:
-          name: performance-reports
+          name: performance-test-results
           path: |
-            load_test_report.html
-            load_test_results_*.csv
-            performance_summary.md
+            performance-results/
+            test-reports/
+          retention-days: 30
 
       - name: Check performance thresholds
         run: |
