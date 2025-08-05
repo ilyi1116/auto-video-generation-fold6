@@ -1,18 +1,31 @@
 import os
-import sys
-from pathlib import Path
 from typing import List
 
-# 添加共享庫路徑
-sys.path.append(str(Path(__file__).parent.parent.parent.parent / "shared"))
-
-from config import BaseServiceSettings
+from pydantic_settings import BaseSettings
 
 
-class Settings(BaseServiceSettings):
-    """API Gateway 配置 - 繼承統一基礎配置"""
+class Settings(BaseSettings):
+    """API Gateway 配置"""
 
     service_name: str = "api-gateway"
+    
+    # 基本設定
+    environment: str = "development"
+    debug: bool = True
+    log_level: str = "info"
+    
+    # API 設定
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    
+    # 資料庫設定
+    database_url: str = "sqlite:///./app.db"
+    redis_url: str = "redis://redis:6379/0"
+    
+    # JWT 設定
+    jwt_secret_key: str = "development-secret-key"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 1440
     api_port: int = int(os.getenv("API_PORT", "8000"))
 
     # API Configuration

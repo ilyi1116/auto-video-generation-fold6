@@ -9,7 +9,6 @@ services:
     <<: *common-config
     build: 
       context: ./src/services/api-gateway
-      platform: linux/arm64
     ports:
       - "8000:8000"
     environment:
