@@ -139,7 +139,7 @@ jobs:
     - name: 📦 Install Frontend Dependencies
       if: steps.changes.outputs.frontend == 'true'
       working-directory: src/frontend
-      run: npm ci
+      run: npm ci --legacy-peer-deps
 
     - name: 🧹 Frontend Code Formatting (Prettier)
       if: steps.changes.outputs.frontend == 'true'
@@ -197,7 +197,7 @@ jobs:
 
     - name: 📦 Install Frontend Dependencies for CodeQL
       working-directory: src/frontend
-      run: npm ci
+      run: npm ci --legacy-peer-deps
 
     # 執行 CodeQL 分析
     - name: 🔍 Perform CodeQL Analysis
