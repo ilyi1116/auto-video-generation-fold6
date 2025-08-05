@@ -1,0 +1,246 @@
+# Advanced Performance Monitoring Configuration
+# 進階效能監控配置
+
+# Monitoring interval in seconds
+interval: 30
+
+# Data retention in days
+retention_days: 7
+
+# Services to monitor
+services:
+  - name: api-gateway
+    url: http://localhost:8000/health
+    port: 8000
+    critical: true
+    
+  - name: auth-service
+    url: http://localhost:8001/health
+    port: 8001
+    critical: true
+    
+  - name: ai-service
+    url: http://localhost:8002/health
+    port: 8002
+    critical: true
+    
+  - name: video-service
+    url: http://localhost:8003/health
+    port: 8003
+    critical: true
+    
+  - name: storage-service
+    url: http://localhost:8004/health
+    port: 8004
+    critical: true
+    
+  - name: data-service
+    url: http://localhost:8005/health
+    port: 8005
+    critical: false
+    
+  - name: inference-service
+    url: http://localhost:8006/health
+    port: 8006
+    critical: false
+    
+  - name: scheduler-service
+    url: http://localhost:8007/health
+    port: 8007
+    critical: false
+    
+  - name: social-service
+    url: http://localhost:8008/health
+    port: 8008
+    critical: false
+    
+  - name: trend-service
+    url: http://localhost:8009/health
+    port: 8009
+    critical: false
+
+# Performance thresholds
+thresholds:
+  # System thresholds
+  cpu_percent: 80.0        # CPU usage percentage
+  memory_percent: 85.0     # Memory usage percentage
+  disk_usage: 90.0         # Disk usage percentage
+  load_average: 4.0        # System load average
+  
+  # Network thresholds
+  network_latency: 100.0   # Network latency in ms
+  packet_loss: 1.0         # Packet loss percentage
+  
+  # Service thresholds  
+  response_time: 1000.0    # Response time in ms
+  error_rate: 5.0          # Error rate percentage
+  timeout_rate: 2.0        # Timeout rate percentage
+  
+  # Database thresholds
+  database_connections: 80  # Active database connections
+  slow_queries: 10         # Slow queries per minute
+  cache_hit_ratio: 0.8     # Minimum cache hit ratio
+  deadlocks: 1             # Database deadlocks per hour
+  
+  # Container thresholds
+  container_memory: 1024   # Container memory usage in MB
+  container_cpu: 70.0      # Container CPU usage percentage
+  container_restart: 3     # Container restarts per hour
+
+# Alert configuration
+alerts:
+  # Alert channels
+  channels:
+    - type: console
+      enabled: true
+    - type: redis
+      enabled: true
+    - type: webhook
+      enabled: false
+      url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    - type: email
+      enabled: false
+      smtp_host: "smtp.gmail.com"
+      smtp_port: 587
+      username: "alerts@yourcompany.com"
+      password: "your-password"
+      recipients: ["admin@yourcompany.com"]
+  
+  # Alert severity levels
+  severity_levels:
+    critical:
+      description: "Immediate attention required"
+      color: "#FF0000"
+      notify_immediately: true
+    warning:
+      description: "Action required soon"
+      color: "#FFA500"
+      notify_immediately: false
+    info:
+      description: "Informational alert"
+      color: "#0080FF"
+      notify_immediately: false
+  
+  # Alert rules
+  rules:
+    - name: "High CPU Usage"
+      condition: "cpu_percent > 90"
+      severity: "critical"
+      cooldown: 300  # 5 minutes
+    
+    - name: "High Memory Usage"
+      condition: "memory_percent > 90"
+      severity: "critical"
+      cooldown: 300
+    
+    - name: "Service Down"
+      condition: "service_status_code != 200"
+      severity: "critical"
+      cooldown: 60   # 1 minute
+    
+    - name: "High Response Time"
+      condition: "response_time > 2000"
+      severity: "warning"
+      cooldown: 600  # 10 minutes
+    
+    - name: "High Error Rate"
+      condition: "error_rate > 10"
+      severity: "critical"
+      cooldown: 300
+
+# Redis configuration
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+  password: null
+  ssl: false
+  
+# Database configuration (for metrics collection)
+database:
+  type: postgresql
+  host: localhost
+  port: 5432
+  database: auto_video_db
+  username: postgres
+  password: null
+  
+# Grafana integration (optional)
+grafana:
+  enabled: false
+  host: localhost
+  port: 3000
+  api_key: null
+  
+# Prometheus integration (optional)  
+prometheus:
+  enabled: false
+  host: localhost
+  port: 9090
+  metrics_path: /metrics
+  
+# Advanced monitoring features
+advanced:
+  # Enable predictive analytics
+  predictive_analytics: true
+  
+  # Enable anomaly detection
+  anomaly_detection: true
+  
+  # Enable performance regression detection
+  regression_detection: true
+  
+  # Machine learning model settings
+  ml_models:
+    # Anomaly detection model
+    anomaly:
+      algorithm: "isolation_forest"
+      contamination: 0.1
+      training_window_hours: 168  # 1 week
+      
+    # Trend prediction model
+    prediction:
+      algorithm: "linear_regression"
+      forecast_hours: 24
+      confidence_interval: 0.95
+      
+  # Custom metrics collection
+  custom_metrics:
+    - name: "business_kpi"
+      query: "SELECT COUNT(*) FROM videos_generated WHERE created_at >= NOW() - INTERVAL '1 hour'"
+      interval: 3600  # 1 hour
+      
+    - name: "ai_processing_queue"
+      query: "SELECT COUNT(*) FROM ai_tasks WHERE status = 'pending'"
+      interval: 300   # 5 minutes
+
+# ARM64/M4 specific optimizations
+m4_optimizations:
+  enabled: true
+  
+  # Use high-efficiency cores for monitoring
+  cpu_affinity: [4, 5, 6, 7]  # E-cores on M4
+  
+  # Memory optimization for unified architecture
+  memory_optimization:
+    use_shared_memory: true
+    buffer_size: 64  # MB
+    
+  # Thermal monitoring
+  thermal_monitoring:
+    enabled: true
+    temperature_threshold: 80  # Celsius
+    
+  # Battery awareness (for MacBook)
+  battery_monitoring:
+    enabled: true
+    low_power_threshold: 20  # Percentage
+
+# Logging configuration
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/performance-monitor.log"
+  max_size: "10MB"
+  backup_count: 5
+  structured_logging: true

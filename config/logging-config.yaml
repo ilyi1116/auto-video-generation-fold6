@@ -1,0 +1,326 @@
+# Centralized Logging System Configuration
+# 集中式日誌系統配置
+
+# Processing configuration
+processing:
+  threads: 4                    # Number of processing threads
+  batch_size: 100              # Log entries per batch
+  batch_timeout: 5             # Seconds to wait before flushing partial batch
+  queue_size: 10000            # Maximum queue size
+  
+# Redis configuration for log storage
+redis:
+  host: localhost
+  port: 6379
+  db: 2                        # Dedicated database for logs
+  password: null
+  ssl: false
+  socket_keepalive: true
+  socket_timeout: 30
+  
+# Services to monitor
+services:
+  - name: api-gateway
+    port: 8000
+    log_level: INFO
+    
+  - name: auth-service
+    port: 8001
+    log_level: INFO
+    
+  - name: ai-service
+    port: 8002
+    log_level: DEBUG
+    
+  - name: video-service
+    port: 8003
+    log_level: INFO
+    
+  - name: storage-service
+    port: 8004
+    log_level: INFO
+    
+  - name: data-service
+    port: 8005
+    log_level: INFO
+    
+  - name: inference-service
+    port: 8006
+    log_level: DEBUG
+    
+  - name: scheduler-service
+    port: 8007
+    log_level: INFO
+    
+  - name: social-service
+    port: 8008
+    log_level: INFO
+    
+  - name: trend-service
+    port: 8009
+    log_level: INFO
+
+# Log retention policies
+retention:
+  # Different retention for different log levels
+  debug: 
+    days: 1
+    max_entries_per_service: 10000
+  info:
+    days: 7
+    max_entries_per_service: 50000
+  warning:
+    days: 30
+    max_entries_per_service: 100000
+  error:
+    days: 90
+    max_entries_per_service: 200000
+  critical:
+    days: 365
+    max_entries_per_service: 500000
+
+# Alert rules for log analysis
+alert_rules:
+  # Error rate alerts
+  - name: "High Error Rate - Critical Services"
+    type: error_rate
+    service_pattern: "api-gateway|auth-service|ai-service"
+    threshold: 0.05              # 5% error rate
+    window_minutes: 5
+    severity: critical
+    min_sample_size: 20
+    
+  - name: "High Error Rate - All Services"
+    type: error_rate
+    service_pattern: "*"
+    threshold: 0.10              # 10% error rate
+    window_minutes: 10
+    severity: warning
+    min_sample_size: 10
+    
+  # Response time alerts
+  - name: "Slow API Responses"
+    type: response_time
+    service_pattern: "*-service"
+    threshold_ms: 2000           # 2 seconds
+    percentile: 95               # 95th percentile
+    window_minutes: 5
+    severity: warning
+    
+  - name: "Very Slow API Responses"
+    type: response_time
+    service_pattern: "*"
+    threshold_ms: 5000           # 5 seconds
+    percentile: 90               # 90th percentile
+    window_minutes: 5
+    severity: critical
+    
+  # Log volume alerts
+  - name: "Log Volume Spike"
+    type: log_volume
+    service_pattern: "*"
+    threshold_multiplier: 3.0    # 3x normal volume
+    baseline_window_hours: 24    # Compare to last 24 hours
+    current_window_minutes: 10
+    severity: warning
+    
+  - name: "No Logs Received"
+    type: log_volume
+    service_pattern: "*"
+    threshold_min_logs: 1        # At least 1 log per window
+    window_minutes: 15
+    severity: critical
+    
+  # Correlation alerts
+  - name: "Authentication Failures"
+    type: correlation
+    conditions:
+      - service: auth-service
+        event_type: security_event
+        message_contains: "authentication failed"
+        threshold_count: 10
+        window_minutes: 5
+    severity: warning
+    
+  - name: "Database Connection Issues"
+    type: correlation
+    conditions:
+      - event_type: database_query
+        error_contains: "connection"
+        threshold_count: 5
+        window_minutes: 5
+    severity: critical
+
+# Log format and structure
+format:
+  # Timestamp format
+  timestamp_format: "ISO8601"   # ISO8601 or EPOCH
+  
+  # Include stack traces for errors
+  include_stack_trace: true
+  
+  # Maximum message length
+  max_message_length: 4096
+  
+  # Maximum context size (in characters)
+  max_context_size: 8192
+  
+  # Fields to index for fast searching
+  indexed_fields:
+    - service_name
+    - level
+    - event_type
+    - correlation_id
+    - user_id
+    - error_category
+
+# Performance optimization
+performance:
+  # Compression for log storage
+  compression:
+    enabled: true
+    algorithm: gzip
+    min_size_bytes: 1024
+    
+  # Sampling for high-volume logs
+  sampling:
+    enabled: true
+    debug_sample_rate: 0.1       # Sample 10% of debug logs
+    info_sample_rate: 1.0        # Sample 100% of info logs
+    warning_sample_rate: 1.0     # Sample 100% of warning logs
+    error_sample_rate: 1.0       # Sample 100% of error logs
+    critical_sample_rate: 1.0    # Sample 100% of critical logs
+    
+  # Background processing
+  background_processing:
+    enabled: true
+    analysis_interval_minutes: 5
+    cleanup_interval_hours: 24
+    metrics_calculation_interval_minutes: 1
+
+# ARM64/M4 Max specific optimizations
+m4_optimizations:
+  enabled: true
+  
+  # CPU affinity for log processing (use efficiency cores)
+  cpu_affinity: [4, 5, 6, 7]
+  
+  # Memory optimization for unified architecture
+  unified_memory_optimization:
+    enabled: true
+    max_batch_size: 50           # Smaller batches for better memory efficiency
+    buffer_pool_size: 32         # MB
+    
+  # Thermal awareness
+  thermal_monitoring:
+    enabled: true
+    cpu_temp_threshold: 80       # Celsius
+    throttle_processing_above: 85 # Celsius
+    
+  # Power efficiency
+  power_optimization:
+    enabled: true
+    low_power_mode_threshold: 20 # Battery percentage
+    reduce_processing_threads_on_low_power: true
+
+# Integration with external systems
+integrations:
+  # Grafana dashboard
+  grafana:
+    enabled: false
+    host: localhost
+    port: 3000
+    dashboard_id: "centralized-logs"
+    
+  # Elasticsearch (optional)
+  elasticsearch:
+    enabled: false
+    host: localhost
+    port: 9200
+    index_pattern: "logs-{service}-{date}"
+    
+  # Webhook notifications
+  webhooks:
+    enabled: false
+    endpoints:
+      - name: slack
+        url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+        events: ["critical", "error"]
+        
+  # Email notifications
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "alerts@yourcompany.com"
+    password: "your-password"
+    recipients: ["admin@yourcompany.com"]
+    events: ["critical"]
+
+# Security settings
+security:
+  # Encrypt sensitive log data
+  encryption:
+    enabled: false
+    algorithm: "AES-256-GCM"
+    key_rotation_days: 90
+    
+  # PII detection and masking
+  pii_protection:
+    enabled: true
+    mask_patterns:
+      - name: email
+        pattern: '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        replacement: "[EMAIL]"
+      - name: phone
+        pattern: '\b\d{3}-\d{3}-\d{4}\b'
+        replacement: "[PHONE]"
+      - name: ssn
+        pattern: '\b\d{3}-\d{2}-\d{4}\b'
+        replacement: "[SSN]"
+        
+  # Access control
+  access_control:
+    enabled: true
+    require_api_key: false
+    allowed_ips: []              # Empty = allow all
+    
+# Monitoring of the logging system itself
+self_monitoring:
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    - processing_rate
+    - queue_sizes
+    - error_rates
+    - memory_usage
+    - cpu_usage
+    - disk_usage
+    
+  # Health check endpoint
+  health_check:
+    enabled: true
+    port: 9090
+    path: "/health"
+    
+  # Performance metrics export
+  metrics_export:
+    enabled: true
+    format: prometheus          # prometheus or json
+    port: 9091
+    path: "/metrics"
+
+# Development and debugging
+development:
+  # Enable debug logging for the logging system itself
+  debug_logging: false
+  
+  # Log processing pipeline visibility
+  pipeline_visibility: false
+  
+  # Test data generation
+  test_data_generation:
+    enabled: false
+    logs_per_second: 10
+    services: ["test-service-1", "test-service-2"]
