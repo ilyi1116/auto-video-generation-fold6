@@ -39,7 +39,10 @@ async def start_processing(
     if file_record.status != "pending":
         raise HTTPException(
             status_code=400,
-            detail=(f"File is not ready for processing. " f"Current status: {file_record.status}"),
+            detail=(
+                f"File is not ready for processing. "
+                f"Current status: {file_record.status}"
+            ),
         )
 
     # Check for existing processing job
@@ -59,7 +62,9 @@ async def start_processing(
 
     try:
         # Create processing job record
-        job_data = ProcessingJobCreate(user_id=user_id, voice_file_id=file_id, job_type=job_type)
+        job_data = ProcessingJobCreate(
+            user_id=user_id, voice_file_id=file_id, job_type=job_type
+        )
 
         insert_query = processing_jobs.insert().values(**job_data.dict())
         job_id = await database.execute(insert_query)
@@ -68,7 +73,11 @@ async def start_processing(
         if job_type == JobType.PREPROCESSING:
             # Get preprocessing parameters
             metadata = file_record.metadata or {}
-            preprocessing_params = await audio_validator.get_optimal_preprocessing_params(metadata)
+            preprocessing_params = (
+                await audio_validator.get_optimal_preprocessing_params(
+                    metadata
+                )
+            )
 
             # Start Celery task
             task = start_preprocessing_task.delay(
@@ -96,11 +105,15 @@ async def start_processing(
 
         elif job_type == JobType.TRAINING:
             # Training logic will be implemented in Phase 3
-            raise HTTPException(status_code=501, detail="Training jobs not yet implemented")
+            raise HTTPException(
+                status_code=501, detail="Training jobs not yet implemented"
+            )
 
         elif job_type == JobType.INFERENCE:
             # Inference logic will be implemented in Phase 2
-            raise HTTPException(status_code=501, detail="Inference jobs not yet implemented")
+            raise HTTPException(
+                status_code=501, detail="Inference jobs not yet implemented"
+            )
 
         return ProcessingResponse(
             message=f"{job_type.value} job started successfully",
@@ -116,7 +129,9 @@ async def start_processing(
             job_type=job_type,
             error=str(e),
         )
-        raise HTTPException(status_code=500, detail="Failed to start processing job")
+        raise HTTPException(
+            status_code=500, detail="Failed to start processing job"
+        )
 
 
 @router.get("/jobs/{job_id}")
@@ -128,7 +143,8 @@ async def get_job_status(
     user_id = await get_current_user(credentials.credentials)
 
     query = processing_jobs.select().where(
-        (processing_jobs.c.id == job_id) & (processing_jobs.c.user_id == user_id)
+        (processing_jobs.c.id == job_id)
+        & (processing_jobs.c.user_id == user_id)
     )
     job = await database.fetch_one(query)
 
@@ -150,7 +166,9 @@ async def list_user_jobs(
 
     user_id = await get_current_user(credentials.credentials)
 
-    query = processing_jobs.select().where(processing_jobs.c.user_id == user_id)
+    query = processing_jobs.select().where(
+        processing_jobs.c.user_id == user_id
+    )
 
     if job_type:
         query = query.where(processing_jobs.c.job_type == job_type)
@@ -158,7 +176,11 @@ async def list_user_jobs(
     if status:
         query = query.where(processing_jobs.c.status == status)
 
-    query = query.offset(skip).limit(limit).order_by(processing_jobs.c.created_at.desc())
+    query = (
+        query.offset(skip)
+        .limit(limit)
+        .order_by(processing_jobs.c.created_at.desc())
+    )
 
     jobs = await database.fetch_all(query)
 
@@ -171,14 +193,17 @@ async def list_user_jobs(
 
 
 @router.delete("/jobs/{job_id}")
-async def cancel_job(job_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def cancel_job(
+    job_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
+):
     """Cancel processing job"""
 
     user_id = await get_current_user(credentials.credentials)
 
     # Check if job exists and belongs to user
     query = processing_jobs.select().where(
-        (processing_jobs.c.id == job_id) & (processing_jobs.c.user_id == user_id)
+        (processing_jobs.c.id == job_id)
+        & (processing_jobs.c.user_id == user_id)
     )
     job = await database.fetch_one(query)
 

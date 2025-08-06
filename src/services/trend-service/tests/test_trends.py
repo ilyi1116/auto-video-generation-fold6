@@ -15,7 +15,9 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
 
 
 @pytest.fixture
@@ -74,7 +76,9 @@ def test_get_trending_topics(mock_verify_token, client, auth_headers):
 
 
 @patch("app.auth.verify_token")
-def test_get_trending_topics_with_filters(mock_verify_token, client, auth_headers):
+def test_get_trending_topics_with_filters(
+    mock_verify_token, client, auth_headers
+):
     """測試帶篩選條件的趨勢主題"""
     mock_verify_token.return_value = {"user_id": "1"}
 
@@ -100,7 +104,9 @@ def test_get_viral_content(mock_verify_token, client, auth_headers):
 
 
 @patch("app.auth.verify_token")
-def test_get_viral_content_with_filters(mock_verify_token, client, auth_headers):
+def test_get_viral_content_with_filters(
+    mock_verify_token, client, auth_headers
+):
     """測試帶篩選條件的病毒式內容"""
     mock_verify_token.return_value = {"user_id": "1"}
 
@@ -117,7 +123,9 @@ def test_get_viral_content_with_filters(mock_verify_token, client, auth_headers)
 @patch("app.services.trend_analyzer.generate_trend_suggestions")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_get_trend_suggestions(mock_verify_token, mock_suggestions, client, auth_headers):
+async def test_get_trend_suggestions(
+    mock_verify_token, mock_suggestions, client, auth_headers
+):
     """測試獲取趨勢建議"""
     mock_verify_token.return_value = {"user_id": "1"}
     mock_suggestions.return_value = [
@@ -146,12 +154,18 @@ async def test_get_trend_suggestions(mock_verify_token, mock_suggestions, client
 @patch("app.services.trend_analyzer.fetch_realtime_trends")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_get_realtime_trends(mock_verify_token, mock_fetch, client, auth_headers):
+async def test_get_realtime_trends(
+    mock_verify_token, mock_fetch, client, auth_headers
+):
     """測試獲取實時趨勢"""
     mock_verify_token.return_value = {"user_id": "1"}
-    mock_fetch.return_value = [{"keyword": "世界盃", "rank": 1, "growth": "+150%"}]
+    mock_fetch.return_value = [
+        {"keyword": "世界盃", "rank": 1, "growth": "+150%"}
+    ]
 
-    response = client.get("/api/v1/trends/realtime/google", headers=auth_headers)
+    response = client.get(
+        "/api/v1/trends/realtime/google", headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -176,12 +190,18 @@ def test_get_trend_categories(mock_verify_token, client, auth_headers):
 @patch("app.services.trend_analyzer.get_trending_hashtags")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_get_trending_hashtags(mock_verify_token, mock_hashtags, client, auth_headers):
+async def test_get_trending_hashtags(
+    mock_verify_token, mock_hashtags, client, auth_headers
+):
     """測試獲取熱門標籤"""
     mock_verify_token.return_value = {"user_id": "1"}
-    mock_hashtags.return_value = [{"tag": "#fyp", "posts": 1500000, "growth": "+25%"}]
+    mock_hashtags.return_value = [
+        {"tag": "#fyp", "posts": 1500000, "growth": "+25%"}
+    ]
 
-    response = client.get("/api/v1/trends/hashtags/tiktok", headers=auth_headers)
+    response = client.get(
+        "/api/v1/trends/hashtags/tiktok", headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -192,12 +212,16 @@ async def test_get_trending_hashtags(mock_verify_token, mock_hashtags, client, a
 @patch("app.services.trend_analyzer.refresh_platform_data")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_refresh_platform_trends(mock_verify_token, mock_refresh, client, auth_headers):
+async def test_refresh_platform_trends(
+    mock_verify_token, mock_refresh, client, auth_headers
+):
     """測試刷新平台趨勢"""
     mock_verify_token.return_value = {"user_id": "1"}
     mock_refresh.return_value = {"updated_count": 15, "new_count": 8}
 
-    response = client.post("/api/v1/trends/refresh/youtube", headers=auth_headers)
+    response = client.post(
+        "/api/v1/trends/refresh/youtube", headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -208,7 +232,9 @@ async def test_refresh_platform_trends(mock_verify_token, mock_refresh, client, 
 @patch("app.services.trend_analyzer.get_keyword_performance_history")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_get_keyword_performance(mock_verify_token, mock_performance, client, auth_headers):
+async def test_get_keyword_performance(
+    mock_verify_token, mock_performance, client, auth_headers
+):
     """測試獲取關鍵字表現"""
     mock_verify_token.return_value = {"user_id": "1"}
     mock_performance.return_value = {
@@ -233,7 +259,9 @@ async def test_get_keyword_performance(mock_verify_token, mock_performance, clie
 @patch("app.services.keyword_analyzer.analyze_keyword")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_research_keyword(mock_verify_token, mock_analyze, client, auth_headers):
+async def test_research_keyword(
+    mock_verify_token, mock_analyze, client, auth_headers
+):
     """測試關鍵字研究"""
     mock_verify_token.return_value = {"user_id": "1"}
     mock_analyze.return_value = {
@@ -254,7 +282,9 @@ async def test_research_keyword(mock_verify_token, mock_analyze, client, auth_he
         "region": "TW",
     }
 
-    response = client.post("/api/v1/keywords/research", json=research_data, headers=auth_headers)
+    response = client.post(
+        "/api/v1/keywords/research", json=research_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -266,7 +296,9 @@ async def test_research_keyword(mock_verify_token, mock_analyze, client, auth_he
 @patch("app.services.keyword_analyzer.get_keyword_suggestions")
 @patch("app.auth.verify_token")
 @pytest.mark.asyncio
-async def test_get_keyword_suggestions(mock_verify_token, mock_suggestions, client, auth_headers):
+async def test_get_keyword_suggestions(
+    mock_verify_token, mock_suggestions, client, auth_headers
+):
     """測試獲取關鍵字建議"""
     mock_verify_token.return_value = {"user_id": "1"}
     mock_suggestions.return_value = {
@@ -275,7 +307,9 @@ async def test_get_keyword_suggestions(mock_verify_token, mock_suggestions, clie
         "long_tail": ["AI 完整指南 2024"],
     }
 
-    response = client.get("/api/v1/keywords/suggestions/AI?limit=10", headers=auth_headers)
+    response = client.get(
+        "/api/v1/keywords/suggestions/AI?limit=10", headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -316,6 +350,8 @@ def test_pagination_limits(client, auth_headers):
         mock_verify_token.return_value = {"user_id": "1"}
 
         # 測試超過限制的 limit 值
-        response = client.get("/api/v1/trends/trending?limit=1000", headers=auth_headers)
+        response = client.get(
+            "/api/v1/trends/trending?limit=1000", headers=auth_headers
+        )
 
         assert response.status_code == 422  # Validation error

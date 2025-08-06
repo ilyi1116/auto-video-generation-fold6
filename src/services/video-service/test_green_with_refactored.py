@@ -31,7 +31,9 @@ class CompatibilityTest:
 
     def assert_equal(self, actual, expected, message=""):
         if actual != expected:
-            raise AssertionError(f"{message}: Expected {expected}, got {actual}")
+            raise AssertionError(
+                f"{message}: Expected {expected}, got {actual}"
+            )
 
     def assert_not_none(self, value, message=""):
         if value is None:
@@ -128,7 +130,9 @@ def test_should_execute_complete_workflow_pipeline():
     engine = VideoWorkflowEngine()
     executor = PipelineExecutor()
 
-    workflow_result = engine.initialize_workflow(request, user_id="test_user_456")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="test_user_456"
+    )
     pipeline_result = executor.execute_pipeline(
         workflow_result.workflow_id,
         stages=[
@@ -175,10 +179,14 @@ def test_should_track_workflow_progress_accurately():
     engine = VideoWorkflowEngine()
     tracker = ProgressTracker()
 
-    workflow_result = engine.initialize_workflow(request, user_id="test_user_progress")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="test_user_progress"
+    )
 
     # 模擬進度更新
-    tracker.update_progress(workflow_result.workflow_id, "script_generation", 25)
+    tracker.update_progress(
+        workflow_result.workflow_id, "script_generation", 25
+    )
     final_status = tracker.get_current_status(workflow_result.workflow_id)
 
     assert final_status.progress_percentage == 25
@@ -216,7 +224,9 @@ def test_should_estimate_completion_time_accurately():
 
     estimated_time_long = estimator.estimate_completion_time(request_long)
     # 確保長片需要更多時間（允許一些容差）
-    assert estimated_time_long.total_seconds() >= estimated_time.total_seconds()
+    assert (
+        estimated_time_long.total_seconds() >= estimated_time.total_seconds()
+    )
 
 
 def test_should_support_workflow_cancellation():
@@ -228,7 +238,9 @@ def test_should_support_workflow_cancellation():
     )
 
     engine = VideoWorkflowEngine()
-    workflow_result = engine.initialize_workflow(request, user_id="test_cancel_user")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="test_cancel_user"
+    )
 
     # 取消工作流程
     cancel_result = engine.cancel_workflow(workflow_result.workflow_id)
@@ -248,7 +260,9 @@ def test_should_cleanup_resources_after_workflow_completion():
     engine = VideoWorkflowEngine()
     resource_manager = ResourceManager()
 
-    workflow_result = engine.initialize_workflow(request, user_id="test_cleanup_user")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="test_cleanup_user"
+    )
 
     # 記錄初始狀態
     resource_manager.count_temporary_files()
@@ -266,10 +280,14 @@ def test_should_cleanup_resources_after_workflow_completion():
 
 def test_workflow_execution_updates_result():
     """測試：工作流程執行應該更新結果（使用重構版本）"""
-    request = VideoWorkflowRequest(topic="測試影片執行", target_platform="youtube")
+    request = VideoWorkflowRequest(
+        topic="測試影片執行", target_platform="youtube"
+    )
 
     engine = VideoWorkflowEngine()
-    workflow_result = engine.initialize_workflow(request, user_id="test_exec_user")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="test_exec_user"
+    )
 
     # 執行工作流程
     final_result = engine.execute_workflow(workflow_result.workflow_id)

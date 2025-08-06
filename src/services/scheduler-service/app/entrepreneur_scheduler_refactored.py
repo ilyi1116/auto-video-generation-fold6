@@ -155,11 +155,15 @@ class ScheduledTask:
 
         # 計算執行時間
         if self.started_at:
-            self.metrics.execution_time = (self.completed_at - self.started_at).total_seconds()
+            self.metrics.execution_time = (
+                self.completed_at - self.started_at
+            ).total_seconds()
 
         logger.info(f"任務 {self.task_id} 完成執行")
 
-    def mark_as_failed(self, error_message: str, metrics: Optional[TaskMetrics] = None):
+    def mark_as_failed(
+        self, error_message: str, metrics: Optional[TaskMetrics] = None
+    ):
         """標記為失敗"""
         self.status = TaskStatus.FAILED
         self.completed_at = datetime.utcnow()
@@ -170,13 +174,17 @@ class ScheduledTask:
             self.metrics = metrics
 
         if self.started_at:
-            self.metrics.execution_time = (self.completed_at - self.started_at).total_seconds()
+            self.metrics.execution_time = (
+                self.completed_at - self.started_at
+            ).total_seconds()
 
         logger.error(f"任務 {self.task_id} 執行失敗: {error_message}")
 
     def should_retry(self, max_retries: int) -> bool:
         """判斷是否應該重試"""
-        return self.status == TaskStatus.FAILED and self.retry_count < max_retries
+        return (
+            self.status == TaskStatus.FAILED and self.retry_count < max_retries
+        )
 
     def get_age_hours(self) -> float:
         """獲取任務年齡（小時）"""
@@ -187,7 +195,9 @@ class ServiceClient(ABC):
     """抽象服務客戶端 - 為了更好的測試和擴展性"""
 
     @abstractmethod
-    async def call_video_service(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def call_video_service(
+        self, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """呼叫影片生成服務"""
 
     @abstractmethod
@@ -202,7 +212,9 @@ class VideoServiceClient(ServiceClient):
         self.base_url = base_url
         self.timeout = aiohttp.ClientTimeout(total=300)  # 5分鐘超時
 
-    async def call_video_service(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def call_video_service(
+        self, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """呼叫影片生成服務"""
         url = f"{self.base_url}/api/v1/entrepreneur/create"
 
@@ -234,7 +246,9 @@ class VideoServiceClient(ServiceClient):
     async def health_check(self) -> bool:
         """健康檢查"""
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+            async with aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=10)
+            ) as session:
                 async with session.get(f"{self.base_url}/health") as response:
                     return response.status == 200
         except Exception:
@@ -280,10 +294,14 @@ class StatisticsManager:
     def update_stats(self, task: ScheduledTask):
         """更新統計數據"""
         if task.status == TaskStatus.COMPLETED:
-            self.daily_stats["videos_generated"] += task.metrics.videos_generated
+            self.daily_stats[
+                "videos_generated"
+            ] += task.metrics.videos_generated
             self.daily_stats["budget_used"] += task.metrics.cost_incurred
             self.daily_stats["tasks_completed"] += 1
-            self.daily_stats["total_execution_time"] += task.metrics.execution_time or 0
+            self.daily_stats["total_execution_time"] += (
+                task.metrics.execution_time or 0
+            )
             self.daily_stats["api_calls_made"] += task.metrics.api_calls_made
         elif task.status == TaskStatus.FAILED:
             self.daily_stats["tasks_failed"] += 1
@@ -308,14 +326,20 @@ class StatisticsManager:
     def get_statistics_summary(self) -> Dict[str, Any]:
         """獲取統計摘要"""
         success_rate = 0.0
-        total_tasks = self.daily_stats["tasks_completed"] + self.daily_stats["tasks_failed"]
+        total_tasks = (
+            self.daily_stats["tasks_completed"]
+            + self.daily_stats["tasks_failed"]
+        )
         if total_tasks > 0:
-            success_rate = (self.daily_stats["tasks_completed"] / total_tasks) * 100
+            success_rate = (
+                self.daily_stats["tasks_completed"] / total_tasks
+            ) * 100
 
         avg_cost_per_video = 0.0
         if self.daily_stats["videos_generated"] > 0:
             avg_cost_per_video = (
-                self.daily_stats["budget_used"] / self.daily_stats["videos_generated"]
+                self.daily_stats["budget_used"]
+                / self.daily_stats["videos_generated"]
             )
 
         return {
@@ -340,7 +364,9 @@ class TaskExecutor:
 
         try:
             # 創建執行任務
-            execution_task = asyncio.create_task(self._execute_task_with_retry(task))
+            execution_task = asyncio.create_task(
+                self._execute_task_with_retry(task)
+            )
             self.active_tasks[task_key] = execution_task
 
             # 等待完成
@@ -359,11 +385,15 @@ class TaskExecutor:
         for attempt in range(self.config.retry_attempts + 1):
             try:
                 # 執行任務
-                result = await self.service_client.call_video_service(task.config)
+                result = await self.service_client.call_video_service(
+                    task.config
+                )
 
                 # 更新指標
                 if result.get("success"):
-                    metrics.videos_generated = result.get("videos_generated", 0)
+                    metrics.videos_generated = result.get(
+                        "videos_generated", 0
+                    )
                     metrics.cost_incurred = result.get("cost", 0.0)
                     metrics.api_calls_made = result.get("api_calls", 0)
                     metrics.retry_attempts_used = attempt
@@ -376,7 +406,9 @@ class TaskExecutor:
             except Exception as e:
                 if attempt < self.config.retry_attempts:
                     task.retry_count += 1
-                    metrics.retry_attempts_used = attempt + 1  # 記錄實際重試次數
+                    metrics.retry_attempts_used = (
+                        attempt + 1
+                    )  # 記錄實際重試次數
                     logger.warning(
                         f"任務 {task.task_id} 第 {attempt + 1} 次嘗試失敗，"
                         f"將在 {self.config.retry_delay_minutes} 分鐘後重試: {e}"
@@ -387,7 +419,9 @@ class TaskExecutor:
                         delay_seconds = min(delay_seconds, 2)  # 最多2秒
                     await asyncio.sleep(delay_seconds)
                 else:
-                    metrics.retry_attempts_used = self.config.retry_attempts  # 達到最大重試次數
+                    metrics.retry_attempts_used = (
+                        self.config.retry_attempts
+                    )  # 達到最大重試次數
                     task.mark_as_failed(str(e), metrics)
                     return
 
@@ -454,7 +488,9 @@ class EntrepreneurScheduler:
             # 啟動各種任務
             self._scheduler_task = asyncio.create_task(self._scheduler_loop())
             self._cleanup_task = asyncio.create_task(self._cleanup_loop())
-            self._health_check_task = asyncio.create_task(self._health_check_loop())
+            self._health_check_task = asyncio.create_task(
+                self._health_check_loop()
+            )
 
             self.state = SchedulerState.RUNNING
             self._notify_state_change()
@@ -525,9 +561,15 @@ class EntrepreneurScheduler:
     def is_within_work_hours(self) -> bool:
         """檢查是否在工作時間內"""
         current_time = datetime.now().strftime("%H:%M")
-        return self.config.work_hours_start <= current_time <= self.config.work_hours_end
+        return (
+            self.config.work_hours_start
+            <= current_time
+            <= self.config.work_hours_end
+        )
 
-    async def schedule_entrepreneur_task(self, task_config: Dict[str, Any]) -> str:
+    async def schedule_entrepreneur_task(
+        self, task_config: Dict[str, Any]
+    ) -> str:
         """排程創業者任務（增強版本）"""
         # 檢查限制
         self._check_daily_limits()
@@ -562,7 +604,8 @@ class EntrepreneurScheduler:
     def can_execute_task(self, task: ScheduledTask) -> bool:
         """檢查是否可以執行任務"""
         return (
-            self.task_executor.active_task_count < self.config.max_concurrent_tasks
+            self.task_executor.active_task_count
+            < self.config.max_concurrent_tasks
             and self.state == SchedulerState.RUNNING
         )
 
@@ -621,7 +664,10 @@ class EntrepreneurScheduler:
         pending_tasks.sort(key=lambda t: (t.priority, t.created_at))
 
         # 執行任務（受併發限制）
-        available_slots = self.config.max_concurrent_tasks - self.task_executor.active_task_count
+        available_slots = (
+            self.config.max_concurrent_tasks
+            - self.task_executor.active_task_count
+        )
 
         tasks_to_execute = pending_tasks[:available_slots]
 
@@ -631,7 +677,9 @@ class EntrepreneurScheduler:
             # 為每個任務創建執行協程
             execution_tasks = []
             for task in tasks_to_execute:
-                execution_task = asyncio.create_task(self._execute_and_track_task(task))
+                execution_task = asyncio.create_task(
+                    self._execute_and_track_task(task)
+                )
                 execution_tasks.append(execution_task)
 
             # 不等待完成，讓任務在背景執行
@@ -679,7 +727,9 @@ class EntrepreneurScheduler:
 
         while not self._shutdown_event.is_set():
             try:
-                await asyncio.sleep(self.config.health_check_interval_minutes * 60)
+                await asyncio.sleep(
+                    self.config.health_check_interval_minutes * 60
+                )
 
                 if self._shutdown_event.is_set():
                     break
@@ -733,7 +783,9 @@ class EntrepreneurScheduler:
         task_status_counts = {}
         for status in TaskStatus:
             task_status_counts[status.value] = sum(
-                1 for task in self.scheduled_tasks.values() if task.status == status
+                1
+                for task in self.scheduled_tasks.values()
+                if task.status == status
             )
 
         return {
@@ -759,15 +811,21 @@ class EntrepreneurScheduler:
 
     def get_next_execution_time(self) -> datetime:
         """計算下次執行時間"""
-        return datetime.utcnow() + timedelta(minutes=self.config.check_interval_minutes)
+        return datetime.utcnow() + timedelta(
+            minutes=self.config.check_interval_minutes
+        )
 
     # === 事件系統 ===
 
-    def add_task_completed_callback(self, callback: Callable[[ScheduledTask], None]):
+    def add_task_completed_callback(
+        self, callback: Callable[[ScheduledTask], None]
+    ):
         """添加任務完成回調"""
         self._task_completed_callbacks.append(callback)
 
-    def add_state_change_callback(self, callback: Callable[[SchedulerState], None]):
+    def add_state_change_callback(
+        self, callback: Callable[[SchedulerState], None]
+    ):
         """添加狀態變更回調"""
         self._scheduler_state_callbacks.append(callback)
 
@@ -823,7 +881,9 @@ class MockVideoServiceClient(ServiceClient):
         self.delay = delay
         self.call_count = 0
 
-    async def call_video_service(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def call_video_service(
+        self, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """模擬服務呼叫"""
         self.call_count += 1
         await asyncio.sleep(self.delay)

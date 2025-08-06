@@ -18,7 +18,9 @@ class ScheduledPost(Base):
 
     # 排程資訊
     scheduled_time = Column(DateTime, nullable=False)
-    status = Column(String(20), default="pending")  # pending, published, failed, cancelled
+    status = Column(
+        String(20), default="pending"
+    )  # pending, published, failed, cancelled
 
     # 內容資訊
     title = Column(String(255))

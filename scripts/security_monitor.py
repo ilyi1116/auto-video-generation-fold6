@@ -4,13 +4,13 @@
 執行定期安全檢查，報告安全問題並生成建議
 """
 
-import sys
-import json
-import subprocess
 import datetime
-from pathlib import Path
-from typing import Dict, Any
+import json
 import logging
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict
 
 # 設置日誌
 logging.basicConfig(

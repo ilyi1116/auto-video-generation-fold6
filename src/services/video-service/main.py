@@ -52,8 +52,12 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(video_generation.router, prefix="/api/v1/video", tags=["video-generation"])
-app.include_router(social_media.router, prefix="/api/v1/social", tags=["social-media"])
+app.include_router(
+    video_generation.router, prefix="/api/v1/video", tags=["video-generation"]
+)
+app.include_router(
+    social_media.router, prefix="/api/v1/social", tags=["social-media"]
+)
 app.include_router(
     entrepreneur_workflows.router,
     prefix="/api/v1/entrepreneur",
@@ -65,7 +69,9 @@ security = HTTPBearer()
 # AI Clients initialization
 suno_client = SunoAIClient(api_key=os.getenv("SUNO_API_KEY"))
 gemini_client = GeminiClient(api_key=os.getenv("GEMINI_API_KEY"))
-stable_diffusion_client = StableDiffusionClient(api_key=os.getenv("STABLE_DIFFUSION_API_KEY"))
+stable_diffusion_client = StableDiffusionClient(
+    api_key=os.getenv("STABLE_DIFFUSION_API_KEY")
+)
 video_composer = VideoComposer()
 
 
@@ -73,11 +79,21 @@ class VideoGenerationRequest(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     theme: str = Field(..., description="Video theme/topic")
-    style: Optional[str] = Field("modern", description="Visual style preference")
-    duration: Optional[int] = Field(60, ge=15, le=300, description="Video duration in seconds")
-    voice_type: Optional[str] = Field("default", description="Voice style for narration")
-    music_genre: Optional[str] = Field("ambient", description="Background music genre")
-    include_captions: bool = Field(True, description="Whether to include captions")
+    style: Optional[str] = Field(
+        "modern", description="Visual style preference"
+    )
+    duration: Optional[int] = Field(
+        60, ge=15, le=300, description="Video duration in seconds"
+    )
+    voice_type: Optional[str] = Field(
+        "default", description="Voice style for narration"
+    )
+    music_genre: Optional[str] = Field(
+        "ambient", description="Background music genre"
+    )
+    include_captions: bool = Field(
+        True, description="Whether to include captions"
+    )
     target_platform: Optional[str] = Field(
         "youtube", description="Target platform (youtube, tiktok, instagram)"
     )
@@ -121,7 +137,9 @@ async def create_video_project(
     # Verify user authentication
     user_id = await verify_token(credentials.credentials)
     if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid authentication token")
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication token"
+        )
 
     # Create project record
     project_id = str(uuid.uuid4())
@@ -162,7 +180,9 @@ async def create_video_project(
     )
 
 
-@app.get("/api/v1/video/projects/{project_id}", response_model=VideoProjectResponse)
+@app.get(
+    "/api/v1/video/projects/{project_id}", response_model=VideoProjectResponse
+)
 async def get_video_project(
     project_id: str,
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -172,7 +192,9 @@ async def get_video_project(
 
     user_id = await verify_token(credentials.credentials)
     if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid authentication token")
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication token"
+        )
 
     project = await VideoProject.get_by_id(db, project_id)
     if not project:
@@ -204,9 +226,13 @@ async def list_user_projects(
 
     user_id = await verify_token(credentials.credentials)
     if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid authentication token")
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication token"
+        )
 
-    projects = await VideoProject.get_by_user(db, user_id, limit=limit, offset=offset)
+    projects = await VideoProject.get_by_user(
+        db, user_id, limit=limit, offset=offset
+    )
 
     return [
         VideoProjectResponse(
@@ -233,7 +259,9 @@ async def delete_video_project(
 
     user_id = await verify_token(credentials.credentials)
     if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid authentication token")
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication token"
+        )
 
     project = await VideoProject.get_by_id(db, project_id)
     if not project:
@@ -265,12 +293,16 @@ async def delete_video_project(
 
         logger.info(f"Cleaned up resources for project {project_id}")
     except Exception as e:
-        logger.warning(f"Failed to cleanup some resources for project {project_id}: {e}")
+        logger.warning(
+            f"Failed to cleanup some resources for project {project_id}: {e}"
+        )
 
     return {"message": "Project deleted successfully"}
 
 
-async def generate_video_pipeline(project_id: str, request: VideoGenerationRequest):
+async def generate_video_pipeline(
+    project_id: str, request: VideoGenerationRequest
+):
     """Background video generation pipeline"""
 
     try:
@@ -359,9 +391,13 @@ async def generate_video_pipeline(project_id: str, request: VideoGenerationReque
         logger.info(f"Video generation completed for project {project_id}")
 
     except Exception as e:
-        logger.error(f"Video generation failed for project {project_id}: {str(e)}")
+        logger.error(
+            f"Video generation failed for project {project_id}: {str(e)}"
+        )
         try:
-            await project.update_status(db, VideoStatus.FAILED, project.progress)
+            await project.update_status(
+                db, VideoStatus.FAILED, project.progress
+            )
             project.error_message = str(e)
             await project.save(db)
         except Exception:

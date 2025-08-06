@@ -1,0 +1,127 @@
+groups:
+  # ================================
+  # 系統基礎設施告警規則
+  # ================================
+  - name: system_infrastructure
+    rules:
+      # 實例下線告警
+      - alert: InstanceDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "實例 {{ $labels.instance }} 已下線"
+          description: "{{ $labels.job }} 服務的實例 {{ $labels.instance }} 已經下線超過 30 秒"
+          impact: "服務不可用，影響用戶訪問"
+          runbook_url: "https://runbooks.auto-video.com/instance-down"
+
+      # CPU 使用率過高
+      - alert: HighCpuUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "{{ $labels.instance }} CPU 使用率過高"
+          description: "實例 {{ $labels.instance }} 的 CPU 使用率已達到 {{ $value | humanizePercentage }}"
+          impact: "系統響應變慢，可能影響用戶體驗"
+          recommendation: "檢查高 CPU 消耗的進程並考慮擴容"
+
+      # 記憶體使用率過高
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "{{ $labels.instance }} 記憶體使用率過高"
+          description: "實例 {{ $labels.instance }} 的記憶體使用率已達到 {{ $value | humanizePercentage }}"
+          impact: "可能導致 OOM 錯誤和服務重啟"
+          recommendation: "檢查記憶體洩漏或考慮增加記憶體"
+
+      # 磁碟空間不足
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) > 0.80
+        for: 1m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "{{ $labels.instance }} 磁碟空間不足"
+          description: "實例 {{ $labels.instance }} 的磁碟 {{ $labels.device }} 使用率已達到 {{ $value | humanizePercentage }}"
+          impact: "可能導致服務無法寫入日誌或數據"
+          recommendation: "清理不必要的文件或擴展存儲空間"
+
+      # 磁碟空間嚴重不足
+      - alert: DiskSpaceCritical
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) > 0.90
+        for: 30s
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "{{ $labels.instance }} 磁碟空間嚴重不足"
+          description: "實例 {{ $labels.instance }} 的磁碟 {{ $labels.device }} 使用率已達到 {{ $value | humanizePercentage }}"
+          impact: "即將導致服務停止運行"
+          recommendation: "立即清理磁碟空間或緊急擴容"
+
+      # 系統負載過高
+      - alert: HighSystemLoad
+        expr: node_load1 > node_cpu_count * 0.8
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "{{ $labels.instance }} 系統負載過高"
+          description: "實例 {{ $labels.instance }} 的 1 分鐘平均負載為 {{ $value }}，CPU 核心數為 {{ $labels.cpu_count }}"
+          impact: "系統響應變慢，處理能力下降"
+          recommendation: "檢查高負載進程或考慮擴容"
+
+  # ================================
+  # 容器監控告警規則
+  # ================================
+  - name: container_monitoring
+    rules:
+      # 容器重啟頻繁
+      - alert: ContainerRestartingFrequently
+        expr: increase(container_start_time_seconds[1h]) > 3
+        for: 1m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "容器 {{ $labels.name }} 重啟頻繁"
+          description: "容器 {{ $labels.name }} 在過去 1 小時內重啟了 {{ $value }} 次"
+          impact: "服務不穩定，可能影響可用性"
+          recommendation: "檢查容器日誌和健康檢查配置"
+
+      # 容器 CPU 使用率過高
+      - alert: ContainerHighCpuUsage
+        expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "容器 {{ $labels.name }} CPU 使用率過高"
+          description: "容器 {{ $labels.name }} 的 CPU 使用率為 {{ $value | humanizePercentage }}"
+          impact: "容器性能下降，可能影響響應時間"
+          recommendation: "檢查應用程序性能或增加 CPU 限制"
+
+      # 容器記憶體使用率過高
+      - alert: ContainerHighMemoryUsage
+        expr: (container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""}) > 0.85
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "容器 {{ $labels.name }} 記憶體使用率過高"
+          description: "容器 {{ $labels.name }} 的記憶體使用率為 {{ $value | humanizePercentage }}"
+          impact: "可能觸發 OOM 殺死進程"
+          recommendation: "檢查記憶體洩漏或增加記憶體限制"

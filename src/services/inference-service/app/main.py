@@ -33,7 +33,9 @@ logger = structlog.get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan management"""
-    logger.info("Starting voice inference service", service="inference-service")
+    logger.info(
+        "Starting voice inference service", service="inference-service"
+    )
 
     # Create database tables
     metadata.create_all(bind=engine)

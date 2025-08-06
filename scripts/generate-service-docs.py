@@ -4,119 +4,192 @@
 為所有微服務創建統一的 README 和 API 文檔
 """
 
+import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-import json
-import re
 
 
 class ServiceDocumentationGenerator:
     """服務文檔生成器"""
-    
+
     def __init__(self):
         self.project_root = Path(__file__).parent.parent
         self.services_dir = self.project_root / "src" / "services"
         self.template_dir = self.project_root / "templates" / "service-docs"
-        
+
         # 服務配置
         self.service_configs = {
             "api-gateway": {
                 "name": "API Gateway",
                 "description": "統一 API 入口點，處理路由、認證和負載均衡",
                 "port": 8000,
-                "dependencies": ["auth-service", "data-service", "inference-service"],
-                "main_endpoints": ["/api/v1/health", "/api/v1/auth", "/api/v1/proxy"],
-                "tech_stack": ["FastAPI", "Uvicorn", "JWT", "Redis"]
+                "dependencies": [
+                    "auth-service",
+                    "data-service",
+                    "inference-service",
+                ],
+                "main_endpoints": [
+                    "/api/v1/health",
+                    "/api/v1/auth",
+                    "/api/v1/proxy",
+                ],
+                "tech_stack": ["FastAPI", "Uvicorn", "JWT", "Redis"],
             },
             "auth-service": {
-                "name": "Authentication Service", 
+                "name": "Authentication Service",
                 "description": "用戶認證、授權和會話管理服務",
                 "port": 8001,
                 "dependencies": ["database", "redis"],
-                "main_endpoints": ["/auth/login", "/auth/register", "/auth/refresh"],
-                "tech_stack": ["FastAPI", "SQLAlchemy", "PostgreSQL", "JWT", "Alembic"]
+                "main_endpoints": [
+                    "/auth/login",
+                    "/auth/register",
+                    "/auth/refresh",
+                ],
+                "tech_stack": [
+                    "FastAPI",
+                    "SQLAlchemy",
+                    "PostgreSQL",
+                    "JWT",
+                    "Alembic",
+                ],
             },
             "data-service": {
                 "name": "Data Processing Service",
-                "description": "音頻數據處理、驗證和存儲服務", 
+                "description": "音頻數據處理、驗證和存儲服務",
                 "port": 8002,
                 "dependencies": ["storage-service", "celery"],
-                "main_endpoints": ["/data/upload", "/data/process", "/data/validate"],
-                "tech_stack": ["FastAPI", "Celery", "Redis", "Audio Processing"]
+                "main_endpoints": [
+                    "/data/upload",
+                    "/data/process",
+                    "/data/validate",
+                ],
+                "tech_stack": [
+                    "FastAPI",
+                    "Celery",
+                    "Redis",
+                    "Audio Processing",
+                ],
             },
             "inference-service": {
                 "name": "Model Inference Service",
                 "description": "機器學習模型推論和語音合成服務",
-                "port": 8003, 
+                "port": 8003,
                 "dependencies": ["storage-service", "ai-service"],
-                "main_endpoints": ["/inference/synthesize", "/inference/models"],
-                "tech_stack": ["FastAPI", "PyTorch", "TensorFlow", "CUDA"]
+                "main_endpoints": [
+                    "/inference/synthesize",
+                    "/inference/models",
+                ],
+                "tech_stack": ["FastAPI", "PyTorch", "TensorFlow", "CUDA"],
             },
             "video-service": {
                 "name": "Video Generation Service",
                 "description": "視頻生成、編輯和處理服務",
                 "port": 8004,
                 "dependencies": ["ai-service", "storage-service"],
-                "main_endpoints": ["/video/generate", "/video/process", "/video/export"],
-                "tech_stack": ["FastAPI", "FFmpeg", "OpenCV", "AI Integration"]
+                "main_endpoints": [
+                    "/video/generate",
+                    "/video/process",
+                    "/video/export",
+                ],
+                "tech_stack": [
+                    "FastAPI",
+                    "FFmpeg",
+                    "OpenCV",
+                    "AI Integration",
+                ],
             },
             "ai-service": {
-                "name": "AI Orchestration Service", 
+                "name": "AI Orchestration Service",
                 "description": "AI 服務編排，整合多個 AI 模型和 API",
                 "port": 8005,
                 "dependencies": ["gemini-api", "stable-diffusion", "suno-api"],
-                "main_endpoints": ["/ai/text", "/ai/image", "/ai/audio", "/ai/orchestrate"],
-                "tech_stack": ["FastAPI", "Gemini API", "Stable Diffusion", "Suno API"]
+                "main_endpoints": [
+                    "/ai/text",
+                    "/ai/image",
+                    "/ai/audio",
+                    "/ai/orchestrate",
+                ],
+                "tech_stack": [
+                    "FastAPI",
+                    "Gemini API",
+                    "Stable Diffusion",
+                    "Suno API",
+                ],
             },
             "social-service": {
                 "name": "Social Media Service",
                 "description": "社交媒體平台整合和內容發布服務",
                 "port": 8006,
                 "dependencies": ["storage-service"],
-                "main_endpoints": ["/social/publish", "/social/analytics", "/social/platforms"],
-                "tech_stack": ["FastAPI", "Platform APIs", "OAuth2"]
+                "main_endpoints": [
+                    "/social/publish",
+                    "/social/analytics",
+                    "/social/platforms",
+                ],
+                "tech_stack": ["FastAPI", "Platform APIs", "OAuth2"],
             },
             "trend-service": {
                 "name": "Trend Analysis Service",
-                "description": "趨勢分析、關鍵字挖掘和競爭對手分析服務", 
+                "description": "趨勢分析、關鍵字挖掘和競爭對手分析服務",
                 "port": 8007,
                 "dependencies": ["database", "external-apis"],
-                "main_endpoints": ["/trends/analyze", "/trends/keywords", "/trends/competitors"],
-                "tech_stack": ["FastAPI", "Data Analytics", "External APIs"]
+                "main_endpoints": [
+                    "/trends/analyze",
+                    "/trends/keywords",
+                    "/trends/competitors",
+                ],
+                "tech_stack": ["FastAPI", "Data Analytics", "External APIs"],
             },
             "scheduler-service": {
                 "name": "Task Scheduler Service",
                 "description": "任務調度、工作流程管理和自動化服務",
                 "port": 8008,
                 "dependencies": ["database", "celery"],
-                "main_endpoints": ["/scheduler/jobs", "/scheduler/workflows", "/scheduler/triggers"],
-                "tech_stack": ["FastAPI", "Celery", "Cron", "Workflow Engine"]
+                "main_endpoints": [
+                    "/scheduler/jobs",
+                    "/scheduler/workflows",
+                    "/scheduler/triggers",
+                ],
+                "tech_stack": ["FastAPI", "Celery", "Cron", "Workflow Engine"],
             },
             "storage-service": {
                 "name": "File Storage Service",
                 "description": "文件存儲、管理和 CDN 服務",
                 "port": 8009,
                 "dependencies": ["s3", "database"],
-                "main_endpoints": ["/storage/upload", "/storage/download", "/storage/manage"],
-                "tech_stack": ["FastAPI", "S3", "CDN", "File Processing"]
+                "main_endpoints": [
+                    "/storage/upload",
+                    "/storage/download",
+                    "/storage/manage",
+                ],
+                "tech_stack": ["FastAPI", "S3", "CDN", "File Processing"],
             },
             "training-worker": {
                 "name": "Model Training Worker",
                 "description": "機器學習模型訓練和優化後台服務",
                 "port": 8010,
                 "dependencies": ["storage-service", "database", "gpu"],
-                "main_endpoints": ["/training/start", "/training/status", "/training/models"],
-                "tech_stack": ["Python", "PyTorch", "Celery", "GPU Computing"]
+                "main_endpoints": [
+                    "/training/start",
+                    "/training/status",
+                    "/training/models",
+                ],
+                "tech_stack": ["Python", "PyTorch", "Celery", "GPU Computing"],
             },
             "data-ingestion": {
-                "name": "Data Ingestion Service", 
+                "name": "Data Ingestion Service",
                 "description": "數據收集、清理和預處理服務",
                 "port": 8011,
                 "dependencies": ["storage-service", "database"],
-                "main_endpoints": ["/ingest/batch", "/ingest/stream", "/ingest/validate"],
-                "tech_stack": ["FastAPI", "Apache Kafka", "Data Pipeline"]
+                "main_endpoints": [
+                    "/ingest/batch",
+                    "/ingest/stream",
+                    "/ingest/validate",
+                ],
+                "tech_stack": ["FastAPI", "Apache Kafka", "Data Pipeline"],
             },
             "graphql-gateway": {
                 "name": "GraphQL Gateway",
@@ -124,22 +197,26 @@ class ServiceDocumentationGenerator:
                 "port": 8012,
                 "dependencies": ["api-gateway", "all-services"],
                 "main_endpoints": ["/graphql", "/graphql/playground"],
-                "tech_stack": ["FastAPI", "GraphQL", "Schema Federation"]
+                "tech_stack": ["FastAPI", "GraphQL", "Schema Federation"],
             },
             "voice-enhancement": {
                 "name": "Voice Enhancement Service",
-                "description": "語音增強、降噪和音質優化服務", 
+                "description": "語音增強、降噪和音質優化服務",
                 "port": 8013,
                 "dependencies": ["inference-service"],
-                "main_endpoints": ["/voice/enhance", "/voice/denoise", "/voice/clone"],
-                "tech_stack": ["FastAPI", "Audio Processing", "Voice Cloning"]
-            }
+                "main_endpoints": [
+                    "/voice/enhance",
+                    "/voice/denoise",
+                    "/voice/clone",
+                ],
+                "tech_stack": ["FastAPI", "Audio Processing", "Voice Cloning"],
+            },
         }
-        
+
     def create_templates_directory(self):
         """創建模板目錄"""
         self.template_dir.mkdir(parents=True, exist_ok=True)
-        
+
     def generate_readme_template(self) -> str:
         """生成 README 模板"""
         return """# {service_name}
@@ -503,28 +580,28 @@ print(response.json())
         """分析服務結構"""
         structure = {
             "has_main": False,
-            "has_config": False, 
+            "has_config": False,
             "has_routers": False,
             "has_tests": False,
             "has_dockerfile": False,
             "routers": [],
             "models": [],
-            "endpoints": []
+            "endpoints": [],
         }
-        
+
         # 檢查主要文件
         main_file = service_path / "app" / "main.py"
         if main_file.exists():
             structure["has_main"] = True
-            
-        config_file = service_path / "app" / "config.py"  
+
+        config_file = service_path / "app" / "config.py"
         if config_file.exists():
             structure["has_config"] = True
-            
+
         dockerfile = service_path / "Dockerfile"
         if dockerfile.exists():
             structure["has_dockerfile"] = True
-            
+
         # 檢查路由器
         routers_dir = service_path / "app" / "routers"
         if routers_dir.exists():
@@ -532,63 +609,79 @@ print(response.json())
             for router_file in routers_dir.glob("*.py"):
                 if router_file.name != "__init__.py":
                     structure["routers"].append(router_file.stem)
-                    
+
         # 檢查測試
-        tests_dir = service_path / "tests" 
+        tests_dir = service_path / "tests"
         if tests_dir.exists():
             structure["has_tests"] = True
-            
+
         return structure
-        
+
     def generate_service_docs(self, service_name: str, config: Dict):
         """為單個服務生成文檔"""
         service_path = self.services_dir / service_name
         if not service_path.exists():
             print(f"⚠️  服務目錄不存在: {service_name}")
             return False
-            
+
         print(f"📝 生成 {config['name']} 文檔...")
-        
+
         # 分析服務結構
         structure = self.analyze_service_structure(service_path)
-        
+
         # 準備模板變量
         from datetime import datetime
+
         template_vars = {
             "service_name": config["name"],
             "service_dir": service_name,
             "description": config["description"],
             "port": config["port"],
             "current_date": datetime.now().strftime("%Y-%m-%d"),
-            "tech_stack_list": "\n".join([f"- **{tech}**" for tech in config["tech_stack"]]),
-            "dependencies_list": "\n".join([f"- {dep}" for dep in config["dependencies"]]),
-            "endpoints_list": "\n".join([f"- `{endpoint}`" for endpoint in config["main_endpoints"]]),
-            "api_endpoints_details": self.generate_endpoints_details(config["main_endpoints"]),
-            "data_schemas": "// TODO: 添加數據模式定義"
+            "tech_stack_list": "\n".join(
+                [f"- **{tech}**" for tech in config["tech_stack"]]
+            ),
+            "dependencies_list": "\n".join(
+                [f"- {dep}" for dep in config["dependencies"]]
+            ),
+            "endpoints_list": "\n".join(
+                [f"- `{endpoint}`" for endpoint in config["main_endpoints"]]
+            ),
+            "api_endpoints_details": self.generate_endpoints_details(
+                config["main_endpoints"]
+            ),
+            "data_schemas": "// TODO: 添加數據模式定義",
         }
-        
+
         # 生成 README.md
-        readme_content = self.generate_readme_template().format(**template_vars)
+        readme_content = self.generate_readme_template().format(
+            **template_vars
+        )
         readme_path = service_path / "README.md"
-        with open(readme_path, 'w', encoding='utf-8') as f:
+        with open(readme_path, "w", encoding="utf-8") as f:
             f.write(readme_content)
         print(f"   ✅ 已生成: {readme_path.relative_to(self.project_root)}")
-        
-        # 生成 API.md  
+
+        # 生成 API.md
         api_content = self.generate_api_doc_template().format(**template_vars)
         api_path = service_path / "API.md"
-        with open(api_path, 'w', encoding='utf-8') as f:
+        with open(api_path, "w", encoding="utf-8") as f:
             f.write(api_content)
         print(f"   ✅ 已生成: {api_path.relative_to(self.project_root)}")
-        
+
         return True
-        
+
     def generate_endpoints_details(self, endpoints: List[str]) -> str:
         """生成端點詳細說明"""
         details = []
         for endpoint in endpoints:
-            method = "GET" if "/health" in endpoint or "/metrics" in endpoint else "POST"
-            details.append(f"""
+            method = (
+                "GET"
+                if "/health" in endpoint or "/metrics" in endpoint
+                else "POST"
+            )
+            details.append(
+                f"""
 ### {method} {endpoint}
 
 **描述**: [端點描述]
@@ -602,38 +695,39 @@ print(response.json())
 ```json
 // TODO: 添加響應示例
 ```
-""")
+"""
+            )
         return "\n".join(details)
-        
+
     def generate_all_docs(self):
         """為所有服務生成文檔"""
         print("🚀 開始生成服務文檔...")
         print("=" * 60)
-        
+
         generated_count = 0
         total_services = len(self.service_configs)
-        
+
         for service_name, config in self.service_configs.items():
             if self.generate_service_docs(service_name, config):
                 generated_count += 1
-                
+
         print("\n" + "=" * 60)
         print(f"📊 文檔生成統計:")
         print(f"   總服務數: {total_services}")
         print(f"   成功生成: {generated_count}")
         print(f"   跳過/錯誤: {total_services - generated_count}")
-        
+
         if generated_count == total_services:
             print("   🎉 所有服務文檔生成完成！")
         else:
             print("   ⚠️  部分服務文檔生成失敗，請檢查服務目錄。")
-            
+
         return generated_count
-        
+
     def create_index_document(self):
         """創建服務索引文檔"""
         print("\n📋 生成服務索引文檔...")
-        
+
         index_content = """# 微服務文檔索引
 
 ## 📚 服務列表
@@ -643,14 +737,16 @@ print(response.json())
 | 服務名稱 | 描述 | 端口 | 文檔 | API |
 |---------|------|------|------|-----|
 """
-        
+
         for service_name, config in self.service_configs.items():
             service_path = self.services_dir / service_name
             if service_path.exists():
-                readme_link = f"[README](./src/services/{service_name}/README.md)"
+                readme_link = (
+                    f"[README](./src/services/{service_name}/README.md)"
+                )
                 api_link = f"[API 文檔](./src/services/{service_name}/API.md)"
                 index_content += f"| {config['name']} | {config['description']} | {config['port']} | {readme_link} | {api_link} |\n"
-        
+
         index_content += """
 ## 🏗️ 系統架構
 
@@ -725,23 +821,27 @@ graph TB
 
 **生成時間**: {current_date}  
 **項目版本**: 1.0.0
-""".format(current_date=__import__('datetime').datetime.now().strftime('%Y-%m-%d'))
-        
+""".format(
+            current_date=__import__("datetime")
+            .datetime.now()
+            .strftime("%Y-%m-%d")
+        )
+
         index_path = self.project_root / "SERVICES.md"
-        with open(index_path, 'w', encoding='utf-8') as f:
+        with open(index_path, "w", encoding="utf-8") as f:
             f.write(index_content)
         print(f"   ✅ 已生成: {index_path.relative_to(self.project_root)}")
 
 
 def main():
     generator = ServiceDocumentationGenerator()
-    
+
     # 生成所有服務文檔
     generated_count = generator.generate_all_docs()
-    
+
     # 生成索引文檔
     generator.create_index_document()
-    
+
     print(f"\n🎉 服務文檔標準化完成！")
     print(f"共為 {generated_count} 個服務生成了標準化文檔。")
     print(f"\n📋 查看完整服務列表: SERVICES.md")

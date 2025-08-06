@@ -55,7 +55,9 @@ async def get_current_user(
 
     except JWTError as e:
         logger.error("JWT 驗證失敗", error=str(e))
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="無效的認證憑證")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="無效的認證憑證"
+        )
     except Exception as e:
         logger.error("用戶認證失敗", error=str(e))
         raise HTTPException(

@@ -32,7 +32,9 @@ async def schedule_post(
 
     # 檢查排程時間是否為未來時間
     if request.scheduled_time <= datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Scheduled time must be in the future")
+        raise HTTPException(
+            status_code=400, detail="Scheduled time must be in the future"
+        )
 
     # 檢查平台帳號是否存在
     if request.platform_account_id:
@@ -48,7 +50,9 @@ async def schedule_post(
         )
 
         if not platform_account:
-            raise HTTPException(status_code=404, detail="Platform account not found")
+            raise HTTPException(
+                status_code=404, detail="Platform account not found"
+            )
 
     # 建立排程記錄
     scheduled_post = ScheduledPost(
@@ -81,7 +85,9 @@ async def get_scheduled_posts(
 ):
     """獲取排程列表"""
 
-    query = db.query(ScheduledPost).filter(ScheduledPost.user_id == current_user["user_id"])
+    query = db.query(ScheduledPost).filter(
+        ScheduledPost.user_id == current_user["user_id"]
+    )
 
     if status:
         query = query.filter(ScheduledPost.status == status)
@@ -98,7 +104,9 @@ async def get_scheduled_posts(
         .all()
     )
 
-    return ScheduleListResponse(total=total, items=posts, page=page, page_size=page_size)
+    return ScheduleListResponse(
+        total=total, items=posts, page=page, page_size=page_size
+    )
 
 
 @router.get("/posts/{post_id}", response_model=SchedulePostResponse)
@@ -146,12 +154,16 @@ async def update_scheduled_post(
         raise HTTPException(status_code=404, detail="Scheduled post not found")
 
     if post.status != "pending":
-        raise HTTPException(status_code=400, detail="Cannot update non-pending post")
+        raise HTTPException(
+            status_code=400, detail="Cannot update non-pending post"
+        )
 
     # 更新欄位
     if request.scheduled_time is not None:
         if request.scheduled_time <= datetime.utcnow():
-            raise HTTPException(status_code=400, detail="Scheduled time must be in the future")
+            raise HTTPException(
+                status_code=400, detail="Scheduled time must be in the future"
+            )
         post.scheduled_time = request.scheduled_time
 
     if request.title is not None:
@@ -193,7 +205,9 @@ async def cancel_scheduled_post(
         raise HTTPException(status_code=404, detail="Scheduled post not found")
 
     if post.status != "pending":
-        raise HTTPException(status_code=400, detail="Cannot cancel non-pending post")
+        raise HTTPException(
+            status_code=400, detail="Cannot cancel non-pending post"
+        )
 
     post.status = "cancelled"
     db.commit()
@@ -222,7 +236,9 @@ async def publish_now(
         raise HTTPException(status_code=404, detail="Scheduled post not found")
 
     if post.status != "pending":
-        raise HTTPException(status_code=400, detail="Cannot publish non-pending post")
+        raise HTTPException(
+            status_code=400, detail="Cannot publish non-pending post"
+        )
 
     # 觸發發布任務
     publish_post.delay(post_id)
@@ -316,7 +332,9 @@ async def disconnect_platform_account(
     )
 
     if not account:
-        raise HTTPException(status_code=404, detail="Platform account not found")
+        raise HTTPException(
+            status_code=404, detail="Platform account not found"
+        )
 
     account.is_active = False
     account.is_connected = False

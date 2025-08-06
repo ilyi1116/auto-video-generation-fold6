@@ -23,7 +23,9 @@ structlog.configure(
         structlog.processors.add_log_level,
         structlog.processors.JSONRenderer(),
     ],
-    wrapper_class=structlog.make_filtering_bound_logger(int(settings.log_level.upper())),
+    wrapper_class=structlog.make_filtering_bound_logger(
+        int(settings.log_level.upper())
+    ),
     logger_factory=structlog.PrintLoggerFactory(),
     cache_logger_on_first_use=True,
 )
@@ -170,11 +172,15 @@ async def generate_video_content(
 
     except Exception as e:
         logger.error("Video content generation failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Video content generation failed")
+        raise HTTPException(
+            status_code=500, detail="Video content generation failed"
+        )
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler"""
     logger.error("Unhandled exception", error=str(exc), path=request.url.path)
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    return JSONResponse(
+        status_code=500, content={"detail": "Internal server error"}
+    )

@@ -1,0 +1,197 @@
+groups:
+  # ================================
+  # 安全監控告警規則
+  # ================================
+  - name: security_alerts
+    rules:
+      # 異常登入嘗試
+      - alert: SuspiciousLoginAttempts
+        expr: rate(failed_login_attempts_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檢測到異常登入嘗試"
+          description: "過去 5 分鐘內失敗登入嘗試達到 {{ $value }} 次/分鐘"
+          impact: "可能存在暴力破解攻擊"
+          recommendation: "檢查來源 IP 並考慮臨時封鎖"
+          source_ip: "{{ $labels.source_ip }}"
+          action: "failed_login"
+
+      # 異常 API 調用頻率
+      - alert: UnusualAPICallFrequency
+        expr: rate(http_requests_total{path=~"/api/.*"}[1m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "API 調用頻率異常"
+          description: "API 調用頻率達到 {{ $value }} 次/分鐘，超過正常範圍"
+          impact: "可能存在 API 濫用或 DDoS 攻擊"
+          recommendation: "檢查請求來源和實施限流"
+          source_ip: "{{ $labels.source_ip }}"
+          action: "high_frequency_api_calls"
+
+      # JWT Token 異常使用
+      - alert: SuspiciousJWTUsage
+        expr: rate(jwt_validation_failed_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "JWT Token 驗證失敗頻繁"
+          description: "JWT 驗證失敗率達到 {{ $value }} 次/分鐘"
+          impact: "可能存在 Token 偽造或過期攻擊"
+          recommendation: "檢查 Token 來源和用戶行為"
+          action: "jwt_validation_failed"
+
+      # 檔案上傳異常
+      - alert: SuspiciousFileUploads
+        expr: rate(file_upload_rejected_total[5m]) > 2
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檔案上傳被拒絕頻繁"
+          description: "檔案上傳拒絕率達到 {{ $value }} 次/分鐘"
+          impact: "可能存在惡意檔案上傳嘗試"
+          recommendation: "檢查上傳檔案類型和來源"
+          action: "malicious_file_upload"
+
+      # 權限提升嘗試
+      - alert: PrivilegeEscalationAttempt
+        expr: increase(privilege_escalation_attempts_total[5m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檢測到權限提升嘗試"
+          description: "用戶 {{ $labels.user_id }} 嘗試進行權限提升"
+          impact: "系統安全受到威脅"
+          recommendation: "立即檢查用戶行為並暫停相關權限"
+          user_id: "{{ $labels.user_id }}"
+          action: "privilege_escalation"
+
+      # SQL 注入嘗試
+      - alert: SQLInjectionAttempt
+        expr: increase(sql_injection_attempts_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檢測到 SQL 注入嘗試"
+          description: "來自 {{ $labels.source_ip }} 的 SQL 注入嘗試"
+          impact: "數據庫安全受到威脅"
+          recommendation: "立即封鎖來源 IP 並檢查系統漏洞"
+          source_ip: "{{ $labels.source_ip }}"
+          action: "sql_injection"
+
+      # 異常數據存取
+      - alert: UnauthorizedDataAccess
+        expr: rate(unauthorized_access_attempts_total[5m]) > 1
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檢測到未授權數據存取"
+          description: "未授權存取嘗試達到 {{ $value }} 次/分鐘"
+          impact: "敏感數據可能遭到未授權存取"
+          recommendation: "檢查存取權限和用戶身份驗證"
+          action: "unauthorized_data_access"
+
+      # 系統管理員操作異常
+      - alert: SuspiciousAdminActivity
+        expr: increase(admin_operations_total{operation=~"delete_user|modify_permissions|system_config_change"}[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "管理員操作頻率異常"
+          description: "管理員 {{ $labels.admin_id }} 在 5 分鐘內執行了 {{ $value }} 次敏感操作"
+          impact: "可能存在帳號被盜用或內部威脅"
+          recommendation: "驗證管理員身份並檢查操作合理性"
+          admin_id: "{{ $labels.admin_id }}"
+          action: "suspicious_admin_activity"
+
+  # ================================
+  # 網路安全告警規則
+  # ================================
+  - name: network_security_alerts
+    rules:
+      # DDoS 攻擊檢測
+      - alert: PotentialDDoSAttack
+        expr: rate(http_requests_total[1m]) > 1000 and rate(http_requests_total{status=~"4.."}[1m]) / rate(http_requests_total[1m]) > 0.5
+        for: 30s
+        labels:
+          severity: critical
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檢測到潜在 DDoS 攻擊"
+          description: "請求速率達到 {{ $value }} 次/分鐘，且大量 4xx 錯誤"
+          impact: "服務可用性受到嚴重威脅"
+          recommendation: "啟動 DDoS 防護機制並分析攻擊來源"
+          action: "ddos_attack"
+
+      # 異常 IP 地址活動
+      - alert: SuspiciousIPActivity
+        expr: count by (source_ip) (rate(http_requests_total[5m]) > 50) > 1
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "IP 地址 {{ $labels.source_ip }} 活動異常"
+          description: "來自 {{ $labels.source_ip }} 的請求頻率異常高"
+          impact: "可能存在自動化攻擊或惡意行為"
+          recommendation: "分析 IP 地址來源並考慮限制存取"
+          source_ip: "{{ $labels.source_ip }}"
+          action: "suspicious_ip_activity"
+
+      # 地理位置異常登入
+      - alert: AnomalousGeolocationLogin
+        expr: increase(login_from_unusual_location_total[1h]) > 0
+        for: 0s
+        labels:
+          severity: warning
+          category: security
+          alertname: SecurityAlert
+        annotations:
+          summary: "檢測到異常地理位置登入"
+          description: "用戶 {{ $labels.user_id }} 從異常地理位置 {{ $labels.country }} 登入"
+          impact: "可能存在帳號被盜用風險"
+          recommendation: "通知用戶並要求額外身份驗證"
+          user_id: "{{ $labels.user_id }}"
+          country: "{{ $labels.country }}"
+          action: "anomalous_geolocation_login"
+
+      # TLS/SSL 證書即將到期
+      - alert: SSLCertificateExpiringSoon
+        expr: ssl_certificate_expiry_days < 30
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL 證書即將到期"
+          description: "域名 {{ $labels.domain }} 的 SSL 證書將在 {{ $value }} 天後到期"
+          impact: "可能導致 HTTPS 連接失敗"
+          recommendation: "及時更新 SSL 證書"
+          domain: "{{ $labels.domain }}"

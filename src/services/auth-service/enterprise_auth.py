@@ -110,14 +110,18 @@ class LDAPAuthenticator:
         self.user_filter = config.get("user_filter", "(uid={username})")
         self.group_filter = config.get("group_filter", "(member={user_dn})")
 
-    async def authenticate(self, username: str, password: str) -> Optional[User]:
+    async def authenticate(
+        self, username: str, password: str
+    ) -> Optional[User]:
         """LDAP 認證"""
         try:
             # 連接 LDAP 服務器
             server = Server(self.server_uri, get_info=ALL)
 
             # 首先用管理員賬號綁定
-            admin_conn = Connection(server, self.bind_dn, self.bind_password, auto_bind=True)
+            admin_conn = Connection(
+                server, self.bind_dn, self.bind_password, auto_bind=True
+            )
 
             # 查找用戶 DN
             user_filter = self.user_filter.format(username=username)
@@ -173,7 +177,9 @@ class LDAPAuthenticator:
             if "user_conn" in locals():
                 user_conn.unbind()
 
-    async def _get_user_groups(self, conn: Connection, user_dn: str) -> List[str]:
+    async def _get_user_groups(
+        self, conn: Connection, user_dn: str
+    ) -> List[str]:
         """獲取用戶群組"""
         try:
             group_filter = self.group_filter.format(user_dn=user_dn)
@@ -223,7 +229,9 @@ class SAMLAuthenticator:
         self.sp_private_key = config.get("sp_private_key")
         self.sp_certificate = config.get("sp_certificate")
 
-    async def generate_auth_request(self, relay_state: Optional[str] = None) -> Dict[str, str]:
+    async def generate_auth_request(
+        self, relay_state: Optional[str] = None
+    ) -> Dict[str, str]:
         """生成 SAML 認證請求"""
         import base64
         import uuid
@@ -268,7 +276,9 @@ class SAMLAuthenticator:
             "relay_state": relay_state,
         }
 
-    async def process_saml_response(self, saml_response: str) -> Optional[User]:
+    async def process_saml_response(
+        self, saml_response: str
+    ) -> Optional[User]:
         """處理 SAML 響應"""
         try:
             import base64
@@ -285,27 +295,39 @@ class SAMLAuthenticator:
                 return None
 
             # 提取用戶資訊
-            assertion = response_dict.get("saml2p:Response", {}).get("saml2:Assertion", {})
-            attributes = assertion.get("saml2:AttributeStatement", {}).get("saml2:Attribute", [])
+            assertion = response_dict.get("saml2p:Response", {}).get(
+                "saml2:Assertion", {}
+            )
+            attributes = assertion.get("saml2:AttributeStatement", {}).get(
+                "saml2:Attribute", []
+            )
 
             # 解析屬性
             user_attrs = {}
             if isinstance(attributes, list):
                 for attr in attributes:
                     name = attr.get("@Name", "")
-                    value = attr.get("saml2:AttributeValue", {}).get("#text", "")
+                    value = attr.get("saml2:AttributeValue", {}).get(
+                        "#text", ""
+                    )
                     user_attrs[name] = value
 
             # 創建用戶對象
             user = User(
-                user_id=user_attrs.get("employeeID", user_attrs.get("email", "")),
-                username=user_attrs.get("username", user_attrs.get("email", "")),
+                user_id=user_attrs.get(
+                    "employeeID", user_attrs.get("email", "")
+                ),
+                username=user_attrs.get(
+                    "username", user_attrs.get("email", "")
+                ),
                 email=user_attrs.get("email", ""),
                 full_name=user_attrs.get("displayName", ""),
                 department=user_attrs.get("department"),
                 roles=[UserRole.USER],  # 需要根據屬性映射
                 groups=(
-                    user_attrs.get("groups", "").split(",") if user_attrs.get("groups") else []
+                    user_attrs.get("groups", "").split(",")
+                    if user_attrs.get("groups")
+                    else []
                 ),
                 attributes=user_attrs,
                 provider=AuthProvider.SAML,
@@ -387,12 +409,16 @@ class OAuth2Authenticator:
             headers = {"Authorization": f"Bearer {access_token}"}
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(self.userinfo_url, headers=headers) as response:
+                async with session.get(
+                    self.userinfo_url, headers=headers
+                ) as response:
                     if response.status == 200:
                         user_data = await response.json()
 
                         user = User(
-                            user_id=user_data.get("sub", user_data.get("id", "")),
+                            user_id=user_data.get(
+                                "sub", user_data.get("id", "")
+                            ),
                             username=user_data.get(
                                 "preferred_username",
                                 user_data.get("email", ""),
@@ -427,8 +453,12 @@ class JWTTokenManager:
         self.config = config
         self.secret_key = config.get("secret_key", secrets.token_urlsafe(64))
         self.algorithm = config.get("algorithm", "HS256")
-        self.access_token_expire = timedelta(minutes=config.get("access_token_expire_minutes", 15))
-        self.refresh_token_expire = timedelta(days=config.get("refresh_token_expire_days", 7))
+        self.access_token_expire = timedelta(
+            minutes=config.get("access_token_expire_minutes", 15)
+        )
+        self.refresh_token_expire = timedelta(
+            days=config.get("refresh_token_expire_days", 7)
+        )
         self.redis_client = redis.Redis(
             host=config.get("redis_host", "localhost"),
             port=config.get("redis_port", 6379),
@@ -465,8 +495,12 @@ class JWTTokenManager:
         }
 
         # 生成令牌
-        access_token = jwt.encode(access_payload, self.secret_key, algorithm=self.algorithm)
-        refresh_token = jwt.encode(refresh_payload, self.secret_key, algorithm=self.algorithm)
+        access_token = jwt.encode(
+            access_payload, self.secret_key, algorithm=self.algorithm
+        )
+        refresh_token = jwt.encode(
+            refresh_payload, self.secret_key, algorithm=self.algorithm
+        )
 
         # 存儲令牌資訊到 Redis
         await self._store_token_info(access_payload["jti"], access_payload)
@@ -484,7 +518,9 @@ class JWTTokenManager:
         """驗證令牌"""
         try:
             # 解碼令牌
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                token, self.secret_key, algorithms=[self.algorithm]
+            )
 
             # 檢查令牌是否被撤銷
             jti = payload.get("jti")
@@ -501,11 +537,16 @@ class JWTTokenManager:
             logger.warning(f"無效令牌: {e}")
             return None
 
-    async def refresh_access_token(self, refresh_token: str) -> Optional[Dict[str, Any]]:
+    async def refresh_access_token(
+        self, refresh_token: str
+    ) -> Optional[Dict[str, Any]]:
         """刷新訪問令牌"""
 
         refresh_payload = await self.verify_token(refresh_token)
-        if not refresh_payload or refresh_payload.get("token_type") != "refresh":
+        if (
+            not refresh_payload
+            or refresh_payload.get("token_type") != "refresh"
+        ):
             return None
 
         # 獲取用戶資訊
@@ -523,7 +564,9 @@ class JWTTokenManager:
             "jti": secrets.token_urlsafe(16),
         }
 
-        access_token = jwt.encode(access_payload, self.secret_key, algorithm=self.algorithm)
+        access_token = jwt.encode(
+            access_payload, self.secret_key, algorithm=self.algorithm
+        )
         await self._store_token_info(access_payload["jti"], access_payload)
 
         return {
@@ -633,9 +676,14 @@ class EnterpriseAuthManager:
 
             elif provider == AuthProvider.SAML:
                 saml_response = credentials.get("saml_response")
-                user = await self.saml_auth.process_saml_response(saml_response)
+                user = await self.saml_auth.process_saml_response(
+                    saml_response
+                )
 
-            elif provider == AuthProvider.OAUTH2 or provider == AuthProvider.OIDC:
+            elif (
+                provider == AuthProvider.OAUTH2
+                or provider == AuthProvider.OIDC
+            ):
                 access_token = credentials.get("access_token")
                 user = await self.oauth2_auth.get_user_info(access_token)
 
@@ -670,16 +718,22 @@ class EnterpriseAuthManager:
 
         except Exception as e:
             logger.error(f"認證過程錯誤: {e}")
-            await self._log_auth_event(None, "login_error", credentials, str(e))
+            await self._log_auth_event(
+                None, "login_error", credentials, str(e)
+            )
             return {"success": False, "error": "認證系統錯誤"}
 
-    async def _local_authenticate(self, username: str, password: str) -> Optional[User]:
+    async def _local_authenticate(
+        self, username: str, password: str
+    ) -> Optional[User]:
         """本地認證"""
         # 這裡實現本地用戶認證邏輯
         # 從資料庫查詢用戶並驗證密碼
         return None
 
-    async def _create_session(self, user: User, credentials: Dict[str, Any]) -> AuthSession:
+    async def _create_session(
+        self, user: User, credentials: Dict[str, Any]
+    ) -> AuthSession:
         """創建認證會話"""
 
         session = AuthSession(
@@ -765,7 +819,9 @@ class EnterpriseAuthManager:
             "username": user.username if user else credentials.get("username"),
             "ip_address": credentials.get("ip_address"),
             "user_agent": credentials.get("user_agent"),
-            "provider": (user.provider.value if user else credentials.get("provider")),
+            "provider": (
+                user.provider.value if user else credentials.get("provider")
+            ),
             "error": error,
         }
 
@@ -798,7 +854,9 @@ class EnterpriseAuthManager:
                 session_dict = json.loads(session_data)
                 # 更新最後訪問時間
                 session_dict["last_accessed"] = datetime.utcnow().isoformat()
-                self.redis_client.setex(session_key, timedelta(hours=24), json.dumps(session_dict))
+                self.redis_client.setex(
+                    session_key, timedelta(hours=24), json.dumps(session_dict)
+                )
 
                 return AuthSession(**session_dict)
 

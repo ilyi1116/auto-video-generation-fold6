@@ -30,7 +30,9 @@ workflow_engine = EntrepreneurWorkflowEngine()
 class WorkflowConfigRequest(BaseModel):
     """工作流程配置請求模型"""
 
-    daily_video_count: int = Field(default=3, ge=1, le=20, description="每日影片數量限制")
+    daily_video_count: int = Field(
+        default=3, ge=1, le=20, description="每日影片數量限制"
+    )
     target_categories: List[str] = Field(
         default=["technology", "entertainment", "lifestyle"],
         description="目標內容類別",
@@ -38,18 +40,28 @@ class WorkflowConfigRequest(BaseModel):
     target_platforms: List[str] = Field(
         default=["tiktok", "youtube-shorts"], description="目標平台"
     )
-    video_duration: int = Field(default=30, ge=15, le=180, description="影片長度（秒）")
+    video_duration: int = Field(
+        default=30, ge=15, le=180, description="影片長度（秒）"
+    )
     language: str = Field(default="zh-TW", description="內容語言")
-    min_trend_score: float = Field(default=0.7, ge=0.1, le=1.0, description="最低趨勢分數")
+    min_trend_score: float = Field(
+        default=0.7, ge=0.1, le=1.0, description="最低趨勢分數"
+    )
     content_quality_threshold: float = Field(
         default=0.8, ge=0.1, le=1.0, description="內容品質門檻"
     )
-    monetization_threshold: float = Field(default=0.6, ge=0.1, le=1.0, description="獲利潛力門檻")
-    daily_budget: float = Field(default=10.0, ge=1.0, le=1000.0, description="每日預算限制（USD）")
+    monetization_threshold: float = Field(
+        default=0.6, ge=0.1, le=1.0, description="獲利潛力門檻"
+    )
+    daily_budget: float = Field(
+        default=10.0, ge=1.0, le=1000.0, description="每日預算限制（USD）"
+    )
     cost_per_video_limit: float = Field(
         default=5.0, ge=0.5, le=50.0, description="單部影片成本限制（USD）"
     )
-    stop_on_budget_exceeded: bool = Field(default=True, description="超出預算時是否停止")
+    stop_on_budget_exceeded: bool = Field(
+        default=True, description="超出預算時是否停止"
+    )
     operating_hours: Dict[str, str] = Field(
         default={"start": "09:00", "end": "18:00"}, description="運行時間"
     )
@@ -57,23 +69,35 @@ class WorkflowConfigRequest(BaseModel):
         default=1800, ge=300, le=7200, description="最大工作流程時間（秒）"
     )
     auto_publish: bool = Field(default=False, description="是否自動發布")
-    scheduled_publishing: bool = Field(default=True, description="是否使用定時發布")
+    scheduled_publishing: bool = Field(
+        default=True, description="是否使用定時發布"
+    )
     optimal_publishing_times: List[str] = Field(
         default=["10:00", "14:00", "18:00"], description="最佳發布時間"
     )
     retry_attempts: int = Field(default=3, ge=1, le=10, description="重試次數")
-    parallel_workflows: int = Field(default=2, ge=1, le=5, description="並行工作流程數量")
-    quality_check_enabled: bool = Field(default=True, description="是否啟用品質檢查")
+    parallel_workflows: int = Field(
+        default=2, ge=1, le=5, description="並行工作流程數量"
+    )
+    quality_check_enabled: bool = Field(
+        default=True, description="是否啟用品質檢查"
+    )
 
 
 class CreateWorkflowRequest(BaseModel):
     """創建工作流程請求"""
 
-    workflow_type: str = Field(default="entrepreneur_auto", description="工作流程類型")
+    workflow_type: str = Field(
+        default="entrepreneur_auto", description="工作流程類型"
+    )
     config: WorkflowConfigRequest = Field(description="工作流程配置")
-    priority: int = Field(default=1, ge=1, le=3, description="優先級（1=高, 2=中, 3=低）")
+    priority: int = Field(
+        default=1, ge=1, le=3, description="優先級（1=高, 2=中, 3=低）"
+    )
     tags: List[str] = Field(default=[], description="標籤")
-    custom_requirements: Dict[str, Any] = Field(default={}, description="自定義需求")
+    custom_requirements: Dict[str, Any] = Field(
+        default={}, description="自定義需求"
+    )
 
 
 class WorkflowStatusResponse(BaseModel):
@@ -163,7 +187,9 @@ async def create_entrepreneur_workflow(
         workflow_id = await workflow_engine.create_workflow(workflow_request)
 
         # 在背景執行工作流程
-        background_tasks.add_task(workflow_engine.execute_workflow, workflow_id)
+        background_tasks.add_task(
+            workflow_engine.execute_workflow, workflow_id
+        )
 
         logger.info(f"創業者工作流程已創建: {workflow_id} - 用戶: {user_id}")
 
@@ -175,11 +201,15 @@ async def create_entrepreneur_workflow(
 
     except Exception as e:
         logger.error(f"創建工作流程失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"創建工作流程失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"創建工作流程失敗: {str(e)}"
+        )
 
 
 @router.get("/status/{workflow_id}", response_model=WorkflowStatusResponse)
-async def get_workflow_status(workflow_id: str, current_user: dict = Depends(verify_token)):
+async def get_workflow_status(
+    workflow_id: str, current_user: dict = Depends(verify_token)
+):
     """獲取工作流程狀態"""
     try:
         result = workflow_engine.get_workflow_status(workflow_id)
@@ -211,7 +241,9 @@ async def get_workflow_status(workflow_id: str, current_user: dict = Depends(ver
 
 
 @router.get("/result/{workflow_id}", response_model=WorkflowResultResponse)
-async def get_workflow_result(workflow_id: str, current_user: dict = Depends(verify_token)):
+async def get_workflow_result(
+    workflow_id: str, current_user: dict = Depends(verify_token)
+):
     """獲取工作流程詳細結果"""
     try:
         result = workflow_engine.get_workflow_status(workflow_id)
@@ -239,11 +271,19 @@ async def get_workflow_result(workflow_id: str, current_user: dict = Depends(ver
         # 轉換指標為字典
         metrics_dict = {
             "start_time": (
-                result.metrics.start_time.isoformat() if result.metrics.start_time else None
+                result.metrics.start_time.isoformat()
+                if result.metrics.start_time
+                else None
             ),
-            "end_time": (result.metrics.end_time.isoformat() if result.metrics.end_time else None),
+            "end_time": (
+                result.metrics.end_time.isoformat()
+                if result.metrics.end_time
+                else None
+            ),
             "total_duration": (
-                str(result.metrics.total_duration) if result.metrics.total_duration else None
+                str(result.metrics.total_duration)
+                if result.metrics.total_duration
+                else None
             ),
             "stage_durations": result.metrics.stage_durations,
             "cost_breakdown": result.metrics.cost_breakdown,
@@ -274,7 +314,9 @@ async def get_workflow_result(workflow_id: str, current_user: dict = Depends(ver
 
 
 @router.post("/cancel/{workflow_id}")
-async def cancel_workflow(workflow_id: str, current_user: dict = Depends(verify_token)):
+async def cancel_workflow(
+    workflow_id: str, current_user: dict = Depends(verify_token)
+):
     """取消工作流程"""
     try:
         result = workflow_engine.get_workflow_status(workflow_id)
@@ -367,7 +409,9 @@ async def list_user_workflows(
 
     except Exception as e:
         logger.error(f"列出工作流程失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"列出工作流程失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"列出工作流程失敗: {str(e)}"
+        )
 
 
 @router.post("/batch/create")
@@ -386,7 +430,9 @@ async def create_batch_workflows(
         for i in range(count):
             # 為每個工作流程添加批次標籤
             batch_request = request.copy(deep=True)
-            batch_request.tags.append(f"batch_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}")
+            batch_request.tags.append(
+                f"batch_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+            )
             batch_request.tags.append(f"batch_item_{i + 1}")
 
             # 轉換配置
@@ -423,7 +469,9 @@ async def create_batch_workflows(
             )
 
             # 創建工作流程
-            workflow_id = await workflow_engine.create_workflow(workflow_request)
+            workflow_id = await workflow_engine.create_workflow(
+                workflow_request
+            )
             workflow_ids.append(workflow_id)
 
             # 在背景執行工作流程（加入延遲避免同時執行太多）
@@ -466,7 +514,9 @@ async def cleanup_old_workflows(
         if user_role != "admin":
             raise HTTPException(status_code=403, detail="需要管理員權限")
 
-        cleaned_count = workflow_engine.cleanup_completed_workflows(max_age_hours)
+        cleaned_count = workflow_engine.cleanup_completed_workflows(
+            max_age_hours
+        )
 
         return {
             "message": f"已清理 {cleaned_count} 個舊工作流程",

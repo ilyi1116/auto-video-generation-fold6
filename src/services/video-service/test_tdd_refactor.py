@@ -30,7 +30,9 @@ class RefactorTest:
 
     def assert_equal(self, actual, expected, message=""):
         if actual != expected:
-            raise AssertionError(f"{message}: Expected {expected}, got {actual}")
+            raise AssertionError(
+                f"{message}: Expected {expected}, got {actual}"
+            )
 
     def assert_not_none(self, value, message=""):
         if value is None:
@@ -47,7 +49,9 @@ class RefactorTest:
     def assert_raises(self, exception_type, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
-            raise AssertionError(f"Expected {exception_type.__name__} to be raised")
+            raise AssertionError(
+                f"Expected {exception_type.__name__} to be raised"
+            )
         except exception_type:
             pass  # 正確拋出異常
         except Exception as e:
@@ -110,7 +114,9 @@ def test_refactored_workflow_request_validation():
     )
 
     # 負數時長應該失敗
-    test.assert_raises(ValueError, VideoWorkflowRequest, topic="測試", expected_duration=-10)
+    test.assert_raises(
+        ValueError, VideoWorkflowRequest, topic="測試", expected_duration=-10
+    )
 
 
 def test_refactored_workflow_engine_initialization():
@@ -140,7 +146,9 @@ def test_refactored_workflow_execution():
     request = VideoWorkflowRequest(topic="執行測試", target_platform="youtube")
 
     # 初始化工作流程
-    workflow_result = engine.initialize_workflow(request, user_id="exec_test_user")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="exec_test_user"
+    )
 
     # 執行工作流程
     final_result = engine.execute_workflow(workflow_result.workflow_id)
@@ -158,7 +166,9 @@ def test_refactored_workflow_cancellation():
 
     request = VideoWorkflowRequest(topic="取消測試", target_platform="tiktok")
 
-    workflow_result = engine.initialize_workflow(request, user_id="cancel_test_user")
+    workflow_result = engine.initialize_workflow(
+        request, user_id="cancel_test_user"
+    )
     cancel_result = engine.cancel_workflow(workflow_result.workflow_id)
 
     assert cancel_result.status == WorkflowStatus.CANCELLED
@@ -199,7 +209,9 @@ def test_refactored_workflow_repository():
     """測試：重構後的工作流程儲存庫"""
     repository = InMemoryWorkflowRepository()
 
-    request = VideoWorkflowRequest(topic="儲存庫測試", target_platform="instagram")
+    request = VideoWorkflowRequest(
+        topic="儲存庫測試", target_platform="instagram"
+    )
 
     result = VideoWorkflowResult(
         workflow_id="test_workflow_123",
@@ -231,7 +243,9 @@ def test_refactored_workflow_id_generator():
     ids = [generator.generate() for _ in range(10)]
 
     assert len(ids) == len(set(ids))  # 所有 ID 都應該是唯一的
-    assert all(id.startswith("workflow_") for id in ids)  # 所有 ID 都應該有正確的前綴
+    assert all(
+        id.startswith("workflow_") for id in ids
+    )  # 所有 ID 都應該有正確的前綴
 
 
 def test_refactored_workflow_result_progress_update():
@@ -281,7 +295,9 @@ def test_refactored_dependency_injection():
         time_estimator=custom_time_estimator,
     )
 
-    request = VideoWorkflowRequest(topic="依賴注入測試", target_platform="facebook")
+    request = VideoWorkflowRequest(
+        topic="依賴注入測試", target_platform="facebook"
+    )
 
     result = engine.initialize_workflow(request, user_id="di_test_user")
 
@@ -296,8 +312,12 @@ def test_refactored_error_handling():
 
     # 測試不存在的工作流程
     test = RefactorTest()
-    test.assert_raises(ValueError, engine.execute_workflow, "non_existent_workflow")
-    test.assert_raises(ValueError, engine.cancel_workflow, "non_existent_workflow")
+    test.assert_raises(
+        ValueError, engine.execute_workflow, "non_existent_workflow"
+    )
+    test.assert_raises(
+        ValueError, engine.cancel_workflow, "non_existent_workflow"
+    )
 
 
 # 向後兼容性測試 - 確保原有的測試仍然能通過

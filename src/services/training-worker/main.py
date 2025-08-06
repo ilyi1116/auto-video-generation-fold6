@@ -108,7 +108,9 @@ def train_voice_model(self, task_data: Dict[str, Any]):
             },
         )
 
-        processed_data = preprocess_training_data(task.training_data_urls, task.config)
+        processed_data = preprocess_training_data(
+            task.training_data_urls, task.config
+        )
 
         # Step 2: Initialize training
         self.update_state(
@@ -133,7 +135,10 @@ def train_voice_model(self, task_data: Dict[str, Any]):
                 state=TrainingStatus.TRAINING,
                 meta={
                     "progress": int(progress),
-                    "status": (f"Training epoch {epoch + 1}/" f"{model_config.get('epochs', 100)}"),
+                    "status": (
+                        f"Training epoch {epoch + 1}/"
+                        f"{model_config.get('epochs', 100)}"
+                    ),
                     "current_step": "training",
                     "epoch": epoch + 1,
                     "total_epochs": model_config.get("epochs", 100),
@@ -141,7 +146,9 @@ def train_voice_model(self, task_data: Dict[str, Any]):
             )
 
             # Simulate training step
-            train_step_result = simulate_training_step(processed_data, model_config, epoch)
+            train_step_result = simulate_training_step(
+                processed_data, model_config, epoch
+            )
 
             # Check for early stopping or cancellation
             if self.is_aborted():
@@ -159,7 +166,9 @@ def train_voice_model(self, task_data: Dict[str, Any]):
             },
         )
 
-        evaluation_metrics = evaluate_trained_model(processed_data, model_config)
+        evaluation_metrics = evaluate_trained_model(
+            processed_data, model_config
+        )
         task.model_metrics = evaluation_metrics
 
         # Step 5: Save and finalize model
@@ -172,7 +181,9 @@ def train_voice_model(self, task_data: Dict[str, Any]):
             },
         )
 
-        model_path = save_trained_model(task.model_name, model_config, evaluation_metrics)
+        model_path = save_trained_model(
+            task.model_name, model_config, evaluation_metrics
+        )
 
         # Complete training
         task.status = TrainingStatus.COMPLETED
@@ -186,16 +197,15 @@ def train_voice_model(self, task_data: Dict[str, Any]):
             "task_id": task.task_id,
             "model_path": model_path,
             "metrics": evaluation_metrics,
-            "training_time": (task.completed_at - task.started_at).total_seconds(),
+            "training_time": (
+                task.completed_at - task.started_at
+            ).total_seconds(),
             "progress": 100,
         }
 
     except Exception as e:
-        logger.error(
-            f"Training failed for task {task_data.get('task_id', 'unknown')}: {
-                str(e)
-            }"
-        )
+        task_id = task_data.get("task_id", "unknown")
+        logger.error(f"Training failed for task {task_id}: {str(e)}")
 
         task.status = TrainingStatus.FAILED
         task.error_message = str(e)
@@ -214,7 +224,9 @@ def train_voice_model(self, task_data: Dict[str, Any]):
 
 
 @celery_app.task(name="training_worker.evaluate_model")
-def evaluate_model(model_path: str, test_data_urls: List[str]) -> Dict[str, float]:
+def evaluate_model(
+    model_path: str, test_data_urls: List[str]
+) -> Dict[str, float]:
     """
     Evaluate a trained model against test data
 
@@ -274,7 +286,9 @@ def cleanup_training_data(task_id: str, keep_model: bool = True):
         raise
 
 
-def preprocess_training_data(data_urls: List[str], config: Dict[str, Any]) -> Dict[str, Any]:
+def preprocess_training_data(
+    data_urls: List[str], config: Dict[str, Any]
+) -> Dict[str, Any]:
     """Preprocess training data for model training"""
 
     logger.info(f"Preprocessing {len(data_urls)} training files")
@@ -324,7 +338,9 @@ def simulate_training_step(
     return {"loss": loss, "accuracy": accuracy, "epoch": epoch}
 
 
-def evaluate_trained_model(data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, float]:
+def evaluate_trained_model(
+    data: Dict[str, Any], config: Dict[str, Any]
+) -> Dict[str, float]:
     """Evaluate the trained model"""
 
     # Placeholder evaluation metrics
@@ -341,10 +357,14 @@ def evaluate_trained_model(data: Dict[str, Any], config: Dict[str, Any]) -> Dict
     return metrics
 
 
-def save_trained_model(model_name: str, config: Dict[str, Any], metrics: Dict[str, float]) -> str:
+def save_trained_model(
+    model_name: str, config: Dict[str, Any], metrics: Dict[str, float]
+) -> str:
     """Save the trained model"""
 
-    model_path = f"/models/{model_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    model_path = (
+        f"/models/{model_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    )
 
     # Create model directory
     os.makedirs(model_path, exist_ok=True)

@@ -27,7 +27,9 @@ class TextGenerator:
 
             # Initialize OpenAI
             if settings.openai_api_key:
-                self.openai_client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
+                self.openai_client = openai.AsyncOpenAI(
+                    api_key=settings.openai_api_key
+                )
                 logger.info("OpenAI client initialized")
 
             # Initialize Google Gemini
@@ -134,7 +136,9 @@ class TextGenerator:
     ) -> Dict[str, Any]:
         """Generate catchy titles based on script content"""
         try:
-            logger.info("Generating titles", style=style, max_length=max_length)
+            logger.info(
+                "Generating titles", style=style, max_length=max_length
+            )
 
             # Build the prompt for title generation
             prompt = self._build_title_prompt(
@@ -151,7 +155,9 @@ class TextGenerator:
             titles = self._parse_titles(response)
 
             # Select the best title based on criteria
-            recommended_title = self._select_best_title(titles, style, max_length)
+            recommended_title = self._select_best_title(
+                titles, style, max_length
+            )
 
             result = {
                 "titles": titles,
@@ -171,7 +177,9 @@ class TextGenerator:
             logger.error("Title generation failed", error=str(e))
             raise
 
-    async def optimize_script(self, script_content: str, target_duration: int) -> Dict[str, Any]:
+    async def optimize_script(
+        self, script_content: str, target_duration: int
+    ) -> Dict[str, Any]:
         """Optimize script for specific duration and engagement"""
         try:
             logger.info("Optimizing script", target_duration=target_duration)
@@ -196,11 +204,15 @@ class TextGenerator:
             )
 
             # Generate optimized script
-            optimized_content = await self._generate_text(prompt, max_tokens=800)
+            optimized_content = await self._generate_text(
+                prompt, max_tokens=800
+            )
             optimized_duration = self._estimate_reading_time(optimized_content)
 
             # Calculate optimization metrics
-            changes_made = self._analyze_changes(script_content, optimized_content)
+            changes_made = self._analyze_changes(
+                script_content, optimized_content
+            )
             optimization_score = self._calculate_optimization_score(
                 target_duration, optimized_duration, current_duration
             )
@@ -214,7 +226,10 @@ class TextGenerator:
                 "optimization_score": optimization_score,
                 "improvement_percentage": round(
                     (
-                        (current_duration - abs(optimized_duration - target_duration))
+                        (
+                            current_duration
+                            - abs(optimized_duration - target_duration)
+                        )
                         / current_duration
                     )
                     * 100,
@@ -350,6 +365,12 @@ Format your response as a numbered list:
             action = "expand"
             difference = target_duration - current_duration
 
+        optimization_guidance = (
+            "Remove redundant points, combine ideas, use more concise language"
+            if action == "shorten"
+            else "Add supporting details, examples, or elaboration on key points"
+        )
+
         return f"""Optimize this video script to better match the target duration while maintaining engagement and key messages.
 
 CURRENT SCRIPT:
@@ -363,13 +384,7 @@ OPTIMIZATION TASK:
 OPTIMIZATION GUIDELINES:
 - Maintain the core message and hook
 - Preserve the most engaging elements
-- {
-            "Remove redundant points, combine ideas, use more concise \
-    language"
-            if action == "shorten"
-            else "Add supporting details, \
-        examples, or elaboration on key points"
-        }
+- {optimization_guidance}
 - Keep the natural flow and transitions
 - Maintain call-to-action
 
@@ -403,7 +418,9 @@ Please provide ONLY the optimized script content."""
 
         return titles[:8]  # Return maximum 8 titles
 
-    def _select_best_title(self, titles: List[str], style: str, max_length: int) -> str:
+    def _select_best_title(
+        self, titles: List[str], style: str, max_length: int
+    ) -> str:
         """Select the best title based on criteria"""
         if not titles:
             return "Untitled Video"
@@ -443,7 +460,10 @@ Please provide ONLY the optimized script content."""
                 # Prefer clear, informative titles
                 if ":" in title or "|" in title:
                     score += 3
-                if any(word in title_lower for word in ["how", "what", "why", "guide", "tips"]):
+                if any(
+                    word in title_lower
+                    for word in ["how", "what", "why", "guide", "tips"]
+                ):
                     score += 5
 
             elif style == "clickbait":
@@ -454,7 +474,9 @@ Please provide ONLY the optimized script content."""
                     "surprising",
                     "nobody tells you",
                 ]
-                score += sum(5 for phrase in curiosity_words if phrase in title_lower)
+                score += sum(
+                    5 for phrase in curiosity_words if phrase in title_lower
+                )
 
             scored_titles.append((score, title))
 
@@ -476,8 +498,12 @@ Please provide ONLY the optimized script content."""
             changes.append(f"Increased word count by {abs(word_diff)} words")
 
         # Simple structural analysis
-        original_sentences = original.count(".") + original.count("!") + original.count("?")
-        optimized_sentences = optimized.count(".") + optimized.count("!") + optimized.count("?")
+        original_sentences = (
+            original.count(".") + original.count("!") + original.count("?")
+        )
+        optimized_sentences = (
+            optimized.count(".") + optimized.count("!") + optimized.count("?")
+        )
 
         if original_sentences != optimized_sentences:
             changes.append(
@@ -495,7 +521,9 @@ Please provide ONLY the optimized script content."""
     ) -> int:
         """Calculate optimization score (0-100)"""
         # How close are we to the target?
-        target_accuracy = max(0, 100 - abs(target_duration - optimized_duration) * 5)
+        target_accuracy = max(
+            0, 100 - abs(target_duration - optimized_duration) * 5
+        )
 
         # Did we improve from the original?
         original_distance = abs(target_duration - original_duration)

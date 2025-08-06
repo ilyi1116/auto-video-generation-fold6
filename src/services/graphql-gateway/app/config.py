@@ -16,11 +16,19 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
     # 服務端點
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8000")
-    VIDEO_SERVICE_URL: str = os.getenv("VIDEO_SERVICE_URL", "http://video-service:8000")
+    AUTH_SERVICE_URL: str = os.getenv(
+        "AUTH_SERVICE_URL", "http://auth-service:8000"
+    )
+    VIDEO_SERVICE_URL: str = os.getenv(
+        "VIDEO_SERVICE_URL", "http://video-service:8000"
+    )
     AI_SERVICE_URL: str = os.getenv("AI_SERVICE_URL", "http://ai-service:8000")
-    TREND_SERVICE_URL: str = os.getenv("TREND_SERVICE_URL", "http://trend-service:8000")
-    STORAGE_SERVICE_URL: str = os.getenv("STORAGE_SERVICE_URL", "http://storage-service:8000")
+    TREND_SERVICE_URL: str = os.getenv(
+        "TREND_SERVICE_URL", "http://trend-service:8000"
+    )
+    STORAGE_SERVICE_URL: str = os.getenv(
+        "STORAGE_SERVICE_URL", "http://storage-service:8000"
+    )
 
     # CORS 設定
     ALLOWED_ORIGINS: List[str] = [

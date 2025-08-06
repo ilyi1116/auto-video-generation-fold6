@@ -63,19 +63,27 @@ class ShortVideoGenerator:
             work_dir = await self._create_work_directory(keyword)
 
             # 2. 生成視覺素材
-            visual_assets = await self._generate_visual_assets(keyword, category, work_dir)
+            visual_assets = await self._generate_visual_assets(
+                keyword, category, work_dir
+            )
 
             # 3. 生成音頻
             audio_file = await self._generate_audio(script, work_dir)
 
             # 4. 創建影片場景
-            scenes = await self._create_video_scenes(visual_assets, script, category)
+            scenes = await self._create_video_scenes(
+                visual_assets, script, category
+            )
 
             # 5. 組裝最終影片
-            final_video = await self._assemble_video(scenes, audio_file, work_dir, category)
+            final_video = await self._assemble_video(
+                scenes, audio_file, work_dir, category
+            )
 
             # 6. 添加短影音特效
-            enhanced_video = await self._add_tiktok_effects(final_video, keyword, work_dir)
+            enhanced_video = await self._add_tiktok_effects(
+                final_video, keyword, work_dir
+            )
 
             return {
                 "status": "success",
@@ -102,7 +110,9 @@ class ShortVideoGenerator:
         work_dir.mkdir(parents=True, exist_ok=True)
         return work_dir
 
-    async def _generate_visual_assets(self, keyword: str, category: str, work_dir: Path) -> Dict:
+    async def _generate_visual_assets(
+        self, keyword: str, category: str, work_dir: Path
+    ) -> Dict:
         """生成視覺素材"""
         try:
             assets = {
@@ -113,7 +123,9 @@ class ShortVideoGenerator:
 
             # 1. 背景圖片（模擬 AI 生成）
             for i in range(3):
-                bg_image = await self._create_background_image(keyword, i, work_dir)
+                bg_image = await self._create_background_image(
+                    keyword, i, work_dir
+                )
                 assets["background_images"].append(bg_image)
 
             # 2. 文字覆蓋層
@@ -121,7 +133,9 @@ class ShortVideoGenerator:
             assets["overlay_graphics"].append(text_overlay)
 
             # 3. 趨勢圖標和特效
-            trending_graphics = await self._create_trending_graphics(keyword, work_dir)
+            trending_graphics = await self._create_trending_graphics(
+                keyword, work_dir
+            )
             assets["overlay_graphics"].extend(trending_graphics)
 
             return assets
@@ -130,7 +144,9 @@ class ShortVideoGenerator:
             logger.error(f"生成視覺素材失敗: {e}")
             return {}
 
-    async def _create_background_image(self, keyword: str, index: int, work_dir: Path) -> str:
+    async def _create_background_image(
+        self, keyword: str, index: int, work_dir: Path
+    ) -> str:
         """創建背景圖片"""
         try:
             # 創建漸層背景（模擬 AI 生成的圖片）
@@ -146,7 +162,9 @@ class ShortVideoGenerator:
                 "default": [(100, 150, 200), (150, 200, 255)],
             }
 
-            colors = color_schemes.get(keyword.lower(), color_schemes["default"])
+            colors = color_schemes.get(
+                keyword.lower(), color_schemes["default"]
+            )
 
             # 創建漸層效果
             for y in range(height):
@@ -159,7 +177,9 @@ class ShortVideoGenerator:
             # 添加關鍵字文字
             try:
                 font_size = 120
-                font = ImageFont.truetype("/system/fonts/DroidSansFallback.ttf", font_size)
+                font = ImageFont.truetype(
+                    "/system/fonts/DroidSansFallback.ttf", font_size
+                )
             except Exception:
                 font = ImageFont.load_default()
 
@@ -192,8 +212,12 @@ class ShortVideoGenerator:
             # 主標題
             title_text = f"🔥 {keyword} 正在爆紅！"
             try:
-                title_font = ImageFont.truetype("/system/fonts/DroidSansFallback.ttf", 80)
-                subtitle_font = ImageFont.truetype("/system/fonts/DroidSansFallback.ttf", 60)
+                title_font = ImageFont.truetype(
+                    "/system/fonts/DroidSansFallback.ttf", 80
+                )
+                subtitle_font = ImageFont.truetype(
+                    "/system/fonts/DroidSansFallback.ttf", 60
+                )
             except Exception:
                 title_font = ImageFont.load_default()
                 subtitle_font = ImageFont.load_default()
@@ -244,7 +268,9 @@ class ShortVideoGenerator:
             logger.error(f"創建文字覆蓋層失敗: {e}")
             return ""
 
-    async def _create_trending_graphics(self, keyword: str, work_dir: Path) -> List[str]:
+    async def _create_trending_graphics(
+        self, keyword: str, work_dir: Path
+    ) -> List[str]:
         """創建趨勢圖標"""
         graphics = []
 
@@ -333,7 +359,9 @@ class ShortVideoGenerator:
             audio_duration = len(script.split()) * 0.5  # 估算時長
 
             # 使用 moviepy 創建靜音
-            _ = AudioFileClip(None, duration=min(audio_duration, 30))  # noqa: F841
+            _ = AudioFileClip(
+                None, duration=min(audio_duration, 30)
+            )  # noqa: F841
             audio_path = work_dir / "audio.wav"
 
             # 這裡實際應該是：
@@ -355,9 +383,9 @@ class ShortVideoGenerator:
         scenes = []
 
         try:
-            duration_per_scene = self.video_templates[category]["duration"] / len(
-                visual_assets["background_images"]
-            )
+            duration_per_scene = self.video_templates[category][
+                "duration"
+            ] / len(visual_assets["background_images"])
 
             for i, bg_image in enumerate(visual_assets["background_images"]):
                 scene = {
@@ -392,16 +420,22 @@ class ShortVideoGenerator:
             for scene in scenes:
                 if scene["background"]:
                     # 載入背景圖片
-                    img_clip = ImageClip(scene["background"], duration=scene["duration"])
+                    img_clip = ImageClip(
+                        scene["background"], duration=scene["duration"]
+                    )
                     img_clip = img_clip.resize(video_size)
 
                     # 添加覆蓋層
                     if scene["overlays"]:
                         for overlay_path in scene["overlays"]:
                             if os.path.exists(overlay_path):
-                                overlay_clip = ImageClip(overlay_path, duration=scene["duration"])
+                                overlay_clip = ImageClip(
+                                    overlay_path, duration=scene["duration"]
+                                )
                                 overlay_clip = overlay_clip.resize(video_size)
-                                img_clip = CompositeVideoClip([img_clip, overlay_clip])
+                                img_clip = CompositeVideoClip(
+                                    [img_clip, overlay_clip]
+                                )
 
                     # 添加特效
                     if "zoom_in" in scene["effects"]:
@@ -433,7 +467,9 @@ class ShortVideoGenerator:
             logger.error(f"組裝影片失敗: {e}")
             return ""
 
-    async def _add_tiktok_effects(self, video_path: str, keyword: str, work_dir: Path) -> str:
+    async def _add_tiktok_effects(
+        self, video_path: str, keyword: str, work_dir: Path
+    ) -> str:
         """添加短影音特效"""
         try:
             if not video_path or not os.path.exists(video_path):
@@ -443,7 +479,9 @@ class ShortVideoGenerator:
             video = VideoFileClip(video_path)
 
             # 1. 添加開場動畫
-            intro_text = TextClip(f"🔥 {keyword}", fontsize=100, color="white", font="Arial")
+            intro_text = TextClip(
+                f"🔥 {keyword}", fontsize=100, color="white", font="Arial"
+            )
             intro_text = intro_text.set_position("center").set_duration(2)
             intro_text = intro_text.crossfadein(0.5).crossfadeout(0.5)
 
@@ -467,9 +505,9 @@ class ShortVideoGenerator:
                 color="white",
                 font="Arial",
             )
-            hashtag_text = hashtag_text.set_position(("left", "bottom")).set_duration(
-                final_video.duration
-            )
+            hashtag_text = hashtag_text.set_position(
+                ("left", "bottom")
+            ).set_duration(final_video.duration)
 
             final_video = CompositeVideoClip([final_video, hashtag_text])
 

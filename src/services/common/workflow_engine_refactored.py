@@ -159,7 +159,9 @@ class WorkflowStep(ABC):
                 return result
 
             # 執行步驟邏輯（帶超時）
-            step_data = await asyncio.wait_for(self._execute_step(context), timeout=self.timeout)
+            step_data = await asyncio.wait_for(
+                self._execute_step(context), timeout=self.timeout
+            )
 
             result.data = step_data or {}
             result.state = StepState.COMPLETED
@@ -174,7 +176,9 @@ class WorkflowStep(ABC):
 
         except asyncio.TimeoutError:
             result.state = StepState.FAILED
-            result.error = f"Step {self.step_name} timed out after {self.timeout} seconds"
+            result.error = (
+                f"Step {self.step_name} timed out after {self.timeout} seconds"
+            )
             result.end_time = time.time()
             result.metrics = {"timeout": 1, "success": 0}
 
@@ -200,7 +204,9 @@ class WorkflowStep(ABC):
 
         # 如果步驟失敗且為必要步驟，停止處理
         if result.state == StepState.FAILED:
-            raise WorkflowStepError(f"Critical step {self.step_name} failed: {result.error}")
+            raise WorkflowStepError(
+                f"Critical step {self.step_name} failed: {result.error}"
+            )
 
         # 繼續到下一步
         if self.next_step:
@@ -213,7 +219,9 @@ class WorkflowStepError(ServiceError):
     """工作流程步驟錯誤"""
 
     def __init__(self, message: str, step_name: str = None):
-        super().__init__(message, "WORKFLOW_STEP_ERROR", {"step_name": step_name})
+        super().__init__(
+            message, "WORKFLOW_STEP_ERROR", {"step_name": step_name}
+        )
 
 
 class WorkflowEngine(BaseService):
@@ -240,7 +248,9 @@ class WorkflowEngine(BaseService):
 
     async def _initialize(self):
         """初始化工作流程引擎"""
-        self.add_health_check("workflow_capacity", self._check_workflow_capacity)
+        self.add_health_check(
+            "workflow_capacity", self._check_workflow_capacity
+        )
         self.add_health_check("memory_usage", self._check_memory_usage)
 
     async def _startup(self):
@@ -270,7 +280,9 @@ class WorkflowEngine(BaseService):
         self._workflow_templates[template.name] = template
         self.logger.info(f"Registered workflow template: {template.name}")
 
-    def add_workflow_observer(self, observer: Callable[["WorkflowExecution"], None]):
+    def add_workflow_observer(
+        self, observer: Callable[["WorkflowExecution"], None]
+    ):
         """添加工作流程觀察者"""
         self._workflow_observers.append(observer)
 
@@ -298,7 +310,9 @@ class WorkflowEngine(BaseService):
 
         # 檢查容量
         if not self._check_workflow_capacity():
-            raise ServiceError("Workflow capacity exceeded", "CAPACITY_EXCEEDED")
+            raise ServiceError(
+                "Workflow capacity exceeded", "CAPACITY_EXCEEDED"
+            )
 
         # 創建工作流程執行實例
         workflow_id = workflow_id or str(uuid.uuid4())
@@ -325,7 +339,9 @@ class WorkflowEngine(BaseService):
         self._execution_stats["active_workflows"] = len(self._active_workflows)
 
         # 記錄指標
-        await self.metrics.increment_counter("workflows_started", {"template": template_name})
+        await self.metrics.increment_counter(
+            "workflows_started", {"template": template_name}
+        )
 
         # 啟動執行（異步）
         asyncio.create_task(self._execute_workflow(execution))
@@ -399,9 +415,13 @@ class WorkflowEngine(BaseService):
         finally:
             # 清理活動工作流程
             self._active_workflows.pop(execution.workflow_id, None)
-            self._execution_stats["active_workflows"] = len(self._active_workflows)
+            self._execution_stats["active_workflows"] = len(
+                self._active_workflows
+            )
 
-    async def get_workflow_status(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    async def get_workflow_status(
+        self, workflow_id: str
+    ) -> Optional[Dict[str, Any]]:
         """獲取工作流程狀態"""
         execution = self._active_workflows.get(workflow_id)
         if not execution:
@@ -526,7 +546,9 @@ class WorkflowExecution:
 
         except asyncio.TimeoutError:
             self.state = WorkflowState.FAILED
-            self.error = f"Workflow timed out after {self.template.timeout} seconds"
+            self.error = (
+                f"Workflow timed out after {self.template.timeout} seconds"
+            )
             self.end_time = time.time()
 
         except Exception as e:
@@ -592,7 +614,8 @@ class WorkflowExecution:
             "retry_count": self.retry_count,
             "progress": self.get_progress(),
             "step_results": {
-                name: result.to_dict() for name, result in self.context.step_results.items()
+                name: result.to_dict()
+                for name, result in self.context.step_results.items()
             },
             "shared_data": self.context.shared_data,
             "metadata": self.context.metadata,
@@ -642,7 +665,9 @@ class ScriptGenerationStep(WorkflowStep):
     """腳本生成步驟"""
 
     def __init__(self, ai_service_client, **kwargs):
-        super().__init__("script_generation", required_steps=["trend_analysis"], **kwargs)
+        super().__init__(
+            "script_generation", required_steps=["trend_analysis"], **kwargs
+        )
         self.ai_service = ai_service_client
 
     async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:

@@ -4,12 +4,12 @@ Docker 容器優化腳本
 Phase 6: 性能優化 - 分析和優化容器大小
 """
 
+import argparse
 import json
 import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List
-import argparse
 
 
 class DockerOptimizer:

@@ -71,7 +71,9 @@ class TestAIServices:
         # Setup mock
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = "Generated test script content"
+        mock_response.choices[0].message.content = (
+            "Generated test script content"
+        )
 
         mock_client = AsyncMock()
         mock_client.chat.completions.create.return_value = mock_response
@@ -105,8 +107,12 @@ class TestAIServices:
             patch.object(settings, "stability_api_key", ""),
             patch.object(settings, "openai_api_key", ""),
         ):
-            with pytest.raises(Exception, match="No image generation service available"):
-                await generator.generate_image(prompt="Test image", style="realistic")
+            with pytest.raises(
+                Exception, match="No image generation service available"
+            ):
+                await generator.generate_image(
+                    prompt="Test image", style="realistic"
+                )
 
         await generator.shutdown()
 
@@ -120,7 +126,9 @@ class TestAIServices:
         client.api_key = ""
         client.http_client = None
 
-        with patch.object(client, "_save_music", return_value="/storage/music/test.mp3"):
+        with patch.object(
+            client, "_save_music", return_value="/storage/music/test.mp3"
+        ):
             result = await client.generate_music(
                 prompt="Test music", style="background", duration_seconds=10
             )

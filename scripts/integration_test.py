@@ -14,10 +14,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+import docker
 import psutil
 import requests
-
-import docker
 
 logger = logging.getLogger(__name__)
 

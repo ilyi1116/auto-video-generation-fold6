@@ -81,7 +81,9 @@ class VoiceCloner:
 
             # 驗證樣本數量
             if len(audio_samples) < self.min_samples_for_cloning:
-                raise ValueError(f"至少需要 {self.min_samples_for_cloning} 個語音樣本")
+                raise ValueError(
+                    f"至少需要 {self.min_samples_for_cloning} 個語音樣本"
+                )
 
             # 處理音訊樣本
             processed_samples = []
@@ -119,7 +121,9 @@ class VoiceCloner:
                 "embedding": mean_embedding,
                 "consistency": consistency,
                 "sample_count": len(embeddings),
-                "quality_score": self._calculate_quality_score(embeddings, processed_samples),
+                "quality_score": self._calculate_quality_score(
+                    embeddings, processed_samples
+                ),
                 "created_at": np.datetime64("now").astype(str),
             }
 
@@ -157,7 +161,9 @@ class VoiceCloner:
 
         # 重採樣到 16kHz（Resemblyzer 要求）
         if sample_rate != 16000:
-            audio_array = librosa.resample(audio_array, orig_sr=sample_rate, target_sr=16000)
+            audio_array = librosa.resample(
+                audio_array, orig_sr=sample_rate, target_sr=16000
+            )
 
         # 正規化音量
         audio_array = audio_array / np.max(np.abs(audio_array))
@@ -176,7 +182,9 @@ class VoiceCloner:
         embedding = self.voice_encoder.embed_utterance(audio)
         return embedding
 
-    def _calculate_embedding_consistency(self, embeddings: List[np.ndarray]) -> float:
+    def _calculate_embedding_consistency(
+        self, embeddings: List[np.ndarray]
+    ) -> float:
         """計算嵌入向量的一致性"""
         if len(embeddings) < 2:
             return 1.0
@@ -186,7 +194,8 @@ class VoiceCloner:
         for i in range(len(embeddings)):
             for j in range(i + 1, len(embeddings)):
                 sim = np.dot(embeddings[i], embeddings[j]) / (
-                    np.linalg.norm(embeddings[i]) * np.linalg.norm(embeddings[j])
+                    np.linalg.norm(embeddings[i])
+                    * np.linalg.norm(embeddings[j])
                 )
                 similarities.append(sim)
 
@@ -248,7 +257,9 @@ class VoiceCloner:
             合成的音訊數據
         """
         try:
-            logger.info("開始語音克隆合成", target_voice=target_voice, text=text[:50])
+            logger.info(
+                "開始語音克隆合成", target_voice=target_voice, text=text[:50]
+            )
 
             # 檢查語音模型是否存在
             if target_voice not in self.cloned_voices:
@@ -297,7 +308,9 @@ class VoiceCloner:
 
             # 2. 應用語音轉換（簡化實現）
             # 實際應用中這裡會使用更複雜的語音轉換模型
-            enhanced_audio = await self._apply_voice_conversion(base_audio, target_embedding)
+            enhanced_audio = await self._apply_voice_conversion(
+                base_audio, target_embedding
+            )
 
             return enhanced_audio
 
@@ -364,7 +377,9 @@ class VoiceCloner:
 
         return audio_shifted
 
-    async def analyze_voice_similarity(self, voice1_data: bytes, voice2_data: bytes) -> Dict:
+    async def analyze_voice_similarity(
+        self, voice1_data: bytes, voice2_data: bytes
+    ) -> Dict:
         """分析兩個語音的相似度"""
         try:
             # 預處理音訊
@@ -406,7 +421,9 @@ class VoiceCloner:
                 )
         return profiles
 
-    async def delete_voice_profile(self, voice_name: str, user_id: str) -> bool:
+    async def delete_voice_profile(
+        self, voice_name: str, user_id: str
+    ) -> bool:
         """刪除語音檔案"""
         try:
             if voice_name not in self.cloned_voices:

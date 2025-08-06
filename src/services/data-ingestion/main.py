@@ -72,14 +72,20 @@ async def health_check():
 
 
 @app.post("/api/v1/ingest/trends", response_model=IngestionResult)
-async def ingest_trends(request: IngestionRequest, background_tasks: BackgroundTasks):
+async def ingest_trends(
+    request: IngestionRequest, background_tasks: BackgroundTasks
+):
     """Ingest trending data from social platforms"""
 
     try:
-        logger.info(f"Starting trend ingestion for platform: {request.platform}")
+        logger.info(
+            f"Starting trend ingestion for platform: {request.platform}"
+        )
 
         # Start background ingestion task
-        background_tasks.add_task(process_trend_ingestion, request.platform, request.parameters)
+        background_tasks.add_task(
+            process_trend_ingestion, request.platform, request.parameters
+        )
 
         return IngestionResult(
             success=True,
@@ -94,13 +100,19 @@ async def ingest_trends(request: IngestionRequest, background_tasks: BackgroundT
 
 
 @app.post("/api/v1/ingest/keywords", response_model=IngestionResult)
-async def ingest_keywords(request: IngestionRequest, background_tasks: BackgroundTasks):
+async def ingest_keywords(
+    request: IngestionRequest, background_tasks: BackgroundTasks
+):
     """Ingest keyword data and performance metrics"""
 
     try:
-        logger.info(f"Starting keyword ingestion for platform: {request.platform}")
+        logger.info(
+            f"Starting keyword ingestion for platform: {request.platform}"
+        )
 
-        background_tasks.add_task(process_keyword_ingestion, request.platform, request.parameters)
+        background_tasks.add_task(
+            process_keyword_ingestion, request.platform, request.parameters
+        )
 
         return IngestionResult(
             success=True,
@@ -152,7 +164,9 @@ async def process_trend_ingestion(platform: str, parameters: Dict[str, Any]):
         # Store trends in database
         await store_trends_in_database(platform, trends)
 
-        logger.info(f"Successfully ingested {len(trends)} trends for {platform}")
+        logger.info(
+            f"Successfully ingested {len(trends)} trends for {platform}"
+        )
 
     except Exception as e:
         logger.error(f"Trend ingestion failed for {platform}: {str(e)}")
@@ -172,7 +186,9 @@ async def process_keyword_ingestion(platform: str, parameters: Dict[str, Any]):
         # Store in database
         await store_keywords_in_database(platform, keyword_metrics)
 
-        logger.info(f"Successfully ingested {len(keywords)} keywords for {platform}")
+        logger.info(
+            f"Successfully ingested {len(keywords)} keywords for {platform}"
+        )
 
     except Exception as e:
         logger.error(f"Keyword ingestion failed for {platform}: {str(e)}")
@@ -214,7 +230,9 @@ async def ingest_instagram_trends(
     return trends
 
 
-async def fetch_trending_keywords(platform: str, parameters: Dict[str, Any]) -> List[str]:
+async def fetch_trending_keywords(
+    platform: str, parameters: Dict[str, Any]
+) -> List[str]:
     """Fetch trending keywords for a platform"""
 
     # Placeholder implementation
@@ -252,14 +270,18 @@ async def store_trends_in_database(platform: str, trends: List[TrendData]):
     logger.info(f"Storing {len(trends)} trends for {platform} in database")
 
 
-async def store_keywords_in_database(platform: str, keyword_metrics: Dict[str, Any]):
+async def store_keywords_in_database(
+    platform: str, keyword_metrics: Dict[str, Any]
+):
     """Store keyword metrics in database"""
 
     # Placeholder - would use database connection
     logger.info(f"Storing keyword metrics for {platform} in database")
 
 
-async def fetch_trends_from_database(platform: str, limit: int) -> List[Dict[str, Any]]:
+async def fetch_trends_from_database(
+    platform: str, limit: int
+) -> List[Dict[str, Any]]:
     """Fetch trends from database"""
 
     # Placeholder - would query database

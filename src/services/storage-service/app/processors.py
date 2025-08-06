@@ -15,7 +15,9 @@ class FileProcessor(ABC):
     """Abstract base class for file processors"""
 
     @abstractmethod
-    async def process(self, file_path: str, output_path: str, **kwargs) -> Dict[str, Any]:
+    async def process(
+        self, file_path: str, output_path: str, **kwargs
+    ) -> Dict[str, Any]:
         """Process file and return metadata"""
 
     @abstractmethod
@@ -29,7 +31,9 @@ class ImageProcessor(FileProcessor):
     def __init__(self):
         self.supported_formats = ["JPEG", "PNG", "WEBP", "GIF"]
 
-    async def process(self, file_path: str, output_path: str, **kwargs) -> Dict[str, Any]:
+    async def process(
+        self, file_path: str, output_path: str, **kwargs
+    ) -> Dict[str, Any]:
         """Process image: resize, optimize, generate thumbnail"""
         try:
             with Image.open(file_path) as img:
@@ -40,7 +44,9 @@ class ImageProcessor(FileProcessor):
                 img = ImageOps.exif_transpose(img)
 
                 # Resize if needed
-                max_dimension = kwargs.get("max_dimension", settings.max_image_dimension)
+                max_dimension = kwargs.get(
+                    "max_dimension", settings.max_image_dimension
+                )
                 if max(img.size) > max_dimension:
                     img.thumbnail(
                         (max_dimension, max_dimension),
@@ -79,10 +85,14 @@ class ImageProcessor(FileProcessor):
                 }
 
         except Exception as e:
-            logger.error("Image processing failed", error=str(e), file_path=file_path)
+            logger.error(
+                "Image processing failed", error=str(e), file_path=file_path
+            )
             raise
 
-    async def _generate_thumbnail(self, img: Image.Image, original_path: str, size: int) -> str:
+    async def _generate_thumbnail(
+        self, img: Image.Image, original_path: str, size: int
+    ) -> str:
         """Generate thumbnail for image"""
         try:
             # Create thumbnail
@@ -115,14 +125,17 @@ class ImageProcessor(FileProcessor):
                     "height": img.size[1],
                     "format": img.format,
                     "mode": img.mode,
-                    "has_transparency": img.mode in ("RGBA", "LA") or "transparency" in img.info,
+                    "has_transparency": img.mode in ("RGBA", "LA")
+                    or "transparency" in img.info,
                 }
 
                 # Extract EXIF data if available
                 if hasattr(img, "_getexif") and img._getexif():
                     exif_data = img._getexif()
                     metadata["exif"] = {
-                        k: v for k, v in exif_data.items() if isinstance(v, (str, int, float))
+                        k: v
+                        for k, v in exif_data.items()
+                        if isinstance(v, (str, int, float))
                     }
 
                 return metadata
@@ -142,7 +155,9 @@ class AudioProcessor(FileProcessor):
     def __init__(self):
         self.supported_formats = ["mp3", "wav", "ogg", "m4a"]
 
-    async def process(self, file_path: str, output_path: str, **kwargs) -> Dict[str, Any]:
+    async def process(
+        self, file_path: str, output_path: str, **kwargs
+    ) -> Dict[str, Any]:
         """Process audio: convert format, optimize bitrate"""
         try:
             # This would use ffmpeg for audio processing
@@ -189,7 +204,9 @@ class AudioProcessor(FileProcessor):
                 raise Exception(f"Audio processing failed: {stderr.decode()}")
 
         except Exception as e:
-            logger.error("Audio processing failed", error=str(e), file_path=file_path)
+            logger.error(
+                "Audio processing failed", error=str(e), file_path=file_path
+            )
             raise
 
     def get_metadata(self, file_path: str) -> Dict[str, Any]:
@@ -245,7 +262,9 @@ class VideoProcessor(FileProcessor):
     def __init__(self):
         self.supported_formats = ["mp4", "avi", "mov", "webm"]
 
-    async def process(self, file_path: str, output_path: str, **kwargs) -> Dict[str, Any]:
+    async def process(
+        self, file_path: str, output_path: str, **kwargs
+    ) -> Dict[str, Any]:
         """Process video: transcode, resize, optimize"""
         try:
             metadata = self.get_metadata(file_path)
@@ -296,7 +315,9 @@ class VideoProcessor(FileProcessor):
                 processed_metadata = self.get_metadata(output_path)
 
                 # Generate thumbnail
-                thumbnail_path = await self._generate_video_thumbnail(file_path, output_path)
+                thumbnail_path = await self._generate_video_thumbnail(
+                    file_path, output_path
+                )
 
                 return {
                     "duration": processed_metadata.get("duration"),
@@ -313,10 +334,14 @@ class VideoProcessor(FileProcessor):
                 raise Exception(f"Video processing failed: {stderr.decode()}")
 
         except Exception as e:
-            logger.error("Video processing failed", error=str(e), file_path=file_path)
+            logger.error(
+                "Video processing failed", error=str(e), file_path=file_path
+            )
             raise
 
-    async def _generate_video_thumbnail(self, input_path: str, output_path: str) -> str:
+    async def _generate_video_thumbnail(
+        self, input_path: str, output_path: str
+    ) -> str:
         """Generate thumbnail from video"""
         try:
             base_name = os.path.splitext(output_path)[0]
@@ -388,12 +413,18 @@ class VideoProcessor(FileProcessor):
                 if video_stream:
                     metadata.update(
                         {
-                            "duration": float(data["format"].get("duration", 0)),
+                            "duration": float(
+                                data["format"].get("duration", 0)
+                            ),
                             "width": int(video_stream.get("width", 0)),
                             "height": int(video_stream.get("height", 0)),
-                            "fps": eval(video_stream.get("r_frame_rate", "30/1")),
+                            "fps": eval(
+                                video_stream.get("r_frame_rate", "30/1")
+                            ),
                             "video_codec": video_stream.get("codec_name"),
-                            "video_bitrate": int(video_stream.get("bit_rate", 0)),
+                            "video_bitrate": int(
+                                video_stream.get("bit_rate", 0)
+                            ),
                         }
                     )
 
@@ -401,8 +432,12 @@ class VideoProcessor(FileProcessor):
                     metadata.update(
                         {
                             "audio_codec": audio_stream.get("codec_name"),
-                            "audio_bitrate": int(audio_stream.get("bit_rate", 0)),
-                            "sample_rate": int(audio_stream.get("sample_rate", 0)),
+                            "audio_bitrate": int(
+                                audio_stream.get("bit_rate", 0)
+                            ),
+                            "sample_rate": int(
+                                audio_stream.get("sample_rate", 0)
+                            ),
                             "channels": int(audio_stream.get("channels", 0)),
                         }
                     )
@@ -441,7 +476,9 @@ class ProcessorManager:
 
         processor = self.get_processor(file_type)
         if not processor:
-            raise ValueError(f"No processor available for file type: {file_type}")
+            raise ValueError(
+                f"No processor available for file type: {file_type}"
+            )
 
         if not output_path:
             # Generate output path based on input

@@ -31,10 +31,16 @@ async def startup_event():
 class EmotionSynthesisRequest(BaseModel):
     text: str = Field(..., description="要合成的文字", max_length=2000)
     emotion: str = Field(default="neutral", description="目標情感")
-    intensity: float = Field(default=1.0, ge=0.1, le=2.0, description="情感強度")
+    intensity: float = Field(
+        default=1.0, ge=0.1, le=2.0, description="情感強度"
+    )
     language: str = Field(default="zh-TW", description="語言代碼")
-    voice_speed: float = Field(default=1.0, ge=0.5, le=2.0, description="語音速度")
-    voice_pitch: float = Field(default=1.0, ge=0.5, le=2.0, description="語音音調")
+    voice_speed: float = Field(
+        default=1.0, ge=0.5, le=2.0, description="語音速度"
+    )
+    voice_pitch: float = Field(
+        default=1.0, ge=0.5, le=2.0, description="語音音調"
+    )
 
 
 class EmotionAnalysisResponse(BaseModel):
@@ -177,13 +183,17 @@ async def analyze_voice_characteristics(
         audio_data = await audio_file.read()
 
         # 分析語音特徵
-        characteristics = await emotion_synthesizer.get_voice_characteristics(audio_data)
+        characteristics = await emotion_synthesizer.get_voice_characteristics(
+            audio_data
+        )
 
         return VoiceCharacteristicsResponse(**characteristics)
 
     except Exception as e:
         logger.error("語音特徵分析失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"語音特徵分析失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"語音特徵分析失敗: {str(e)}"
+        )
 
 
 @router.get(
@@ -214,11 +224,15 @@ async def get_supported_emotions():
             "confident": "自信、肯定的情感",
         }
 
-        return SupportedEmotionsResponse(emotions=emotions, description=emotion_descriptions)
+        return SupportedEmotionsResponse(
+            emotions=emotions, description=emotion_descriptions
+        )
 
     except Exception as e:
         logger.error("獲取支援情感列表失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"獲取情感列表失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取情感列表失敗: {str(e)}"
+        )
 
 
 @router.get(
@@ -244,11 +258,15 @@ async def get_supported_languages():
             "ko-KR": "韓語",
         }
 
-        return SupportedLanguagesResponse(languages=languages, names=language_names)
+        return SupportedLanguagesResponse(
+            languages=languages, names=language_names
+        )
 
     except Exception as e:
         logger.error("獲取支援語言列表失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"獲取語言列表失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取語言列表失敗: {str(e)}"
+        )
 
 
 @router.post(
@@ -266,7 +284,9 @@ async def batch_synthesize_emotion_speech(
             raise HTTPException(status_code=503, detail="情感合成器未初始化")
 
         if len(requests) > 10:
-            raise HTTPException(status_code=400, detail="批次處理最多支援 10 個請求")
+            raise HTTPException(
+                status_code=400, detail="批次處理最多支援 10 個請求"
+            )
 
         logger.info(
             "收到批次情感語音合成請求",
@@ -307,10 +327,14 @@ async def batch_synthesize_emotion_speech(
 
     except Exception as e:
         logger.error("批次情感語音合成失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"批次語音合成失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"批次語音合成失敗: {str(e)}"
+        )
 
 
-@router.get("/presets", summary="情感預設配置", description="獲取預定義的情感配置組合")
+@router.get(
+    "/presets", summary="情感預設配置", description="獲取預定義的情感配置組合"
+)
 async def get_emotion_presets():
     """獲取情感預設配置"""
     presets = {

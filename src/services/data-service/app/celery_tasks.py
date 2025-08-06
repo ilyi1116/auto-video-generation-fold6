@@ -47,8 +47,12 @@ def start_preprocessing_task(
 
         # Apply preprocessing steps
         processed_audio = y
-        target_sr = preprocessing_params.get("target_sample_rate", settings.target_sample_rate)
-        target_channels = preprocessing_params.get("target_channels", settings.target_channels)
+        target_sr = preprocessing_params.get(
+            "target_sample_rate", settings.target_sample_rate
+        )
+        target_channels = preprocessing_params.get(
+            "target_channels", settings.target_channels
+        )
         steps = preprocessing_params.get("preprocessing_steps", [])
 
         step_progress = 40
@@ -56,9 +60,13 @@ def start_preprocessing_task(
 
         for step in steps:
             if step == "resample" and sr != target_sr:
-                processed_audio = librosa.resample(processed_audio, orig_sr=sr, target_sr=target_sr)
+                processed_audio = librosa.resample(
+                    processed_audio, orig_sr=sr, target_sr=target_sr
+                )
                 sr = target_sr
-                logger.info("Audio resampled", job_id=job_id, target_sr=target_sr)
+                logger.info(
+                    "Audio resampled", job_id=job_id, target_sr=target_sr
+                )
 
             elif step == "channel_conversion":
                 if processed_audio.ndim > 1 and target_channels == 1:
@@ -67,7 +75,9 @@ def start_preprocessing_task(
 
             elif step == "silence_removal":
                 # Trim silence from beginning and end
-                processed_audio, _ = librosa.effects.trim(processed_audio, top_db=20)
+                processed_audio, _ = librosa.effects.trim(
+                    processed_audio, top_db=20
+                )
                 logger.info("Silence trimmed", job_id=job_id)
 
             elif step == "normalize":
@@ -130,7 +140,9 @@ def start_preprocessing_task(
         )
 
         # Update job as failed
-        asyncio.run(update_job_status(job_id, "failed", 0, None, error_message))
+        asyncio.run(
+            update_job_status(job_id, "failed", 0, None, error_message)
+        )
 
         # Cleanup temp files if they exist
         try:
@@ -174,7 +186,11 @@ async def update_job_status(
         if error_message:
             update_data["error_message"] = error_message
 
-        query = processing_jobs.update().where(processing_jobs.c.id == job_id).values(**update_data)
+        query = (
+            processing_jobs.update()
+            .where(processing_jobs.c.id == job_id)
+            .values(**update_data)
+        )
 
         await database.execute(query)
 

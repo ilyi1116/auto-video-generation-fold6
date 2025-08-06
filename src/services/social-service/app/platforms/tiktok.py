@@ -77,9 +77,19 @@ async def publish_video(
             "post_info": {
                 "title": title or "",
                 "description": description or "",
-                "disable_duet": (settings.get("disable_duet", False) if settings else False),
-                "disable_comment": (settings.get("disable_comment", False) if settings else False),
-                "disable_stitch": (settings.get("disable_stitch", False) if settings else False),
+                "disable_duet": (
+                    settings.get("disable_duet", False) if settings else False
+                ),
+                "disable_comment": (
+                    settings.get("disable_comment", False)
+                    if settings
+                    else False
+                ),
+                "disable_stitch": (
+                    settings.get("disable_stitch", False)
+                    if settings
+                    else False
+                ),
                 "video_cover_timestamp_ms": (
                     settings.get("cover_timestamp", 1000) if settings else 1000
                 ),
@@ -192,8 +202,12 @@ async def check_api_status() -> str:
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{settings.TIKTOK_API_BASE}/oauth/access_token/") as response:
-                return "healthy" if response.status in [200, 400] else "unhealthy"
+            async with session.get(
+                f"{settings.TIKTOK_API_BASE}/oauth/access_token/"
+            ) as response:
+                return (
+                    "healthy" if response.status in [200, 400] else "unhealthy"
+                )
     except Exception:
         return "unhealthy"
 
@@ -209,4 +223,6 @@ async def _get_video_file_url(video_id: int) -> str:
                 result = await response.json()
                 return result["file_url"]
             else:
-                raise Exception(f"Failed to get video file URL: {response.status}")
+                raise Exception(
+                    f"Failed to get video file URL: {response.status}"
+                )

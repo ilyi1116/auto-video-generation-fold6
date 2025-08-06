@@ -4,22 +4,22 @@
 分析現有測試，生成缺失的測試文件，提升測試覆蓋率
 """
 
+import json
 import os
+import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Optional
-import json
-import re
+from typing import Dict, List, Optional, Set
 
 
 class TestCoverageEnhancer:
     """測試覆蓋率增強器"""
-    
+
     def __init__(self):
         self.project_root = Path(__file__).parent.parent
         self.services_dir = self.project_root / "src" / "services"
         self.analysis_results = {}
-        
+
     def analyze_service_structure(self, service_path: Path) -> Dict:
         """分析服務結構，找出需要測試的組件"""
         structure = {
@@ -30,71 +30,79 @@ class TestCoverageEnhancer:
             "models": [],
             "existing_tests": [],
             "missing_tests": [],
-            "coverage_score": 0
+            "coverage_score": 0,
         }
-        
+
         # 分析主要模組
         app_dir = service_path / "app"
         if app_dir.exists():
             for py_file in app_dir.glob("*.py"):
                 if py_file.name not in ["__init__.py"]:
                     structure["main_modules"].append(py_file.stem)
-                    
+
         # 分析路由器
         routers_dir = app_dir / "routers" if app_dir.exists() else None
         if routers_dir and routers_dir.exists():
             for router_file in routers_dir.glob("*.py"):
                 if router_file.name != "__init__.py":
                     structure["routers"].append(router_file.stem)
-                    
+
         # 分析服務層
         services_dir = app_dir / "services" if app_dir.exists() else None
         if services_dir and services_dir.exists():
             for service_file in services_dir.glob("*.py"):
                 if service_file.name != "__init__.py":
                     structure["services"].append(service_file.stem)
-                    
+
         # 分析模型
         models_dir = app_dir / "models" if app_dir.exists() else None
         if models_dir and models_dir.exists():
             for model_file in models_dir.glob("*.py"):
                 if model_file.name != "__init__.py":
                     structure["models"].append(model_file.stem)
-        
+
         # 分析現有測試
         tests_dir = service_path / "tests"
         if tests_dir.exists():
             for test_file in tests_dir.glob("test_*.py"):
                 structure["existing_tests"].append(test_file.stem)
-                
+
         # 找出根目錄的測試文件
         for test_file in service_path.glob("test_*.py"):
             structure["existing_tests"].append(test_file.stem)
-            
+
         # 計算缺失的測試
         all_components = (
-            structure["main_modules"] +
-            structure["routers"] + 
-            structure["services"] +
-            structure["models"]
+            structure["main_modules"]
+            + structure["routers"]
+            + structure["services"]
+            + structure["models"]
         )
-        
+
         for component in all_components:
             expected_test_name = f"test_{component}"
             if expected_test_name not in structure["existing_tests"]:
-                structure["missing_tests"].append({
-                    "component": component,
-                    "test_name": expected_test_name,
-                    "type": self.determine_component_type(component, structure)
-                })
-        
+                structure["missing_tests"].append(
+                    {
+                        "component": component,
+                        "test_name": expected_test_name,
+                        "type": self.determine_component_type(
+                            component, structure
+                        ),
+                    }
+                )
+
         # 計算覆蓋率分數
         if all_components:
-            covered_components = len(all_components) - len(structure["missing_tests"])
-            structure["coverage_score"] = (covered_components / len(all_components)) * 100
-        
+            covered_components = len(all_components) - len(
+                structure["missing_tests"]
+            )
+            structure["coverage_score"] = (
+                covered_components / len(all_components)
+            ) * 100
+
         return structure
-        
+
     def determine_component_type(self, component: str, structure: Dict) -> str:
         """確定組件類型"""
         if component in structure["routers"]:
@@ -105,20 +113,26 @@ class TestCoverageEnhancer:
             return "model"
         else:
             return "module"
-            
-    def generate_test_template(self, component: str, component_type: str, service_name: str) -> str:
+
+    def generate_test_template(
+        self, component: str, component_type: str, service_name: str
+    ) -> str:
         """生成測試模板"""
         templates = {
             "router": self.generate_router_test_template,
             "service": self.generate_service_test_template,
             "model": self.generate_model_test_template,
-            "module": self.generate_module_test_template
+            "module": self.generate_module_test_template,
         }
-        
-        template_func = templates.get(component_type, self.generate_module_test_template)
+
+        template_func = templates.get(
+            component_type, self.generate_module_test_template
+        )
         return template_func(component, service_name)
-        
-    def generate_router_test_template(self, component: str, service_name: str) -> str:
+
+    def generate_router_test_template(
+        self, component: str, service_name: str
+    ) -> str:
         """生成路由器測試模板"""
         return f'''"""
 測試 {component} 路由器
@@ -196,7 +210,9 @@ class Test{component.replace("_", "").title()}Router:
 # TODO: 添加性能測試（如需要）
 '''
 
-    def generate_service_test_template(self, component: str, service_name: str) -> str:
+    def generate_service_test_template(
+        self, component: str, service_name: str
+    ) -> str:
         """生成服務層測試模板"""
         return f'''"""
 測試 {component} 服務
@@ -276,7 +292,9 @@ class Test{component.replace("_", "").title()}Service:
 # TODO: 添加性能測試（如需要）
 '''
 
-    def generate_model_test_template(self, component: str, service_name: str) -> str:
+    def generate_model_test_template(
+        self, component: str, service_name: str
+    ) -> str:
         """生成模型測試模板"""
         return f'''"""
 測試 {component} 模型
@@ -369,7 +387,9 @@ class Test{component.replace("_", "").title()}Model:
 # TODO: 添加性能測試（如需要）
 '''
 
-    def generate_module_test_template(self, component: str, service_name: str) -> str:
+    def generate_module_test_template(
+        self, component: str, service_name: str
+    ) -> str:
         """生成模組測試模板"""
         return f'''"""
 測試 {component} 模組
@@ -553,94 +573,113 @@ def setup_test_environment():
         """分析所有服務的測試覆蓋情況"""
         print("🔍 分析服務測試覆蓋情況...")
         print("=" * 60)
-        
+
         total_services = 0
         total_components = 0
         total_missing_tests = 0
-        
+
         for service_dir in self.services_dir.iterdir():
-            if service_dir.is_dir() and not service_dir.name.startswith('.'):
+            if service_dir.is_dir() and not service_dir.name.startswith("."):
                 analysis = self.analyze_service_structure(service_dir)
                 self.analysis_results[service_dir.name] = analysis
-                
+
                 total_services += 1
-                total_components += len(analysis["main_modules"]) + len(analysis["routers"]) + len(analysis["services"]) + len(analysis["models"])
+                total_components += (
+                    len(analysis["main_modules"])
+                    + len(analysis["routers"])
+                    + len(analysis["services"])
+                    + len(analysis["models"])
+                )
                 total_missing_tests += len(analysis["missing_tests"])
-                
+
                 print(f"📊 {analysis['service_name']}:")
-                print(f"   組件總數: {total_components - (total_missing_tests - len(analysis['missing_tests']))}")
+                print(
+                    f"   組件總數: {total_components - (total_missing_tests - len(analysis['missing_tests']))}"
+                )
                 print(f"   現有測試: {len(analysis['existing_tests'])}")
                 print(f"   缺失測試: {len(analysis['missing_tests'])}")
                 print(f"   覆蓋率: {analysis['coverage_score']:.1f}%")
                 print()
-        
-        overall_coverage = ((total_components - total_missing_tests) / total_components * 100) if total_components > 0 else 0
-        
+
+        overall_coverage = (
+            ((total_components - total_missing_tests) / total_components * 100)
+            if total_components > 0
+            else 0
+        )
+
         print("=" * 60)
         print(f"📈 總體統計:")
         print(f"   服務總數: {total_services}")
         print(f"   組件總數: {total_components}")
         print(f"   缺失測試: {total_missing_tests}")
         print(f"   整體覆蓋率: {overall_coverage:.1f}%")
-        
+
         return self.analysis_results
-        
+
     def generate_missing_tests(self, service_name: str = None):
         """為指定服務或所有服務生成缺失的測試文件"""
         if not self.analysis_results:
             self.analyze_all_services()
-            
-        services_to_process = [service_name] if service_name else self.analysis_results.keys()
-        
+
+        services_to_process = (
+            [service_name] if service_name else self.analysis_results.keys()
+        )
+
         generated_tests = 0
-        
+
         for service in services_to_process:
             if service not in self.analysis_results:
                 print(f"⚠️  服務 {service} 不存在分析結果")
                 continue
-                
+
             analysis = self.analysis_results[service]
             service_path = self.services_dir / service
             tests_dir = service_path / "tests"
-            
+
             # 確保測試目錄存在
             tests_dir.mkdir(exist_ok=True)
-            
+
             # 生成 conftest.py（如果不存在）
             conftest_path = tests_dir / "conftest.py"
             if not conftest_path.exists():
                 conftest_content = self.generate_conftest_template(service)
-                with open(conftest_path, 'w', encoding='utf-8') as f:
+                with open(conftest_path, "w", encoding="utf-8") as f:
                     f.write(conftest_content)
-                print(f"   ✅ 生成: {conftest_path.relative_to(self.project_root)}")
-                
+                print(
+                    f"   ✅ 生成: {conftest_path.relative_to(self.project_root)}"
+                )
+
             # 生成 __init__.py（如果不存在）
             init_path = tests_dir / "__init__.py"
             if not init_path.exists():
                 init_path.touch()
-                
+
             # 生成缺失的測試文件
             for missing_test in analysis["missing_tests"]:
                 test_filename = f"{missing_test['test_name']}.py"
                 test_path = tests_dir / test_filename
-                
+
                 if not test_path.exists():
                     test_content = self.generate_test_template(
                         missing_test["component"],
                         missing_test["type"],
-                        service
+                        service,
                     )
-                    
-                    with open(test_path, 'w', encoding='utf-8') as f:
+
+                    with open(test_path, "w", encoding="utf-8") as f:
                         f.write(test_content)
-                    
-                    print(f"   ✅ 生成: {test_path.relative_to(self.project_root)}")
+
+                    print(
+                        f"   ✅ 生成: {test_path.relative_to(self.project_root)}"
+                    )
                     generated_tests += 1
                 else:
-                    print(f"   ⏭️  跳過: {test_path.relative_to(self.project_root)} (已存在)")
-                    
+                    print(
+                        f"   ⏭️  跳過: {test_path.relative_to(self.project_root)} (已存在)"
+                    )
+
         return generated_tests
-        
+
     def create_test_runner_script(self):
         """創建測試運行腳本"""
         script_content = '''#!/bin/bash
@@ -750,81 +789,99 @@ else
     exit 1
 fi
 '''
-        
+
         script_path = self.project_root / "scripts" / "run-tests.sh"
-        with open(script_path, 'w', encoding='utf-8') as f:
+        with open(script_path, "w", encoding="utf-8") as f:
             f.write(script_content)
-        
+
         # 設置執行權限
         os.chmod(script_path, 0o755)
-        print(f"✅ 測試運行腳本已創建: {script_path.relative_to(self.project_root)}")
-        
+        print(
+            f"✅ 測試運行腳本已創建: {script_path.relative_to(self.project_root)}"
+        )
+
     def generate_coverage_report(self):
         """生成覆蓋率報告"""
         if not self.analysis_results:
             self.analyze_all_services()
-            
+
         report = {
-            "timestamp": __import__('datetime').datetime.now().isoformat(),
+            "timestamp": __import__("datetime").datetime.now().isoformat(),
             "services": {},
             "summary": {
                 "total_services": len(self.analysis_results),
                 "total_components": 0,
                 "total_existing_tests": 0,
                 "total_missing_tests": 0,
-                "overall_coverage": 0
-            }
+                "overall_coverage": 0,
+            },
         }
-        
+
         for service_name, analysis in self.analysis_results.items():
-            total_components = len(analysis["main_modules"]) + len(analysis["routers"]) + len(analysis["services"]) + len(analysis["models"])
-            
+            total_components = (
+                len(analysis["main_modules"])
+                + len(analysis["routers"])
+                + len(analysis["services"])
+                + len(analysis["models"])
+            )
+
             report["services"][service_name] = {
                 "components": total_components,
                 "existing_tests": len(analysis["existing_tests"]),
                 "missing_tests": len(analysis["missing_tests"]),
                 "coverage_score": analysis["coverage_score"],
-                "missing_test_details": analysis["missing_tests"]
+                "missing_test_details": analysis["missing_tests"],
             }
-            
+
             report["summary"]["total_components"] += total_components
-            report["summary"]["total_existing_tests"] += len(analysis["existing_tests"])
-            report["summary"]["total_missing_tests"] += len(analysis["missing_tests"])
-            
+            report["summary"]["total_existing_tests"] += len(
+                analysis["existing_tests"]
+            )
+            report["summary"]["total_missing_tests"] += len(
+                analysis["missing_tests"]
+            )
+
         if report["summary"]["total_components"] > 0:
-            covered = report["summary"]["total_components"] - report["summary"]["total_missing_tests"]
-            report["summary"]["overall_coverage"] = (covered / report["summary"]["total_components"]) * 100
-            
+            covered = (
+                report["summary"]["total_components"]
+                - report["summary"]["total_missing_tests"]
+            )
+            report["summary"]["overall_coverage"] = (
+                covered / report["summary"]["total_components"]
+            ) * 100
+
         # 保存報告
         report_path = self.project_root / "test-coverage-report.json"
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
-            
-        print(f"📊 覆蓋率報告已保存: {report_path.relative_to(self.project_root)}")
+
+        print(
+            f"📊 覆蓋率報告已保存: {report_path.relative_to(self.project_root)}"
+        )
         return report
 
 
 def main():
     enhancer = TestCoverageEnhancer()
-    
+
     print("🚀 測試覆蓋率提升工具")
     print("=" * 60)
-    
+
     # 分析所有服務
     enhancer.analyze_all_services()
-    
+
     # 生成缺失的測試文件
     print("\\n📝 生成缺失的測試文件...")
     generated_count = enhancer.generate_missing_tests()
-    
+
     # 創建測試運行腳本
     print("\\n🔧 創建測試運行腳本...")
     enhancer.create_test_runner_script()
-    
+
     # 生成覆蓋率報告
     print("\\n📊 生成覆蓋率報告...")
     enhancer.generate_coverage_report()
-    
+
     print("\\n" + "=" * 60)
     print(f"🎉 測試覆蓋率提升完成！")
     print(f"   生成測試文件: {generated_count} 個")

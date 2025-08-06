@@ -26,4 +26,7 @@ class User(Base):
     last_login = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
-        return f"<User(id={self.id}, email='{self.email}', " f"username='{self.username}')>"
+        return (
+            f"<User(id={self.id}, email='{self.email}', "
+            f"username='{self.username}')>"
+        )

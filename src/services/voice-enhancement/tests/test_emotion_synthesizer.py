@@ -48,7 +48,9 @@ class TestEmotionsynthesizerService:
         pass
 
     @patch("app.services.emotion_synthesizer.external_dependency")
-    def test_service_with_mocked_dependency(self, mock_dependency, service_instance):
+    def test_service_with_mocked_dependency(
+        self, mock_dependency, service_instance
+    ):
         """測試帶模擬依賴的服務方法"""
         # TODO: 配置模擬對象
         mock_dependency.return_value = "mocked_result"

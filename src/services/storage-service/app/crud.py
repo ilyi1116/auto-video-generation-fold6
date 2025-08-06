@@ -13,7 +13,9 @@ class FileCRUD:
     """CRUD operations for stored files"""
 
     @staticmethod
-    async def create_file(db: AsyncSession, user_id: str, file_data: Dict[str, Any]) -> StoredFile:
+    async def create_file(
+        db: AsyncSession, user_id: str, file_data: Dict[str, Any]
+    ) -> StoredFile:
         """Create a new stored file record"""
         try:
             stored_file = StoredFile(user_id=user_id, **file_data)
@@ -23,7 +25,9 @@ class FileCRUD:
             return stored_file
         except Exception as e:
             await db.rollback()
-            logger.error("Failed to create file record", error=str(e), user_id=user_id)
+            logger.error(
+                "Failed to create file record", error=str(e), user_id=user_id
+            )
             raise
 
     @staticmethod
@@ -39,7 +43,9 @@ class FileCRUD:
             result = await db.execute(query)
             return result.scalar_one_or_none()
         except Exception as e:
-            logger.error("Failed to get file by ID", error=str(e), file_id=file_id)
+            logger.error(
+                "Failed to get file by ID", error=str(e), file_id=file_id
+            )
             raise
 
     @staticmethod
@@ -55,7 +61,9 @@ class FileCRUD:
             result = await db.execute(query)
             return result.scalar_one_or_none()
         except Exception as e:
-            logger.error("Failed to get file by hash", error=str(e), file_hash=file_hash)
+            logger.error(
+                "Failed to get file by hash", error=str(e), file_hash=file_hash
+            )
             raise
 
     @staticmethod
@@ -81,12 +89,18 @@ class FileCRUD:
             if project_id:
                 query = query.where(StoredFile.project_id == project_id)
 
-            query = query.order_by(desc(StoredFile.created_at)).offset(skip).limit(limit)
+            query = (
+                query.order_by(desc(StoredFile.created_at))
+                .offset(skip)
+                .limit(limit)
+            )
 
             result = await db.execute(query)
             return result.scalars().all()
         except Exception as e:
-            logger.error("Failed to get user files", error=str(e), user_id=user_id)
+            logger.error(
+                "Failed to get user files", error=str(e), user_id=user_id
+            )
             raise
 
     @staticmethod
@@ -97,7 +111,11 @@ class FileCRUD:
         try:
             query = (
                 update(StoredFile)
-                .where(and_(StoredFile.id == file_id, StoredFile.user_id == user_id))
+                .where(
+                    and_(
+                        StoredFile.id == file_id, StoredFile.user_id == user_id
+                    )
+                )
                 .values(**updates)
                 .returning(StoredFile)
             )
@@ -107,11 +125,15 @@ class FileCRUD:
             return result.scalar_one_or_none()
         except Exception as e:
             await db.rollback()
-            logger.error("Failed to update file", error=str(e), file_id=file_id)
+            logger.error(
+                "Failed to update file", error=str(e), file_id=file_id
+            )
             raise
 
     @staticmethod
-    async def delete_file(db: AsyncSession, file_id: str, user_id: str) -> bool:
+    async def delete_file(
+        db: AsyncSession, file_id: str, user_id: str
+    ) -> bool:
         """Delete file record"""
         try:
             query = delete(StoredFile).where(
@@ -123,7 +145,9 @@ class FileCRUD:
             return result.rowcount > 0
         except Exception as e:
             await db.rollback()
-            logger.error("Failed to delete file", error=str(e), file_id=file_id)
+            logger.error(
+                "Failed to delete file", error=str(e), file_id=file_id
+            )
             raise
 
     @staticmethod
@@ -177,12 +201,18 @@ class FileCRUD:
             if file_type:
                 query = query.where(StoredFile.file_type == file_type)
 
-            query = query.order_by(desc(StoredFile.created_at)).offset(skip).limit(limit)
+            query = (
+                query.order_by(desc(StoredFile.created_at))
+                .offset(skip)
+                .limit(limit)
+            )
 
             result = await db.execute(query)
             return result.scalars().all()
         except Exception as e:
-            logger.error("Failed to search files", error=str(e), user_id=user_id)
+            logger.error(
+                "Failed to search files", error=str(e), user_id=user_id
+            )
             raise
 
 
@@ -190,7 +220,9 @@ class ProcessingJobCRUD:
     """CRUD operations for file processing jobs"""
 
     @staticmethod
-    async def create_job(db: AsyncSession, job_data: Dict[str, Any]) -> FileProcessingJob:
+    async def create_job(
+        db: AsyncSession, job_data: Dict[str, Any]
+    ) -> FileProcessingJob:
         """Create a new processing job"""
         try:
             job = FileProcessingJob(**job_data)
@@ -204,24 +236,34 @@ class ProcessingJobCRUD:
             raise
 
     @staticmethod
-    async def get_job_by_id(db: AsyncSession, job_id: str) -> Optional[FileProcessingJob]:
+    async def get_job_by_id(
+        db: AsyncSession, job_id: str
+    ) -> Optional[FileProcessingJob]:
         """Get processing job by ID"""
         try:
-            query = select(FileProcessingJob).where(FileProcessingJob.id == job_id)
+            query = select(FileProcessingJob).where(
+                FileProcessingJob.id == job_id
+            )
             result = await db.execute(query)
             return result.scalar_one_or_none()
         except Exception as e:
-            logger.error("Failed to get processing job", error=str(e), job_id=job_id)
+            logger.error(
+                "Failed to get processing job", error=str(e), job_id=job_id
+            )
             raise
 
     @staticmethod
-    async def get_pending_jobs(db: AsyncSession, limit: int = 10) -> List[FileProcessingJob]:
+    async def get_pending_jobs(
+        db: AsyncSession, limit: int = 10
+    ) -> List[FileProcessingJob]:
         """Get pending processing jobs"""
         try:
             query = (
                 select(FileProcessingJob)
                 .where(FileProcessingJob.status == "pending")
-                .order_by(FileProcessingJob.priority, FileProcessingJob.created_at)
+                .order_by(
+                    FileProcessingJob.priority, FileProcessingJob.created_at
+                )
                 .limit(limit)
             )
 
@@ -259,7 +301,9 @@ class ProcessingJobCRUD:
             return result.scalar_one_or_none()
         except Exception as e:
             await db.rollback()
-            logger.error("Failed to update job status", error=str(e), job_id=job_id)
+            logger.error(
+                "Failed to update job status", error=str(e), job_id=job_id
+            )
             raise
 
 
@@ -294,16 +338,22 @@ class DownloadCRUD:
             raise
 
     @staticmethod
-    async def get_download_stats(db: AsyncSession, file_id: str) -> Dict[str, Any]:
+    async def get_download_stats(
+        db: AsyncSession, file_id: str
+    ) -> Dict[str, Any]:
         """Get download statistics for a file"""
         try:
             from sqlalchemy import func
 
-            query = select(func.count(FileDownload.id)).where(FileDownload.file_id == file_id)
+            query = select(func.count(FileDownload.id)).where(
+                FileDownload.file_id == file_id
+            )
             result = await db.execute(query)
             total_downloads = result.scalar() or 0
 
             return {"total_downloads": total_downloads}
         except Exception as e:
-            logger.error("Failed to get download stats", error=str(e), file_id=file_id)
+            logger.error(
+                "Failed to get download stats", error=str(e), file_id=file_id
+            )
             raise

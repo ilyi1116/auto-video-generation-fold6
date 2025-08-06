@@ -43,7 +43,9 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
                 result = await response.json()
 
                 # 交換短期 token 為長期 token
-                long_lived_token = await _exchange_for_long_lived_token(result["access_token"])
+                long_lived_token = await _exchange_for_long_lived_token(
+                    result["access_token"]
+                )
 
                 return {
                     "access_token": long_lived_token["access_token"],
@@ -52,7 +54,9 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
                 }
             else:
                 error_text = await response.text()
-                raise Exception(f"Instagram token exchange failed: {error_text}")
+                raise Exception(
+                    f"Instagram token exchange failed: {error_text}"
+                )
 
 
 async def _exchange_for_long_lived_token(short_token: str) -> Dict[str, Any]:
@@ -72,7 +76,9 @@ async def _exchange_for_long_lived_token(short_token: str) -> Dict[str, Any]:
                 return await response.json()
             else:
                 error_text = await response.text()
-                raise Exception(f"Long-lived token exchange failed: {error_text}")
+                raise Exception(
+                    f"Long-lived token exchange failed: {error_text}"
+                )
 
 
 async def publish_video(
@@ -247,8 +253,12 @@ async def check_api_status() -> str:
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{settings.INSTAGRAM_API_BASE}/me") as response:
-                return "healthy" if response.status in [200, 401] else "unhealthy"
+            async with session.get(
+                f"{settings.INSTAGRAM_API_BASE}/me"
+            ) as response:
+                return (
+                    "healthy" if response.status in [200, 401] else "unhealthy"
+                )
     except Exception:
         return "unhealthy"
 
@@ -264,4 +274,6 @@ async def _get_video_file_url(video_id: int) -> str:
                 result = await response.json()
                 return result["file_url"]
             else:
-                raise Exception(f"Failed to get video file URL: {response.status}")
+                raise Exception(
+                    f"Failed to get video file URL: {response.status}"
+                )

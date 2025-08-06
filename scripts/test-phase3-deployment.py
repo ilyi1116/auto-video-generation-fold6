@@ -5,8 +5,9 @@ Phase 3 部署策略驗證腳本
 """
 
 import sys
-import yaml
 from pathlib import Path
+
+import yaml
 
 # 添加專案路徑
 project_root = Path(__file__).parent.parent

@@ -21,7 +21,9 @@ class AudioValidator:
         self.min_duration = settings.min_duration
         self.max_duration = settings.max_duration
 
-    async def validate_file_upload(self, file_path: str, original_filename: str) -> Dict[str, Any]:
+    async def validate_file_upload(
+        self, file_path: str, original_filename: str
+    ) -> Dict[str, Any]:
         """
         Comprehensive file validation
         Returns metadata dict or raises FileValidationError
@@ -29,7 +31,9 @@ class AudioValidator:
         try:
             # Check file exists
             if not os.path.exists(file_path):
-                raise FileValidationError(error="File not found", details={"file_path": file_path})
+                raise FileValidationError(
+                    error="File not found", details={"file_path": file_path}
+                )
 
             # Check file size
             file_size = os.path.getsize(file_path)
@@ -91,7 +95,9 @@ class AudioValidator:
                 filename=original_filename,
                 error=str(e),
             )
-            raise FileValidationError(error="Validation failed", details={"error": str(e)})
+            raise FileValidationError(
+                error="Validation failed", details={"error": str(e)}
+            )
 
     async def _analyze_audio(self, file_path: str) -> Dict[str, Any]:
         """Analyze audio file properties using librosa"""
@@ -105,12 +111,18 @@ class AudioValidator:
 
             # Audio quality analysis
             rms_energy = float(librosa.feature.rms(y=y).mean())
-            spectral_centroid = float(librosa.feature.spectral_centroid(y=y, sr=sr).mean())
-            zero_crossing_rate = float(librosa.feature.zero_crossing_rate(y).mean())
+            spectral_centroid = float(
+                librosa.feature.spectral_centroid(y=y, sr=sr).mean()
+            )
+            zero_crossing_rate = float(
+                librosa.feature.zero_crossing_rate(y).mean()
+            )
 
             # Silence detection
             silence_threshold = 0.01
-            silence_ratio = float((librosa.util.normalize(y) < silence_threshold).mean())
+            silence_ratio = float(
+                (librosa.util.normalize(y) < silence_threshold).mean()
+            )
 
             return {
                 "duration": duration,
@@ -152,7 +164,9 @@ class AudioValidator:
                     details={"error": str(fallback_error)},
                 )
 
-    def _validate_audio_properties(self, audio_metadata: Dict[str, Any]) -> None:
+    def _validate_audio_properties(
+        self, audio_metadata: Dict[str, Any]
+    ) -> None:
         """Validate audio properties against requirements"""
         duration = audio_metadata.get("duration", 0)
 
@@ -213,8 +227,12 @@ class AudioValidator:
         """
         Determine optimal preprocessing parameters based on audio analysis
         """
-        current_sr = audio_metadata.get("sample_rate", settings.target_sample_rate)
-        current_channels = audio_metadata.get("channels", settings.target_channels)
+        current_sr = audio_metadata.get(
+            "sample_rate", settings.target_sample_rate
+        )
+        current_channels = audio_metadata.get(
+            "channels", settings.target_channels
+        )
 
         # Determine if resampling is needed
         needs_resampling = current_sr != settings.target_sample_rate
@@ -245,7 +263,8 @@ class AudioValidator:
             "preprocessing_steps": preprocessing_steps,
             "needs_resampling": needs_resampling,
             "needs_channel_conversion": needs_channel_conversion,
-            "estimated_processing_time": len(preprocessing_steps) * 2,  # rough estimate in seconds
+            "estimated_processing_time": len(preprocessing_steps)
+            * 2,  # rough estimate in seconds
         }
 
 

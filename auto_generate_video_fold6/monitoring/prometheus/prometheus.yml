@@ -1,0 +1,134 @@
+# Prometheus 全域配置
+global:
+  scrape_interval: 15s # 預設抓取間隔
+  evaluation_interval: 15s # 規則評估間隔
+  external_labels:
+    cluster: 'auto-video-production'
+    region: 'us-east-1'
+
+# Alertmanager 配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# 告警規則文件
+rule_files:
+  - "rules/*.yml"
+
+# 抓取配置
+scrape_configs:
+  # Prometheus 自身監控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter - 系統指標
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # Redis Exporter
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 15s
+
+  # cAdvisor - 容器指標
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 10s
+
+  # 應用服務監控
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'data-service'
+    static_configs:
+      - targets: ['data-service:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'video-service'
+    static_configs:
+      - targets: ['video-service:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'ai-service'
+    static_configs:
+      - targets: ['ai-service:8005']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'social-service'
+    static_configs:
+      - targets: ['social-service:8006']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'trend-service'
+    static_configs:
+      - targets: ['trend-service:8007']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'scheduler-service'
+    static_configs:
+      - targets: ['scheduler-service:8008']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Blackbox Exporter - 端點健康檢查
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://api-gateway:8000/health
+        - http://auth-service:8001/health
+        - http://data-service:8002/health
+        - http://video-service:8004/health
+        - http://ai-service:8005/health
+        - http://social-service:8006/health
+        - http://trend-service:8007/health
+        - http://scheduler-service:8008/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+# 遠程寫入配置 (如果需要長期存儲)
+# remote_write:
+#   - url: "http://victoriametrics:8428/api/v1/write"
+#     queue_config:
+#       max_samples_per_send: 10000
+#       capacity: 20000
+#       max_shards: 30
+
+# 遠程讀取配置
+# remote_read:
+#   - url: "http://victoriametrics:8428/api/v1/read"

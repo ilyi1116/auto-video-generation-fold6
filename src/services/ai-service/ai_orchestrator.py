@@ -141,7 +141,9 @@ class AIOrchestrator:
             response = await self._execute_request(request, provider)
 
             # 更新提供商指標
-            await self._update_provider_metrics(provider, True, time.time() - start_time)
+            await self._update_provider_metrics(
+                provider, True, time.time() - start_time
+            )
 
             return response
 
@@ -149,7 +151,9 @@ class AIOrchestrator:
             logger.error(f"AI 請求執行失敗 ({provider.value}): {e}")
 
             # 更新提供商指標
-            await self._update_provider_metrics(provider, False, time.time() - start_time)
+            await self._update_provider_metrics(
+                provider, False, time.time() - start_time
+            )
 
             # 嘗試故障轉移
             if request.fallback_enabled:
@@ -166,7 +170,9 @@ class AIOrchestrator:
                 error_message=str(e),
             )
 
-    async def _select_provider(self, request: AIRequest) -> Optional[AIProvider]:
+    async def _select_provider(
+        self, request: AIRequest
+    ) -> Optional[AIProvider]:
         """選擇最佳 AI 服務提供商"""
         # 如果指定了提供商，直接使用
         if request.provider:
@@ -192,7 +198,9 @@ class AIOrchestrator:
             metrics = self.provider_metrics[provider]
 
             # 計算提供商分數
-            success_rate = metrics["successful_requests"] / max(metrics["total_requests"], 1)
+            success_rate = metrics["successful_requests"] / max(
+                metrics["total_requests"], 1
+            )
             avg_response_time = metrics["average_response_time"]
 
             # 分數計算：成功率 * 0.6 + 響應時間權重 * 0.4
@@ -205,7 +213,9 @@ class AIOrchestrator:
 
         return best_provider
 
-    def _get_available_providers(self, task_type: AITaskType) -> List[AIProvider]:
+    def _get_available_providers(
+        self, task_type: AITaskType
+    ) -> List[AIProvider]:
         """獲取支援指定任務類型的提供商"""
         providers_map = {
             AITaskType.TEXT_GENERATION: [AIProvider.OPENAI, AIProvider.GEMINI],
@@ -221,18 +231,28 @@ class AIOrchestrator:
 
         return providers_map.get(task_type, [])
 
-    async def _execute_request(self, request: AIRequest, provider: AIProvider) -> AIResponse:
+    async def _execute_request(
+        self, request: AIRequest, provider: AIProvider
+    ) -> AIResponse:
         """執行 AI 請求"""
         start_time = time.time()
 
         if request.task_type == AITaskType.TEXT_GENERATION:
-            return await self._execute_text_generation(request, provider, start_time)
+            return await self._execute_text_generation(
+                request, provider, start_time
+            )
         elif request.task_type == AITaskType.MUSIC_GENERATION:
-            return await self._execute_music_generation(request, provider, start_time)
+            return await self._execute_music_generation(
+                request, provider, start_time
+            )
         elif request.task_type == AITaskType.CONTENT_ANALYSIS:
-            return await self._execute_content_analysis(request, provider, start_time)
+            return await self._execute_content_analysis(
+                request, provider, start_time
+            )
         elif request.task_type == AITaskType.TREND_ANALYSIS:
-            return await self._execute_trend_analysis(request, provider, start_time)
+            return await self._execute_trend_analysis(
+                request, provider, start_time
+            )
         else:
             raise ValueError(f"不支援的任務類型: {request.task_type}")
 
@@ -261,7 +281,9 @@ class AIOrchestrator:
                     provider=provider,
                     model=request.model or "gemini-pro",
                     duration=time.time() - start_time,
-                    error_message=(result.error_message if not result.success else None),
+                    error_message=(
+                        result.error_message if not result.success else None
+                    ),
                     metadata={"usage": result.usage_metadata},
                 )
 
@@ -303,7 +325,11 @@ class AIOrchestrator:
                     provider=provider,
                     model="chirp-v3",
                     duration=time.time() - start_time,
-                    error_message=(result.error_message if result.status != "completed" else None),
+                    error_message=(
+                        result.error_message
+                        if result.status != "completed"
+                        else None
+                    ),
                 )
 
         raise ValueError(f"提供商 {provider.value} 不支援音樂生成或不可用")
@@ -343,7 +369,9 @@ class AIOrchestrator:
                         import json
                         import re
 
-                        json_match = re.search(r"\{.*\}", result.text, re.DOTALL)
+                        json_match = re.search(
+                            r"\{.*\}", result.text, re.DOTALL
+                        )
                         analysis_data = (
                             json.loads(json_match.group())
                             if json_match
@@ -360,7 +388,9 @@ class AIOrchestrator:
                     provider=provider,
                     model="gemini-pro",
                     duration=time.time() - start_time,
-                    error_message=(result.error_message if not result.success else None),
+                    error_message=(
+                        result.error_message if not result.success else None
+                    ),
                 )
 
         raise ValueError(f"提供商 {provider.value} 不支援內容分析或不可用")
@@ -381,7 +411,9 @@ class AIOrchestrator:
                 provider=provider,
                 model="gemini-pro",
                 duration=time.time() - start_time,
-                error_message=(result.get("error") if "error" in result else None),
+                error_message=(
+                    result.get("error") if "error" in result else None
+                ),
             )
 
         raise ValueError(f"提供商 {provider.value} 不支援趨勢分析或不可用")
@@ -417,7 +449,9 @@ class AIOrchestrator:
                 fallback_enabled=False,  # 避免遞迴故障轉移
             )
 
-            response = await self._execute_request(fallback_request, fallback_provider)
+            response = await self._execute_request(
+                fallback_request, fallback_provider
+            )
             logger.info(f"故障轉移成功，使用提供商: {fallback_provider.value}")
             return response
 
@@ -425,7 +459,9 @@ class AIOrchestrator:
             logger.error(f"故障轉移失敗 ({fallback_provider.value}): {e}")
             return None
 
-    async def _update_provider_metrics(self, provider: AIProvider, success: bool, duration: float):
+    async def _update_provider_metrics(
+        self, provider: AIProvider, success: bool, duration: float
+    ):
         """更新提供商指標"""
         metrics = self.provider_metrics[provider]
 
@@ -447,7 +483,9 @@ class AIOrchestrator:
         success_rate = metrics["successful_requests"] / total_requests
         if success_rate < 0.5 and total_requests >= 5:
             self.provider_health[provider] = False
-            logger.warning(f"提供商 {provider.value} 標記為不健康 (成功率: {success_rate:.2f})")
+            logger.warning(
+                f"提供商 {provider.value} 標記為不健康 (成功率: {success_rate:.2f})"
+            )
         elif success_rate >= 0.8:
             self.provider_health[provider] = True
 
@@ -478,7 +516,8 @@ class AIOrchestrator:
             status[provider.value] = {
                 "healthy": self.provider_health[provider],
                 "total_requests": metrics["total_requests"],
-                "success_rate": metrics["successful_requests"] / max(metrics["total_requests"], 1),
+                "success_rate": metrics["successful_requests"]
+                / max(metrics["total_requests"], 1),
                 "average_response_time": metrics["average_response_time"],
                 "error_count": metrics["error_count"],
             }

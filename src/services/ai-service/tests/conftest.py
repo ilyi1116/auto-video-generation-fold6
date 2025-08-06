@@ -18,8 +18,12 @@ from sqlalchemy.orm import sessionmaker
 
 # 測試數據庫設置
 TEST_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_engine(
+    TEST_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
 
 
 @pytest.fixture(scope="session")
@@ -70,14 +74,21 @@ def auth_headers():
 @pytest.fixture
 def sample_user_data():
     """示例用戶數據 fixture"""
-    return {"username": "testuser", "email": "test@example.com", "password": "testpassword123"}
+    return {
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "testpassword123",
+    }
 
 
 @pytest.fixture
 def mock_external_service():
     """模擊外部服務 fixture"""
     mock_service = Mock()
-    mock_service.call_api.return_value = {"status": "success", "data": "test_data"}
+    mock_service.call_api.return_value = {
+        "status": "success",
+        "data": "test_data",
+    }
     return mock_service
 
 

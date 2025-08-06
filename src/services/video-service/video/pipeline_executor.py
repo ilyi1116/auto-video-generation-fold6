@@ -18,7 +18,9 @@ class PipelineResult:
 class PipelineExecutor:
     """管道執行器 - 最小實作"""
 
-    def execute_pipeline(self, workflow_id: str, stages: List[str]) -> PipelineResult:
+    def execute_pipeline(
+        self, workflow_id: str, stages: List[str]
+    ) -> PipelineResult:
         """執行管道 - 最小實作讓測試通過"""
         # 模擬各階段執行
         generated_assets = {
@@ -30,4 +32,6 @@ class PipelineExecutor:
             ],
         }
 
-        return PipelineResult(status="completed", generated_assets=generated_assets)
+        return PipelineResult(
+            status="completed", generated_assets=generated_assets
+        )

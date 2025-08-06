@@ -34,9 +34,13 @@ class PublishRequestModel(BaseModel):
     content: Dict[str, Any] = Field(..., description="內容信息")
     assets: Dict[str, Any] = Field(..., description="媒體資產")
     publish_immediately: bool = Field(default=True, description="是否立即發布")
-    scheduled_time: Optional[datetime] = Field(None, description="排程發布時間")
+    scheduled_time: Optional[datetime] = Field(
+        None, description="排程發布時間"
+    )
     retry_on_failure: bool = Field(default=True, description="失敗時是否重試")
-    max_retries: int = Field(default=3, ge=0, le=10, description="最大重試次數")
+    max_retries: int = Field(
+        default=3, ge=0, le=10, description="最大重試次數"
+    )
     platform_specific_settings: Dict[str, Dict[str, Any]] = Field(
         default={}, description="平台特定設定"
     )
@@ -56,7 +60,9 @@ class ScheduledPublishRequest(BaseModel):
     platforms: List[str] = Field(..., description="目標平台列表")
     content: Dict[str, Any] = Field(..., description="內容信息")
     assets: Dict[str, Any] = Field(..., description="媒體資產")
-    publish_times: Dict[str, datetime] = Field(..., description="各平台發布時間")
+    publish_times: Dict[str, datetime] = Field(
+        ..., description="各平台發布時間"
+    )
     retry_on_failure: bool = Field(default=True, description="失敗時是否重試")
 
 
@@ -132,13 +138,17 @@ async def publish_to_platforms(
 
         if request.publish_immediately:
             # 立即發布
-            result = await publisher.publish_to_multiple_platforms(publish_request)
+            result = await publisher.publish_to_multiple_platforms(
+                publish_request
+            )
 
             return {
                 "request_id": result.request_id,
                 "status": "completed",
                 "total_platforms": result.total_platforms,
-                "successful_platforms": [p.value for p in result.successful_platforms],
+                "successful_platforms": [
+                    p.value for p in result.successful_platforms
+                ],
                 "failed_platforms": [p.value for p in result.failed_platforms],
                 "overall_success_rate": result.overall_success_rate,
                 "platform_results": {
@@ -146,7 +156,9 @@ async def publish_to_platforms(
                         "status": result.platform_results[p].status.value,
                         "post_id": result.platform_results[p].post_id,
                         "post_url": result.platform_results[p].post_url,
-                        "error_message": result.platform_results[p].error_message,
+                        "error_message": result.platform_results[
+                            p
+                        ].error_message,
                     }
                     for p in result.platform_results
                 },
@@ -154,12 +166,18 @@ async def publish_to_platforms(
         else:
             # 排程發布
             if not request.scheduled_time:
-                raise HTTPException(status_code=400, detail="排程發布需要指定發布時間")
+                raise HTTPException(
+                    status_code=400, detail="排程發布需要指定發布時間"
+                )
 
             # 為所有平台設定相同的發布時間
-            publish_times = {p: request.scheduled_time for p in valid_platforms}
+            publish_times = {
+                p: request.scheduled_time for p in valid_platforms
+            }
 
-            request_id = await publisher.schedule_batch_publish(publish_request, publish_times)
+            request_id = await publisher.schedule_batch_publish(
+                publish_request, publish_times
+            )
 
             return {
                 "request_id": request_id,
@@ -198,11 +216,16 @@ async def get_optimal_publishing_times(
         if not platform_list:
             raise HTTPException(status_code=400, detail="沒有有效的平台")
 
-        optimal_times = await publisher.get_optimal_publishing_times(user_id, platform_list)
+        optimal_times = await publisher.get_optimal_publishing_times(
+            user_id, platform_list
+        )
 
         return {
             "user_id": user_id,
-            "optimal_times": {platform.value: times for platform, times in optimal_times.items()},
+            "optimal_times": {
+                platform.value: times
+                for platform, times in optimal_times.items()
+            },
             "timezone": "Asia/Taipei",
             "recommendation": "建議在晚上 7-9 點發布以獲得最佳互動效果",
         }
@@ -211,7 +234,9 @@ async def get_optimal_publishing_times(
         raise
     except Exception as e:
         logger.error(f"獲取最佳發布時間失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"獲取最佳時間失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取最佳時間失敗: {str(e)}"
+        )
 
 
 @router.post("/schedule")
@@ -234,10 +259,14 @@ async def schedule_publish(
 
                 # 獲取對應的發布時間
                 if platform_str in request.publish_times:
-                    publish_times[platform] = request.publish_times[platform_str]
+                    publish_times[platform] = request.publish_times[
+                        platform_str
+                    ]
                 else:
                     # 使用預設時間（當前時間 + 1小時）
-                    publish_times[platform] = datetime.utcnow() + timedelta(hours=1)
+                    publish_times[platform] = datetime.utcnow() + timedelta(
+                        hours=1
+                    )
 
             except ValueError:
                 logger.warning(f"不支援的平台: {platform_str}")
@@ -266,13 +295,17 @@ async def schedule_publish(
         )
 
         # 排程發布
-        request_id = await publisher.schedule_batch_publish(publish_request, publish_times)
+        request_id = await publisher.schedule_batch_publish(
+            publish_request, publish_times
+        )
 
         return {
             "request_id": request_id,
             "status": "scheduled",
             "platforms": [p.value for p in valid_platforms],
-            "publish_times": {p.value: publish_times[p].isoformat() for p in valid_platforms},
+            "publish_times": {
+                p.value: publish_times[p].isoformat() for p in valid_platforms
+            },
             "message": "批次發布已排程",
         }
 
@@ -299,7 +332,9 @@ async def get_publish_history(
             PublishHistoryResponse(
                 request_id=result.request_id,
                 total_platforms=result.total_platforms,
-                successful_platforms=[p.value for p in result.successful_platforms],
+                successful_platforms=[
+                    p.value for p in result.successful_platforms
+                ],
                 failed_platforms=[p.value for p in result.failed_platforms],
                 overall_success_rate=result.overall_success_rate,
                 started_at=result.started_at,
@@ -336,11 +371,15 @@ async def get_active_publications(current_user: dict = Depends(verify_token)):
 
     except Exception as e:
         logger.error(f"獲取活動發布失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"獲取活動發布失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取活動發布失敗: {str(e)}"
+        )
 
 
 @router.delete("/cancel/{request_id}")
-async def cancel_scheduled_publish(request_id: str, current_user: dict = Depends(verify_token)):
+async def cancel_scheduled_publish(
+    request_id: str, current_user: dict = Depends(verify_token)
+):
     """取消排程發布"""
     try:
         user_id = current_user.get("sub", "unknown")
@@ -379,13 +418,17 @@ async def get_revenue_analytics(
         if not start_date:
             start_date = end_date - timedelta(days=30)
 
-        revenue_data = await publisher.get_revenue_analytics(user_id, start_date, end_date)
+        revenue_data = await publisher.get_revenue_analytics(
+            user_id, start_date, end_date
+        )
 
         return RevenueAnalyticsResponse(**revenue_data)
 
     except Exception as e:
         logger.error(f"獲取收益分析失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"獲取收益分析失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取收益分析失敗: {str(e)}"
+        )
 
 
 @router.get("/platforms/status")
@@ -400,7 +443,9 @@ async def get_platform_status(current_user: dict = Depends(verify_token)):
         for platform in Platform:
             try:
                 # 嘗試獲取訪問令牌來檢查連接狀態
-                access_token = await publisher._get_platform_access_token(user_id, platform)
+                access_token = await publisher._get_platform_access_token(
+                    user_id, platform
+                )
 
                 platform_status[platform.value] = {
                     "connected": access_token is not None,
@@ -420,14 +465,18 @@ async def get_platform_status(current_user: dict = Depends(verify_token)):
             "platforms": platform_status,
             "overall_health": (
                 "healthy"
-                if any(status["connected"] for status in platform_status.values())
+                if any(
+                    status["connected"] for status in platform_status.values()
+                )
                 else "disconnected"
             ),
         }
 
     except Exception as e:
         logger.error(f"獲取平台狀態失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"獲取平台狀態失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取平台狀態失敗: {str(e)}"
+        )
 
 
 @router.post("/test-publish")
@@ -444,7 +493,9 @@ async def test_publish_content(
         try:
             target_platform = Platform(platform)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"不支援的平台: {platform}")
+            raise HTTPException(
+                status_code=400, detail=f"不支援的平台: {platform}"
+            )
 
         # 創建測試發布請求
         test_request = PublishRequest(
@@ -475,13 +526,19 @@ async def test_publish_content(
         result = await publisher.publish_to_multiple_platforms(test_request)
 
         return {
-            "test_result": ("success" if result.overall_success_rate > 0 else "failed"),
+            "test_result": (
+                "success" if result.overall_success_rate > 0 else "failed"
+            ),
             "platform": platform,
             "result_details": {
-                "status": result.platform_results[target_platform].status.value,
+                "status": result.platform_results[
+                    target_platform
+                ].status.value,
                 "post_id": result.platform_results[target_platform].post_id,
                 "post_url": result.platform_results[target_platform].post_url,
-                "error_message": result.platform_results[target_platform].error_message,
+                "error_message": result.platform_results[
+                    target_platform
+                ].error_message,
             },
             "timestamp": datetime.utcnow().isoformat(),
         }

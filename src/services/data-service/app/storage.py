@@ -87,7 +87,9 @@ class S3Storage:
             # Download file
             self.client.download_file(self.bucket, s3_key, local_path)
 
-            logger.info("File downloaded from S3", s3_key=s3_key, local_path=local_path)
+            logger.info(
+                "File downloaded from S3", s3_key=s3_key, local_path=local_path
+            )
 
             return local_path
 
@@ -109,7 +111,9 @@ class S3Storage:
             return True
 
         except ClientError as e:
-            logger.error("Failed to delete file from S3", s3_key=s3_key, error=str(e))
+            logger.error(
+                "Failed to delete file from S3", s3_key=s3_key, error=str(e)
+            )
             return False
 
     def file_exists(self, s3_key: str) -> bool:

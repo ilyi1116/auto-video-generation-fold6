@@ -81,7 +81,9 @@ app.add_middleware(
 
 # Add trusted host middleware for security
 if not settings.debug:
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
+    app.add_middleware(
+        TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts
+    )
 
 
 @app.middleware("http")

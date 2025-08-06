@@ -58,7 +58,9 @@ class EntrepreneurWorkflowConfig:
     target_categories: List[str] = field(
         default_factory=lambda: ["technology", "entertainment", "lifestyle"]
     )
-    target_platforms: List[str] = field(default_factory=lambda: ["tiktok", "youtube-shorts"])
+    target_platforms: List[str] = field(
+        default_factory=lambda: ["tiktok", "youtube-shorts"]
+    )
     video_duration: int = 30  # 秒
     language: str = "zh-TW"
 
@@ -81,7 +83,9 @@ class EntrepreneurWorkflowConfig:
     # 發布設定
     auto_publish: bool = False
     scheduled_publishing: bool = True
-    optimal_publishing_times: List[str] = field(default_factory=lambda: ["10:00", "14:00", "18:00"])
+    optimal_publishing_times: List[str] = field(
+        default_factory=lambda: ["10:00", "14:00", "18:00"]
+    )
 
     # 進階設定
     retry_attempts: int = 3
@@ -124,7 +128,9 @@ class EntrepreneurWorkflowRequest:
 
     user_id: str
     workflow_type: str = "entrepreneur_auto"
-    config: EntrepreneurWorkflowConfig = field(default_factory=EntrepreneurWorkflowConfig)
+    config: EntrepreneurWorkflowConfig = field(
+        default_factory=EntrepreneurWorkflowConfig
+    )
     priority: int = 1  # 1=高, 2=中, 3=低
     tags: List[str] = field(default_factory=list)
     custom_requirements: Dict[str, Any] = field(default_factory=dict)
@@ -181,14 +187,18 @@ class EntrepreneurWorkflowEngine:
             WorkflowStage.ANALYTICS_TRACKING: self._handle_analytics_tracking,
         }
 
-    async def create_workflow(self, request: EntrepreneurWorkflowRequest) -> str:
+    async def create_workflow(
+        self, request: EntrepreneurWorkflowRequest
+    ) -> str:
         """創建新的工作流程"""
         try:
             workflow_id = str(uuid.uuid4())
 
             # 預估完成時間
             estimated_duration = request.config.max_workflow_duration
-            estimated_completion = datetime.utcnow() + timedelta(seconds=estimated_duration)
+            estimated_completion = datetime.utcnow() + timedelta(
+                seconds=estimated_duration
+            )
 
             result = EntrepreneurWorkflowResult(
                 workflow_id=workflow_id,
@@ -259,7 +269,9 @@ class EntrepreneurWorkflowEngine:
                 result.progress_percentage = int((i / total_stages) * 100)
                 result.updated_at = datetime.utcnow()
 
-                logger.info(f"執行階段 {stage.value} - 工作流程: {workflow_id}")
+                logger.info(
+                    f"執行階段 {stage.value} - 工作流程: {workflow_id}"
+                )
 
                 stage_start_time = datetime.utcnow()
 
@@ -270,7 +282,9 @@ class EntrepreneurWorkflowEngine:
                     logger.warning(f"未找到階段處理器: {stage.value}")
 
                 # 記錄階段執行時間
-                stage_duration = (datetime.utcnow() - stage_start_time).total_seconds()
+                stage_duration = (
+                    datetime.utcnow() - stage_start_time
+                ).total_seconds()
                 result.metrics.stage_durations[stage.value] = stage_duration
 
                 # 檢查是否被取消
@@ -280,7 +294,10 @@ class EntrepreneurWorkflowEngine:
 
                 # 檢查預算限制
                 if result.request.config.stop_on_budget_exceeded:
-                    if result.metrics.total_cost > result.request.config.daily_budget:
+                    if (
+                        result.metrics.total_cost
+                        > result.request.config.daily_budget
+                    ):
                         result.status = WorkflowStatus.FAILED
                         result.error_message = "超出預算限制"
                         logger.warning(f"工作流程超出預算: {workflow_id}")
@@ -291,7 +308,9 @@ class EntrepreneurWorkflowEngine:
             result.current_stage = WorkflowStage.COMPLETED
             result.progress_percentage = 100
             result.metrics.end_time = datetime.utcnow()
-            result.metrics.total_duration = result.metrics.end_time - result.metrics.start_time
+            result.metrics.total_duration = (
+                result.metrics.end_time - result.metrics.start_time
+            )
 
             # 更新統計
             self.daily_stats["videos_generated"] += 1
@@ -310,14 +329,19 @@ class EntrepreneurWorkflowEngine:
 
             logger.error(f"工作流程執行失敗: {workflow_id} - {e}")
 
-    async def _handle_initialization(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_initialization(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理初始化階段"""
         try:
             # 驗證配置
             config = result.request.config
 
             # 檢查每日限制
-            if self.daily_stats["videos_generated"] >= config.daily_video_count:
+            if (
+                self.daily_stats["videos_generated"]
+                >= config.daily_video_count
+            ):
                 raise Exception("已達每日影片生成限制")
 
             # 檢查預算
@@ -332,7 +356,8 @@ class EntrepreneurWorkflowEngine:
                 "config_validated": True,
                 "daily_quota_available": config.daily_video_count
                 - self.daily_stats["videos_generated"],
-                "budget_remaining": config.daily_budget - self.daily_stats["total_cost"],
+                "budget_remaining": config.daily_budget
+                - self.daily_stats["total_cost"],
                 "timestamp": datetime.utcnow().isoformat(),
             }
 
@@ -342,7 +367,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"初始化階段失敗: {e}")
             raise
 
-    async def _handle_trend_analysis(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_trend_analysis(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理趨勢分析階段"""
         try:
             # 模擬趨勢分析 API 調用
@@ -377,8 +404,10 @@ class EntrepreneurWorkflowEngine:
             qualified_trends = [
                 trend
                 for trend in trending_topics
-                if trend["trend_score"] >= result.request.config.min_trend_score
-                and trend["monetization_potential"] >= result.request.config.monetization_threshold
+                if trend["trend_score"]
+                >= result.request.config.min_trend_score
+                and trend["monetization_potential"]
+                >= result.request.config.monetization_threshold
             ]
 
             result.stage_outputs["trend_analysis"] = {
@@ -392,33 +421,45 @@ class EntrepreneurWorkflowEngine:
             result.metrics.cost_breakdown["trend_analysis"] = api_cost
             result.metrics.total_cost += api_cost
 
-            logger.info(f"趨勢分析完成，找到 {len(qualified_trends)} 個合格趨勢")
+            logger.info(
+                f"趨勢分析完成，找到 {len(qualified_trends)} 個合格趨勢"
+            )
 
         except Exception as e:
             logger.error(f"趨勢分析階段失敗: {e}")
             raise
 
-    async def _handle_keyword_selection(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_keyword_selection(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理關鍵字選擇階段"""
         try:
-            qualified_trends = result.stage_outputs["trend_analysis"]["qualified_trends"]
+            qualified_trends = result.stage_outputs["trend_analysis"][
+                "qualified_trends"
+            ]
 
             if not qualified_trends:
                 raise Exception("沒有符合條件的趨勢關鍵字")
 
             # 選擇最佳關鍵字（按獲利潛力排序）
-            selected_trend = max(qualified_trends, key=lambda x: x["monetization_potential"])
+            selected_trend = max(
+                qualified_trends, key=lambda x: x["monetization_potential"]
+            )
 
             result.stage_outputs["keyword_selection"] = {
                 "selected_keyword": selected_trend["keyword"],
                 "selected_category": selected_trend["category"],
                 "trend_score": selected_trend["trend_score"],
-                "monetization_potential": selected_trend["monetization_potential"],
+                "monetization_potential": selected_trend[
+                    "monetization_potential"
+                ],
                 "competition_level": selected_trend["competition_level"],
                 "selection_timestamp": datetime.utcnow().isoformat(),
             }
 
-            result.metrics.monetization_potential = selected_trend["monetization_potential"]
+            result.metrics.monetization_potential = selected_trend[
+                "monetization_potential"
+            ]
 
             logger.info(f"選擇關鍵字: {selected_trend['keyword']}")
 
@@ -426,7 +467,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"關鍵字選擇階段失敗: {e}")
             raise
 
-    async def _handle_script_generation(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_script_generation(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理腳本生成階段"""
         try:
             keyword_data = result.stage_outputs["keyword_selection"]
@@ -446,7 +489,9 @@ class EntrepreneurWorkflowEngine:
                     正在改變我們的生活方式！想要提升生活品質嗎？這些實用技巧和建議，絕對讓你的日常更加精彩！",
             }
 
-            script = script_templates.get(category, f"探索 {keyword} 的奧秘，發現更多精彩內容！")
+            script = script_templates.get(
+                category, f"探索 {keyword} 的奧秘，發現更多精彩內容！"
+            )
 
             # 生成相關標籤
             hashtags = [
@@ -481,7 +526,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"腳本生成階段失敗: {e}")
             raise
 
-    async def _handle_asset_generation(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_asset_generation(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理資產生成階段（圖像、語音）"""
         try:
             keyword_data = result.stage_outputs["keyword_selection"]
@@ -489,13 +536,16 @@ class EntrepreneurWorkflowEngine:
 
             # 模擬並行生成圖像和語音
             image_task = self._generate_images(keyword, result)
-            audio_task = self._generate_audio(result.generated_assets.script, result)
+            audio_task = self._generate_audio(
+                result.generated_assets.script, result
+            )
 
             await asyncio.gather(image_task, audio_task)
 
             result.stage_outputs["asset_generation"] = {
                 "images_generated": len(result.generated_assets.images),
-                "audio_generated": result.generated_assets.audio_file is not None,
+                "audio_generated": result.generated_assets.audio_file
+                is not None,
                 "generation_timestamp": datetime.utcnow().isoformat(),
             }
 
@@ -505,7 +555,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"資產生成階段失敗: {e}")
             raise
 
-    async def _generate_images(self, keyword: str, result: EntrepreneurWorkflowResult) -> None:
+    async def _generate_images(
+        self, keyword: str, result: EntrepreneurWorkflowResult
+    ) -> None:
         """生成圖像資產"""
         try:
             # 模擬圖像生成 API
@@ -531,7 +583,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"圖像生成失敗: {e}")
             raise
 
-    async def _generate_audio(self, script: str, result: EntrepreneurWorkflowResult) -> None:
+    async def _generate_audio(
+        self, script: str, result: EntrepreneurWorkflowResult
+    ) -> None:
         """生成語音資產"""
         try:
             # 模擬語音合成 API
@@ -553,7 +607,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"語音生成失敗: {e}")
             raise
 
-    async def _handle_video_composition(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_video_composition(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理影片合成階段"""
         try:
             # 模擬影片合成
@@ -588,7 +644,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"影片合成階段失敗: {e}")
             raise
 
-    async def _handle_platform_optimization(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_platform_optimization(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理平台優化階段"""
         try:
             platforms = result.request.config.target_platforms
@@ -596,7 +654,9 @@ class EntrepreneurWorkflowEngine:
             platform_optimizations = {}
 
             for platform in platforms:
-                optimization = await self._optimize_for_platform(platform, result)
+                optimization = await self._optimize_for_platform(
+                    platform, result
+                )
                 platform_optimizations[platform] = optimization
 
             result.stage_outputs["platform_optimization"] = {
@@ -650,10 +710,14 @@ class EntrepreneurWorkflowEngine:
             "title": title[: specs["title_length"]],
             "hashtags": hashtags,
             "aspect_ratio": specs["aspect_ratio"],
-            "duration": min(result.request.config.video_duration, specs["max_duration"]),
+            "duration": min(
+                result.request.config.video_duration, specs["max_duration"]
+            ),
         }
 
-    async def _handle_publishing(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_publishing(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理發布階段"""
         if not result.request.config.auto_publish:
             return
@@ -685,13 +749,17 @@ class EntrepreneurWorkflowEngine:
                 "auto_published": False,
             }
 
-    async def _handle_analytics_tracking(self, result: EntrepreneurWorkflowResult) -> None:
+    async def _handle_analytics_tracking(
+        self, result: EntrepreneurWorkflowResult
+    ) -> None:
         """處理分析追蹤階段"""
         try:
             # 設置分析追蹤
             tracking_data = {
                 "workflow_id": result.workflow_id,
-                "keyword": result.stage_outputs["keyword_selection"]["selected_keyword"],
+                "keyword": result.stage_outputs["keyword_selection"][
+                    "selected_keyword"
+                ],
                 "platforms": result.request.config.target_platforms,
                 "tracking_start": datetime.utcnow().isoformat(),
                 "metrics_to_track": [
@@ -712,7 +780,9 @@ class EntrepreneurWorkflowEngine:
             logger.error(f"分析追蹤階段失敗: {e}")
             raise
 
-    def get_workflow_status(self, workflow_id: str) -> Optional[EntrepreneurWorkflowResult]:
+    def get_workflow_status(
+        self, workflow_id: str
+    ) -> Optional[EntrepreneurWorkflowResult]:
         """獲取工作流程狀態"""
         return self.workflows.get(workflow_id)
 
@@ -723,13 +793,15 @@ class EntrepreneurWorkflowEngine:
             "success_rate": (
                 self.daily_stats["success_count"]
                 / max(
-                    self.daily_stats["success_count"] + self.daily_stats["failure_count"],
+                    self.daily_stats["success_count"]
+                    + self.daily_stats["failure_count"],
                     1,
                 )
             )
             * 100,
             "average_cost_per_video": (
-                self.daily_stats["total_cost"] / max(self.daily_stats["videos_generated"], 1)
+                self.daily_stats["total_cost"]
+                / max(self.daily_stats["videos_generated"], 1)
             ),
             "last_updated": datetime.utcnow().isoformat(),
         }

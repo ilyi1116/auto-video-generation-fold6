@@ -19,7 +19,9 @@ class ConfigManager:
     """統一配置管理器"""
 
     def __init__(self, config_dir: str = None):
-        self.config_dir = Path(config_dir or os.path.join(os.path.dirname(__file__)))
+        self.config_dir = Path(
+            config_dir or os.path.join(os.path.dirname(__file__))
+        )
         self.current_config: Dict[str, Any] = {}
         self.base_config: Dict[str, Any] = {}
         self.mode_config: Dict[str, Any] = {}
@@ -34,7 +36,9 @@ class ConfigManager:
 
         if not base_config_path.exists():
             logger.error(f"基礎配置檔案不存在: {base_config_path}")
-            raise FileNotFoundError(f"Base config not found: {base_config_path}")
+            raise FileNotFoundError(
+                f"Base config not found: {base_config_path}"
+            )
 
         with open(base_config_path, "r", encoding="utf-8") as f:
             self.base_config = json.load(f)
@@ -83,10 +87,16 @@ class ConfigManager:
             "config_dir": str(self.config_dir),
         }
 
-    def _deep_merge(self, base: Dict[str, Any], override: Dict[str, Any]) -> None:
+    def _deep_merge(
+        self, base: Dict[str, Any], override: Dict[str, Any]
+    ) -> None:
         """深度合併字典"""
         for key, value in override.items():
-            if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            if (
+                key in base
+                and isinstance(base[key], dict)
+                and isinstance(value, dict)
+            ):
                 self._deep_merge(base[key], value)
             else:
                 base[key] = value
@@ -165,7 +175,9 @@ class ConfigManager:
 
     def get_api_rate_limit(self, provider: str) -> int:
         """獲取 API 速率限制"""
-        return self.get(f"cost_control.api_rate_limits.{provider}_requests_per_hour", 100)
+        return self.get(
+            f"cost_control.api_rate_limits.{provider}_requests_per_hour", 100
+        )
 
     def save_current_config(self, filename: str = None) -> str:
         """保存當前配置到檔案"""
@@ -211,9 +223,13 @@ class ConfigManager:
         """獲取特定平台配置"""
         return self.get(f"video_styles.{platform}", {})
 
-    def get_content_template(self, category: str, template_type: str = "intro") -> List[str]:
+    def get_content_template(
+        self, category: str, template_type: str = "intro"
+    ) -> List[str]:
         """獲取內容模板"""
-        return self.get(f"content_templates.{category}.{template_type}_templates", [])
+        return self.get(
+            f"content_templates.{category}.{template_type}_templates", []
+        )
 
     def get_enabled_platforms(self) -> List[str]:
         """獲取啟用的平台列表"""

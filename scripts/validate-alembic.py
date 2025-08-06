@@ -5,8 +5,8 @@ Alembic 遷移系統驗證腳本
 """
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 

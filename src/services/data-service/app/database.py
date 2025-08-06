@@ -36,7 +36,9 @@ voice_files = Table(
     Column("duration", Float, nullable=True),
     Column("sample_rate", Integer, nullable=True),
     Column("channels", Integer, nullable=True),
-    Column("status", String(50), default="pending"),  # pending, processing, processed, failed
+    Column(
+        "status", String(50), default="pending"
+    ),  # pending, processing, processed, failed
     Column("metadata", Text, nullable=True),  # JSON metadata
     Column("created_at", DateTime, default=func.now()),
     Column("updated_at", DateTime, default=func.now(), onupdate=func.now()),
@@ -48,9 +50,15 @@ processing_jobs = Table(
     metadata,
     Column("id", Integer, primary_key=True, index=True),
     Column("user_id", Integer, ForeignKey("users.id"), nullable=False),
-    Column("voice_file_id", Integer, ForeignKey("voice_files.id"), nullable=False),
-    Column("job_type", String(50), nullable=False),  # preprocessing, training, inference
-    Column("status", String(50), default="pending"),  # pending, running, completed, failed
+    Column(
+        "voice_file_id", Integer, ForeignKey("voice_files.id"), nullable=False
+    ),
+    Column(
+        "job_type", String(50), nullable=False
+    ),  # preprocessing, training, inference
+    Column(
+        "status", String(50), default="pending"
+    ),  # pending, running, completed, failed
     Column("progress", Integer, default=0),  # 0-100
     Column("result_data", Text, nullable=True),  # JSON result data
     Column("error_message", Text, nullable=True),

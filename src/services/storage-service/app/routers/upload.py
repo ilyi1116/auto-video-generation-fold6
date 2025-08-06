@@ -79,7 +79,8 @@ async def upload_file(
         if not storage_manager.validate_file_type(mime_type, file_type):
             raise HTTPException(
                 status_code=400,
-                detail=f"File type {mime_type} not allowed for " f"{file_type} files",
+                detail=f"File type {mime_type} not allowed for "
+                f"{file_type} files",
             )
 
         # Upload to storage
@@ -119,7 +120,9 @@ async def upload_file(
             "processing_status": "pending" if auto_process else "skipped",
         }
 
-        stored_file = await FileCRUD.create_file(db, current_user.get("id"), file_data)
+        stored_file = await FileCRUD.create_file(
+            db, current_user.get("id"), file_data
+        )
 
         # Queue processing job if auto_process is enabled
         processing_job_id = None
@@ -140,7 +143,9 @@ async def upload_file(
             processing_job_id = processing_job.id
 
             # Trigger async processing
-            asyncio.create_task(process_file_async(stored_file.id, processing_job.id))
+            asyncio.create_task(
+                process_file_async(stored_file.id, processing_job.id)
+            )
 
         response = FileUploadResponse(
             file_id=stored_file.id,
@@ -166,7 +171,9 @@ async def upload_file(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("File upload failed", error=str(e), filename=file.filename)
+        logger.error(
+            "File upload failed", error=str(e), filename=file.filename
+        )
         raise HTTPException(status_code=500, detail="File upload failed")
 
 
@@ -206,7 +213,9 @@ async def upload_multiple_files(
                 uploaded_files.append(result)
 
             except Exception as e:
-                failed_files.append({"filename": file.filename, "error": str(e)})
+                failed_files.append(
+                    {"filename": file.filename, "error": str(e)}
+                )
 
         return BulkUploadResponse(
             uploaded_files=uploaded_files,
@@ -239,7 +248,9 @@ async def upload_from_url(
 
         import httpx
 
-        logger.info("Uploading file from URL", url=url, user_id=current_user.get("id"))
+        logger.info(
+            "Uploading file from URL", url=url, user_id=current_user.get("id")
+        )
 
         # Download file from URL
         async with httpx.AsyncClient() as client:
@@ -251,7 +262,9 @@ async def upload_from_url(
             # Determine filename
             if not filename:
                 parsed_url = urlparse(url)
-                filename = os.path.basename(parsed_url.path) or "downloaded_file"
+                filename = (
+                    os.path.basename(parsed_url.path) or "downloaded_file"
+                )
 
             # Detect MIME type
             mime_type = magic.from_buffer(file_content, mime=True)
@@ -260,7 +273,8 @@ async def upload_from_url(
             if not storage_manager.validate_file_type(mime_type, file_type):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"File type {mime_type} not allowed for " f"{file_type} files",
+                    detail=f"File type {mime_type} not allowed for "
+                    f"{file_type} files",
                 )
 
             # Validate file size
@@ -305,7 +319,9 @@ async def upload_from_url(
                 "processing_status": "pending",
             }
 
-            stored_file = await FileCRUD.create_file(db, current_user.get("id"), file_data)
+            stored_file = await FileCRUD.create_file(
+                db, current_user.get("id"), file_data
+            )
 
             return FileUploadResponse(
                 file_id=stored_file.id,
@@ -320,7 +336,9 @@ async def upload_from_url(
 
     except httpx.RequestError as e:
         logger.error("Failed to download file from URL", error=str(e), url=url)
-        raise HTTPException(status_code=400, detail="Failed to download file from URL")
+        raise HTTPException(
+            status_code=400, detail="Failed to download file from URL"
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -342,10 +360,14 @@ async def process_file_async(file_id: str, job_id: str):
                 return
 
             # Update job status to processing
-            await ProcessingJobCRUD.update_job_status(db, job_id, "processing", 0)
+            await ProcessingJobCRUD.update_job_status(
+                db, job_id, "processing", 0
+            )
 
             # Download file for processing
-            file_data = await storage_manager.download_file(file_record.object_key)
+            file_data = await storage_manager.download_file(
+                file_record.object_key
+            )
 
             # Create temporary file
             with tempfile.NamedTemporaryFile(
@@ -378,23 +400,36 @@ async def process_file_async(file_id: str, job_id: str):
                             "image_width": processing_result.get("width"),
                             "image_height": processing_result.get("height"),
                             "image_format": processing_result.get("format"),
-                            "has_thumbnail": processing_result.get("thumbnail_path") is not None,
-                            "thumbnail_path": processing_result.get("thumbnail_path"),
+                            "has_thumbnail": processing_result.get(
+                                "thumbnail_path"
+                            )
+                            is not None,
+                            "thumbnail_path": processing_result.get(
+                                "thumbnail_path"
+                            ),
                         }
                     )
                 elif file_record.file_type == "audio":
                     updates.update(
                         {
-                            "audio_duration": processing_result.get("duration"),
+                            "audio_duration": processing_result.get(
+                                "duration"
+                            ),
                             "audio_bitrate": processing_result.get("bitrate"),
-                            "audio_sample_rate": processing_result.get("sample_rate"),
-                            "audio_channels": processing_result.get("channels"),
+                            "audio_sample_rate": processing_result.get(
+                                "sample_rate"
+                            ),
+                            "audio_channels": processing_result.get(
+                                "channels"
+                            ),
                         }
                     )
                 elif file_record.file_type == "video":
                     updates.update(
                         {
-                            "video_duration": processing_result.get("duration"),
+                            "video_duration": processing_result.get(
+                                "duration"
+                            ),
                             "video_width": processing_result.get("width"),
                             "video_height": processing_result.get("height"),
                             "video_fps": processing_result.get("fps"),
@@ -403,16 +438,24 @@ async def process_file_async(file_id: str, job_id: str):
                         }
                     )
 
-                await FileCRUD.update_file(db, file_id, file_record.user_id, updates)
+                await FileCRUD.update_file(
+                    db, file_id, file_record.user_id, updates
+                )
 
                 # Update job status to completed
-                await ProcessingJobCRUD.update_job_status(db, job_id, "completed", 100)
+                await ProcessingJobCRUD.update_job_status(
+                    db, job_id, "completed", 100
+                )
 
-                logger.info("File processing completed", file_id=file_id, job_id=job_id)
+                logger.info(
+                    "File processing completed", file_id=file_id, job_id=job_id
+                )
 
             except Exception as e:
                 # Update job status to failed
-                await ProcessingJobCRUD.update_job_status(db, job_id, "failed", 0, str(e))
+                await ProcessingJobCRUD.update_job_status(
+                    db, job_id, "failed", 0, str(e)
+                )
 
                 # Update file processing status
                 await FileCRUD.update_file(
@@ -422,7 +465,9 @@ async def process_file_async(file_id: str, job_id: str):
                     {"processing_status": "failed"},
                 )
 
-                logger.error("File processing failed", error=str(e), file_id=file_id)
+                logger.error(
+                    "File processing failed", error=str(e), file_id=file_id
+                )
 
             finally:
                 # Clean up temporary files
@@ -434,7 +479,9 @@ async def process_file_async(file_id: str, job_id: str):
                     pass
 
     except Exception as e:
-        logger.error("Async file processing failed", error=str(e), file_id=file_id)
+        logger.error(
+            "Async file processing failed", error=str(e), file_id=file_id
+        )
 
 
 @router.get("/upload-status/{job_id}")
@@ -463,5 +510,9 @@ async def get_upload_status(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Failed to get upload status", error=str(e), job_id=job_id)
-        raise HTTPException(status_code=500, detail="Failed to get upload status")
+        logger.error(
+            "Failed to get upload status", error=str(e), job_id=job_id
+        )
+        raise HTTPException(
+            status_code=500, detail="Failed to get upload status"
+        )

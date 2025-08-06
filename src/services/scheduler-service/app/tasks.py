@@ -32,7 +32,9 @@ def check_scheduled_posts():
                 publish_post.delay(post.id)
                 logger.info(f"Triggered publish task for post {post.id}")
             except Exception as e:
-                logger.error(f"Failed to trigger publish for post {post.id}: {e}")
+                logger.error(
+                    f"Failed to trigger publish for post {post.id}: {e}"
+                )
 
     except Exception as e:
         logger.error(f"Error checking scheduled posts: {e}")
@@ -45,13 +47,17 @@ def publish_post(post_id: int):
     """執行實際的發布操作"""
     db = SessionLocal()
     try:
-        post = db.query(ScheduledPost).filter(ScheduledPost.id == post_id).first()
+        post = (
+            db.query(ScheduledPost).filter(ScheduledPost.id == post_id).first()
+        )
         if not post:
             logger.error(f"Post {post_id} not found")
             return
 
         if post.status != "pending":
-            logger.warning(f"Post {post_id} status is not pending: {post.status}")
+            logger.warning(
+                f"Post {post_id} status is not pending: {post.status}"
+            )
             return
 
         # 獲取平台帳號資訊
@@ -93,7 +99,9 @@ def publish_post(post_id: int):
         else:
             post.status = "failed"
             post.error_message = result.get("error", "Unknown error")
-            logger.error(f"Failed to publish post {post_id}: {post.error_message}")
+            logger.error(
+                f"Failed to publish post {post_id}: {post.error_message}"
+            )
 
         db.commit()
 
@@ -107,7 +115,9 @@ def publish_post(post_id: int):
         db.close()
 
 
-def publish_to_tiktok(post: ScheduledPost, account: PlatformAccount) -> Dict[str, Any]:
+def publish_to_tiktok(
+    post: ScheduledPost, account: PlatformAccount
+) -> Dict[str, Any]:
     """發布到 TikTok"""
     try:
         # 調用 social-service API
@@ -137,7 +147,9 @@ def publish_to_tiktok(post: ScheduledPost, account: PlatformAccount) -> Dict[str
         return {"success": False, "error": f"TikTok publish error: {str(e)}"}
 
 
-def publish_to_youtube(post: ScheduledPost, account: PlatformAccount) -> Dict[str, Any]:
+def publish_to_youtube(
+    post: ScheduledPost, account: PlatformAccount
+) -> Dict[str, Any]:
     """發布到 YouTube"""
     try:
         response = requests.post(
@@ -166,7 +178,9 @@ def publish_to_youtube(post: ScheduledPost, account: PlatformAccount) -> Dict[st
         return {"success": False, "error": f"YouTube publish error: {str(e)}"}
 
 
-def publish_to_instagram(post: ScheduledPost, account: PlatformAccount) -> Dict[str, Any]:
+def publish_to_instagram(
+    post: ScheduledPost, account: PlatformAccount
+) -> Dict[str, Any]:
     """發布到 Instagram"""
     try:
         response = requests.post(

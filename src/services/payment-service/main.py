@@ -150,7 +150,9 @@ async def create_portal_session(current_user: dict = Depends(verify_token)):
 
     except stripe.error.StripeError as e:
         logger.error(f"Stripe 錯誤: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"無法創建管理會話: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"無法創建管理會話: {str(e)}"
+        )
 
 
 # 獲取訂閱狀態
@@ -169,7 +171,9 @@ async def get_subscription_status(current_user: dict = Depends(verify_token)):
             )
 
         # 獲取活躍訂閱
-        subscriptions = stripe.Subscription.list(customer=customer.id, status="active", limit=1)
+        subscriptions = stripe.Subscription.list(
+            customer=customer.id, status="active", limit=1
+        )
 
         if not subscriptions.data:
             return SubscriptionStatus(
@@ -189,10 +193,13 @@ async def get_subscription_status(current_user: dict = Depends(verify_token)):
         return SubscriptionStatus(
             status="active",
             plan_id=plan_id,
-            current_period_end=datetime.fromtimestamp(subscription.current_period_end),
+            current_period_end=datetime.fromtimestamp(
+                subscription.current_period_end
+            ),
             videos_used=videos_used,
             video_limit=plan["video_limit"],
-            can_create_video=videos_used < plan["video_limit"] or plan["video_limit"] == -1,
+            can_create_video=videos_used < plan["video_limit"]
+            or plan["video_limit"] == -1,
         )
 
     except Exception as e:
@@ -239,7 +246,9 @@ async def handle_stripe_webhook(request):
     sig_header = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
 
         logger.info(f"收到 Webhook 事件: {event['type']}")
 
@@ -275,7 +284,9 @@ async def get_or_create_customer(user: dict):
         return customers.data[0]
 
     # 創建新客戶
-    customer = stripe.Customer.create(email=user["email"], metadata={"user_id": user["id"]})
+    customer = stripe.Customer.create(
+        email=user["email"], metadata={"user_id": user["id"]}
+    )
 
     return customer
 

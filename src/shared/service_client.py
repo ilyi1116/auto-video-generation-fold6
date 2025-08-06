@@ -71,7 +71,10 @@ class CircuitBreaker:
     async def call(self, func, *args, **kwargs):
         """通過熔斷器調用函數"""
         if self.state == CircuitBreakerState.OPEN:
-            if time.time() - self.last_failure_time > self.config.recovery_timeout:
+            if (
+                time.time() - self.last_failure_time
+                > self.config.recovery_timeout
+            ):
                 self.state = CircuitBreakerState.HALF_OPEN
                 self.success_count = 0
                 logger.info("Circuit breaker state changed to HALF_OPEN")
@@ -127,7 +130,9 @@ class ServiceClient:
     ):
         self.service_name = service_name
         self.retry_config = retry_config or RetryConfig()
-        self.circuit_breaker = CircuitBreaker(circuit_breaker_config or CircuitBreakerConfig())
+        self.circuit_breaker = CircuitBreaker(
+            circuit_breaker_config or CircuitBreakerConfig()
+        )
         self.timeout = timeout
         self.metrics = RequestMetrics()
         self._session: Optional[aiohttp.ClientSession] = None
@@ -155,7 +160,13 @@ class ServiceClient:
     ) -> Dict[str, Any]:
         """發送 HTTP 請求"""
         return await self.circuit_breaker.call(
-            self._request_with_retry, method, path, headers, json_data, data, params
+            self._request_with_retry,
+            method,
+            path,
+            headers,
+            json_data,
+            data,
+            params,
         )
 
     async def _request_with_retry(
@@ -177,7 +188,9 @@ class ServiceClient:
 
                 # 獲取服務實例
                 discovery = await get_service_discovery()
-                instance = await discovery.get_service_instance(self.service_name)
+                instance = await discovery.get_service_instance(
+                    self.service_name
+                )
 
                 if not instance:
                     raise ServiceUnavailableError(
@@ -186,7 +199,13 @@ class ServiceClient:
 
                 try:
                     result = await self._make_request(
-                        instance, method, path, headers, json_data, data, params
+                        instance,
+                        method,
+                        path,
+                        headers,
+                        json_data,
+                        data,
+                        params,
                     )
 
                     # 更新指標
@@ -201,7 +220,9 @@ class ServiceClient:
 
             except Exception as e:
                 last_exception = e
-                logger.warning(f"Request attempt {attempt + 1} failed for {self.service_name}: {e}")
+                logger.warning(
+                    f"Request attempt {attempt + 1} failed for {self.service_name}: {e}"
+                )
 
                 # 更新指標
                 response_time = time.time() - start_time
@@ -216,7 +237,8 @@ class ServiceClient:
 
                     await asyncio.sleep(delay)
                     delay = min(
-                        delay * self.retry_config.exponential_base, self.retry_config.max_delay
+                        delay * self.retry_config.exponential_base,
+                        self.retry_config.max_delay,
                     )
 
         raise last_exception or ServiceUnavailableError(
@@ -288,7 +310,8 @@ class ServiceClient:
         else:
             alpha = 0.1  # 平滑因子
             self.metrics.average_response_time = (
-                alpha * response_time + (1 - alpha) * self.metrics.average_response_time
+                alpha * response_time
+                + (1 - alpha) * self.metrics.average_response_time
             )
 
     # 便捷方法
@@ -309,7 +332,9 @@ class ServiceClient:
         data: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """POST 請求"""
-        return await self.request("POST", path, headers=headers, json_data=json_data, data=data)
+        return await self.request(
+            "POST", path, headers=headers, json_data=json_data, data=data
+        )
 
     async def put(
         self,
@@ -319,9 +344,13 @@ class ServiceClient:
         data: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """PUT 請求"""
-        return await self.request("PUT", path, headers=headers, json_data=json_data, data=data)
+        return await self.request(
+            "PUT", path, headers=headers, json_data=json_data, data=data
+        )
 
-    async def delete(self, path: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    async def delete(
+        self, path: str, headers: Optional[Dict[str, str]] = None
+    ) -> Dict[str, Any]:
         """DELETE 請求"""
         return await self.request("DELETE", path, headers=headers)
 
@@ -329,7 +358,11 @@ class ServiceClient:
         """獲取客戶端指標"""
         success_rate = 0.0
         if self.metrics.total_requests > 0:
-            success_rate = self.metrics.successful_requests / self.metrics.total_requests * 100
+            success_rate = (
+                self.metrics.successful_requests
+                / self.metrics.total_requests
+                * 100
+            )
 
         return {
             "service_name": self.service_name,
@@ -352,7 +385,9 @@ class ServiceUnavailableError(Exception):
 class HTTPError(Exception):
     """HTTP 錯誤異常"""
 
-    def __init__(self, status_code: int, message: str, response_text: str = ""):
+    def __init__(
+        self, status_code: int, message: str, response_text: str = ""
+    ):
         self.status_code = status_code
         self.message = message
         self.response_text = response_text
@@ -391,7 +426,10 @@ class ServiceClientManager:
 
     def get_all_metrics(self) -> Dict[str, Any]:
         """獲取所有客戶端指標"""
-        return {name: client.get_metrics() for name, client in self._clients.items()}
+        return {
+            name: client.get_metrics()
+            for name, client in self._clients.items()
+        }
 
 
 # 全局客戶端管理器

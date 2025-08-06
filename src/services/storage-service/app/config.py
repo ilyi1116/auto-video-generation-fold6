@@ -7,7 +7,9 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # API Configuration
     api_v1_str: str = "/api/v1"
-    project_name: str = os.getenv("PROJECT_NAME", "Auto Video Generation Storage Service")
+    project_name: str = os.getenv(
+        "PROJECT_NAME", "Auto Video Generation Storage Service"
+    )
     debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Database Configuration
@@ -24,7 +26,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "RS256")
 
     # Storage Configuration
-    storage_backend: str = os.getenv("STORAGE_BACKEND", "s3")  # s3, minio, local
+    storage_backend: str = os.getenv(
+        "STORAGE_BACKEND", "s3"
+    )  # s3, minio, local
 
     # S3/MinIO Configuration
     s3_access_key_id: str = os.getenv("S3_ACCESS_KEY_ID", "")
@@ -36,7 +40,9 @@ class Settings(BaseSettings):
 
     # Local Storage Configuration
     local_storage_path: str = os.getenv("LOCAL_STORAGE_PATH", "/app/storage")
-    temp_storage_path: str = os.getenv("TEMP_STORAGE_PATH", "/app/storage/temp")
+    temp_storage_path: str = os.getenv(
+        "TEMP_STORAGE_PATH", "/app/storage/temp"
+    )
 
     # File Processing Configuration
     max_file_size_mb: int = int(os.getenv("MAX_FILE_SIZE_MB", "100"))
@@ -73,11 +79,15 @@ class Settings(BaseSettings):
     thumbnail_size: int = int(os.getenv("THUMBNAIL_SIZE", "300"))
 
     # Audio Processing
-    max_audio_duration_seconds: int = int(os.getenv("MAX_AUDIO_DURATION_SECONDS", "600"))
+    max_audio_duration_seconds: int = int(
+        os.getenv("MAX_AUDIO_DURATION_SECONDS", "600")
+    )
     audio_sample_rate: int = int(os.getenv("AUDIO_SAMPLE_RATE", "44100"))
 
     # Video Processing
-    max_video_duration_seconds: int = int(os.getenv("MAX_VIDEO_DURATION_SECONDS", "600"))
+    max_video_duration_seconds: int = int(
+        os.getenv("MAX_VIDEO_DURATION_SECONDS", "600")
+    )
     video_quality: str = os.getenv("VIDEO_QUALITY", "high")
 
     # CDN Configuration
@@ -85,18 +95,24 @@ class Settings(BaseSettings):
     use_cdn: bool = os.getenv("USE_CDN", "false").lower() == "true"
 
     # Security Configuration
-    virus_scan_enabled: bool = os.getenv("VIRUS_SCAN_ENABLED", "false").lower() == "true"
+    virus_scan_enabled: bool = (
+        os.getenv("VIRUS_SCAN_ENABLED", "false").lower() == "true"
+    )
     content_moderation_enabled: bool = (
         os.getenv("CONTENT_MODERATION_ENABLED", "false").lower() == "true"
     )
 
     # Logging
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
-    structured_logging: bool = os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
+    structured_logging: bool = (
+        os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
+    )
 
     # Monitoring
     sentry_dsn: str = os.getenv("SENTRY_DSN", "")
-    prometheus_enabled: bool = os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
+    prometheus_enabled: bool = (
+        os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

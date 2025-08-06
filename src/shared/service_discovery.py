@@ -75,7 +75,9 @@ class ServiceRegistry:
                 self._services[instance.service_name] = []
 
             # 檢查是否已存在相同實例
-            existing = self._find_instance(instance.service_name, instance.host, instance.port)
+            existing = self._find_instance(
+                instance.service_name, instance.host, instance.port
+            )
             if existing:
                 # 更新現有實例
                 existing.weight = instance.weight
@@ -92,7 +94,9 @@ class ServiceRegistry:
                 )
                 return True
 
-    async def deregister(self, service_name: str, host: str, port: int) -> bool:
+    async def deregister(
+        self, service_name: str, host: str, port: int
+    ) -> bool:
         """取消註冊服務實例"""
         async with self._lock:
             if service_name not in self._services:
@@ -101,11 +105,15 @@ class ServiceRegistry:
             instance = self._find_instance(service_name, host, port)
             if instance:
                 self._services[service_name].remove(instance)
-                logger.info(f"Deregistered service instance: {service_name}@{host}:{port}")
+                logger.info(
+                    f"Deregistered service instance: {service_name}@{host}:{port}"
+                )
                 return True
             return False
 
-    async def get_healthy_instances(self, service_name: str) -> List[ServiceInstance]:
+    async def get_healthy_instances(
+        self, service_name: str
+    ) -> List[ServiceInstance]:
         """獲取健康的服務實例"""
         async with self._lock:
             if service_name not in self._services:
@@ -117,7 +125,9 @@ class ServiceRegistry:
                 if instance.status == ServiceStatus.HEALTHY
             ]
 
-    async def get_all_instances(self, service_name: str) -> List[ServiceInstance]:
+    async def get_all_instances(
+        self, service_name: str
+    ) -> List[ServiceInstance]:
         """獲取所有服務實例"""
         async with self._lock:
             return self._services.get(service_name, []).copy()
@@ -127,7 +137,9 @@ class ServiceRegistry:
         async with self._lock:
             return list(self._services.keys())
 
-    def _find_instance(self, service_name: str, host: str, port: int) -> Optional[ServiceInstance]:
+    def _find_instance(
+        self, service_name: str, host: str, port: int
+    ) -> Optional[ServiceInstance]:
         """查找服務實例"""
         if service_name not in self._services:
             return None
@@ -153,7 +165,9 @@ class HealthChecker:
             return
 
         self._running = True
-        self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5))
+        self._session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=5)
+        )
 
         asyncio.create_task(self._health_check_loop())
         logger.info("Health checker started")
@@ -171,7 +185,9 @@ class HealthChecker:
             try:
                 service_names = await self.registry.get_service_names()
                 for service_name in service_names:
-                    instances = await self.registry.get_all_instances(service_name)
+                    instances = await self.registry.get_all_instances(
+                        service_name
+                    )
                     for instance in instances:
                         await self._check_instance_health(instance)
 
@@ -204,21 +220,29 @@ class HealthChecker:
 class LoadBalancer:
     """負載均衡器"""
 
-    def __init__(self, strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN):
+    def __init__(
+        self, strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN
+    ):
         self.strategy = strategy
         self._round_robin_counters: Dict[str, int] = {}
 
-    async def select_instance(self, instances: List[ServiceInstance]) -> Optional[ServiceInstance]:
+    async def select_instance(
+        self, instances: List[ServiceInstance]
+    ) -> Optional[ServiceInstance]:
         """選擇服務實例"""
         if not instances:
             return None
 
         healthy_instances = [
-            instance for instance in instances if instance.status == ServiceStatus.HEALTHY
+            instance
+            for instance in instances
+            if instance.status == ServiceStatus.HEALTHY
         ]
 
         if not healthy_instances:
-            logger.warning("No healthy instances available, falling back to all instances")
+            logger.warning(
+                "No healthy instances available, falling back to all instances"
+            )
             healthy_instances = instances
 
         if self.strategy == LoadBalanceStrategy.ROUND_ROBIN:
@@ -232,7 +256,9 @@ class LoadBalancer:
         else:
             return healthy_instances[0]
 
-    def _round_robin_select(self, instances: List[ServiceInstance]) -> ServiceInstance:
+    def _round_robin_select(
+        self, instances: List[ServiceInstance]
+    ) -> ServiceInstance:
         """輪詢選擇"""
         service_name = instances[0].service_name
         counter = self._round_robin_counters.get(service_name, 0)
@@ -240,15 +266,21 @@ class LoadBalancer:
         self._round_robin_counters[service_name] = counter + 1
         return selected
 
-    def _random_select(self, instances: List[ServiceInstance]) -> ServiceInstance:
+    def _random_select(
+        self, instances: List[ServiceInstance]
+    ) -> ServiceInstance:
         """隨機選擇"""
         return random.choice(instances)
 
-    def _least_connections_select(self, instances: List[ServiceInstance]) -> ServiceInstance:
+    def _least_connections_select(
+        self, instances: List[ServiceInstance]
+    ) -> ServiceInstance:
         """最少連接選擇"""
         return min(instances, key=lambda x: x.connections)
 
-    def _weighted_round_robin_select(self, instances: List[ServiceInstance]) -> ServiceInstance:
+    def _weighted_round_robin_select(
+        self, instances: List[ServiceInstance]
+    ) -> ServiceInstance:
         """加權輪詢選擇"""
         # 創建權重列表
         weighted_instances = []
@@ -269,7 +301,8 @@ class ServiceDiscovery:
     """服務發現主類"""
 
     def __init__(
-        self, load_balance_strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN
+        self,
+        load_balance_strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN,
     ):
         self.registry = ServiceRegistry()
         self.health_checker = HealthChecker(self.registry)
@@ -304,11 +337,17 @@ class ServiceDiscovery:
     ) -> bool:
         """註冊服務"""
         instance = ServiceInstance(
-            service_name=service_name, host=host, port=port, weight=weight, metadata=metadata or {}
+            service_name=service_name,
+            host=host,
+            port=port,
+            weight=weight,
+            metadata=metadata or {},
         )
         return await self.registry.register(instance)
 
-    async def deregister_service(self, service_name: str, host: str, port: int) -> bool:
+    async def deregister_service(
+        self, service_name: str, host: str, port: int
+    ) -> bool:
         """取消註冊服務"""
         return await self.registry.deregister(service_name, host, port)
 
@@ -322,7 +361,9 @@ class ServiceDiscovery:
             return selected.url
         return None
 
-    async def get_service_instance(self, service_name: str) -> Optional[ServiceInstance]:
+    async def get_service_instance(
+        self, service_name: str
+    ) -> Optional[ServiceInstance]:
         """獲取服務實例（通過負載均衡）"""
         instances = await self.registry.get_healthy_instances(service_name)
         selected = await self.load_balancer.select_instance(instances)
@@ -341,7 +382,9 @@ class ServiceDiscovery:
         instances = await self.registry.get_all_instances(service_name)
 
         total_instances = len(instances)
-        healthy_instances = len([i for i in instances if i.status == ServiceStatus.HEALTHY])
+        healthy_instances = len(
+            [i for i in instances if i.status == ServiceStatus.HEALTHY]
+        )
 
         return {
             "service_name": service_name,
@@ -376,11 +419,17 @@ async def get_service_discovery() -> ServiceDiscovery:
 
 
 async def register_service(
-    service_name: str, host: str, port: int, weight: int = 1, metadata: Dict[str, Any] = None
+    service_name: str,
+    host: str,
+    port: int,
+    weight: int = 1,
+    metadata: Dict[str, Any] = None,
 ) -> bool:
     """註冊服務的便捷函數"""
     discovery = await get_service_discovery()
-    return await discovery.register_service(service_name, host, port, weight, metadata)
+    return await discovery.register_service(
+        service_name, host, port, weight, metadata
+    )
 
 
 async def get_service_url(service_name: str) -> Optional[str]:

@@ -13,7 +13,9 @@ logger = structlog.get_logger()
 
 class ImageGenerationRequest(BaseModel):
     prompt: str
-    style: str = "modern"  # modern, vintage, minimalist, artistic, photorealistic
+    style: str = (
+        "modern"  # modern, vintage, minimalist, artistic, photorealistic
+    )
     aspect_ratio: str = "9:16"  # 9:16, 16:9, 1:1, 4:3
     resolution: str = "1080p"  # 720p, 1080p, 4k
     negative_prompt: Optional[str] = None
@@ -100,7 +102,9 @@ async def generate_variations(
 
     except Exception as e:
         logger.error("Image variation generation failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Image variation generation failed")
+        raise HTTPException(
+            status_code=500, detail="Image variation generation failed"
+        )
 
 
 @router.post("/upscale")
@@ -119,7 +123,9 @@ async def upscale_image(
         )
 
         image_generator = ImageGenerator()
-        result = await image_generator.upscale_image(image_url=image_url, scale_factor=scale_factor)
+        result = await image_generator.upscale_image(
+            image_url=image_url, scale_factor=scale_factor
+        )
 
         return result
 

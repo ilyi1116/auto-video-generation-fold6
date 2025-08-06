@@ -17,17 +17,31 @@ router = APIRouter()
 
 
 class SynthesisRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=1000, description="Text to synthesize")
+    text: str = Field(
+        ..., min_length=1, max_length=1000, description="Text to synthesize"
+    )
     model_id: int = Field(..., description="Voice model ID to use")
-    speed: Optional[float] = Field(default=1.0, ge=0.5, le=2.0, description="Speech speed")
-    pitch: Optional[float] = Field(default=1.0, ge=0.5, le=2.0, description="Speech pitch")
-    volume: Optional[float] = Field(default=1.0, ge=0.1, le=2.0, description="Speech volume")
-    emotion: Optional[str] = Field(default="neutral", description="Emotion style")
-    return_audio: bool = Field(default=False, description="Return audio data directly")
+    speed: Optional[float] = Field(
+        default=1.0, ge=0.5, le=2.0, description="Speech speed"
+    )
+    pitch: Optional[float] = Field(
+        default=1.0, ge=0.5, le=2.0, description="Speech pitch"
+    )
+    volume: Optional[float] = Field(
+        default=1.0, ge=0.1, le=2.0, description="Speech volume"
+    )
+    emotion: Optional[str] = Field(
+        default="neutral", description="Emotion style"
+    )
+    return_audio: bool = Field(
+        default=False, description="Return audio data directly"
+    )
 
 
 class BatchSynthesisRequest(BaseModel):
-    texts: List[str] = Field(..., max_items=10, description="List of texts to synthesize")
+    texts: List[str] = Field(
+        ..., max_items=10, description="List of texts to synthesize"
+    )
     model_id: int = Field(..., description="Voice model ID to use")
     speed: Optional[float] = Field(default=1.0, ge=0.5, le=2.0)
     pitch: Optional[float] = Field(default=1.0, ge=0.5, le=2.0)
@@ -122,7 +136,9 @@ async def synthesize_voice(
 
             # Upload audio to S3
             audio_key = f"synthesized/{current_user['id']}/{job_id}.wav"
-            audio_url = await s3_storage.upload_audio(synthesis_result["audio_data"], audio_key)
+            audio_url = await s3_storage.upload_audio(
+                synthesis_result["audio_data"], audio_key
+            )
 
             # Update job with results
             await database.execute(
@@ -243,12 +259,15 @@ async def batch_synthesize_voice(
 
 
 @router.get("/synthesize/audio/{job_id}")
-async def get_synthesis_audio(job_id: int, current_user: dict = Depends(get_current_user)):
+async def get_synthesis_audio(
+    job_id: int, current_user: dict = Depends(get_current_user)
+):
     """Get synthesized audio file"""
 
     # Get job details
     job_query = synthesis_jobs.select().where(
-        (synthesis_jobs.c.id == job_id) & (synthesis_jobs.c.user_id == current_user["id"])
+        (synthesis_jobs.c.id == job_id)
+        & (synthesis_jobs.c.user_id == current_user["id"])
     )
     job = await database.fetch_one(job_query)
 
@@ -270,12 +289,18 @@ async def get_synthesis_audio(job_id: int, current_user: dict = Depends(get_curr
         job["audio_url"].split("/")[-1]
 
         # For demonstration, return mock audio
-        mock_audio = b"RIFF\x24\x08\x00\x00WAVEfmt \x10\x00\x00\x00" + b"\x00" * 1000
+        mock_audio = (
+            b"RIFF\x24\x08\x00\x00WAVEfmt \x10\x00\x00\x00" + b"\x00" * 1000
+        )
 
         return StreamingResponse(
             io.BytesIO(mock_audio),
             media_type="audio/wav",
-            headers={"Content-Disposition": (f"attachment; filename=synthesis_{job_id}.wav")},
+            headers={
+                "Content-Disposition": (
+                    f"attachment; filename=synthesis_{job_id}.wav"
+                )
+            },
         )
 
     except Exception as e:
@@ -321,11 +346,14 @@ async def get_synthesis_jobs(
 
 
 @router.get("/jobs/{job_id}", response_model=SynthesisResponse)
-async def get_synthesis_job(job_id: int, current_user: dict = Depends(get_current_user)):
+async def get_synthesis_job(
+    job_id: int, current_user: dict = Depends(get_current_user)
+):
     """Get synthesis job details"""
 
     query = synthesis_jobs.select().where(
-        (synthesis_jobs.c.id == job_id) & (synthesis_jobs.c.user_id == current_user["id"])
+        (synthesis_jobs.c.id == job_id)
+        & (synthesis_jobs.c.user_id == current_user["id"])
     )
 
     job = await database.fetch_one(query)
@@ -360,7 +388,9 @@ async def process_synthesis_job(
     try:
         # Update job status
         await database.execute(
-            synthesis_jobs.update().where(synthesis_jobs.c.id == job_id).values(status="processing")
+            synthesis_jobs.update()
+            .where(synthesis_jobs.c.id == job_id)
+            .values(status="processing")
         )
 
         # Perform synthesis
@@ -384,7 +414,9 @@ async def process_synthesis_job(
 
         # Upload audio to S3
         audio_key = f"synthesized/{user_id}/{job_id}.wav"
-        audio_url = await s3_storage.upload_audio(synthesis_result["audio_data"], audio_key)
+        audio_url = await s3_storage.upload_audio(
+            synthesis_result["audio_data"], audio_key
+        )
 
         # Update job with results
         await database.execute(
@@ -423,7 +455,9 @@ async def process_batch_synthesis(
     user_id: int,
 ):
     """Background task to process batch synthesis"""
-    logger.info("Starting batch synthesis", job_ids=job_ids, batch_size=len(job_ids))
+    logger.info(
+        "Starting batch synthesis", job_ids=job_ids, batch_size=len(job_ids)
+    )
 
     for i, job_id in enumerate(job_ids):
         try:
@@ -442,4 +476,6 @@ async def process_batch_synthesis(
                 user_id,
             )
         except Exception as e:
-            logger.error("Batch synthesis item failed", job_id=job_id, error=str(e))
+            logger.error(
+                "Batch synthesis item failed", job_id=job_id, error=str(e)
+            )

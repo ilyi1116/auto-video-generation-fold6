@@ -17,10 +17,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import docker
 from bandit.core import config as bandit_config
 from bandit.core import manager as bandit_manager
-
-import docker
 
 logger = logging.getLogger(__name__)
 

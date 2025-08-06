@@ -15,7 +15,9 @@ async def verify_token(token: str) -> dict:
     """Verify JWT token with auth service"""
     try:
         # First try to decode locally
-        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(
+            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+        )
         return payload
     except JWTError:
         # If local verification fails, check with auth service

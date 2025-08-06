@@ -33,12 +33,22 @@ class SchedulerConfigModel(BaseModel):
     work_hours_start: str = Field(default="09:00", description="工作開始時間")
     work_hours_end: str = Field(default="18:00", description="工作結束時間")
     timezone: str = Field(default="Asia/Taipei", description="時區")
-    check_interval_minutes: int = Field(default=30, ge=1, le=1440, description="檢查間隔（分鐘）")
-    daily_video_limit: int = Field(default=5, ge=1, le=50, description="每日影片限制")
-    daily_budget_limit: float = Field(default=20.0, ge=1.0, le=1000.0, description="每日預算限制")
-    max_concurrent_tasks: int = Field(default=3, ge=1, le=10, description="最大並行任務數")
+    check_interval_minutes: int = Field(
+        default=30, ge=1, le=1440, description="檢查間隔（分鐘）"
+    )
+    daily_video_limit: int = Field(
+        default=5, ge=1, le=50, description="每日影片限制"
+    )
+    daily_budget_limit: float = Field(
+        default=20.0, ge=1.0, le=1000.0, description="每日預算限制"
+    )
+    max_concurrent_tasks: int = Field(
+        default=3, ge=1, le=10, description="最大並行任務數"
+    )
     retry_attempts: int = Field(default=3, ge=1, le=10, description="重試次數")
-    retry_delay_minutes: int = Field(default=5, ge=1, le=60, description="重試延遲（分鐘）")
+    retry_delay_minutes: int = Field(
+        default=5, ge=1, le=60, description="重試延遲（分鐘）"
+    )
 
 
 class ScheduleTaskRequest(BaseModel):
@@ -46,10 +56,16 @@ class ScheduleTaskRequest(BaseModel):
 
     user_id: str = Field(..., description="用戶ID")
     video_count: int = Field(default=1, ge=1, le=10, description="影片數量")
-    categories: List[str] = Field(default=["technology"], description="內容類別")
+    categories: List[str] = Field(
+        default=["technology"], description="內容類別"
+    )
     platforms: List[str] = Field(default=["tiktok"], description="目標平台")
-    quality_threshold: float = Field(default=0.7, ge=0.1, le=1.0, description="品質門檻")
-    budget_per_video: float = Field(default=3.0, ge=0.5, le=20.0, description="單影片預算")
+    quality_threshold: float = Field(
+        default=0.7, ge=0.1, le=1.0, description="品質門檻"
+    )
+    budget_per_video: float = Field(
+        default=3.0, ge=0.5, le=20.0, description="單影片預算"
+    )
 
 
 class TaskStatusResponse(BaseModel):
@@ -315,7 +331,9 @@ async def list_scheduled_tasks(
 
 
 @router.get("/tasks/{task_id}", response_model=TaskStatusResponse)
-async def get_task_status(task_id: str, current_user: dict = Depends(verify_token)):
+async def get_task_status(
+    task_id: str, current_user: dict = Depends(verify_token)
+):
     """獲取任務狀態"""
     try:
         scheduler = get_scheduler()
@@ -345,11 +363,15 @@ async def get_task_status(task_id: str, current_user: dict = Depends(verify_toke
         raise
     except Exception as e:
         logger.error(f"獲取任務狀態失敗: {e}")
-        raise HTTPException(status_code=500, detail=f"獲取任務狀態失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取任務狀態失敗: {str(e)}"
+        )
 
 
 @router.delete("/tasks/{task_id}")
-async def cancel_task(task_id: str, current_user: dict = Depends(verify_token)):
+async def cancel_task(
+    task_id: str, current_user: dict = Depends(verify_token)
+):
     """取消任務"""
     try:
         scheduler = get_scheduler()

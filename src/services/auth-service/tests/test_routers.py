@@ -268,7 +268,9 @@ class TestAuthRouters:
             )
 
             assert response.status_code == status.HTTP_200_OK
-            assert "Password updated successfully" in response.json()["message"]
+            assert (
+                "Password updated successfully" in response.json()["message"]
+            )
 
     @pytest.mark.asyncio
     async def test_change_password_wrong_current(self, client: AsyncClient):

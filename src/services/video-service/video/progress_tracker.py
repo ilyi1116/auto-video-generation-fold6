@@ -10,7 +10,9 @@ from datetime import datetime
 class ProgressStatus:
     """進度狀態 - 最小實作"""
 
-    def __init__(self, progress_percentage: int, status: str, current_stage: str):
+    def __init__(
+        self, progress_percentage: int, status: str, current_stage: str
+    ):
         self.progress_percentage = progress_percentage
         self.status = status
         self.current_stage = current_stage

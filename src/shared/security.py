@@ -61,30 +61,46 @@ class JWTHandler:
         if expires_delta:
             expire = datetime.utcnow() + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=self.config.jwt_expire_minutes)
+            expire = datetime.utcnow() + timedelta(
+                minutes=self.config.jwt_expire_minutes
+            )
 
-        to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "access"})
+        to_encode.update(
+            {"exp": expire, "iat": datetime.utcnow(), "type": "access"}
+        )
 
         return jwt.encode(
-            to_encode, self.config.jwt_secret_key, algorithm=self.config.jwt_algorithm
+            to_encode,
+            self.config.jwt_secret_key,
+            algorithm=self.config.jwt_algorithm,
         )
 
     def create_refresh_token(self, data: Dict[str, Any]) -> str:
         """創建刷新令牌"""
         to_encode = data.copy()
-        expire = datetime.utcnow() + timedelta(days=self.config.jwt_refresh_expire_days)
-
-        to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "refresh"})
-
-        return jwt.encode(
-            to_encode, self.config.jwt_secret_key, algorithm=self.config.jwt_algorithm
+        expire = datetime.utcnow() + timedelta(
+            days=self.config.jwt_refresh_expire_days
         )
 
-    def verify_token(self, token: str, token_type: str = "access") -> Dict[str, Any]:
+        to_encode.update(
+            {"exp": expire, "iat": datetime.utcnow(), "type": "refresh"}
+        )
+
+        return jwt.encode(
+            to_encode,
+            self.config.jwt_secret_key,
+            algorithm=self.config.jwt_algorithm,
+        )
+
+    def verify_token(
+        self, token: str, token_type: str = "access"
+    ) -> Dict[str, Any]:
         """驗證令牌"""
         try:
             payload = jwt.decode(
-                token, self.config.jwt_secret_key, algorithms=[self.config.jwt_algorithm]
+                token,
+                self.config.jwt_secret_key,
+                algorithms=[self.config.jwt_algorithm],
             )
 
             if payload.get("type") != token_type:
@@ -97,11 +113,13 @@ class JWTHandler:
 
         except jwt.ExpiredSignatureError:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
             )
         except jwt.JWTError:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
             )
 
     def refresh_access_token(self, refresh_token: str) -> str:
@@ -109,7 +127,9 @@ class JWTHandler:
         payload = self.verify_token(refresh_token, "refresh")
 
         # 移除不需要的字段
-        new_payload = {k: v for k, v in payload.items() if k not in ["exp", "iat", "type"]}
+        new_payload = {
+            k: v for k, v in payload.items() if k not in ["exp", "iat", "type"]
+        }
 
         return self.create_access_token(new_payload)
 
@@ -125,11 +145,17 @@ class PasswordHandler:
 
     def hash_password(self, password: str) -> str:
         """哈希密碼"""
-        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        return bcrypt.hashpw(
+            password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
 
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    def verify_password(
+        self, plain_password: str, hashed_password: str
+    ) -> bool:
         """驗證密碼"""
-        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+        )
 
     def validate_password_strength(self, password: str) -> bool:
         """驗證密碼強度"""
@@ -210,9 +236,9 @@ class SecurityBearer(HTTPBearer):
         self.jwt_handler = jwt_handler
 
     async def __call__(self, request: Request) -> Optional[Dict[str, Any]]:
-        credentials: HTTPAuthorizationCredentials = await super(SecurityBearer, self).__call__(
-            request
-        )
+        credentials: HTTPAuthorizationCredentials = await super(
+            SecurityBearer, self
+        ).__call__(request)
 
         if credentials:
             if not credentials.scheme == "Bearer":
@@ -242,7 +268,9 @@ class PermissionChecker:
             self.permissions[role] = {}
         self.permissions[role][resource] = actions
 
-    def check_permission(self, user_role: str, resource: str, action: str) -> bool:
+    def check_permission(
+        self, user_role: str, resource: str, action: str
+    ) -> bool:
         """檢查權限"""
         if user_role not in self.permissions:
             return False
@@ -261,14 +289,16 @@ class PermissionChecker:
                 user_payload = kwargs.get("current_user")
                 if not user_payload:
                     raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required"
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Authentication required",
                     )
 
                 user_role = user_payload.get("role", "user")
 
                 if not self.check_permission(user_role, resource, action):
                     raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Insufficient permissions",
                     )
 
                 return await func(*args, **kwargs)
@@ -394,7 +424,9 @@ class AuditLogger:
 
         self.logger.info(f"AUDIT: {audit_data}")
 
-    def log_security_event(self, event_type: str, details: Dict[str, Any], severity: str = "INFO"):
+    def log_security_event(
+        self, event_type: str, details: Dict[str, Any], severity: str = "INFO"
+    ):
         """記錄安全事件"""
         security_data = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -482,11 +514,15 @@ class SecurityManager:
         )
 
         # 用戶權限
-        self.permission_checker.add_permission("user", "profile", ["read", "update"])
+        self.permission_checker.add_permission(
+            "user", "profile", ["read", "update"]
+        )
         self.permission_checker.add_permission(
             "user", "videos", ["create", "read", "update", "delete"]
         )
-        self.permission_checker.add_permission("user", "ai", ["create", "read"])
+        self.permission_checker.add_permission(
+            "user", "ai", ["create", "read"]
+        )
 
         # 訪客權限
         self.permission_checker.add_permission("guest", "public", ["read"])
@@ -517,7 +553,9 @@ class SecurityManager:
 _security_manager: Optional[SecurityManager] = None
 
 
-def get_security_manager(config: Optional[SecurityConfig] = None) -> SecurityManager:
+def get_security_manager(
+    config: Optional[SecurityConfig] = None,
+) -> SecurityManager:
     """獲取全局安全管理器實例"""
     global _security_manager
 
@@ -525,10 +563,14 @@ def get_security_manager(config: Optional[SecurityConfig] = None) -> SecurityMan
         if config is None:
             # 使用默認配置
             config = SecurityConfig(
-                jwt_secret_key=os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production"),
+                jwt_secret_key=os.getenv(
+                    "JWT_SECRET_KEY", "your-secret-key-change-in-production"
+                ),
                 jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
                 jwt_expire_minutes=int(os.getenv("JWT_EXPIRE_MINUTES", "30")),
-                rate_limit_per_minute=int(os.getenv("RATE_LIMIT_PER_MINUTE", "60")),
+                rate_limit_per_minute=int(
+                    os.getenv("RATE_LIMIT_PER_MINUTE", "60")
+                ),
             )
 
         _security_manager = SecurityManager(config)
@@ -539,16 +581,22 @@ def get_security_manager(config: Optional[SecurityConfig] = None) -> SecurityMan
 # ========================================
 # 便捷函數
 # ========================================
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """創建訪問令牌的便捷函數"""
     security_manager = get_security_manager()
-    return security_manager.jwt_handler.create_access_token(data, expires_delta)
+    return security_manager.jwt_handler.create_access_token(
+        data, expires_delta
+    )
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """驗證密碼的便捷函數"""
     security_manager = get_security_manager()
-    return security_manager.password_handler.verify_password(plain_password, hashed_password)
+    return security_manager.password_handler.verify_password(
+        plain_password, hashed_password
+    )
 
 
 def hash_password(password: str) -> str:

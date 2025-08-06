@@ -50,12 +50,18 @@ class S3Storage:
     async def download_model(self, key: str, local_path: str) -> bool:
         """Download model file from S3"""
         try:
-            self.client.download_file(Bucket=self.bucket_name, Key=key, Filename=local_path)
-            logger.info("Model downloaded from S3", key=key, local_path=local_path)
+            self.client.download_file(
+                Bucket=self.bucket_name, Key=key, Filename=local_path
+            )
+            logger.info(
+                "Model downloaded from S3", key=key, local_path=local_path
+            )
             return True
 
         except (ClientError, BotoCoreError) as e:
-            logger.error("Failed to download model from S3", key=key, error=str(e))
+            logger.error(
+                "Failed to download model from S3", key=key, error=str(e)
+            )
             return False
 
     async def file_exists(self, key: str) -> bool:
@@ -73,13 +79,17 @@ class S3Storage:
             logger.info("File deleted from S3", key=key)
             return True
         except (ClientError, BotoCoreError) as e:
-            logger.error("Failed to delete file from S3", key=key, error=str(e))
+            logger.error(
+                "Failed to delete file from S3", key=key, error=str(e)
+            )
             return False
 
     async def list_model_files(self, prefix: str) -> list[str]:
         """List model files with given prefix"""
         try:
-            response = self.client.list_objects_v2(Bucket=self.bucket_name, Prefix=prefix)
+            response = self.client.list_objects_v2(
+                Bucket=self.bucket_name, Prefix=prefix
+            )
 
             files = []
             if "Contents" in response:
@@ -88,7 +98,9 @@ class S3Storage:
             return files
 
         except (ClientError, BotoCoreError) as e:
-            logger.error("Failed to list model files", prefix=prefix, error=str(e))
+            logger.error(
+                "Failed to list model files", prefix=prefix, error=str(e)
+            )
             return []
 
 
@@ -107,11 +119,15 @@ class LocalStorage:
             async with aiofiles.open(file_path, "wb") as f:
                 await f.write(audio_data)
 
-            logger.debug("Temp audio saved", file_path=file_path, size=len(audio_data))
+            logger.debug(
+                "Temp audio saved", file_path=file_path, size=len(audio_data)
+            )
             return file_path
 
         except Exception as e:
-            logger.error("Failed to save temp audio", filename=filename, error=str(e))
+            logger.error(
+                "Failed to save temp audio", filename=filename, error=str(e)
+            )
             raise RuntimeError(f"Failed to save temporary audio: {str(e)}")
 
     async def read_temp_file(self, file_path: str) -> Optional[bytes]:
@@ -126,7 +142,9 @@ class LocalStorage:
             return data
 
         except Exception as e:
-            logger.error("Failed to read temp file", file_path=file_path, error=str(e))
+            logger.error(
+                "Failed to read temp file", file_path=file_path, error=str(e)
+            )
             return None
 
     async def cleanup_temp_file(self, file_path: str) -> bool:

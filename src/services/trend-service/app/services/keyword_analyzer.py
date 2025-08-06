@@ -4,7 +4,9 @@ from typing import Any, Dict, List
 logger = logging.getLogger(__name__)
 
 
-async def analyze_keyword(keyword: str, platforms: List[str], region: str = "TW") -> Dict[str, Any]:
+async def analyze_keyword(
+    keyword: str, platforms: List[str], region: str = "TW"
+) -> Dict[str, Any]:
     """分析關鍵字"""
 
     # 模擬關鍵字分析數據
@@ -90,7 +92,9 @@ async def get_keyword_suggestions(
     return suggestions
 
 
-async def analyze_keyword_difficulty(keyword: str, platform: str = "google") -> Dict[str, Any]:
+async def analyze_keyword_difficulty(
+    keyword: str, platform: str = "google"
+) -> Dict[str, Any]:
     """分析關鍵字競爭難度"""
 
     return {
@@ -160,7 +164,9 @@ async def compare_keywords(
         )
 
     # 找出最佳機會
-    best_opportunity = max(comparison_table, key=lambda x: x["opportunity_score"])
+    best_opportunity = max(
+        comparison_table, key=lambda x: x["opportunity_score"]
+    )
 
     return {
         "comparison_table": comparison_table,
@@ -212,8 +218,11 @@ async def find_keyword_gaps(
             "程式語言教學競爭激烈但需求大",
             "工具推薦類型內容機會較多",
         ],
-        "priority_list": sorted(gaps, key=lambda x: x["monthly_searches"], reverse=True)[:10],
-        "traffic_potential": sum(gap["monthly_searches"] for gap in gaps) * 0.1,  # 估算10%點擊率
+        "priority_list": sorted(
+            gaps, key=lambda x: x["monthly_searches"], reverse=True
+        )[:10],
+        "traffic_potential": sum(gap["monthly_searches"] for gap in gaps)
+        * 0.1,  # 估算10%點擊率
     }
 
 

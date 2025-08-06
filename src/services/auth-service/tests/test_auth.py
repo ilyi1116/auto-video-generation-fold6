@@ -15,7 +15,9 @@ class TestUserRegistration:
         assert "id" in data
         assert "hashed_password" not in data
 
-    def test_register_user_duplicate_email(self, client: TestClient, sample_user_data):
+    def test_register_user_duplicate_email(
+        self, client: TestClient, sample_user_data
+    ):
         """Test registration with duplicate email"""
         # Register first user
         client.post("/api/v1/register", json=sample_user_data)
@@ -28,7 +30,9 @@ class TestUserRegistration:
         assert response.status_code == 400
         assert "already registered" in response.json()["detail"]
 
-    def test_register_user_duplicate_username(self, client: TestClient, sample_user_data):
+    def test_register_user_duplicate_username(
+        self, client: TestClient, sample_user_data
+    ):
         """Test registration with duplicate username"""
         # Register first user
         client.post("/api/v1/register", json=sample_user_data)
@@ -41,7 +45,9 @@ class TestUserRegistration:
         assert response.status_code == 400
         assert "already registered" in response.json()["detail"]
 
-    def test_register_user_invalid_password(self, client: TestClient, sample_user_data):
+    def test_register_user_invalid_password(
+        self, client: TestClient, sample_user_data
+    ):
         """Test registration with invalid password"""
         invalid_data = sample_user_data.copy()
         invalid_data["password"] = "123"  # Too short
@@ -82,7 +88,9 @@ class TestUserLogin:
         assert response.status_code == 401
         assert "Incorrect email or password" in response.json()["detail"]
 
-    def test_login_invalid_password(self, client: TestClient, sample_user_data):
+    def test_login_invalid_password(
+        self, client: TestClient, sample_user_data
+    ):
         """Test login with invalid password"""
         # Register user
         client.post("/api/v1/register", json=sample_user_data)
@@ -115,7 +123,9 @@ class TestUserProfile:
         token = login_response.json()["access_token"]
 
         # Get profile
-        response = client.get("/api/v1/me", headers={"Authorization": f"Bearer {token}"})
+        response = client.get(
+            "/api/v1/me", headers={"Authorization": f"Bearer {token}"}
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -129,7 +139,9 @@ class TestUserProfile:
 
     def test_get_current_user_invalid_token(self, client: TestClient):
         """Test getting current user with invalid token"""
-        response = client.get("/api/v1/me", headers={"Authorization": "Bearer invalid-token"})
+        response = client.get(
+            "/api/v1/me", headers={"Authorization": "Bearer invalid-token"}
+        )
         assert response.status_code == 401
 
     def test_update_user_profile(self, client: TestClient, sample_user_data):
@@ -162,7 +174,9 @@ class TestUserProfile:
 class TestPasswordManagement:
     """Test password management functionality"""
 
-    def test_change_password_success(self, client: TestClient, sample_user_data):
+    def test_change_password_success(
+        self, client: TestClient, sample_user_data
+    ):
         """Test successful password change"""
         # Register and login
         client.post("/api/v1/register", json=sample_user_data)
@@ -199,7 +213,9 @@ class TestPasswordManagement:
         )
         assert login_response.status_code == 200
 
-    def test_change_password_wrong_current(self, client: TestClient, sample_user_data):
+    def test_change_password_wrong_current(
+        self, client: TestClient, sample_user_data
+    ):
         """Test password change with wrong current password"""
         # Register and login
         client.post("/api/v1/register", json=sample_user_data)

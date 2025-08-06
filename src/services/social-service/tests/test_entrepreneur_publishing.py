@@ -36,7 +36,9 @@ class TestEntrepreneurpublishingRouter:
             "test_field": "test_value"
         }
 
-        response = client.post("/api/v1/entrepreneur_publishing", json=test_data)
+        response = client.post(
+            "/api/v1/entrepreneur_publishing", json=test_data
+        )
         # TODO: 更新預期狀態碼
         assert response.status_code in [200, 201]
 
@@ -47,7 +49,9 @@ class TestEntrepreneurpublishingRouter:
             "invalid_field": None
         }
 
-        response = client.post("/api/v1/entrepreneur_publishing", json=invalid_data)
+        response = client.post(
+            "/api/v1/entrepreneur_publishing", json=invalid_data
+        )
         assert response.status_code == 422
 
     def test_entrepreneur_publishing_unauthorized_access(self):

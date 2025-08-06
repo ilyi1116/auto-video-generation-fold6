@@ -79,7 +79,9 @@ class VideoWorkflowRequest:
 
         valid_platforms = {"youtube", "tiktok", "instagram", "facebook"}
         if target_platform not in valid_platforms:
-            raise ValueError(f"Invalid platform. Must be one of: {valid_platforms}")
+            raise ValueError(
+                f"Invalid platform. Must be one of: {valid_platforms}"
+            )
 
         valid_workflow_types = {"standard", "quick", "custom"}
         if workflow_type not in valid_workflow_types:
@@ -246,11 +248,15 @@ class CompletionTimeEstimator:
         base_minutes = self._base_estimates.get(request.workflow_type, 5.0)
 
         # 品質調整
-        quality_multiplier = self._quality_multipliers.get(request.quality_level, 1.0)
+        quality_multiplier = self._quality_multipliers.get(
+            request.quality_level, 1.0
+        )
         base_minutes *= quality_multiplier
 
         # 長度調整
-        duration_multiplier = self._get_duration_multiplier(request.expected_duration)
+        duration_multiplier = self._get_duration_multiplier(
+            request.expected_duration
+        )
         base_minutes *= duration_multiplier
 
         # 確保最小時間
@@ -305,7 +311,9 @@ class VideoWorkflowEngine:
 
             self._repository.save(workflow_id, request, result, user_id)
 
-            logger.info(f"Workflow {workflow_id} initialized for user {user_id}")
+            logger.info(
+                f"Workflow {workflow_id} initialized for user {user_id}"
+            )
             return result
 
         except Exception as e:
@@ -347,7 +355,9 @@ class VideoWorkflowEngine:
                 stage=stage,
                 progress=progress,
                 assets=(
-                    self._generate_mock_assets(result.workflow_id) if progress == 100 else None
+                    self._generate_mock_assets(result.workflow_id)
+                    if progress == 100
+                    else None
                 ),
             )
 

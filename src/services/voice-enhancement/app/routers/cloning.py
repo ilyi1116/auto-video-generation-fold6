@@ -86,7 +86,9 @@ async def create_voice_profile(
             )
 
         if len(audio_files) > 20:
-            raise HTTPException(status_code=400, detail="最多支援 20 個語音樣本")
+            raise HTTPException(
+                status_code=400, detail="最多支援 20 個語音樣本"
+            )
 
         logger.info(
             "收到語音檔案創建請求",
@@ -99,19 +101,27 @@ async def create_voice_profile(
         audio_samples = []
         for i, audio_file in enumerate(audio_files):
             if not audio_file.content_type.startswith("audio/"):
-                raise HTTPException(status_code=400, detail=f"文件 {i + 1} 不是有效的音訊格式")
+                raise HTTPException(
+                    status_code=400, detail=f"文件 {i + 1} 不是有效的音訊格式"
+                )
 
             # 讀取音訊數據
             audio_data = await audio_file.read()
             if len(audio_data) == 0:
-                raise HTTPException(status_code=400, detail=f"文件 {i + 1} 為空")
+                raise HTTPException(
+                    status_code=400, detail=f"文件 {i + 1} 為空"
+                )
 
             audio_samples.append(audio_data)
 
         # 檢查語音名稱是否已存在
-        existing_profiles = await voice_cloner.get_voice_profiles(current_user.get("id"))
+        existing_profiles = await voice_cloner.get_voice_profiles(
+            current_user.get("id")
+        )
         if any(profile["name"] == voice_name for profile in existing_profiles):
-            raise HTTPException(status_code=409, detail=f"語音模型 '{voice_name}' 已存在")
+            raise HTTPException(
+                status_code=409, detail=f"語音模型 '{voice_name}' 已存在"
+            )
 
         # 創建語音檔案
         result = await voice_cloner.create_voice_profile(
@@ -126,7 +136,9 @@ async def create_voice_profile(
         raise
     except Exception as e:
         logger.error("語音檔案創建失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"語音檔案創建失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"語音檔案創建失敗: {str(e)}"
+        )
 
 
 @router.post(
@@ -151,8 +163,13 @@ async def clone_voice_synthesis(
         )
 
         # 驗證用戶是否擁有該語音模型
-        user_profiles = await voice_cloner.get_voice_profiles(current_user.get("id"))
-        if not any(profile["name"] == request.target_voice for profile in user_profiles):
+        user_profiles = await voice_cloner.get_voice_profiles(
+            current_user.get("id")
+        )
+        if not any(
+            profile["name"] == request.target_voice
+            for profile in user_profiles
+        ):
             raise HTTPException(
                 status_code=404,
                 detail=f"語音模型 '{request.target_voice}' 不存在或無權限",
@@ -182,7 +199,9 @@ async def clone_voice_synthesis(
         raise
     except Exception as e:
         logger.error("語音克隆合成失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"語音克隆合成失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"語音克隆合成失敗: {str(e)}"
+        )
 
 
 @router.post(
@@ -204,7 +223,9 @@ async def analyze_voice_similarity(
         # 驗證文件類型
         for i, audio_file in enumerate([audio_file1, audio_file2], 1):
             if not audio_file.content_type.startswith("audio/"):
-                raise HTTPException(status_code=400, detail=f"文件 {i} 不是有效的音訊格式")
+                raise HTTPException(
+                    status_code=400, detail=f"文件 {i} 不是有效的音訊格式"
+                )
 
         logger.info(
             "收到語音相似度分析請求",
@@ -218,7 +239,9 @@ async def analyze_voice_similarity(
         audio_data2 = await audio_file2.read()
 
         # 分析相似度
-        similarity_result = await voice_cloner.analyze_voice_similarity(audio_data1, audio_data2)
+        similarity_result = await voice_cloner.analyze_voice_similarity(
+            audio_data1, audio_data2
+        )
 
         return VoiceSimilarityResponse(**similarity_result)
 
@@ -226,7 +249,9 @@ async def analyze_voice_similarity(
         raise
     except Exception as e:
         logger.error("語音相似度分析失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"語音相似度分析失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"語音相似度分析失敗: {str(e)}"
+        )
 
 
 @router.get(
@@ -241,13 +266,17 @@ async def get_voice_profiles(current_user: dict = Depends(get_current_user)):
         if not voice_cloner:
             raise HTTPException(status_code=503, detail="語音克隆器未初始化")
 
-        profiles = await voice_cloner.get_voice_profiles(current_user.get("id"))
+        profiles = await voice_cloner.get_voice_profiles(
+            current_user.get("id")
+        )
 
         return VoiceProfileListResponse(profiles=profiles)
 
     except Exception as e:
         logger.error("獲取語音檔案列表失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"獲取語音檔案列表失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取語音檔案列表失敗: {str(e)}"
+        )
 
 
 @router.delete(
@@ -255,7 +284,9 @@ async def get_voice_profiles(current_user: dict = Depends(get_current_user)):
     summary="刪除語音檔案",
     description="刪除指定的語音克隆檔案",
 )
-async def delete_voice_profile(voice_name: str, current_user: dict = Depends(get_current_user)):
+async def delete_voice_profile(
+    voice_name: str, current_user: dict = Depends(get_current_user)
+):
     """刪除語音檔案"""
     try:
         if not voice_cloner:
@@ -283,7 +314,9 @@ async def delete_voice_profile(voice_name: str, current_user: dict = Depends(get
         raise
     except Exception as e:
         logger.error("刪除語音檔案失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"刪除語音檔案失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"刪除語音檔案失敗: {str(e)}"
+        )
 
 
 @router.get(
@@ -303,7 +336,9 @@ async def get_cloning_requirements():
 
     except Exception as e:
         logger.error("獲取語音克隆要求失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"獲取語音克隆要求失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"獲取語音克隆要求失敗: {str(e)}"
+        )
 
 
 @router.post(
@@ -324,7 +359,9 @@ async def batch_clone_voice_synthesis(
             raise HTTPException(status_code=503, detail="語音克隆器未初始化")
 
         if len(texts) > 10:
-            raise HTTPException(status_code=400, detail="批次處理最多支援 10 個文字")
+            raise HTTPException(
+                status_code=400, detail="批次處理最多支援 10 個文字"
+            )
 
         logger.info(
             "收到批次語音克隆合成請求",
@@ -334,8 +371,12 @@ async def batch_clone_voice_synthesis(
         )
 
         # 驗證用戶權限
-        user_profiles = await voice_cloner.get_voice_profiles(current_user.get("id"))
-        if not any(profile["name"] == target_voice for profile in user_profiles):
+        user_profiles = await voice_cloner.get_voice_profiles(
+            current_user.get("id")
+        )
+        if not any(
+            profile["name"] == target_voice for profile in user_profiles
+        ):
             raise HTTPException(
                 status_code=404,
                 detail=f"語音模型 '{target_voice}' 不存在或無權限",
@@ -382,10 +423,14 @@ async def batch_clone_voice_synthesis(
         raise
     except Exception as e:
         logger.error("批次語音克隆合成失敗", error=str(e))
-        raise HTTPException(status_code=500, detail=f"批次語音克隆合成失敗: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"批次語音克隆合成失敗: {str(e)}"
+        )
 
 
-@router.get("/demo", summary="語音克隆演示", description="獲取語音克隆功能的演示信息")
+@router.get(
+    "/demo", summary="語音克隆演示", description="獲取語音克隆功能的演示信息"
+)
 async def get_cloning_demo():
     """獲取語音克隆演示"""
     return {

@@ -38,7 +38,9 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
         # 記錄指標
         duration = time.time() - start_time
         REQUEST_DURATION.labels(method=method, endpoint=path).observe(duration)
-        REQUEST_COUNT.labels(method=method, endpoint=path, status_code=response.status_code).inc()
+        REQUEST_COUNT.labels(
+            method=method, endpoint=path, status_code=response.status_code
+        ).inc()
 
         # 結構化日誌
         logger.info(

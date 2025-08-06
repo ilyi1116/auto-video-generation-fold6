@@ -49,10 +49,18 @@ def create_app() -> FastAPI:
     app.add_middleware(PrometheusMiddleware)
 
     # 路由器
-    app.include_router(synthesis.router, prefix="/api/v1/synthesis", tags=["synthesis"])
-    app.include_router(emotions.router, prefix="/api/v1/emotions", tags=["emotions"])
-    app.include_router(cloning.router, prefix="/api/v1/cloning", tags=["cloning"])
-    app.include_router(enhancement.router, prefix="/api/v1/enhancement", tags=["enhancement"])
+    app.include_router(
+        synthesis.router, prefix="/api/v1/synthesis", tags=["synthesis"]
+    )
+    app.include_router(
+        emotions.router, prefix="/api/v1/emotions", tags=["emotions"]
+    )
+    app.include_router(
+        cloning.router, prefix="/api/v1/cloning", tags=["cloning"]
+    )
+    app.include_router(
+        enhancement.router, prefix="/api/v1/enhancement", tags=["enhancement"]
+    )
 
     # Prometheus 指標端點
     metrics_app = make_asgi_app()

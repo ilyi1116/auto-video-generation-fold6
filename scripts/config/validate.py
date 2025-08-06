@@ -3,6 +3,7 @@
 配置驗證腳本
 """
 import os
+
 from dotenv import load_dotenv
 
 

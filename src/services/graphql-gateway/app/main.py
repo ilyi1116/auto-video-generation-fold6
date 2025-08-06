@@ -20,8 +20,12 @@ from .schema import schema
 logger = structlog.get_logger()
 
 # Prometheus 指標
-REQUEST_COUNT = Counter("graphql_requests_total", "總 GraphQL 請求數", ["operation"])
-REQUEST_DURATION = Histogram("graphql_request_duration_seconds", "GraphQL 請求處理時間")
+REQUEST_COUNT = Counter(
+    "graphql_requests_total", "總 GraphQL 請求數", ["operation"]
+)
+REQUEST_DURATION = Histogram(
+    "graphql_request_duration_seconds", "GraphQL 請求處理時間"
+)
 
 
 def create_app() -> FastAPI:

@@ -1,0 +1,184 @@
+groups:
+  # ================================
+  # 應用程序告警規則
+  # ================================
+  - name: application_alerts
+    rules:
+      # HTTP 錯誤率過高
+      - alert: HighHttpErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "{{ $labels.service }} HTTP 錯誤率過高"
+          description: "服務 {{ $labels.service }} 的 HTTP 5xx 錯誤率為 {{ $value | humanizePercentage }}"
+          impact: "用戶請求失敗率增加"
+          recommendation: "檢查應用程序錯誤日誌和依賴服務狀態"
+
+      # 響應時間過長
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 1m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "{{ $labels.service }} 響應時間過長"
+          description: "服務 {{ $labels.service }} 的 95% 響應時間為 {{ $value }}s"
+          impact: "用戶體驗下降，頁面載入緩慢"
+          recommendation: "檢查數據庫查詢性能和緩存策略"
+
+      # 請求速率異常
+      - alert: RequestRateAnomaly
+        expr: abs(rate(http_requests_total[5m]) - rate(http_requests_total[5m] offset 1h)) / rate(http_requests_total[5m] offset 1h) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "{{ $labels.service }} 請求速率異常"
+          description: "服務 {{ $labels.service }} 的請求速率比 1 小時前變化了 {{ $value | humanizePercentage }}"
+          impact: "可能存在異常流量或服務問題"
+          recommendation: "檢查流量來源和應用程序狀態"
+
+      # API 限流觸發
+      - alert: RateLimitTriggered
+        expr: rate(rate_limit_exceeded_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "{{ $labels.service }} API 限流被頻繁觸發"
+          description: "服務 {{ $labels.service }} 的限流每分鐘觸發 {{ $value }} 次"
+          impact: "正常用戶可能受到影響"
+          recommendation: "檢查是否有異常流量攻擊"
+
+  # ================================
+  # 數據庫告警規則
+  # ================================
+  - name: database_alerts
+    rules:
+      # PostgreSQL 連接數過高
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 1m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "PostgreSQL 連接數過高"
+          description: "PostgreSQL 連接使用率達到 {{ $value | humanizePercentage }}"
+          impact: "可能導致新連接被拒絕"
+          recommendation: "檢查連接池配置和長連接"
+
+      # 數據庫查詢時間過長
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_activity_max_tx_duration[5m]) > 30
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "PostgreSQL 存在慢查詢"
+          description: "平均查詢時間為 {{ $value }}s"
+          impact: "數據庫性能下降，影響應用響應"
+          recommendation: "檢查慢查詢日誌並優化 SQL"
+
+      # 數據庫鎖等待
+      - alert: PostgreSQLLockWaits
+        expr: pg_locks_count{mode="ExclusiveLock"} > 10
+        for: 1m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "PostgreSQL 存在鎖等待"
+          description: "當前排他鎖數量為 {{ $value }}"
+          impact: "可能導致事務阻塞和超時"
+          recommendation: "檢查長事務和鎖衝突"
+
+      # Redis 連接數過高
+      - alert: RedisHighConnections
+        expr: redis_connected_clients / redis_config_maxclients > 0.8
+        for: 1m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis 連接數過高"
+          description: "Redis 連接使用率達到 {{ $value | humanizePercentage }}"
+          impact: "可能導致新連接被拒絕"
+          recommendation: "檢查客戶端連接池配置"
+
+      # Redis 記憶體使用率過高
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 1m
+        labels:
+          severity: critical
+          category: cache
+        annotations:
+          summary: "Redis 記憶體使用率過高"
+          description: "Redis 記憶體使用率達到 {{ $value | humanizePercentage }}"
+          impact: "可能觸發記憶體清理或導致服務不可用"
+          recommendation: "清理過期 key 或增加記憶體"
+
+  # ================================
+  # 業務邏輯告警規則
+  # ================================
+  - name: business_alerts
+    rules:
+      # 影片生成失敗率過高
+      - alert: HighVideoGenerationFailureRate
+        expr: rate(video_generation_failed_total[5m]) / rate(video_generation_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "影片生成失敗率過高"
+          description: "影片生成失敗率為 {{ $value | humanizePercentage }}"
+          impact: "用戶無法正常使用核心功能"
+          recommendation: "檢查 AI 服務狀態和資源配置"
+
+      # 用戶註冊率異常下降
+      - alert: UserRegistrationRateDropped
+        expr: rate(user_registrations_total[1h]) < rate(user_registrations_total[1h] offset 24h) * 0.5
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "用戶註冊率異常下降"
+          description: "過去 1 小時的註冊率比 24 小時前下降了 {{ $value | humanizePercentage }}"
+          impact: "可能影響業務增長"
+          recommendation: "檢查註冊流程和系統狀態"
+
+      # AI 服務調用超時
+      - alert: AIServiceTimeout
+        expr: rate(ai_service_timeout_total[5m]) > 0.01
+        for: 1m
+        labels:
+          severity: warning
+          category: integration
+        annotations:
+          summary: "AI 服務調用超時"
+          description: "AI 服務超時率為 {{ $value | humanizePercentage }}"
+          impact: "影片生成和處理功能受影響"
+          recommendation: "檢查外部 AI 服務狀態和網路連接"
+
+      # 存儲空間使用率過高
+      - alert: StorageSpaceHigh
+        expr: (storage_used_bytes / storage_total_bytes) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "存儲空間使用率過高"
+          description: "存儲使用率達到 {{ $value | humanizePercentage }}"
+          impact: "可能無法存儲新的影片和資源"
+          recommendation: "清理舊文件或擴展存儲容量"

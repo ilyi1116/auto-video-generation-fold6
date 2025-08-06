@@ -91,7 +91,9 @@ async def toggle_entrepreneur_mode(
 
         if config.enabled:
             # 計算下次執行時間（30分鐘後）
-            entrepreneur_mode_status["next_execution"] = datetime.utcnow() + timedelta(minutes=30)
+            entrepreneur_mode_status["next_execution"] = (
+                datetime.utcnow() + timedelta(minutes=30)
+            )
 
             # 在背景啟動自動化任務
             background_tasks.add_task(start_entrepreneur_automation, config)
@@ -127,14 +129,20 @@ async def get_entrepreneur_mode_status(
         is_running=entrepreneur_mode_status["enabled"],
         last_execution=entrepreneur_mode_status["last_execution"],
         next_execution=entrepreneur_mode_status["next_execution"],
-        today_videos_generated=entrepreneur_mode_status["stats"]["today_videos"],
+        today_videos_generated=entrepreneur_mode_status["stats"][
+            "today_videos"
+        ],
         today_budget_used=entrepreneur_mode_status["stats"]["today_budget"],
-        total_videos_generated=entrepreneur_mode_status["stats"]["total_videos"],
+        total_videos_generated=entrepreneur_mode_status["stats"][
+            "total_videos"
+        ],
         success_rate=entrepreneur_mode_status["stats"]["success_rate"],
     )
 
 
-@router.get("/trends/entrepreneur", response_model=List[TrendKeywordForEntrepreneur])
+@router.get(
+    "/trends/entrepreneur", response_model=List[TrendKeywordForEntrepreneur]
+)
 async def get_entrepreneur_friendly_trends(
     categories: Optional[str] = None,
     max_competition: str = "medium",
@@ -148,7 +156,9 @@ async def get_entrepreneur_friendly_trends(
     try:
         # 解析類別
         category_list = (
-            categories.split(",") if categories else ["technology", "entertainment", "lifestyle"]
+            categories.split(",")
+            if categories
+            else ["technology", "entertainment", "lifestyle"]
         )
 
         # 從資料庫獲取基礎趨勢數據
@@ -157,14 +167,18 @@ async def get_entrepreneur_friendly_trends(
             TrendingTopic.category.in_(category_list),
         )
 
-        raw_trends = query.order_by(TrendingTopic.trend_score.desc()).limit(50).all()
+        raw_trends = (
+            query.order_by(TrendingTopic.trend_score.desc()).limit(50).all()
+        )
 
         # 為創業者優化趨勢數據
         entrepreneur_trends = []
 
         for trend in raw_trends:
             # 計算競爭等級
-            competition_level = calculate_competition_level(trend.trend_score, trend.keyword)
+            competition_level = calculate_competition_level(
+                trend.trend_score, trend.keyword
+            )
 
             # 跳過高競爭關鍵字
             if max_competition == "low" and competition_level in [
@@ -190,10 +204,14 @@ async def get_entrepreneur_friendly_trends(
                 continue
 
             # 建議平台
-            suggested_platforms = suggest_platforms_for_keyword(trend.keyword, trend.category)
+            suggested_platforms = suggest_platforms_for_keyword(
+                trend.keyword, trend.category
+            )
 
             # 生成內容創意
-            content_ideas = generate_content_ideas(trend.keyword, trend.category)
+            content_ideas = generate_content_ideas(
+                trend.keyword, trend.category
+            )
 
             entrepreneur_trend = TrendKeywordForEntrepreneur(
                 keyword=trend.keyword,
@@ -210,7 +228,9 @@ async def get_entrepreneur_friendly_trends(
             entrepreneur_trends.append(entrepreneur_trend)
 
         # 按獲利潛力排序
-        entrepreneur_trends.sort(key=lambda x: x.monetization_potential, reverse=True)
+        entrepreneur_trends.sort(
+            key=lambda x: x.monetization_potential, reverse=True
+        )
 
         logger.info(f"為創業者生成了 {len(entrepreneur_trends)} 個優化趨勢")
 
@@ -276,11 +296,17 @@ async def execute_entrepreneur_automation(config: EntrepreneurModeConfig):
         entrepreneur_mode_status["last_execution"] = datetime.utcnow()
 
         # 檢查今日是否已達限制
-        if entrepreneur_mode_status["stats"]["today_videos"] >= config.daily_video_count:
+        if (
+            entrepreneur_mode_status["stats"]["today_videos"]
+            >= config.daily_video_count
+        ):
             logger.info(f"今日已達影片數量限制 ({config.daily_video_count})")
             return
 
-        if entrepreneur_mode_status["stats"]["today_budget"] >= config.daily_budget:
+        if (
+            entrepreneur_mode_status["stats"]["today_budget"]
+            >= config.daily_budget
+        ):
             logger.info(f"今日已達預算限制 (${config.daily_budget})")
             return
 
@@ -290,7 +316,9 @@ async def execute_entrepreneur_automation(config: EntrepreneurModeConfig):
         logger.info("創業者自動化任務執行完成")
 
         # 更新下次執行時間
-        entrepreneur_mode_status["next_execution"] = datetime.utcnow() + timedelta(minutes=30)
+        entrepreneur_mode_status["next_execution"] = (
+            datetime.utcnow() + timedelta(minutes=30)
+        )
 
     except Exception as e:
         logger.error(f"執行自動化任務失敗: {e}")
@@ -310,7 +338,9 @@ def calculate_competition_level(trend_score: float, keyword: str) -> str:
         return "low"
 
 
-def calculate_monetization_potential(keyword: str, category: str, trend_score: float) -> float:
+def calculate_monetization_potential(
+    keyword: str, category: str, trend_score: float
+) -> float:
     """計算獲利潛力"""
 
     # 基礎分數
@@ -330,7 +360,9 @@ def calculate_monetization_potential(keyword: str, category: str, trend_score: f
 
     # 關鍵字特徵加權
     monetization_keywords = ["如何", "教學", "評測", "推薦", "比較", "最佳"]
-    keyword_bonus = 0.1 if any(mk in keyword for mk in monetization_keywords) else 0
+    keyword_bonus = (
+        0.1 if any(mk in keyword for mk in monetization_keywords) else 0
+    )
 
     final_score = min(base_score * category_multiplier + keyword_bonus, 1.0)
 
@@ -376,7 +408,9 @@ def suggest_platforms_for_keyword(keyword: str, category: str) -> List[str]:
         "health": ["tiktok", "youtube-shorts", "instagram-reels"],
     }
 
-    base_platforms = category_platforms.get(category, ["tiktok", "youtube-shorts"])
+    base_platforms = category_platforms.get(
+        category, ["tiktok", "youtube-shorts"]
+    )
 
     # 根據關鍵字特徵調整
     if "教學" in keyword or "如何" in keyword:

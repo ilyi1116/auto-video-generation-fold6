@@ -91,7 +91,9 @@ class TestUploadAPI:
         ]
         data = {"file_type": "image", "category": "batch"}
 
-        response = client.post("/api/v1/upload-multiple", files=files, data=data)
+        response = client.post(
+            "/api/v1/upload-multiple", files=files, data=data
+        )
 
         assert response.status_code == 200
         result = response.json()
@@ -110,7 +112,9 @@ class TestUploadAPI:
         ]
         data = {"file_type": "image"}
 
-        response = client.post("/api/v1/upload-multiple", files=files, data=data)
+        response = client.post(
+            "/api/v1/upload-multiple", files=files, data=data
+        )
 
         assert response.status_code == 400
         assert "Too many files" in response.json()["detail"]

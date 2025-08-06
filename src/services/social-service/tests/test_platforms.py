@@ -75,7 +75,9 @@ async def test_oauth_callback_tiktok_success(mock_exchange):
 
     callback_data = {"code": "test_authorization_code", "state": "test_state"}
 
-    response = client.post("/api/v1/platforms/auth/tiktok/callback", json=callback_data)
+    response = client.post(
+        "/api/v1/platforms/auth/tiktok/callback", json=callback_data
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -91,7 +93,9 @@ async def test_oauth_callback_tiktok_failure(mock_exchange):
 
     callback_data = {"code": "invalid_code"}
 
-    response = client.post("/api/v1/platforms/auth/tiktok/callback", json=callback_data)
+    response = client.post(
+        "/api/v1/platforms/auth/tiktok/callback", json=callback_data
+    )
 
     assert response.status_code == 400
     assert "Authentication failed" in response.json()["detail"]
@@ -116,7 +120,9 @@ async def test_publish_to_tiktok_success(mock_publish):
         "settings": {"disable_comment": False},
     }
 
-    response = client.post("/api/v1/platforms/tiktok/publish", json=publish_data)
+    response = client.post(
+        "/api/v1/platforms/tiktok/publish", json=publish_data
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -136,7 +142,9 @@ async def test_publish_to_tiktok_failure(mock_publish):
         "title": "測試影片",
     }
 
-    response = client.post("/api/v1/platforms/tiktok/publish", json=publish_data)
+    response = client.post(
+        "/api/v1/platforms/tiktok/publish", json=publish_data
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -162,7 +170,9 @@ async def test_publish_to_youtube_success(mock_publish):
         "tags": ["教學", "測試"],
     }
 
-    response = client.post("/api/v1/platforms/youtube/publish", json=publish_data)
+    response = client.post(
+        "/api/v1/platforms/youtube/publish", json=publish_data
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -188,7 +198,9 @@ async def test_publish_to_instagram_success(mock_publish):
         "tags": ["instagram", "測試"],
     }
 
-    response = client.post("/api/v1/platforms/instagram/publish", json=publish_data)
+    response = client.post(
+        "/api/v1/platforms/instagram/publish", json=publish_data
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -237,7 +249,9 @@ def test_oauth_callback_unsupported_platform():
     """測試不支援平台的 OAuth 回調"""
     callback_data = {"code": "test_code"}
 
-    response = client.post("/api/v1/platforms/auth/unsupported/callback", json=callback_data)
+    response = client.post(
+        "/api/v1/platforms/auth/unsupported/callback", json=callback_data
+    )
 
     assert response.status_code == 400
     assert "Unsupported platform" in response.json()["detail"]
@@ -251,7 +265,9 @@ def test_publish_request_validation():
         # 缺少 video_id
     }
 
-    response = client.post("/api/v1/platforms/tiktok/publish", json=invalid_data)
+    response = client.post(
+        "/api/v1/platforms/tiktok/publish", json=invalid_data
+    )
 
     assert response.status_code == 422  # Validation error
 
@@ -260,6 +276,8 @@ def test_oauth_callback_missing_code():
     """測試 OAuth 回調缺少授權碼"""
     callback_data = {}  # 缺少 code
 
-    response = client.post("/api/v1/platforms/auth/tiktok/callback", json=callback_data)
+    response = client.post(
+        "/api/v1/platforms/auth/tiktok/callback", json=callback_data
+    )
 
     assert response.status_code == 422  # Validation error
