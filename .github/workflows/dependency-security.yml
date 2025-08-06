@@ -201,7 +201,7 @@ jobs:
         cat ../nodejs-outdated.txt >> ../dependency-update-report.txt
 
     - name: 📋 Create Issue for Updates
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
@@ -273,7 +273,7 @@ jobs:
 
     - name: 💬 Comment on Latest Commit
       if: github.event_name == 'push'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
