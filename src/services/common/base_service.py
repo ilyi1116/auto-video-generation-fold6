@@ -74,8 +74,8 @@ class ServiceError(Exception):
         self,
         message: str,
         error_code: str,
-        details: Dict = None,
-        cause: Exception = None,
+        details: Optional[Dict[Any, Any]] = None,
+        cause: Optional[Exception] = None,
     ):
         self.message = message
         self.error_code = error_code
@@ -106,7 +106,7 @@ class MetricsCollector:
         self.histograms: Dict[str, List[float]] = {}
         self._lock = asyncio.Lock()
 
-    async def increment_counter(self, name: str, labels: Dict[str, str] = None, value: int = 1):
+    async def increment_counter(self, name: str, labels: Optional[Dict[str, str]] = None, value: int = 1) -> None:
         """計數器遞增"""
         async with self._lock:
             key = self._generate_key(name, labels)
@@ -120,7 +120,7 @@ class MetricsCollector:
             )
             self.metrics.append(metric)
 
-    async def set_gauge(self, name: str, value: float, labels: Dict[str, str] = None):
+    async def set_gauge(self, name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
         """設定量表值"""
         async with self._lock:
             key = self._generate_key(name, labels)
@@ -134,7 +134,7 @@ class MetricsCollector:
             )
             self.metrics.append(metric)
 
-    async def record_histogram(self, name: str, value: float, labels: Dict[str, str] = None):
+    async def record_histogram(self, name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
         """記錄直方圖"""
         async with self._lock:
             key = self._generate_key(name, labels)
@@ -162,7 +162,7 @@ class MetricsCollector:
                 )
                 self.metrics.append(metric)
 
-    def _generate_key(self, name: str, labels: Dict[str, str] = None) -> str:
+    def _generate_key(self, name: str, labels: Optional[Dict[str, str]] = None) -> str:
         """生成指標唯一鍵值"""
         labels_str = json.dumps(labels or {}, sort_keys=True)
         return f"{name}_{hash(labels_str)}"
@@ -223,9 +223,9 @@ class TraceContext:
 
     def __init__(
         self,
-        trace_id: str = None,
-        span_id: str = None,
-        parent_span_id: str = None,
+        trace_id: Optional[str] = None,
+        span_id: Optional[str] = None,
+        parent_span_id: Optional[str] = None,
     ):
         self.trace_id = trace_id or str(uuid.uuid4())
         self.span_id = span_id or str(uuid.uuid4())
@@ -265,8 +265,8 @@ class TraceContext:
 @asynccontextmanager
 async def trace_span(
     operation_name: str,
-    context: TraceContext = None,
-    logger: StructuredLogger = None,
+    context: Optional["TraceContext"] = None,
+    logger: Optional["StructuredLogger"] = None,
 ):
     """分散式追蹤 span 上下文管理器"""
     parent_context = context or TraceContext()
@@ -320,7 +320,7 @@ class BaseService(ABC):
         self,
         service_name: str,
         service_version: str = "1.0.0",
-        config: Dict[str, Any] = None,
+        config: Optional[Dict[str, Any]] = None,
     ):
         self.service_name = service_name
         self.service_version = service_version
@@ -501,7 +501,7 @@ class BaseService(ABC):
     # === 工具方法 ===
 
     @asynccontextmanager
-    async def trace_operation(self, operation_name: str, context: TraceContext = None):
+    async def trace_operation(self, operation_name: str, context: Optional["TraceContext"] = None):
         """追蹤操作"""
         async with trace_span(operation_name, context, self.logger) as span:
             await self.metrics.increment_counter(
@@ -535,14 +535,14 @@ class BaseService(ABC):
 class ValidationError(ServiceError):
     """驗證錯誤"""
 
-    def __init__(self, message: str, field: str = None, details: Dict = None):
+    def __init__(self, message: str, field: Optional[str] = None, details: Optional[Dict[Any, Any]] = None):
         super().__init__(message, "VALIDATION_ERROR", details or {"field": field})
 
 
 class NotFoundError(ServiceError):
     """資源未找到錯誤"""
 
-    def __init__(self, resource: str, identifier: str = None):
+    def __init__(self, resource: str, identifier: Optional[str] = None):
         message = f"{resource} not found"
         if identifier:
             message += f": {identifier}"
@@ -556,7 +556,7 @@ class NotFoundError(ServiceError):
 class ConflictError(ServiceError):
     """衝突錯誤"""
 
-    def __init__(self, message: str, resource: str = None):
+    def __init__(self, message: str, resource: Optional[str] = None):
         super().__init__(message, "CONFLICT", {"resource": resource})
 
 

@@ -87,7 +87,7 @@ class JWTHandler:
     def verify_token(self, token: str, token_type: str = "access") -> Dict[str, Any]:
         """驗證令牌"""
         try:
-            payload = jwt.decode(
+            payload: Dict[str, Any] = jwt.decode(
                 token,
                 self.config.jwt_secret_key,
                 algorithms=[self.config.jwt_algorithm],
@@ -180,7 +180,7 @@ class EncryptionHandler:
 
     def __init__(self, key: Optional[str] = None):
         if key:
-            self.key = key.encode()
+            self.key: bytes = key.encode()
         else:
             self.key = Fernet.generate_key()
 
@@ -191,8 +191,8 @@ class EncryptionHandler:
             salt=b"stable_salt",  # 在生產中應該使用隨機鹽
             iterations=100000,
         )
-        key = base64.urlsafe_b64encode(kdf.derive(self.key))
-        self.fernet = Fernet(key)
+        derived_key = base64.urlsafe_b64encode(kdf.derive(self.key))
+        self.fernet = Fernet(derived_key)
 
     def encrypt(self, data: str) -> str:
         """加密數據"""
@@ -218,7 +218,7 @@ class SecurityBearer(HTTPBearer):
         self.jwt_handler = jwt_handler
 
     async def __call__(self, request: Request) -> Optional[Dict[str, Any]]:
-        credentials: HTTPAuthorizationCredentials = await super(SecurityBearer, self).__call__(
+        credentials: Optional[HTTPAuthorizationCredentials] = await super(SecurityBearer, self).__call__(
             request
         )
 
@@ -315,7 +315,7 @@ class RateLimiter:
         # 清理舊記錄
         self._cleanup_old_records(current_time)
 
-        return self.requests[key] <= self.config.rate_limit_per_minute
+        return self.requests[key] <= int(self.config.rate_limit_per_minute)
 
     def _cleanup_old_records(self, current_time: int):
         """清理舊記錄"""

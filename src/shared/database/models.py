@@ -19,8 +19,11 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from typing import Any
 
-Base = declarative_base()
+# 創建 Base 類型別名以幫助 mypy
+BaseModel = declarative_base()
+Base: Any = BaseModel
 
 
 class UserRole(PyEnum):
@@ -74,7 +77,7 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
 
     # 角色和狀態
-    role = Column(Enum(UserRole), default=UserRole.USER)
+    role = Column(Enum(UserRole), default=UserRole.USER)  # type: ignore
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
 
@@ -114,7 +117,7 @@ class Project(Base):
     # 專案基本資訊
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    status = Column(Enum(ProjectStatus), default=ProjectStatus.DRAFT)
+    status = Column(Enum(ProjectStatus), default=ProjectStatus.DRAFT)  # type: ignore
 
     # 專案設定
     settings = Column(JSON, nullable=True)  # 專案相關設定
@@ -145,7 +148,7 @@ class Video(Base):
     # 影片基本資訊
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
-    status = Column(Enum(VideoStatus), default=VideoStatus.PENDING)
+    status = Column(Enum(VideoStatus), default=VideoStatus.PENDING)  # type: ignore
 
     # 生成參數
     topic = Column(String(500), nullable=False)
@@ -230,7 +233,7 @@ class ProcessingTask(Base):
     # 任務基本資訊
     task_type = Column(String(100), nullable=False)  # script_generation, voice_synthesis, etc.
     task_name = Column(String(255), nullable=False)
-    status = Column(Enum(TaskStatus), default=TaskStatus.QUEUED)
+    status = Column(Enum(TaskStatus), default=TaskStatus.QUEUED)  # type: ignore
 
     # 任務參數和結果
     input_parameters = Column(JSON, nullable=True)

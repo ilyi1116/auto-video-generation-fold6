@@ -158,13 +158,7 @@ class MessageQueue:
         )
         return await self.publish(message)
 
-    async def publish_event(self, topic: str, event_data: Dict[str, Any]) -> str:
-        """發布事件到指定主題"""
-        message = Message(
-            topic=topic,
-            payload=event_data
-        )
-        return await self.publish(message)
+
 
     async def publish(self, message: Message) -> str:
         """發布訊息"""

@@ -8,7 +8,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 from urllib.parse import urljoin
 
 import aiohttp
@@ -60,14 +60,14 @@ class RequestMetrics:
 class CircuitBreaker:
     """熔斷器實現"""
 
-    def __init__(self, config: CircuitBreakerConfig):
+    def __init__(self, config: CircuitBreakerConfig) -> None:
         self.config = config
         self.state = CircuitBreakerState.CLOSED
         self.failure_count = 0
         self.success_count = 0
         self.last_failure_time = 0.0
 
-    async def call(self, func, *args, **kwargs):
+    async def call(self, func: Callable, *args: Any, **kwargs: Any) -> Any:
         """通過熔斷器調用函數"""
         if self.state == CircuitBreakerState.OPEN:
             if time.time() - self.last_failure_time > self.config.recovery_timeout:
@@ -85,7 +85,7 @@ class CircuitBreaker:
             await self._on_failure()
             raise e
 
-    async def _on_success(self):
+    async def _on_success(self) -> None:
         """處理成功情況"""
         if self.state == CircuitBreakerState.HALF_OPEN:
             self.success_count += 1
@@ -96,7 +96,7 @@ class CircuitBreaker:
         else:
             self.failure_count = 0
 
-    async def _on_failure(self):
+    async def _on_failure(self) -> None:
         """處理失敗情況"""
         self.failure_count += 1
         self.last_failure_time = time.time()
@@ -136,7 +136,7 @@ class ServiceClient:
             self._session = aiohttp.ClientSession(timeout=timeout)
         return self._session
 
-    async def close(self):
+    async def close(self) -> None:
         """關閉客戶端"""
         if self._session and not self._session.closed:
             await self._session.close()
@@ -282,7 +282,7 @@ class ServiceClient:
                 text = await response.text()
                 return {"data": text, "content_type": response.content_type}
 
-    async def _update_metrics(self, success: bool, response_time: float):
+    async def _update_metrics(self, success: bool, response_time: float) -> None:
         """更新請求指標"""
         self.metrics.total_requests += 1
         self.metrics.last_request_time = time.time()
@@ -360,7 +360,7 @@ class ServiceUnavailableError(Exception):
 class HTTPError(Exception):
     """HTTP 錯誤異常"""
 
-    def __init__(self, status_code: int, message: str, response_text: str = ""):
+    def __init__(self, status_code: int, message: str, response_text: str = "") -> None:
         self.status_code = status_code
         self.message = message
         self.response_text = response_text
@@ -371,7 +371,7 @@ class HTTPError(Exception):
 class ServiceClientManager:
     """服務客戶端管理器"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._clients: Dict[str, ServiceClient] = {}
 
     def get_client(
@@ -391,7 +391,7 @@ class ServiceClientManager:
             )
         return self._clients[service_name]
 
-    async def close_all(self):
+    async def close_all(self) -> None:
         """關閉所有客戶端"""
         for client in self._clients.values():
             await client.close()
@@ -414,7 +414,7 @@ def get_client_manager() -> ServiceClientManager:
     return _client_manager
 
 
-def get_service_client(service_name: str, **kwargs) -> ServiceClient:
+def get_service_client(service_name: str, **kwargs: Any) -> ServiceClient:
     """獲取服務客戶端的便捷函數"""
     manager = get_client_manager()
     return manager.get_client(service_name, **kwargs)

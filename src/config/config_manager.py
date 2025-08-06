@@ -10,7 +10,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class ConfigManager:
     """統一配置管理器"""
 
-    def __init__(self, config_dir: str = None):
+    def __init__(self, config_dir: Optional[str] = None):
         self.config_dir = Path(config_dir or os.path.join(os.path.dirname(__file__)))
         self.current_config: Dict[str, Any] = {}
         self.base_config: Dict[str, Any] = {}
@@ -50,7 +50,7 @@ class ConfigManager:
             return {}
 
         with open(mode_config_path, "r", encoding="utf-8") as f:
-            mode_config = json.load(f)
+            mode_config: Dict[str, Any] = json.load(f)
 
         logger.info(f"已載入 {mode} 模式配置")
         return mode_config
@@ -119,23 +119,28 @@ class ConfigManager:
 
     def get_service_config(self, service_name: str) -> Dict[str, Any]:
         """獲取特定服務配置"""
-        return self.get(f"services.{service_name}", {})
+        result = self.get(f"services.{service_name}", {})
+        return result if isinstance(result, dict) else {}
 
     def get_generation_config(self) -> Dict[str, Any]:
         """獲取生成配置"""
-        return self.get("generation", {})
+        result = self.get("generation", {})
+        return result if isinstance(result, dict) else {}
 
     def get_cost_config(self) -> Dict[str, Any]:
         """獲取成本控制配置"""
-        return self.get("cost_control", {})
+        result = self.get("cost_control", {})
+        return result if isinstance(result, dict) else {}
 
     def get_resource_config(self) -> Dict[str, Any]:
         """獲取資源配置"""
-        return self.get("resources", {})
+        result = self.get("resources", {})
+        return result if isinstance(result, dict) else {}
 
     def is_within_work_hours(self) -> bool:
         """檢查是否在工作時間內"""
-        scheduling = self.get("scheduling", {})
+        scheduling_result = self.get("scheduling", {})
+        scheduling = scheduling_result if isinstance(scheduling_result, dict) else {}
 
         if not scheduling.get("enabled", True):
             return True
@@ -148,26 +153,26 @@ class ConfigManager:
         now = datetime.now()
         current_time = now.strftime("%H:%M")
 
-        start_time = work_hours.get("start", "00:00")
-        end_time = work_hours.get("end", "23:59")
+        start_time = str(work_hours.get("start", "00:00"))
+        end_time = str(work_hours.get("end", "23:59"))
 
         return start_time <= current_time <= end_time
 
     def check_daily_limit(self, current_count: int) -> bool:
         """檢查是否達到每日限制"""
-        daily_limit = self.get("generation.daily_video_limit", 999)
+        daily_limit = int(self.get("generation.daily_video_limit", 999))
         return current_count < daily_limit
 
     def check_budget_limit(self, current_cost: float) -> bool:
         """檢查是否超出預算"""
-        daily_budget = self.get("cost_control.daily_budget_usd", 999.0)
+        daily_budget = float(self.get("cost_control.daily_budget_usd", 999.0))
         return current_cost < daily_budget
 
     def get_api_rate_limit(self, provider: str) -> int:
         """獲取 API 速率限制"""
-        return self.get(f"cost_control.api_rate_limits.{provider}_requests_per_hour", 100)
+        return int(self.get(f"cost_control.api_rate_limits.{provider}_requests_per_hour", 100))
 
-    def save_current_config(self, filename: str = None) -> str:
+    def save_current_config(self, filename: Optional[str] = None) -> str:
         """保存當前配置到檔案"""
         if filename is None:
             filename = f"current-config-{self.current_mode}.json"
@@ -209,23 +214,26 @@ class ConfigManager:
 
     def get_platform_config(self, platform: str) -> Dict[str, Any]:
         """獲取特定平台配置"""
-        return self.get(f"video_styles.{platform}", {})
+        result = self.get(f"video_styles.{platform}", {})
+        return result if isinstance(result, dict) else {}
 
     def get_content_template(self, category: str, template_type: str = "intro") -> List[str]:
         """獲取內容模板"""
-        return self.get(f"content_templates.{category}.{template_type}_templates", [])
+        result = self.get(f"content_templates.{category}.{template_type}_templates", [])
+        return result if isinstance(result, list) else []
 
     def get_enabled_platforms(self) -> List[str]:
         """獲取啟用的平台列表"""
-        return self.get("generation.platforms", [])
+        result = self.get("generation.platforms", [])
+        return result if isinstance(result, list) else []
 
-    def export_config(self, export_path: str = None) -> str:
+    def export_config(self, export_path: Optional[str] = None) -> str:
         """匯出完整配置"""
         if export_path is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            export_path = self.config_dir / f"config_export_{timestamp}.json"
+            final_path = self.config_dir / f"config_export_{timestamp}.json"
         else:
-            export_path = Path(export_path)
+            final_path = Path(export_path)
 
         export_data = {
             "base_config": self.base_config,
@@ -235,11 +243,11 @@ class ConfigManager:
             "export_timestamp": datetime.now().isoformat(),
         }
 
-        with open(export_path, "w", encoding="utf-8") as f:
+        with open(final_path, "w", encoding="utf-8") as f:
             json.dump(export_data, f, indent=2, ensure_ascii=False)
 
-        logger.info(f"已匯出配置到: {export_path}")
-        return str(export_path)
+        logger.info(f"已匯出配置到: {final_path}")
+        return str(final_path)
 
     def get_summary(self) -> Dict[str, Any]:
         """獲取配置摘要"""

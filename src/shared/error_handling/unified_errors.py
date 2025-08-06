@@ -125,7 +125,7 @@ class ErrorBuilder:
     """錯誤建構器"""
 
     def __init__(self):
-        self.error_data = {
+        self.error_data: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "severity": ErrorSeverity.MEDIUM.value,
             "category": ErrorCategory.SYSTEM_ERROR.value,
@@ -149,7 +149,7 @@ class ErrorBuilder:
         self.error_data["details"] = details
         return self
 
-    def add_detail(self, field: str = None, message: str = "", code: str = None) -> "ErrorBuilder":
+    def add_detail(self, field: Optional[str] = None, message: str = "", code: Optional[str] = None) -> "ErrorBuilder":
         """添加錯誤詳情"""
         if "details" not in self.error_data:
             self.error_data["details"] = []
@@ -218,16 +218,16 @@ class ErrorBuilder:
 class ErrorHandler:
     """錯誤處理器"""
 
-    def __init__(self, service_name: str, logger: logging.Logger = None):
+    def __init__(self, service_name: str, logger: Optional[logging.Logger] = None):
         self.service_name = service_name
         self.logger = logger or logging.getLogger(__name__)
 
     def handle_error(
         self,
         error: Exception,
-        request_id: str = None,
-        user_id: str = None,
-        context: Dict[str, Any] = None,
+        request_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> UnifiedError:
         """處理異常並轉換為統一錯誤格式"""
 
@@ -336,7 +336,7 @@ def get_error_handler(service_name: str) -> ErrorHandler:
     return _global_handlers[service_name]
 
 
-def create_error(error_code: ErrorCode, message: str = None) -> ErrorBuilder:
+def create_error(error_code: ErrorCode, message: Optional[str] = None) -> ErrorBuilder:
     """快速創建錯誤"""
     builder = ErrorBuilder().code(error_code)
     if message:
@@ -345,7 +345,7 @@ def create_error(error_code: ErrorCode, message: str = None) -> ErrorBuilder:
 
 
 # 常用錯誤快捷函數
-def validation_error(message: str, field: str = None) -> UnifiedError:
+def validation_error(message: str, field: Optional[str] = None) -> UnifiedError:
     """創建驗證錯誤"""
     builder = create_error(ErrorCode.VALIDATION_ERROR, message).category(ErrorCategory.USER_ERROR)
     if field:
@@ -376,7 +376,7 @@ def internal_error(message: str = "內部服務錯誤") -> UnifiedError:
     return create_error(ErrorCode.UNKNOWN_ERROR, message).severity(ErrorSeverity.HIGH).build()
 
 
-def external_service_error(service: str, message: str = None) -> UnifiedError:
+def external_service_error(service: str, message: Optional[str] = None) -> UnifiedError:
     """創建外部服務錯誤"""
     if message is None:
         message = f"{service} 服務暫時不可用"

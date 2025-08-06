@@ -57,14 +57,14 @@ class ServiceInstance:
         """獲取健康檢查 URL"""
         return urljoin(self.url, "/health")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(f"{self.service_name}:{self.host}:{self.port}")
 
 
 class ServiceRegistry:
     """服務註冊表"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._services: Dict[str, List[ServiceInstance]] = {}
         self._lock = asyncio.Lock()
 
@@ -141,13 +141,13 @@ class ServiceRegistry:
 class HealthChecker:
     """健康檢查器"""
 
-    def __init__(self, registry: ServiceRegistry, check_interval: int = 30):
+    def __init__(self, registry: ServiceRegistry, check_interval: int = 30) -> None:
         self.registry = registry
         self.check_interval = check_interval
         self._running = False
         self._session: Optional[aiohttp.ClientSession] = None
 
-    async def start(self):
+    async def start(self) -> None:
         """開始健康檢查"""
         if self._running:
             return
@@ -158,14 +158,14 @@ class HealthChecker:
         asyncio.create_task(self._health_check_loop())
         logger.info("Health checker started")
 
-    async def stop(self):
+    async def stop(self) -> None:
         """停止健康檢查"""
         self._running = False
         if self._session:
             await self._session.close()
         logger.info("Health checker stopped")
 
-    async def _health_check_loop(self):
+    async def _health_check_loop(self) -> None:
         """健康檢查循環"""
         while self._running:
             try:
@@ -180,8 +180,10 @@ class HealthChecker:
                 logger.error(f"Health check error: {e}")
                 await asyncio.sleep(self.check_interval)
 
-    async def _check_instance_health(self, instance: ServiceInstance):
+    async def _check_instance_health(self, instance: ServiceInstance) -> None:
         """檢查單個實例健康狀態"""
+        if not self._session:
+            return
         try:
             async with self._session.get(instance.health_url) as response:
                 if response.status == 200:
@@ -271,13 +273,13 @@ class ServiceDiscovery:
     def __init__(
         self,
         load_balance_strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN,
-    ):
+    ) -> None:
         self.registry = ServiceRegistry()
         self.health_checker = HealthChecker(self.registry)
         self.load_balancer = LoadBalancer(load_balance_strategy)
         self._started = False
 
-    async def start(self):
+    async def start(self) -> None:
         """啟動服務發現"""
         if self._started:
             return
@@ -286,7 +288,7 @@ class ServiceDiscovery:
         self._started = True
         logger.info("Service discovery started")
 
-    async def stop(self):
+    async def stop(self) -> None:
         """停止服務發現"""
         if not self._started:
             return
@@ -301,7 +303,7 @@ class ServiceDiscovery:
         host: str,
         port: int,
         weight: int = 1,
-        metadata: Dict[str, Any] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """註冊服務"""
         instance = ServiceInstance(
@@ -336,7 +338,7 @@ class ServiceDiscovery:
             selected.connections += 1
         return selected
 
-    async def release_connection(self, instance: ServiceInstance):
+    async def release_connection(self, instance: ServiceInstance) -> None:
         """釋放連接"""
         if instance.connections > 0:
             instance.connections -= 1
@@ -385,7 +387,7 @@ async def register_service(
     host: str,
     port: int,
     weight: int = 1,
-    metadata: Dict[str, Any] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> bool:
     """註冊服務的便捷函數"""
     discovery = await get_service_discovery()
