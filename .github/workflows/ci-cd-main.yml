@@ -322,7 +322,7 @@ jobs:
         pytest src/services/*/tests tests/ -v --cov=src --cov-report=xml --cov-report=html
 
     - name: 📊 Upload Coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         file: ./coverage.xml
         flags: backend
@@ -358,7 +358,7 @@ jobs:
       run: npm run test:coverage
 
     - name: 📊 Upload Coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         directory: ./src/frontend/coverage
         flags: frontend
