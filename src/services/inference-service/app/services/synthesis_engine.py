@@ -49,9 +49,9 @@ class SynthesisEngine:
             **synthesis_params,
         }
 
-        # Generate synthesis job ID
+        # Generate synthesis job ID using secure hash
         job_data = f"{text}_{model_id}_{str(synthesis_params)}"
-        job_id = hashlib.md5(job_data.encode()).hexdigest()
+        job_id = hashlib.sha256(job_data.encode()).hexdigest()
 
         logger.info(
             "Starting voice synthesis",

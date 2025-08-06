@@ -92,11 +92,15 @@ class EmotionSynthesizer:
     async def _load_emotion_embedder(self):
         """載入情感嵌入模型"""
         try:
+            # 使用固定版本以提高安全性
+            model_name = "facebook/wav2vec2-base-960h"
+            model_revision = "55bb623"  # 固定版本，避免惡意模型更新
+            
             self.emotion_processor = Wav2Vec2Processor.from_pretrained(
-                "facebook/wav2vec2-base-960h"
+                model_name, revision=model_revision  # nosec B615 - 版本已固定
             )
             self.emotion_model = Wav2Vec2Model.from_pretrained(
-                "facebook/wav2vec2-base-960h"
+                model_name, revision=model_revision  # nosec B615 - 版本已固定
             )
             logger.info("已載入情感嵌入模型")
         except Exception as e:

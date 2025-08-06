@@ -10,6 +10,8 @@ import hashlib
 import json
 import logging
 import pickle
+import json
+import base64
 import threading
 import time
 import zlib
@@ -90,7 +92,41 @@ class ConsistentHash:
 
     def _hash(self, key: str) -> int:
         """計算哈希值"""
-        return int(hashlib.md5(key.encode("utf-8")).hexdigest(), 16)
+        # 使用 SHA256 替代 MD5 以提高安全性
+        return int(hashlib.sha256(key.encode("utf-8")).hexdigest(), 16)
+    
+    def _safe_serialize(self, obj):
+        """安全的序列化方法，優先使用 JSON"""
+        try:
+            # 嘗試 JSON 序列化（更安全）
+            return f"json:{json.dumps(obj, default=str)}"
+        except (TypeError, ValueError):
+            # 如果 JSON 無法序列化，使用 base64 編碼的 pickle（添加警告）
+            logger.warning("Using pickle serialization for complex object", type=type(obj).__name__)
+            pickled = pickle.dumps(obj)
+            encoded = base64.b64encode(pickled).decode('utf-8')
+            return f"pickle_b64:{encoded}"
+    
+    def _safe_deserialize(self, value):
+        """安全的反序列化方法"""
+        if isinstance(value, str):
+            if value.startswith("json:"):
+                return json.loads(value[5:])
+            elif value.startswith("pickle_b64:"):
+                # 安全檢查：只在明確允許的情況下使用 pickle
+                if not getattr(settings, 'ALLOW_PICKLE_DESERIALIZATION', False):
+                    logger.error("Pickle deserialization disabled for security. Enable ALLOW_PICKLE_DESERIALIZATION if needed.")
+                    raise ValueError("Pickle deserialization is disabled for security reasons")
+                
+                logger.warning("Deserializing pickle data - ensure source is trusted")
+                encoded = value[11:]
+                try:
+                    pickled = base64.b64decode(encoded.encode('utf-8'))
+                    return pickle.loads(pickled)  # nosec B301 - 已添加安全檢查
+                except Exception as e:
+                    logger.error(f"Failed to deserialize pickle data: {e}")
+                    raise ValueError("Invalid pickle data")
+        return value
 
     def add_node(self, node: str):
         """添加節點"""
@@ -292,12 +328,8 @@ class RedisClusterCache:
             value = self.cluster.get(key)
             if value is not None:
                 self.stats["hits"] += 1
-                # 如果值是序列化的，進行反序列化
-                if isinstance(value, (bytes, str)) and value.startswith(
-                    b"pickle:"
-                ):
-                    return pickle.loads(value[7:])  # 去掉 'pickle:' 前綴
-                return value
+                # 使用安全的反序列化方法
+                return self._safe_deserialize(value)
             else:
                 self.stats["misses"] += 1
                 return None
@@ -356,12 +388,8 @@ class RedisClusterCache:
             for value in values:
                 if value is not None:
                     self.stats["hits"] += 1
-                    if isinstance(value, (bytes, str)) and value.startswith(
-                        b"pickle:"
-                    ):
-                        results.append(pickle.loads(value[7:]))
-                    else:
-                        results.append(value)
+                    # 使用安全的反序列化方法
+                    results.append(self._safe_deserialize(value))
                 else:
                     self.stats["misses"] += 1
                     results.append(None)
@@ -783,9 +811,15 @@ class DistributedCacheManager:
             else:
                 serialized = compressed_data
 
-            return pickle.loads(serialized)
+            # 將 bytes 轉換為 string 以使用安全反序列化
+            if isinstance(serialized, bytes):
+                serialized = serialized.decode('utf-8')
+            return self._safe_deserialize(serialized)
 
-        return pickle.loads(compressed_value)
+        # 將 bytes 轉換為 string 以使用安全反序列化
+        if isinstance(compressed_value, bytes):
+            compressed_value = compressed_value.decode('utf-8')
+        return self._safe_deserialize(compressed_value)
 
     async def invalidate_by_tags(self, tags: List[str]):
         """按標籤失效快取"""

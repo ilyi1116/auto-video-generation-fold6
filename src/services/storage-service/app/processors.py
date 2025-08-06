@@ -261,6 +261,18 @@ class VideoProcessor(FileProcessor):
 
     def __init__(self):
         self.supported_formats = ["mp4", "avi", "mov", "webm"]
+    
+    def _safe_parse_fraction(self, fraction_str: str) -> float:
+        """安全解析分數字符串，避免使用 eval()"""
+        try:
+            if '/' in fraction_str:
+                numerator, denominator = fraction_str.split('/', 1)
+                return float(numerator) / float(denominator)
+            else:
+                return float(fraction_str)
+        except (ValueError, ZeroDivisionError):
+            logger.warning(f"Invalid fraction format: {fraction_str}, using default 30.0")
+            return 30.0
 
     async def process(
         self, file_path: str, output_path: str, **kwargs
@@ -418,7 +430,7 @@ class VideoProcessor(FileProcessor):
                             ),
                             "width": int(video_stream.get("width", 0)),
                             "height": int(video_stream.get("height", 0)),
-                            "fps": eval(
+                            "fps": self._safe_parse_fraction(
                                 video_stream.get("r_frame_rate", "30/1")
                             ),
                             "video_codec": video_stream.get("codec_name"),
