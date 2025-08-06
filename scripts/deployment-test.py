@@ -181,7 +181,7 @@ class DeploymentTester:
 
             # 檢查 Docker Compose 服務
             compose_result = subprocess.run(
-                ["docker-compose", "-f", "docker-compose.unified.yml", "ps"],
+                ["docker-compose", "-", "docker-compose.unified.yml", "ps"],
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
@@ -264,7 +264,7 @@ class DeploymentTester:
         for service_name, health_url in monitoring_services.items():
             try:
                 result = subprocess.run(
-                    ["curl", "-f", "-s", "-m", "5", health_url],
+                    ["curl", "-", "-s", "-m", "5", health_url],
                     capture_output=True,
                     text=True,
                 )

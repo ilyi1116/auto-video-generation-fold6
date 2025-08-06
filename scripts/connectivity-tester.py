@@ -18,8 +18,6 @@ import asyncio
 import json
 import logging
 import os
-import socket
-import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
@@ -190,7 +188,7 @@ class NetworkConnectivityTester:
                 # 尝试解析 JSON 响应
                 try:
                     details["response_data"] = response.json()
-                except:
+                except Exception:
                     details["response_text"] = response.text[
                         :200
                     ]  # 只保存前200个字符
@@ -267,7 +265,7 @@ class NetworkConnectivityTester:
                                 "status_code": docs_response.status_code,
                                 "available": docs_response.status_code == 200,
                             }
-                        except:
+                        except Exception:
                             endpoint_results[endpoint] = {
                                 "status_code": None,
                                 "available": False,
@@ -283,7 +281,7 @@ class NetworkConnectivityTester:
                     try:
                         health_data = health_response.json()
                         details["service_info"] = health_data
-                    except:
+                    except Exception:
                         details["service_info"] = {
                             "raw_response": health_response.text[:100]
                         }
@@ -785,7 +783,7 @@ async def main():
 
     # 输出总结到控制台
     summary = report["summary"]
-    print(f"\n📊 连通性测试完成:")
+    print("\n📊 连通性测试完成:")
     print(
         f"   成功连接: {summary['connected_tests']}/{summary['total_tests']} ({summary['success_rate']}%)"
     )

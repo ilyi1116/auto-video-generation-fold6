@@ -74,7 +74,7 @@ async def shutdown_event():
 class TrendCollector:
     """Google Trends 關鍵字採集器"""
 
-    def __init__(self):
+def __init__(self):
         self.categories = {
             "technology": "5",  # 科技
             "entertainment": "3",  # 娱樂
@@ -84,7 +84,7 @@ class TrendCollector:
             "lifestyle": "11",  # 生活風格
         }
 
-    async def get_trending_keywords(
+async def get_trending_keywords(
         self, category: str = "all", geo: str = "TW"
     ) -> List[Dict]:
         """獲取熱門關鍵字"""
@@ -116,7 +116,7 @@ class TrendCollector:
             logger.error(f"獲取熱門關鍵字失敗: {e}")
             return []
 
-    async def _fetch_category_trends(
+async def _fetch_category_trends(
         self, category_id: str, geo: str
     ) -> List[Dict]:
         """獲取特定類別的趨勢"""
@@ -160,7 +160,7 @@ class TrendCollector:
 class VideoContentGenerator:
     """短影音內容生成器"""
 
-    def __init__(self):
+def __init__(self):
         self.video_templates = {
             "technology": {
                 "style": "modern",
@@ -182,7 +182,7 @@ class VideoContentGenerator:
             },
         }
 
-    async def generate_short_video(self, keyword_data: Dict) -> Dict:
+async def generate_short_video(self, keyword_data: Dict) -> Dict:
         """基於關鍵字生成短影音"""
         try:
             keyword = keyword_data["keyword"]
@@ -229,7 +229,7 @@ class VideoContentGenerator:
                 "error": str(e),
             }
 
-    async def _generate_script(self, keyword: str, category: str) -> str:
+async def _generate_script(self, keyword: str, category: str) -> str:
         """生成腳本"""
         try:
             async with aiohttp.ClientSession() as session:
@@ -256,7 +256,7 @@ class VideoContentGenerator:
             logger.error(f"生成腳本失敗: {e}")
             return f"關於 {keyword} 你不知道的事..."
 
-    async def _generate_visuals(
+async def _generate_visuals(
         self, keyword: str, category: str
     ) -> List[Dict]:
         """生成視覺內容"""
@@ -283,7 +283,7 @@ class VideoContentGenerator:
             logger.error(f"生成視覺內容失敗: {e}")
             return []
 
-    async def _generate_audio(self, script: str) -> Dict:
+async def _generate_audio(self, script: str) -> Dict:
         """生成語音"""
         try:
             async with aiohttp.ClientSession() as session:
@@ -307,7 +307,7 @@ class VideoContentGenerator:
             logger.error(f"生成語音失敗: {e}")
             return {}
 
-    async def _request_video_generation(self, config: Dict) -> Dict:
+async def _request_video_generation(self, config: Dict) -> Dict:
         """請求影片生成"""
         try:
             async with aiohttp.ClientSession() as session:
@@ -393,7 +393,7 @@ async def auto_generate_videos(
 async def generate_video_task(keyword_data: Dict):
     """背景任務：生成影片"""
     try:
-        logger.info(f"開始為關鍵字 '{keyword_data['keyword']}' 生成影片")
+        logger.info("開始為關鍵字 "{keyword_data['keyword']}' 生成影片")"'
 
         result = await video_generator.generate_short_video(keyword_data)
 
@@ -403,7 +403,7 @@ async def generate_video_task(keyword_data: Dict):
             task_key, 3600, json.dumps(result)
         )  # 1小時快取
 
-        logger.info(f"關鍵字 '{keyword_data['keyword']}' 影片生成完成")
+        logger.info("關鍵字 "{keyword_data['keyword']}' 影片生成完成")"'
 
     except Exception as e:
         logger.error(f"影片生成任務失敗: {e}")
@@ -485,6 +485,6 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    import uvicorn
+import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

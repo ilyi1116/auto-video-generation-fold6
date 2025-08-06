@@ -11,7 +11,6 @@ import sys
 import time
 from pathlib import Path
 
-from workflow_engine_refactored import (
     VideoWorkflowEngine,
     VideoWorkflowRequest,
 )
@@ -23,13 +22,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 class DockerValidationTest:
     """Docker 環境驗證測試類別"""
 
-    def __init__(self):
+def __init__(self):
         self.passed = 0
         self.failed = 0
         self.errors = []
         self.docker_available = self._check_docker_availability()
 
-    def _check_docker_availability(self) -> bool:
+def _check_docker_availability(self) -> bool:
         """檢查 Docker 是否可用"""
         try:
             result = subprocess.run(
@@ -42,7 +41,7 @@ class DockerValidationTest:
         except (subprocess.TimeoutExpired, FileNotFoundError):
             return False
 
-    def run_test(self, test_func, test_name):
+def run_test(self, test_func, test_name):
         """執行測試"""
         try:
             print(f"🐳 Docker 驗證測試: {test_name}")
@@ -58,7 +57,7 @@ class DockerValidationTest:
             self.failed += 1
             self.errors.append(f"Test {test_name} failed: {str(e)}")
 
-    def run_simple_test(self, test_func, test_name):
+def run_simple_test(self, test_func, test_name):
         """執行不需要 Docker 的簡單測試"""
         try:
             print(f"🔧 環境驗證測試: {test_name}")
@@ -70,7 +69,7 @@ class DockerValidationTest:
             self.failed += 1
             self.errors.append(f"Test {test_name} failed: {str(e)}")
 
-    def summary(self):
+def summary(self):
         """測試總結"""
         total = self.passed + self.failed
         success_rate = (self.passed / total * 100) if total > 0 else 0
@@ -216,9 +215,9 @@ def test_environment_variables_handling():
 
 def test_resource_limits_simulation():
     """測試：資源限制模擬"""
-    import sys
+import sys
 
-    import psutil
+import psutil
 
     try:
         # 檢查記憶體使用情況
@@ -252,7 +251,7 @@ def test_resource_limits_simulation():
 
 def test_logging_configuration():
     """測試：日誌配置"""
-    import logging
+import logging
 
     # 測試日誌配置
     logger = logging.getLogger("video_workflow_test")

@@ -295,7 +295,7 @@ class TextGenerator:
         """Build prompt for script generation"""
         keyword_text = ", ".join(keywords) if keywords else ""
 
-        return f"""Create an engaging video script for social media             platforms like TikTok and YouTube Shorts.
+        return """Create an engaging video script for social media             platforms like TikTok and YouTube Shorts.
 
 REQUIREMENTS:
 - Topic: {topic}
@@ -332,7 +332,7 @@ Please write ONLY the script content, no additional formatting or     explanatio
         """Build prompt for title generation"""
         keyword_text = ", ".join(target_keywords) if target_keywords else ""
 
-        return f"""Generate 8 compelling video titles based on this \
+        return """Generate 8 compelling video titles based on this \
             script content:
 
 SCRIPT CONTENT:
@@ -371,7 +371,7 @@ Format your response as a numbered list:
             else "Add supporting details, examples, or elaboration on key points"
         )
 
-        return f"""Optimize this video script to better match the target duration while maintaining engagement and key messages.
+        return """Optimize this video script to better match the target duration while maintaining engagement and key messages.
 
 CURRENT SCRIPT:
 {script_content}

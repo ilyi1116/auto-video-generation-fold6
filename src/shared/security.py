@@ -373,12 +373,12 @@ class SecurityHeadersMiddleware:
 
                     # 添加安全頭部
                     security_headers = {
-                        b"X-Content-Type-Options": b"nosniff",
+                        b"X-Content-Type-Options": b"nosnif",
                         b"X-Frame-Options": b"DENY",
                         b"X-XSS-Protection": b"1; mode=block",
                         b"Strict-Transport-Security": b"max-age=31536000; includeSubDomains",
                         b"Referrer-Policy": b"strict-origin-when-cross-origin",
-                        b"Content-Security-Policy": b"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+                        b"Content-Security-Policy": b"default-src 'sel'; script-src 'sel' 'unsafe-inline'; style-src 'sel' 'unsafe-inline'",
                     }
 
                     headers.update(security_headers)

@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import httpx
-import yaml
 from pydantic import BaseModel, Field
 
 # 设置日志
@@ -207,7 +206,7 @@ class DeploymentValidator:
             # 验证配置语法
             for file in found_files:
                 success, stdout, stderr = self._run_command(
-                    ["docker-compose", "-f", file, "config"]
+                    ["docker-compose", "-", file, "config"]
                 )
 
                 if not success:
@@ -275,7 +274,7 @@ class DeploymentValidator:
 
             # 检查是否有正在运行的容器
             success, stdout, stderr = self._run_command(
-                ["docker-compose", "-f", compose_file, "ps"]
+                ["docker-compose", "-", compose_file, "ps"]
             )
 
             details = {
@@ -559,7 +558,7 @@ class DeploymentValidator:
                 )
                 node_available = result.returncode == 0
                 node_version = result.stdout.strip()
-            except:
+            except Exception:
                 node_version = "未安装"
 
             if not node_available:
@@ -698,7 +697,7 @@ class DeploymentValidator:
 
     def _generate_markdown_report(self, summary: Dict, output_path: Path):
         """生成 Markdown 格式的报告"""
-        markdown_content = f"""# 部署验证报告
+        markdown_content = """# 部署验证报告
 
 **生成时间**: {summary['timestamp']}
 **环境信息**: {'Termux Android' if summary['environment']['is_termux'] else '标准 Linux'}

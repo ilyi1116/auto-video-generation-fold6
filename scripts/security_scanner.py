@@ -543,7 +543,7 @@ class SecurityScanner:
 
         # 掃描配置檔案
         config_files = []
-        for pattern in ["*.json", "*.yaml", "*.yml", "*.conf", "*.ini"]:
+        for pattern in ["*.json", "*.yaml", "*.yml", "*.con", "*.ini"]:
             config_files.extend(Path(".").rglob(pattern))
 
         for config_file in config_files:

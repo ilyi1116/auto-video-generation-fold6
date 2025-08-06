@@ -18,7 +18,6 @@ import json
 import logging
 import os
 import re
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -1161,7 +1160,7 @@ def main():
 
     # 输出总结到控制台
     summary = report["summary"]
-    print(f"\\n📊 配置验证完成:")
+    print("\\n📊 配置验证完成:")
     print(
         f"   有效配置: {summary['valid_files']}/{summary['total_files']} ({summary['validation_success_rate']}%)"
     )

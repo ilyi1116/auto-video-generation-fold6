@@ -133,7 +133,7 @@ class ServiceManager:
         default_services = [
             ServiceConfig(
                 name="redis",
-                command="redis-server config/redis.conf",
+                command="redis-server config/redis.con",
                 working_dir=".",
                 health_check_url="redis://localhost:6379",
                 startup_timeout=30,

@@ -2,7 +2,7 @@
 Google Gemini Pro API Client
 
 This client handles script generation, content creation, and narrative structuring
-using Google's Gemini Pro AI model for video content generation.
+using Google's Gemini Pro AI model for video content generation.'
 """
 
 import json
@@ -43,12 +43,12 @@ class ScriptGenerationResponse(BaseModel):
 class GeminiClient:
     """Google Gemini Pro API Client for script generation"""
 
-    def __init__(self, api_key: str):
+def __init__(self, api_key: str):
         self.api_key = api_key
         self.base_url = "https://generativelanguage.googleapis.com/v1beta"
         self.session: Optional[aiohttp.ClientSession] = None
 
-    async def _get_session(self) -> aiohttp.ClientSession:
+async def _get_session(self) -> aiohttp.ClientSession:
         """Get or create aiohttp session"""
         if self.session is None or self.session.closed:
             headers = {
@@ -61,7 +61,7 @@ class GeminiClient:
             )
         return self.session
 
-    async def health_check(self) -> Dict[str, Any]:
+async def health_check(self) -> Dict[str, Any]:
         """Check Gemini API health status"""
         try:
             session = await self._get_session()
@@ -83,7 +83,7 @@ class GeminiClient:
                 "error": str(e),
             }
 
-    async def generate_script(
+async def generate_script(
         self,
         theme: str,
         duration: int = 60,
@@ -99,8 +99,8 @@ class GeminiClient:
             )
 
             logger.info(
-                f"Generating script with Gemini Pro: theme='{theme}', \
-                    duration={duration}s"
+                f"Generating script with Gemini Pro: theme={theme}, "
+                f"duration={duration}s"
             )
 
             # Generate script using Gemini Pro
@@ -140,23 +140,23 @@ class GeminiClient:
             logger.error(f"Script generation failed: {str(e)}")
             raise Exception(f"Failed to generate script: {str(e)}")
 
-    def _create_script_prompt(
+def _create_script_prompt(
         self, theme: str, duration: int, style: str, platform: str
     ) -> str:
         """Create detailed prompt for script generation"""
 
         platform_specs = {
             "youtube": "YouTube video format with engaging hook, \
-                detailed content, and strong call-to-action",
+                detailed content, and strong call-to-action","
             "tiktok": "TikTok short-form content with quick hook, \
-                trending elements, and viral potential",
+                trending elements, and viral potential","
             "instagram": "Instagram Reels format with visual appeal \
-                and hashtag optimization",
+                and hashtag optimization","
         }
 
         platform_desc = platform_specs.get(platform, platform_specs["youtube"])
 
-        return f"""
+        return """
 Generate a detailed video script for a {duration}-second video about "{theme}".
 
 Requirements:
@@ -192,7 +192,7 @@ Focus on making the content informative, engaging, and optimized for {platform}.
 Make sure the total duration of all scenes equals {duration} seconds.
 """
 
-    async def _generate_content(self, prompt: str) -> str:
+async def _generate_content(self, prompt: str) -> str:
         """Generate content using Gemini Pro API"""
 
         session = await self._get_session()
@@ -242,7 +242,7 @@ Make sure the total duration of all scenes equals {duration} seconds.
             content = result["candidates"][0]["content"]["parts"][0]["text"]
             return content
 
-    def _parse_script_response(self, response_text: str) -> Dict[str, Any]:
+def _parse_script_response(self, response_text: str) -> Dict[str, Any]:
         """Parse the structured JSON response from Gemini"""
 
         try:
@@ -264,7 +264,7 @@ Make sure the total duration of all scenes equals {duration} seconds.
                 required_fields = ["type", "duration", "narration", "visual"]
                 for field in required_fields:
                     if field not in scene:
-                        raise ValueError(f"Missing field '{field}' in scene")
+                        raise ValueError("Missing field "{field}' in scene")"'
 
             return script_data
 
@@ -279,7 +279,7 @@ Make sure the total duration of all scenes equals {duration} seconds.
             logger.error(f"Error parsing script response: {e}")
             raise Exception(f"Failed to parse script response: {e}")
 
-    def _create_fallback_script(self, text: str) -> Dict[str, Any]:
+def _create_fallback_script(self, text: str) -> Dict[str, Any]:
         """Create fallback script structure when JSON parsing fails"""
 
         # Split text into rough segments for scenes
@@ -311,19 +311,19 @@ Make sure the total duration of all scenes equals {duration} seconds.
                     "duration": 60.0 / scene_count,  # Distribute evenly
                     "narration": scene_text,
                     "visual": f"Visual representation of: \
-                        {scene_text[:100]}...",
+                        {scene_text[:100]}...","
                     "keywords": ["generic", "content", "scene"],
                 }
             )
 
         return {"full_script": text, "scenes": scenes}
 
-    async def generate_caption_text(
+async def generate_caption_text(
         self, narration: str, style: str = "modern"
     ) -> List[str]:
         """Generate formatted captions for video"""
 
-        prompt = f"""
+        prompt = """
 Generate video captions for the following narration text.
 Format as short, readable segments suitable for video overlay.
 
@@ -338,7 +338,7 @@ Requirements:
 
 Example format:
 ["Hello everyone!", "Welcome to our channel", "Today we're discussing \
-    ...", "Amazing technology trends"]
+    ...", "Amazing technology trends"]"
 
 Please provide only the JSON array of caption segments.
 """
@@ -372,13 +372,13 @@ Please provide only the JSON array of caption segments.
                 " ".join(words[i : i + 5]) for i in range(0, len(words), 5)
             ]  # noqa: E203
 
-    async def close(self):
+async def close(self):
         """Close the HTTP session"""
         if self.session and not self.session.closed:
             await self.session.close()
 
-    async def __aenter__(self):
+async def __aenter__(self):
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()

@@ -468,7 +468,7 @@ class BackupConfigValidator:
         """生成人類可讀的驗證報告"""
         summary = report["summary"]
 
-        report_text = f"""
+        report_text = """
 =================================================
 備份配置驗證報告
 =================================================
@@ -483,7 +483,7 @@ class BackupConfigValidator:
 
         for result in report["results"]:
             status = "✅ 通過" if result["success"] else "❌ 失敗"
-            report_text += f"""
+            report_text += """
 {status} {result["component"]}
    訊息: {result["message"]}
 """

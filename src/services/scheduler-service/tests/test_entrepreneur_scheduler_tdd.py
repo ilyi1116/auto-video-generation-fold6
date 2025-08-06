@@ -17,7 +17,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 # 這些 import 會失敗，因為我們還沒實作 - 這就是 TDD Red 階段
-from services.scheduler_service.app.entrepreneur_scheduler import (
     EntrepreneurScheduler,
     ScheduledTask,
     SchedulerConfig,
@@ -29,7 +28,7 @@ class TestEntrepreneurSchedulerTDD:
     """創業者排程管理器 TDD 測試套件"""
 
     @pytest.fixture
-    def scheduler_config(self):
+def scheduler_config(self):
         """測試用排程配置"""
         return SchedulerConfig(
             enabled=True,
@@ -45,11 +44,11 @@ class TestEntrepreneurSchedulerTDD:
         )
 
     @pytest.fixture
-    def scheduler(self, scheduler_config):
+def scheduler(self, scheduler_config):
         """測試用排程管理器實例"""
         return EntrepreneurScheduler(scheduler_config)
 
-    def test_scheduler_initialization(self, scheduler_config):
+def test_scheduler_initialization(self, scheduler_config):
         """測試排程管理器初始化"""
         # TDD Red: 這個測試會失敗，因為 EntrepreneurScheduler 還不存在
         scheduler = EntrepreneurScheduler(scheduler_config)
@@ -60,7 +59,7 @@ class TestEntrepreneurSchedulerTDD:
         assert scheduler.current_tasks_count == 0
 
     @pytest.mark.asyncio
-    async def test_start_scheduler_service(self, scheduler):
+async def test_start_scheduler_service(self, scheduler):
         """測試啟動排程服務"""
         # TDD Red: 測試啟動排程服務
         with patch.object(scheduler, "_schedule_loop") as mock_loop:
@@ -72,7 +71,7 @@ class TestEntrepreneurSchedulerTDD:
             mock_loop.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_stop_scheduler_service(self, scheduler):
+async def test_stop_scheduler_service(self, scheduler):
         """測試停止排程服務"""
         # TDD Red: 測試停止排程服務
         scheduler.is_running = True
@@ -81,7 +80,7 @@ class TestEntrepreneurSchedulerTDD:
 
         assert scheduler.is_running is False
 
-    def test_is_within_work_hours_true(self, scheduler):
+def test_is_within_work_hours_true(self, scheduler):
         """測試工作時間內檢查 - 應該返回 True"""
         # TDD Red: 測試工作時間檢查邏輯
         with patch("datetime.datetime") as mock_datetime:
@@ -92,7 +91,7 @@ class TestEntrepreneurSchedulerTDD:
 
             assert result is True
 
-    def test_is_within_work_hours_false(self, scheduler):
+def test_is_within_work_hours_false(self, scheduler):
         """測試工作時間外檢查 - 應該返回 False"""
         # TDD Red: 測試工作時間外的情況
         with patch("datetime.datetime") as mock_datetime:
@@ -104,7 +103,7 @@ class TestEntrepreneurSchedulerTDD:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_schedule_entrepreneur_task_success(self, scheduler):
+async def test_schedule_entrepreneur_task_success(self, scheduler):
         """測試排程創業者任務成功"""
         # TDD Red: 測試任務排程功能
         task_config = {
@@ -123,7 +122,7 @@ class TestEntrepreneurSchedulerTDD:
         )
 
     @pytest.mark.asyncio
-    async def test_schedule_task_exceeds_daily_limit(self, scheduler):
+async def test_schedule_task_exceeds_daily_limit(self, scheduler):
         """測試超出每日限制時的排程行為"""
         # TDD Red: 測試每日限制檢查
         scheduler.daily_stats = {"videos_generated": 5}  # 已達限制
@@ -134,7 +133,7 @@ class TestEntrepreneurSchedulerTDD:
             await scheduler.schedule_entrepreneur_task(task_config)
 
     @pytest.mark.asyncio
-    async def test_schedule_task_exceeds_budget_limit(self, scheduler):
+async def test_schedule_task_exceeds_budget_limit(self, scheduler):
         """測試超出預算限制時的排程行為"""
         # TDD Red: 測試預算限制檢查
         scheduler.daily_stats = {"budget_used": 20.0}  # 已達預算限制
@@ -145,7 +144,7 @@ class TestEntrepreneurSchedulerTDD:
             await scheduler.schedule_entrepreneur_task(task_config)
 
     @pytest.mark.asyncio
-    async def test_execute_scheduled_task_success(self, scheduler):
+async def test_execute_scheduled_task_success(self, scheduler):
         """測試執行排程任務成功"""
         # TDD Red: 測試任務執行邏輯
         task = ScheduledTask(
@@ -171,7 +170,7 @@ class TestEntrepreneurSchedulerTDD:
             mock_video_service.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_execute_task_failure_with_retry(self, scheduler):
+async def test_execute_task_failure_with_retry(self, scheduler):
         """測試任務失敗後重試機制"""
         # TDD Red: 測試失敗重試邏輯
         task = ScheduledTask(
@@ -199,7 +198,7 @@ class TestEntrepreneurSchedulerTDD:
             assert mock_video_service.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_execute_task_max_retries_exceeded(self, scheduler):
+async def test_execute_task_max_retries_exceeded(self, scheduler):
         """測試超過最大重試次數後任務失敗"""
         # TDD Red: 測試重試次數限制
         task = ScheduledTask(
@@ -222,7 +221,7 @@ class TestEntrepreneurSchedulerTDD:
             assert "持續失敗" in task.error_message
 
     @pytest.mark.asyncio
-    async def test_concurrent_task_limit(self, scheduler):
+async def test_concurrent_task_limit(self, scheduler):
         """測試並行任務數量限制"""
         # TDD Red: 測試並行任務限制
         scheduler.current_tasks_count = 3  # 已達並行限制
@@ -239,7 +238,7 @@ class TestEntrepreneurSchedulerTDD:
 
         assert result is False
 
-    def test_get_next_execution_time(self, scheduler):
+def test_get_next_execution_time(self, scheduler):
         """測試計算下次執行時間"""
         # TDD Red: 測試下次執行時間計算
         current_time = datetime.utcnow()
@@ -252,7 +251,7 @@ class TestEntrepreneurSchedulerTDD:
             expected_time = current_time + timedelta(minutes=30)
             assert abs((next_time - expected_time).total_seconds()) < 60
 
-    def test_update_daily_stats(self, scheduler):
+def test_update_daily_stats(self, scheduler):
         """測試更新每日統計"""
         # TDD Red: 測試統計數據更新
         scheduler.update_daily_stats(videos_generated=2, budget_used=5.50)
@@ -261,7 +260,7 @@ class TestEntrepreneurSchedulerTDD:
         assert scheduler.daily_stats["budget_used"] == 5.50
         assert scheduler.daily_stats["last_updated"] is not None
 
-    def test_reset_daily_stats_new_day(self, scheduler):
+def test_reset_daily_stats_new_day(self, scheduler):
         """測試新的一天重置統計"""
         # TDD Red: 測試每日統計重置
         scheduler.daily_stats = {
@@ -276,7 +275,7 @@ class TestEntrepreneurSchedulerTDD:
         assert scheduler.daily_stats["budget_used"] == 0.0
 
     @pytest.mark.asyncio
-    async def test_cleanup_completed_tasks(self, scheduler):
+async def test_cleanup_completed_tasks(self, scheduler):
         """測試清理已完成任務"""
         # TDD Red: 測試任務清理邏輯
         old_task = ScheduledTask(
@@ -308,7 +307,7 @@ class TestEntrepreneurSchedulerTDD:
         assert "old_task" not in scheduler.scheduled_tasks
         assert "recent_task" in scheduler.scheduled_tasks
 
-    def test_get_scheduler_status(self, scheduler):
+def test_get_scheduler_status(self, scheduler):
         """測試獲取排程器狀態"""
         # TDD Red: 測試狀態回報功能
         scheduler.is_running = True
@@ -323,7 +322,7 @@ class TestEntrepreneurSchedulerTDD:
         assert "active_tasks_count" in status
 
     @pytest.mark.asyncio
-    async def test_pause_and_resume_scheduler(self, scheduler):
+async def test_pause_and_resume_scheduler(self, scheduler):
         """測試暫停和恢復排程器"""
         # TDD Red: 測試暫停/恢復功能
         scheduler.is_running = True
@@ -335,7 +334,7 @@ class TestEntrepreneurSchedulerTDD:
         assert scheduler.is_running is True
 
     @pytest.mark.asyncio
-    async def test_handle_service_unavailable(self, scheduler):
+async def test_handle_service_unavailable(self, scheduler):
         """測試服務不可用時的處理"""
         # TDD Red: 測試服務不可用的錯誤處理
         task = ScheduledTask(
@@ -359,7 +358,7 @@ class TestEntrepreneurSchedulerTDD:
 class TestScheduledTaskModel:
     """排程任務模型測試"""
 
-    def test_scheduled_task_creation(self):
+def test_scheduled_task_creation(self):
         """測試排程任務創建"""
         # TDD Red: 測試任務模型創建
         task = ScheduledTask(
@@ -375,7 +374,7 @@ class TestScheduledTaskModel:
         assert task.retry_count == 0
         assert task.created_at is not None
 
-    def test_task_status_transitions(self):
+def test_task_status_transitions(self):
         """測試任務狀態轉換"""
         # TDD Red: 測試狀態轉換邏輯
         task = ScheduledTask(
@@ -404,7 +403,7 @@ class TestScheduledTaskModel:
 class TestSchedulerConfig:
     """排程配置測試"""
 
-    def test_config_validation_valid(self):
+def test_config_validation_valid(self):
         """測試有效配置驗證"""
         # TDD Red: 測試配置驗證
         config = SchedulerConfig(
@@ -417,7 +416,7 @@ class TestSchedulerConfig:
 
         assert config.validate() is True
 
-    def test_config_validation_invalid_time_format(self):
+def test_config_validation_invalid_time_format(self):
         """測試無效時間格式"""
         # TDD Red: 測試無效配置檢查
         with pytest.raises(ValueError, match="時間格式錯誤"):
@@ -427,7 +426,7 @@ class TestSchedulerConfig:
                 work_hours_end="18:00",
             )
 
-    def test_config_validation_invalid_limits(self):
+def test_config_validation_invalid_limits(self):
         """測試無效限制設定"""
         # TDD Red: 測試限制值驗證
         with pytest.raises(ValueError, match="每日限制必須大於 0"):
@@ -443,7 +442,7 @@ class TestEntrepreneurSchedulerIntegration:
     """創業者排程管理器整合測試"""
 
     @pytest.mark.asyncio
-    async def test_full_scheduling_workflow(self):
+async def test_full_scheduling_workflow(self):
         """測試完整排程工作流程"""
         # TDD Red: 整合測試 - 從排程到執行的完整流程
         config = SchedulerConfig(

@@ -282,7 +282,7 @@ def main():
 
     results = auditor.run_audit()
 
-    print(f"\n📊 安全審計結果:")
+    print("\n📊 安全審計結果:")
     print(f"   掃描檔案數: {results['files_scanned']}")
     print(f"   發現問題數: {results['total_issues']}")
 

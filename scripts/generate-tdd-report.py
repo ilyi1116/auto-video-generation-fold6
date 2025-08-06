@@ -622,7 +622,7 @@ class TDDReportGenerator:
         if git:
             template_vars[
                 "git_info"
-            ] = f"""
+            ] = """
                 <p><strong>提交:</strong> {git["short_hash"]} - {git["commit_message"]}</p>
                 <p><strong>分支:</strong> {git["branch"]} | <strong>作者:</strong> {git["author"]}</p>
                 <p><strong>時間:</strong> {git["date"]}</p>
@@ -637,7 +637,7 @@ class TDDReportGenerator:
             if frontend.get("coverage"):
                 cov = frontend["coverage"]
                 frontend_html.append(
-                    f"""
+                    """
                     <div class="metric">
                         <span>語句覆蓋率</span>
                         <span class="metric-value {"success" if cov["statements"] >= 90 else "warning"}">
@@ -653,7 +653,7 @@ class TDDReportGenerator:
             if frontend.get("test_results"):
                 test = frontend["test_results"]
                 frontend_html.append(
-                    f"""
+                    """
                     <div class="metric">
                         <span>通過測試</span>
                         <span class="metric-value success">{test["passed"]}</span>
@@ -679,7 +679,7 @@ class TDDReportGenerator:
         if backend["services"]:
             backend_html = []
             backend_html.append(
-                f"""
+                """
                 <div class="metric">
                     <span>服務總數</span>
                     <span class="metric-value">{backend["total_services"]}</span>

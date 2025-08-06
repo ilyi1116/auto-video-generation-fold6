@@ -215,7 +215,7 @@ class TestRunner:
 
             # Black 格式檢查
             black_result = subprocess.run(
-                ["black", "--check", "--diff", "."],
+                ["black", "--check", "--dif", "."],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -228,7 +228,7 @@ class TestRunner:
 
             # isort 導入排序檢查
             isort_result = subprocess.run(
-                ["isort", "--check-only", "--diff", "."],
+                ["isort", "--check-only", "--dif", "."],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -241,7 +241,7 @@ class TestRunner:
 
             # Ruff 檢查
             ruff_result = subprocess.run(
-                ["ruff", "check", "."],
+                ["ruf", "check", "."],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -295,7 +295,7 @@ class TestRunner:
                 "bandit",
                 "-r",
                 ".",
-                "-f",
+                "-",
                 "json",
                 "-o",
                 "test-results/bandit-report.json",
@@ -409,7 +409,7 @@ class TestRunner:
         summary = report["summary"]
         results = report["results"]
 
-        html = f"""
+        html = """
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -473,7 +473,7 @@ class TestRunner:
             )
             status_text = "通過" if result.get("success", False) else "失敗"
 
-            html += f"""
+            html += """
     <div class="test-result">
         <div class="test-header">
             <span class="status-badge {badge_class}">{status_text}</span>

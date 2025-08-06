@@ -6,7 +6,6 @@ CI/CD 配置验证脚本
 
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional

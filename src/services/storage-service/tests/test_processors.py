@@ -4,7 +4,7 @@ import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
-from app.processors import (
+from unittest.mock import AsyncMock
     AudioProcessor,
     ImageProcessor,
     ProcessorManager,
@@ -19,16 +19,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
 class TestImageProcessor:
     """Test image processing functionality"""
 
-    def setup_method(self):
+def setup_method(self):
         self.processor = ImageProcessor()
         self.temp_dir = tempfile.mkdtemp()
 
-    def teardown_method(self):
-        import shutil
+def teardown_method(self):
+import shutil
 
         shutil.rmtree(self.temp_dir)
 
-    def create_test_image(self, size=(100, 100), format="JPEG"):
+def create_test_image(self, size=(100, 100), format="JPEG"):
         """Create a test image file"""
         img = Image.new("RGB", size, color="red")
         img_path = os.path.join(self.temp_dir, f"test.{format.lower()}")
@@ -36,7 +36,7 @@ class TestImageProcessor:
         return img_path
 
     @pytest.mark.asyncio
-    async def test_process_image_basic(self):
+async def test_process_image_basic(self):
         """Test basic image processing"""
         input_path = self.create_test_image()
         output_path = os.path.join(self.temp_dir, "output.jpg")
@@ -49,7 +49,7 @@ class TestImageProcessor:
         assert os.path.exists(output_path)
 
     @pytest.mark.asyncio
-    async def test_process_image_resize(self):
+async def test_process_image_resize(self):
         """Test image resizing"""
         input_path = self.create_test_image(size=(2000, 1500))
         output_path = os.path.join(self.temp_dir, "output.jpg")
@@ -63,7 +63,7 @@ class TestImageProcessor:
         assert result["processed"] is True
 
     @pytest.mark.asyncio
-    async def test_process_image_with_thumbnail(self):
+async def test_process_image_with_thumbnail(self):
         """Test image processing with thumbnail generation"""
         input_path = self.create_test_image()
         output_path = os.path.join(self.temp_dir, "output.jpg")
@@ -78,7 +78,7 @@ class TestImageProcessor:
         assert result["thumbnail_path"] is not None
         assert os.path.exists(result["thumbnail_path"])
 
-    def test_get_metadata(self):
+def test_get_metadata(self):
         """Test image metadata extraction"""
         input_path = self.create_test_image(size=(200, 150))
 
@@ -90,7 +90,7 @@ class TestImageProcessor:
         assert metadata["mode"] == "RGB"
 
     @pytest.mark.asyncio
-    async def test_rgba_to_rgb_conversion(self):
+async def test_rgba_to_rgb_conversion(self):
         """Test RGBA to RGB conversion for JPEG"""
         # Create RGBA image
         img = Image.new("RGBA", (100, 100), (255, 0, 0, 128))
@@ -109,18 +109,18 @@ class TestImageProcessor:
 class TestAudioProcessor:
     """Test audio processing functionality"""
 
-    def setup_method(self):
+def setup_method(self):
         self.processor = AudioProcessor()
         self.temp_dir = tempfile.mkdtemp()
 
-    def teardown_method(self):
-        import shutil
+def teardown_method(self):
+import shutil
 
         shutil.rmtree(self.temp_dir)
 
     @pytest.mark.asyncio
     @patch("app.processors.asyncio.create_subprocess_exec")
-    async def test_process_audio_success(self, mock_subprocess):
+async def test_process_audio_success(self, mock_subprocess):
         """Test successful audio processing"""
         # Mock ffmpeg subprocess
         mock_process = MagicMock()
@@ -151,7 +151,7 @@ class TestAudioProcessor:
 
     @pytest.mark.asyncio
     @patch("app.processors.asyncio.create_subprocess_exec")
-    async def test_process_audio_failure(self, mock_subprocess):
+async def test_process_audio_failure(self, mock_subprocess):
         """Test audio processing failure"""
         # Mock failed ffmpeg subprocess
         mock_process = MagicMock()
@@ -168,7 +168,7 @@ class TestAudioProcessor:
             await self.processor.process(input_path, output_path)
 
     @patch("app.processors.subprocess.run")
-    def test_get_metadata_success(self, mock_subprocess):
+def test_get_metadata_success(self, mock_subprocess):
         """Test audio metadata extraction"""
         # Mock ffprobe output
         mock_result = MagicMock()
@@ -205,18 +205,18 @@ class TestAudioProcessor:
 class TestVideoProcessor:
     """Test video processing functionality"""
 
-    def setup_method(self):
+def setup_method(self):
         self.processor = VideoProcessor()
         self.temp_dir = tempfile.mkdtemp()
 
-    def teardown_method(self):
-        import shutil
+def teardown_method(self):
+import shutil
 
         shutil.rmtree(self.temp_dir)
 
     @pytest.mark.asyncio
     @patch("app.processors.asyncio.create_subprocess_exec")
-    async def test_process_video_success(self, mock_subprocess):
+async def test_process_video_success(self, mock_subprocess):
         """Test successful video processing"""
         # Mock ffmpeg subprocess
         mock_process = MagicMock()
@@ -252,7 +252,7 @@ class TestVideoProcessor:
 
     @pytest.mark.asyncio
     @patch("app.processors.asyncio.create_subprocess_exec")
-    async def test_generate_video_thumbnail(self, mock_subprocess):
+async def test_generate_video_thumbnail(self, mock_subprocess):
         """Test video thumbnail generation"""
         # Mock ffmpeg subprocess for thumbnail
         mock_process = MagicMock()
@@ -271,7 +271,7 @@ class TestVideoProcessor:
         assert "thumb.jpg" in result
 
     @patch("app.processors.subprocess.run")
-    def test_get_metadata_success(self, mock_subprocess):
+def test_get_metadata_success(self, mock_subprocess):
         """Test video metadata extraction"""
         # Mock ffprobe output
         mock_result = MagicMock()
@@ -317,10 +317,10 @@ class TestVideoProcessor:
 class TestProcessorManager:
     """Test processor manager"""
 
-    def setup_method(self):
+def setup_method(self):
         self.manager = ProcessorManager()
 
-    def test_get_processor(self):
+def test_get_processor(self):
         """Test getting processors by type"""
         image_processor = self.manager.get_processor("image")
         audio_processor = self.manager.get_processor("audio")
@@ -333,13 +333,13 @@ class TestProcessorManager:
         assert invalid_processor is None
 
     @pytest.mark.asyncio
-    async def test_process_file_invalid_type(self):
+async def test_process_file_invalid_type(self):
         """Test processing file with invalid type"""
         with pytest.raises(ValueError, match="No processor available"):
             await self.manager.process_file("/path/to/file", "invalid_type")
 
     @pytest.mark.asyncio
-    async def test_process_file_auto_output_path(self):
+async def test_process_file_auto_output_path(self):
         """Test processing file with auto-generated output path"""
         with patch.object(self.manager, "get_processor") as mock_get:
             mock_processor = MagicMock()
@@ -358,7 +358,7 @@ class TestProcessorManager:
             assert args[0] == "/path/to/input.jpg"
             assert args[1] == "/path/to/input_processed.jpg"
 
-    def test_get_metadata_invalid_type(self):
+def test_get_metadata_invalid_type(self):
         """Test getting metadata for invalid file type"""
         result = self.manager.get_metadata("/path/to/file", "invalid_type")
         assert result == {}

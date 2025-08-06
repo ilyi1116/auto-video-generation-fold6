@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class ShortVideoGenerator:
     """短影音生成器"""
 
-    def __init__(self):
+def __init__(self):
         self.video_templates = {
             "trending": {
                 "duration": 15,
@@ -50,14 +50,14 @@ class ShortVideoGenerator:
             "16:9": (1920, 1080),  # YouTube橫向
         }
 
-    async def generate_tiktok_style_video(self, content_data: Dict) -> Dict:
+async def generate_tiktok_style_video(self, content_data: Dict) -> Dict:
         """生成類似抖音風格的短影音"""
         try:
             keyword = content_data["keyword"]
             category = content_data.get("category", "trending")
             script = content_data.get("script", f"探索 {keyword} 的精彩世界！")
 
-            logger.info(f"開始生成關鍵字 '{keyword}' 的短影音")
+            logger.info("開始生成關鍵字 "{keyword}' 的短影音")"'
 
             # 1. 創建工作目錄
             work_dir = await self._create_work_directory(keyword)
@@ -103,14 +103,14 @@ class ShortVideoGenerator:
             logger.error(f"生成短影音失敗: {e}")
             return {"status": "error", "keyword": keyword, "error": str(e)}
 
-    async def _create_work_directory(self, keyword: str) -> Path:
+async def _create_work_directory(self, keyword: str) -> Path:
         """創建工作目錄"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         work_dir = Path(f"/tmp/video_gen_{keyword}_{timestamp}")
         work_dir.mkdir(parents=True, exist_ok=True)
         return work_dir
 
-    async def _generate_visual_assets(
+async def _generate_visual_assets(
         self, keyword: str, category: str, work_dir: Path
     ) -> Dict:
         """生成視覺素材"""
@@ -144,7 +144,7 @@ class ShortVideoGenerator:
             logger.error(f"生成視覺素材失敗: {e}")
             return {}
 
-    async def _create_background_image(
+async def _create_background_image(
         self, keyword: str, index: int, work_dir: Path
     ) -> str:
         """創建背景圖片"""
@@ -178,7 +178,7 @@ class ShortVideoGenerator:
             try:
                 font_size = 120
                 font = ImageFont.truetype(
-                    "/system/fonts/DroidSansFallback.ttf", font_size
+                    "/system/fonts/DroidSansFallback.tt", font_size
                 )
             except Exception:
                 font = ImageFont.load_default()
@@ -202,7 +202,7 @@ class ShortVideoGenerator:
             logger.error(f"創建背景圖片失敗: {e}")
             return ""
 
-    async def _create_text_overlay(self, keyword: str, work_dir: Path) -> str:
+async def _create_text_overlay(self, keyword: str, work_dir: Path) -> str:
         """創建文字覆蓋層"""
         try:
             width, height = 1080, 1920
@@ -213,10 +213,10 @@ class ShortVideoGenerator:
             title_text = f"🔥 {keyword} 正在爆紅！"
             try:
                 title_font = ImageFont.truetype(
-                    "/system/fonts/DroidSansFallback.ttf", 80
+                    "/system/fonts/DroidSansFallback.tt", 80
                 )
                 subtitle_font = ImageFont.truetype(
-                    "/system/fonts/DroidSansFallback.ttf", 60
+                    "/system/fonts/DroidSansFallback.tt", 60
                 )
             except Exception:
                 title_font = ImageFont.load_default()
@@ -268,7 +268,7 @@ class ShortVideoGenerator:
             logger.error(f"創建文字覆蓋層失敗: {e}")
             return ""
 
-    async def _create_trending_graphics(
+async def _create_trending_graphics(
         self, keyword: str, work_dir: Path
     ) -> List[str]:
         """創建趨勢圖標"""
@@ -291,7 +291,7 @@ class ShortVideoGenerator:
             logger.error(f"創建趨勢圖標失敗: {e}")
             return []
 
-    async def _create_flame_graphic(self, work_dir: Path) -> str:
+async def _create_flame_graphic(self, work_dir: Path) -> str:
         """創建火焰特效圖標"""
         try:
             size = 200
@@ -323,7 +323,7 @@ class ShortVideoGenerator:
             logger.error(f"創建火焰圖標失敗: {e}")
             return ""
 
-    async def _create_arrow_graphic(self, work_dir: Path) -> str:
+async def _create_arrow_graphic(self, work_dir: Path) -> str:
         """創建上升箭頭"""
         try:
             size = 150
@@ -351,7 +351,7 @@ class ShortVideoGenerator:
             logger.error(f"創建箭頭圖標失敗: {e}")
             return ""
 
-    async def _generate_audio(self, script: str, work_dir: Path) -> str:
+async def _generate_audio(self, script: str, work_dir: Path) -> str:
         """生成音頻（模擬 TTS）"""
         try:
             # 這裡應該調用真實的 TTS 服務
@@ -376,7 +376,7 @@ class ShortVideoGenerator:
             # 返回空音頻路徑，讓影片是靜音的
             return ""
 
-    async def _create_video_scenes(
+async def _create_video_scenes(
         self, visual_assets: Dict, script: str, category: str
     ) -> List[Dict]:
         """創建影片場景"""
@@ -404,7 +404,7 @@ class ShortVideoGenerator:
             logger.error(f"創建場景失敗: {e}")
             return []
 
-    async def _assemble_video(
+async def _assemble_video(
         self,
         scenes: List[Dict],
         audio_file: str,
@@ -467,7 +467,7 @@ class ShortVideoGenerator:
             logger.error(f"組裝影片失敗: {e}")
             return ""
 
-    async def _add_tiktok_effects(
+async def _add_tiktok_effects(
         self, video_path: str, keyword: str, work_dir: Path
     ) -> str:
         """添加短影音特效"""
@@ -528,7 +528,7 @@ class TikTokStyleProcessor:
     """抖音風格處理器"""
 
     @staticmethod
-    async def add_trending_elements(video_path: str, keyword: str) -> str:
+async def add_trending_elements(video_path: str, keyword: str) -> str:
         """添加流行元素"""
         try:
             # 1. 添加火焰特效
@@ -544,7 +544,7 @@ class TikTokStyleProcessor:
             return video_path
 
     @staticmethod
-    async def optimize_for_mobile(video_path: str) -> str:
+async def optimize_for_mobile(video_path: str) -> str:
         """針對手機觀看優化"""
         try:
             # 1. 確保 9:16 比例

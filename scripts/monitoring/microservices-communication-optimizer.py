@@ -19,7 +19,6 @@ import gzip
 import hashlib
 import json
 import logging
-import pickle
 import statistics
 import time
 from collections import defaultdict, deque
@@ -445,7 +444,7 @@ class MicroservicesCommunicationOptimizer:
             == LoadBalancingStrategy.FASTEST_RESPONSE
         ):
             return min(
-                instances, key=lambda x: x.avg_response_time or float("inf")
+                instances, key=lambda x: x.avg_response_time or float("in")
             )
         elif (
             self.load_balancing_strategy
@@ -704,7 +703,7 @@ class MicroservicesCommunicationOptimizer:
                                     instance.memory_usage = health_data.get(
                                         "memory_usage", instance.memory_usage
                                     )
-                            except:
+                            except Exception:
                                 pass
 
                     await self.connection_pool.return_session(

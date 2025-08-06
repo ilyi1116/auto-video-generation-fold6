@@ -21,7 +21,6 @@ import statistics
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import aiohttp
@@ -363,7 +362,7 @@ class AdvancedPerformanceMonitor:
             ) as response:
                 if response.status == 200:
                     return await response.json()
-        except:
+        except Exception:
             pass
 
         return {}
@@ -655,7 +654,7 @@ class AdvancedPerformanceMonitor:
                     )
                     if entry_time >= cutoff_time:
                         recent_metrics.append(data)
-                except:
+                except Exception:
                     continue
 
             return recent_metrics

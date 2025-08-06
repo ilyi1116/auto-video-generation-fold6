@@ -455,7 +455,7 @@ class BackupSystem:
                 "./docker-compose.yml",
                 "./docker-compose.prod.yml",
                 "./.env.production",
-                "./nginx/nginx.conf",
+                "./nginx/nginx.con",
                 "./monitoring/prometheus/prometheus.yml",
                 "./monitoring/grafana/provisioning/",
                 "./k8s/",

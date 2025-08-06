@@ -11,7 +11,6 @@ from pathlib import Path
 # 添加項目路徑
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.shared import (
     CircuitBreakerConfig,
     LoadBalanceStrategy,
     RetryConfig,
@@ -111,7 +110,7 @@ async def main():
     print("\n🔄 6. 負載均衡策略示例")
 
     # 創建具有不同策略的服務發現實例
-    from src.shared.service_discovery import ServiceDiscovery
+from src.shared.service_discovery import ServiceDiscovery
 
     strategies = [
         (LoadBalanceStrategy.ROUND_ROBIN, "輪詢"),
@@ -175,8 +174,6 @@ async def integration_example():
 在實際的 FastAPI 服務中，您可以這樣使用：
 
 ```python
-from fastapi import FastAPI, Depends
-from contextlib import asynccontextmanager
 from src.shared import register_service, get_service_client
 
 @asynccontextmanager
@@ -203,10 +200,10 @@ async def get_user_data(
 ):
     # 調用認證服務驗證用戶
     user_info = await auth_client.post("/verify", json_data={"token": "..."})
-    
+
     # 調用數據服務獲取用戶數據
     user_data = await data_client.get(f"/users/{user_info['user_id']}")
-    
+
     return user_data
 
 @app.get("/health")
@@ -216,17 +213,16 @@ async def health_check():
 
 配置文件 (config.py) 示例：
 ```python
-from src.shared import BaseServiceSettings
 
 class MyServiceSettings(BaseServiceSettings):
     service_name: str = "my-service"
-    
+
     # 服務發現配置
     register_on_startup: bool = True
-    service_host: str = "localhost" 
+    service_host: str = "localhost"
     service_port: int = 8000
     service_weight: int = 1
-    
+
     # 客戶端配置
     default_timeout: float = 30.0
     max_retry_attempts: int = 3
@@ -252,6 +248,6 @@ if __name__ == "__main__":
         print("\n👋 示例被用戶中斷")
     except Exception as e:
         print(f"❌ 示例運行錯誤: {e}")
-        import traceback
+import traceback
 
         traceback.print_exc()

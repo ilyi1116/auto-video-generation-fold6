@@ -1,6 +1,5 @@
 import uuid
 
-from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
@@ -98,7 +97,7 @@ class StoredFile(Base):
     description = Column(Text)
     project_id = Column(String, index=True)
 
-    def __repr__(self):
+def __repr__(self):
         return f"<StoredFile(id={self.id}, filename={self.filename}, file_type={self.file_type})>"
 
 
@@ -140,7 +139,7 @@ class FileProcessingJob(Base):
     started_at = Column(DateTime(timezone=True))
     completed_at = Column(DateTime(timezone=True))
 
-    def __repr__(self):
+def __repr__(self):
         return f"<FileProcessingJob(id={self.id}, job_type={self.job_type}, status={self.status})>"
 
 
@@ -162,5 +161,5 @@ class FileDownload(Base):
     # Timestamps
     downloaded_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    def __repr__(self):
+def __repr__(self):
         return f"<FileDownload(id={self.id}, file_id={self.file_id})>"

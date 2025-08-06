@@ -20,9 +20,7 @@ import logging
 import platform
 import sqlite3
 import statistics
-import subprocess
 import time
-from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -32,7 +30,6 @@ import aiohttp
 import matplotlib.pyplot as plt
 import numpy as np
 import psutil
-import seaborn as sns
 import yaml
 
 # Configure logging
@@ -534,7 +531,7 @@ class PerformanceBenchmarkRunner:
                             data = await response.read()
                             total_bytes += len(data)
                             request_count += 1
-                    except:
+                    except Exception:
                         # If external service fails, use localhost
                         try:
                             async with session.get(
@@ -543,7 +540,7 @@ class PerformanceBenchmarkRunner:
                                 data = await response.read()
                                 total_bytes += len(data)
                                 request_count += 1
-                        except:
+                        except Exception:
                             # Skip failed requests
                             pass
 
@@ -1292,10 +1289,10 @@ class PerformanceBenchmarkRunner:
 
     def _generate_markdown_report(self, results: Dict[str, Any]) -> str:
         """Generate markdown performance report"""
-        report = f"""# Performance Benchmark Report
+        report = """# Performance Benchmark Report
 
-**Generated:** {results['timestamp']}  
-**Platform:** {results['platform']['system']} {results['platform']['machine']}  
+**Generated:** {results['timestamp']}
+**Platform:** {results['platform']['system']} {results['platform']['machine']}
 **Total Duration:** {results.get('total_duration', 0):.2f} seconds
 
 ## Executive Summary

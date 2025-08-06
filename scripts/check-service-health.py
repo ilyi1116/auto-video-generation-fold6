@@ -122,7 +122,7 @@ class ServiceHealthChecker:
                             "data": data,
                             "http_status": response.status,
                         }
-                    except:
+                    except Exception:
                         return {
                             "status": "healthy",
                             "response_time": round(response_time * 1000, 2),
@@ -282,7 +282,7 @@ class ServiceHealthChecker:
             system_status = 1
         else:
             logger.info(
-                f"\n✅ SYSTEM STATUS: HEALTHY - All services operational"
+                "\n✅ SYSTEM STATUS: HEALTHY - All services operational"
             )
             system_status = 0
 
@@ -334,7 +334,7 @@ class ServiceHealthChecker:
             json.dump(report, f, indent=2)
 
         logger.info(
-            f"📄 Health check report saved to: health-check-report.json"
+            "📄 Health check report saved to: health-check-report.json"
         )
 
 

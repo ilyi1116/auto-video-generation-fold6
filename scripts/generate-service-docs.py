@@ -4,10 +4,6 @@
 為所有微服務創建統一的 README 和 API 文檔
 """
 
-import json
-import os
-import re
-import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -263,7 +259,7 @@ docker run -p {port}:{port} --env-file .env {service_dir}
 ### 端口配置
 - **服務端口**: {port}
 - **健康檢查**: `GET /health`
-- **指標端點**: `GET /metrics` 
+- **指標端點**: `GET /metrics`
 
 ## 📚 API 文檔
 
@@ -429,8 +425,8 @@ kubectl logs -f deployment/{service_dir}
 
 ---
 
-**版本**: 1.0.0  
-**最後更新**: {current_date}  
+**版本**: 1.0.0
+**最後更新**: {current_date}
 **維護者**: 開發團隊
 """
 
@@ -442,8 +438,8 @@ kubectl logs -f deployment/{service_dir}
 
 {description}
 
-**基礎 URL**: `http://localhost:{port}`  
-**API 版本**: v1  
+**基礎 URL**: `http://localhost:{port}`
+**API 版本**: v1
 **認證方式**: JWT Bearer Token
 
 ## 認證
@@ -499,7 +495,7 @@ Authorization: Bearer <your_jwt_token>
 ### HTTP 狀態碼
 
 - `200` - 成功
-- `201` - 創建成功  
+- `201` - 創建成功
 - `400` - 請求錯誤
 - `401` - 未認證
 - `403` - 無權限
@@ -531,7 +527,6 @@ curl -X POST "http://localhost:{port}/api/v1/endpoint" \\
 ### Python 示例
 
 ```python
-import requests
 
 # 配置
 BASE_URL = "http://localhost:{port}"
@@ -572,7 +567,7 @@ print(response.json())
 
 ---
 
-**生成時間**: {current_date}  
+**生成時間**: {current_date}
 **API 版本**: 1.0.0
 """
 
@@ -681,17 +676,17 @@ print(response.json())
                 else "POST"
             )
             details.append(
-                f"""
+                """
 ### {method} {endpoint}
 
 **描述**: [端點描述]
 
-**請求參數**: 
+**請求參數**:
 ```json
 // TODO: 添加請求參數
 ```
 
-**響應**: 
+**響應**:
 ```json
 // TODO: 添加響應示例
 ```
@@ -712,7 +707,7 @@ print(response.json())
                 generated_count += 1
 
         print("\n" + "=" * 60)
-        print(f"📊 文檔生成統計:")
+        print("📊 文檔生成統計:")
         print(f"   總服務數: {total_services}")
         print(f"   成功生成: {generated_count}")
         print(f"   跳過/錯誤: {total_services - generated_count}")
@@ -753,7 +748,7 @@ print(response.json())
 ```mermaid
 graph TB
     Client[客戶端] --> Gateway[API Gateway :8000]
-    Gateway --> Auth[Auth Service :8001] 
+    Gateway --> Auth[Auth Service :8001]
     Gateway --> Data[Data Service :8002]
     Gateway --> Inference[Inference Service :8003]
     Gateway --> Video[Video Service :8004]
@@ -762,7 +757,7 @@ graph TB
     Gateway --> Trend[Trend Service :8007]
     Gateway --> Scheduler[Scheduler Service :8008]
     Gateway --> Storage[Storage Service :8009]
-    
+
     Data --> Storage
     Inference --> Storage
     Video --> AI
@@ -770,7 +765,7 @@ graph TB
     Social --> Storage
     Trend --> Storage
     Scheduler --> Data
-    
+
     Training[Training Worker :8010] --> Storage
     Ingestion[Data Ingestion :8011] --> Data
     GraphQL[GraphQL Gateway :8012] --> Gateway
@@ -784,7 +779,7 @@ graph TB
 - **[Auth Service](./src/services/auth-service/README.md)** - 認證授權
 - **[Data Service](./src/services/data-service/README.md)** - 數據處理
 
-### AI & ML 服務  
+### AI & ML 服務
 - **[AI Service](./src/services/ai-service/README.md)** - AI 編排
 - **[Inference Service](./src/services/inference-service/README.md)** - 模型推論
 - **[Training Worker](./src/services/training-worker/README.md)** - 模型訓練
@@ -806,7 +801,7 @@ graph TB
 ## 📖 開發指南
 
 1. **[架構設計](./docs/architecture.md)** - 系統架構說明
-2. **[開發規範](./docs/development.md)** - 代碼規範和最佳實踐  
+2. **[開發規範](./docs/development.md)** - 代碼規範和最佳實踐
 3. **[部署指南](./docs/deployment.md)** - 部署和運維
 4. **[API 規範](./docs/api-guidelines.md)** - API 設計規範
 
@@ -819,7 +814,7 @@ graph TB
 
 ---
 
-**生成時間**: {current_date}  
+**生成時間**: {current_date}
 **項目版本**: 1.0.0
 """.format(
             current_date=__import__("datetime")
@@ -842,9 +837,9 @@ def main():
     # 生成索引文檔
     generator.create_index_document()
 
-    print(f"\n🎉 服務文檔標準化完成！")
+    print("\n🎉 服務文檔標準化完成！")
     print(f"共為 {generated_count} 個服務生成了標準化文檔。")
-    print(f"\n📋 查看完整服務列表: SERVICES.md")
+    print("\n📋 查看完整服務列表: SERVICES.md")
 
 
 if __name__ == "__main__":

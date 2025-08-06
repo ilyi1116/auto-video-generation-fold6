@@ -10,10 +10,8 @@ into existing microservices and applications.
 import asyncio
 import time
 import uuid
-from datetime import datetime
 from typing import Any, Dict
 
-from centralized_logging_system import (
     CentralizedLoggingSystem,
     LogEventType,
     LogLevel,
@@ -23,10 +21,10 @@ from centralized_logging_system import (
 class APIGatewayExample:
     """Example API Gateway integration"""
 
-    def __init__(self, logging_system: CentralizedLoggingSystem):
+def __init__(self, logging_system: CentralizedLoggingSystem):
         self.logger = logging_system.get_service_logger("api-gateway")
 
-    async def handle_request(
+async def handle_request(
         self, method: str, endpoint: str, user_id: str = None
     ):
         """Example request handler with logging"""
@@ -102,10 +100,10 @@ class APIGatewayExample:
 class AuthServiceExample:
     """Example Auth Service integration"""
 
-    def __init__(self, logging_system: CentralizedLoggingSystem):
+def __init__(self, logging_system: CentralizedLoggingSystem):
         self.logger = logging_system.get_service_logger("auth-service")
 
-    async def authenticate_user(self, username: str, ip_address: str):
+async def authenticate_user(self, username: str, ip_address: str):
         """Example authentication with security logging"""
         correlation_id = str(uuid.uuid4())
         self.logger.set_context(correlation_id=correlation_id)
@@ -128,7 +126,7 @@ class AuthServiceExample:
             await asyncio.sleep(0.05)
 
             # Simulate random success/failure
-            import random
+import random
 
             success = random.random() > 0.1  # 90% success rate
 
@@ -188,10 +186,10 @@ class AuthServiceExample:
 class AIServiceExample:
     """Example AI Service integration"""
 
-    def __init__(self, logging_system: CentralizedLoggingSystem):
+def __init__(self, logging_system: CentralizedLoggingSystem):
         self.logger = logging_system.get_service_logger("ai-service")
 
-    async def generate_video(
+async def generate_video(
         self, user_id: str, video_request: Dict[str, Any]
     ):
         """Example video generation with detailed logging"""
@@ -289,10 +287,10 @@ class AIServiceExample:
 class DatabaseExample:
     """Example database operation logging"""
 
-    def __init__(self, logging_system: CentralizedLoggingSystem):
+def __init__(self, logging_system: CentralizedLoggingSystem):
         self.logger = logging_system.get_service_logger("data-service")
 
-    async def execute_query(
+async def execute_query(
         self, query: str, params: Dict = None, user_id: str = None
     ):
         """Example database query with logging"""
@@ -371,7 +369,7 @@ class DatabaseExample:
             )
             raise
 
-    def _extract_table_name(self, query: str) -> str:
+def _extract_table_name(self, query: str) -> str:
         """Extract table name from SQL query"""
         try:
             tokens = query.lower().split()
@@ -387,7 +385,7 @@ class DatabaseExample:
                 update_index = tokens.index("update")
                 if update_index + 1 < len(tokens):
                     return tokens[update_index + 1].strip("`;")
-        except:
+        except Exception:
             pass
         return "unknown"
 
@@ -418,7 +416,7 @@ async def run_example_scenario():
                 await api_gateway.handle_request(
                     "POST", "/api/v1/videos/generate", user_id
                 )
-            except:
+            except Exception:
                 pass
 
             # Authentication
@@ -444,7 +442,7 @@ async def run_example_scenario():
 
                 try:
                     await ai_service.generate_video(user_id, video_request)
-                except:
+                except Exception:
                     pass
 
             # Small delay between requests
@@ -486,7 +484,7 @@ async def run_example_scenario():
 
 async def main():
     """Main function"""
-    import argparse
+import argparse
 
     parser = argparse.ArgumentParser(
         description="Centralized Logging Integration Example"

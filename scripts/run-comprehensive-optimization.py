@@ -28,12 +28,11 @@ sys.path.append(str(Path(__file__).parent / "optimization"))
 sys.path.append(str(Path(__file__).parent / "logging"))
 
 try:
-    from advanced_performance_monitor import AdvancedPerformanceMonitor
-    from automated_performance_benchmarks import PerformanceBenchmarkRunner
-    from centralized_logging_system import CentralizedLoggingSystem
-    from frontend_performance_optimizer import FrontendPerformanceOptimizer
-    from intelligent_caching_system import IntelligentCacheManager
-    from microservices_communication_optimizer import (
+from advanced_performance_monitor import AdvancedPerformanceMonitor
+from automated_performance_benchmarks import PerformanceBenchmarkRunner
+from centralized_logging_system import CentralizedLoggingSystem
+from frontend_performance_optimizer import FrontendPerformanceOptimizer
+from intelligent_caching_system import IntelligentCacheManager
         MicroservicesCommunicationOptimizer,
     )
 except ImportError as e:
@@ -61,7 +60,7 @@ class OptimizationSummary:
 class ComprehensiveOptimizer:
     """Comprehensive performance optimization orchestrator"""
 
-    def __init__(
+def __init__(
         self, project_root: str = "/data/data/com.termux/files/home/myProject"
     ):
         self.project_root = project_root
@@ -69,7 +68,7 @@ class ComprehensiveOptimizer:
         self.start_time = None
         self.systems = {}
 
-    async def initialize_systems(self):
+async def initialize_systems(self):
         """Initialize all optimization systems"""
         print("🔧 Initializing Performance Optimization Systems...")
 
@@ -115,7 +114,7 @@ class ComprehensiveOptimizer:
             print(f"❌ Error initializing systems: {e}")
             raise
 
-    async def run_baseline_assessment(self) -> Dict[str, Any]:
+async def run_baseline_assessment(self) -> Dict[str, Any]:
         """Run baseline performance assessment"""
         print("\n📊 Running Baseline Performance Assessment...")
 
@@ -160,7 +159,7 @@ class ComprehensiveOptimizer:
             print(f"❌ Error in baseline assessment: {e}")
             return baseline
 
-    async def run_comprehensive_optimization(self) -> OptimizationSummary:
+async def run_comprehensive_optimization(self) -> OptimizationSummary:
         """Run comprehensive optimization across all systems"""
         self.start_time = datetime.now()
 
@@ -239,7 +238,7 @@ class ComprehensiveOptimizer:
 
         return summary
 
-    async def _optimize_monitoring(self) -> Dict[str, Any]:
+async def _optimize_monitoring(self) -> Dict[str, Any]:
         """Optimize monitoring system"""
         try:
             # Run a monitoring cycle to establish baseline
@@ -268,7 +267,7 @@ class ComprehensiveOptimizer:
                 "error": str(e),
             }
 
-    async def _optimize_communication(self) -> Dict[str, Any]:
+async def _optimize_communication(self) -> Dict[str, Any]:
         """Optimize microservices communication"""
         try:
             # Run communication optimization
@@ -297,7 +296,7 @@ class ComprehensiveOptimizer:
                 "error": str(e),
             }
 
-    async def _run_benchmarks(self) -> Dict[str, Any]:
+async def _run_benchmarks(self) -> Dict[str, Any]:
         """Run performance benchmarks"""
         try:
             # Run comprehensive benchmarks
@@ -321,7 +320,7 @@ class ComprehensiveOptimizer:
                 "error": str(e),
             }
 
-    async def _optimize_caching(self) -> Dict[str, Any]:
+async def _optimize_caching(self) -> Dict[str, Any]:
         """Optimize caching system"""
         try:
             # Run cache optimization
@@ -352,7 +351,7 @@ class ComprehensiveOptimizer:
                 "error": str(e),
             }
 
-    async def _optimize_logging(self) -> Dict[str, Any]:
+async def _optimize_logging(self) -> Dict[str, Any]:
         """Optimize logging system"""
         try:
             # Get logging performance metrics
@@ -382,7 +381,7 @@ class ComprehensiveOptimizer:
                 "error": str(e),
             }
 
-    async def _optimize_frontend(self) -> Dict[str, Any]:
+async def _optimize_frontend(self) -> Dict[str, Any]:
         """Optimize frontend performance"""
         try:
             # Run comprehensive frontend optimization
@@ -409,7 +408,7 @@ class ComprehensiveOptimizer:
                 "error": str(e),
             }
 
-    def _calculate_memory_savings(self) -> float:
+def _calculate_memory_savings(self) -> float:
         """Calculate total memory savings"""
         total_savings = 0.0
 
@@ -429,7 +428,7 @@ class ComprehensiveOptimizer:
 
         return total_savings
 
-    def _calculate_response_time_improvement(self) -> float:
+def _calculate_response_time_improvement(self) -> float:
         """Calculate response time improvement"""
         # Mock calculation based on optimization results
         improvements = []
@@ -450,7 +449,7 @@ class ComprehensiveOptimizer:
 
         return sum(improvements)
 
-    def _calculate_cache_improvement(self) -> float:
+def _calculate_cache_improvement(self) -> float:
         """Calculate cache hit rate improvement"""
         caching_result = self.results.get("intelligent_caching", {}).get(
             "result", {}
@@ -461,12 +460,12 @@ class ComprehensiveOptimizer:
 
         return after_rate - before_rate
 
-    def _calculate_error_rate_reduction(self) -> float:
+def _calculate_error_rate_reduction(self) -> float:
         """Calculate error rate reduction"""
         # Mock calculation - would be based on actual monitoring data
         return 2.5  # 2.5% error rate reduction
 
-    async def _generate_comprehensive_recommendations(self) -> List[str]:
+async def _generate_comprehensive_recommendations(self) -> List[str]:
         """Generate comprehensive optimization recommendations"""
         recommendations = []
 
@@ -529,13 +528,13 @@ class ComprehensiveOptimizer:
 
         return recommendations
 
-    def print_final_summary(self, summary: OptimizationSummary):
+def print_final_summary(self, summary: OptimizationSummary):
         """Print comprehensive optimization summary"""
         print("\n" + "=" * 80)
         print("🎉 COMPREHENSIVE OPTIMIZATION COMPLETED!")
         print("=" * 80)
 
-        print(f"\n⏱️  EXECUTION SUMMARY:")
+        print("\n⏱️  EXECUTION SUMMARY:")
         print(
             f"   • Start Time: {summary.start_time.strftime('%Y-%m-%d %H:%M:%S')}"
         )
@@ -549,7 +548,7 @@ class ComprehensiveOptimizer:
             f"   • Systems Optimized: {summary.systems_optimized}/{len(self.systems)}"
         )
 
-        print(f"\n📈 PERFORMANCE IMPROVEMENTS:")
+        print("\n📈 PERFORMANCE IMPROVEMENTS:")
         print(
             f"   • Overall Performance: +{summary.total_performance_improvement:.1f}%"
         )
@@ -562,7 +561,7 @@ class ComprehensiveOptimizer:
         )
         print(f"   • Error Rate: -{summary.error_rate_reduction:.1f}%")
 
-        print(f"\n🔧 OPTIMIZATION DETAILS:")
+        print("\n🔧 OPTIMIZATION DETAILS:")
         for system_name, result in self.results.items():
             status = result.get("status", "unknown")
             duration = result.get("duration_seconds", 0)
@@ -572,7 +571,7 @@ class ComprehensiveOptimizer:
                 f"   {status_icon} {system_name.replace('_', ' ').title()}: {status} ({duration:.1f}s)"
             )
 
-        print(f"\n💡 KEY RECOMMENDATIONS:")
+        print("\n💡 KEY RECOMMENDATIONS:")
         for i, rec in enumerate(summary.recommendations[:8], 1):  # Show top 8
             print(f"   {i}. {rec}")
 
@@ -586,7 +585,7 @@ class ComprehensiveOptimizer:
         print("Monitor regularly and rerun optimizations as needed.")
         print("=" * 80)
 
-    async def save_results(
+async def save_results(
         self, summary: OptimizationSummary, output_file: str = None
     ):
         """Save optimization results to file"""
@@ -617,7 +616,7 @@ class ComprehensiveOptimizer:
 
 async def main():
     """Main function"""
-    import argparse
+import argparse
 
     parser = argparse.ArgumentParser(
         description="Comprehensive Performance Optimization Runner"
@@ -694,7 +693,7 @@ async def main():
         print("\n👋 Optimization stopped by user")
     except Exception as e:
         print(f"❌ Optimization failed: {e}")
-        import traceback
+import traceback
 
         traceback.print_exc()
 

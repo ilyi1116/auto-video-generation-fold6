@@ -14,7 +14,6 @@ from typing import Any, Dict, List, Optional
 
 # 導入各 AI 客戶端
 try:
-    from services.ai_service.gemini_client import (
         GeminiClient,
         GeminiGenerationConfig,
     )
@@ -25,7 +24,6 @@ except ImportError:
     logging.warning("Gemini 客戶端不可用")
 
 try:
-    from services.music_service.suno_client import (
         MusicGenerationRequest,
         SunoClient,
     )
@@ -89,7 +87,7 @@ class AIResponse:
 class AIOrchestrator:
     """AI 服務編排器"""
 
-    def __init__(self, config_manager=None):
+def __init__(self, config_manager=None):
         self.config_manager = config_manager
         self.providers = {}
         self.provider_health = {}
@@ -98,14 +96,14 @@ class AIOrchestrator:
 
         # 初始化成本追蹤
         try:
-            from monitoring.cost_tracker import get_cost_tracker
+from monitoring.cost_tracker import get_cost_tracker
 
             self.cost_tracker = get_cost_tracker(config_manager)
         except ImportError:
             self.cost_tracker = None
             logger.warning("成本追蹤器不可用")
 
-    def _initialize_providers(self):
+def _initialize_providers(self):
         """初始化 AI 服務提供商"""
         # 初始化提供商健康狀態
         for provider in AIProvider:
@@ -120,7 +118,7 @@ class AIOrchestrator:
 
         logger.info("AI 服務編排器初始化完成")
 
-    async def process_request(self, request: AIRequest) -> AIResponse:
+async def process_request(self, request: AIRequest) -> AIResponse:
         """處理 AI 請求"""
         start_time = time.time()
 
@@ -170,7 +168,7 @@ class AIOrchestrator:
                 error_message=str(e),
             )
 
-    async def _select_provider(
+async def _select_provider(
         self, request: AIRequest
     ) -> Optional[AIProvider]:
         """選擇最佳 AI 服務提供商"""
@@ -213,7 +211,7 @@ class AIOrchestrator:
 
         return best_provider
 
-    def _get_available_providers(
+def _get_available_providers(
         self, task_type: AITaskType
     ) -> List[AIProvider]:
         """獲取支援指定任務類型的提供商"""
@@ -231,7 +229,7 @@ class AIOrchestrator:
 
         return providers_map.get(task_type, [])
 
-    async def _execute_request(
+async def _execute_request(
         self, request: AIRequest, provider: AIProvider
     ) -> AIResponse:
         """執行 AI 請求"""
@@ -256,7 +254,7 @@ class AIOrchestrator:
         else:
             raise ValueError(f"不支援的任務類型: {request.task_type}")
 
-    async def _execute_text_generation(
+async def _execute_text_generation(
         self, request: AIRequest, provider: AIProvider, start_time: float
     ) -> AIResponse:
         """執行文字生成"""
@@ -294,7 +292,7 @@ class AIOrchestrator:
 
         raise ValueError(f"提供商 {provider.value} 不支援文字生成或不可用")
 
-    async def _execute_music_generation(
+async def _execute_music_generation(
         self, request: AIRequest, provider: AIProvider, start_time: float
     ) -> AIResponse:
         """執行音樂生成"""
@@ -334,13 +332,13 @@ class AIOrchestrator:
 
         raise ValueError(f"提供商 {provider.value} 不支援音樂生成或不可用")
 
-    async def _execute_content_analysis(
+async def _execute_content_analysis(
         self, request: AIRequest, provider: AIProvider, start_time: float
     ) -> AIResponse:
         """執行內容分析"""
         if provider == AIProvider.GEMINI and GEMINI_AVAILABLE:
             # 使用 Gemini 進行內容分析
-            analysis_prompt = f"""
+            analysis_prompt = """
 請分析以下內容並提供結構化分析：
 
 內容：{request.prompt}
@@ -366,8 +364,8 @@ class AIOrchestrator:
 
                 if result.success:
                     try:
-                        import json
-                        import re
+import json
+import re
 
                         json_match = re.search(
                             r"\{.*\}", result.text, re.DOTALL
@@ -395,12 +393,12 @@ class AIOrchestrator:
 
         raise ValueError(f"提供商 {provider.value} 不支援內容分析或不可用")
 
-    async def _execute_trend_analysis(
+async def _execute_trend_analysis(
         self, request: AIRequest, provider: AIProvider, start_time: float
     ) -> AIResponse:
         """執行趨勢分析"""
         if provider == AIProvider.GEMINI and GEMINI_AVAILABLE:
-            from services.ai_service.gemini_client import analyze_trends
+from services.ai_service.gemini_client import analyze_trends
 
             api_key = self._get_api_key("gemini")
             result = await analyze_trends(request.prompt, api_key=api_key)
@@ -418,7 +416,7 @@ class AIOrchestrator:
 
         raise ValueError(f"提供商 {provider.value} 不支援趨勢分析或不可用")
 
-    async def _try_fallback(
+async def _try_fallback(
         self, request: AIRequest, failed_provider: AIProvider
     ) -> Optional[AIResponse]:
         """嘗試故障轉移"""
@@ -459,7 +457,7 @@ class AIOrchestrator:
             logger.error(f"故障轉移失敗 ({fallback_provider.value}): {e}")
             return None
 
-    async def _update_provider_metrics(
+async def _update_provider_metrics(
         self, provider: AIProvider, success: bool, duration: float
     ):
         """更新提供商指標"""
@@ -489,9 +487,9 @@ class AIOrchestrator:
         elif success_rate >= 0.8:
             self.provider_health[provider] = True
 
-    def _get_api_key(self, provider: str) -> str:
+def _get_api_key(self, provider: str) -> str:
         """獲取 API 金鑰"""
-        import os
+import os
 
         key_map = {
             "gemini": "GEMINI_API_KEY",
@@ -507,7 +505,7 @@ class AIOrchestrator:
 
         return ""
 
-    async def get_provider_status(self) -> Dict[str, Any]:
+async def get_provider_status(self) -> Dict[str, Any]:
         """獲取所有提供商狀態"""
         status = {}
 
@@ -524,7 +522,7 @@ class AIOrchestrator:
 
         return status
 
-    async def reset_provider_health(self, provider: AIProvider):
+async def reset_provider_health(self, provider: AIProvider):
         """重置提供商健康狀態"""
         self.provider_health[provider] = True
         logger.info(f"提供商 {provider.value} 健康狀態已重置")

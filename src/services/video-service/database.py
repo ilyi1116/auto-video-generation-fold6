@@ -47,7 +47,7 @@ class DatabaseManager:
                 max_size=max_connections,
                 command_timeout=60,
                 server_settings={
-                    "jit": "off",  # Disable JIT for better compatibility
+                    "jit": "of",  # Disable JIT for better compatibility
                     "application_name": "video-service",
                 },
             )

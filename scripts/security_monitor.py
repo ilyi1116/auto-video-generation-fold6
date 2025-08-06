@@ -161,7 +161,7 @@ class SecurityMonitor:
                 if line.startswith("USER ROOT") or line.startswith("USER 0"):
                     self.add_issue(
                         "high",
-                        f"Docker 安全風險: 使用 root 用戶",
+                        "Docker 安全風險: 使用 root 用戶",
                         f"{dockerfile}:{i}",
                         "改用非特權用戶",
                     )
@@ -169,7 +169,7 @@ class SecurityMonitor:
                 if "ADD HTTP" in line or "ADD HTTPS" in line:
                     self.add_issue(
                         "medium",
-                        f"Docker 安全風險: 使用 ADD 下載遠程文件",
+                        "Docker 安全風險: 使用 ADD 下載遠程文件",
                         f"{dockerfile}:{i}",
                         "使用 RUN wget/curl 替代",
                     )
@@ -180,7 +180,7 @@ class SecurityMonitor:
                 ):
                     self.add_issue(
                         "low",
-                        f"Docker 優化建議: 缺少 --no-install-recommends",
+                        "Docker 優化建議: 缺少 --no-install-recommends",
                         f"{dockerfile}:{i}",
                         "添加 --no-install-recommends 標誌",
                     )
@@ -194,7 +194,7 @@ class SecurityMonitor:
         # 使用 bandit 檢查 Python 代碼
         try:
             result = subprocess.run(
-                ["bandit", "-r", ".", "-f", "json", "-q"],
+                ["bandit", "-r", ".", "-", "json", "-q"],
                 capture_output=True,
                 text=True,
                 timeout=120,

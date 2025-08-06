@@ -4,8 +4,6 @@
 系統已統一到 pyproject.toml，這些 requirements.txt 文件不再需要
 """
 
-import os
-import shutil
 from pathlib import Path
 from typing import List, Set
 
@@ -138,7 +136,7 @@ class RequirementsCleanup:
             else:
                 failed_count += 1
 
-        print(f"\n📊 清理完成:")
+        print("\n📊 清理完成:")
         print(f"   ✅ 成功移除: {removed_count} 個文件")
         if failed_count > 0:
             print(f"   ❌ 移除失败: {failed_count} 個文件")
@@ -146,8 +144,8 @@ class RequirementsCleanup:
         # 清理空目錄
         self.cleanup_empty_directories()
 
-        print(f"\n🎉 Requirements 文件清理完成！")
-        print(f"系統現在統一使用 pyproject.toml 管理依賴。")
+        print("\n🎉 Requirements 文件清理完成！")
+        print("系統現在統一使用 pyproject.toml 管理依賴。")
 
     def cleanup_empty_directories(self):
         """清理空目錄"""
@@ -187,8 +185,8 @@ def main():
     cleanup.execute_cleanup(categories, confirm=confirm)
 
     if not confirm:
-        print(f"\n💡 如果確認要執行清理，請運行:")
-        print(f"   python scripts/cleanup-requirements.py --confirm")
+        print("\n💡 如果確認要執行清理，請運行:")
+        print("   python scripts/cleanup-requirements.py --confirm")
 
 
 if __name__ == "__main__":

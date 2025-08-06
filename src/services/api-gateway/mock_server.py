@@ -4,7 +4,6 @@
 Mock backend service for frontend testing
 """
 
-import json
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
@@ -261,7 +260,7 @@ async def generate_script(request: Request):
     topic = body.get("topic", "未指定主題")
 
     # 模擬AI生成的腳本
-    mock_script = f"""
+    mock_script = """
 歡迎來到{topic}的精彩世界！
 
 在今天的內容中，我們將探索{topic}的各個面向，

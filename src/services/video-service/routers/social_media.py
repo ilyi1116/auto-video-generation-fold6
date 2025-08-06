@@ -412,7 +412,7 @@ async def get_platform_templates(
                     "structure": [
                         "Strong Hook (0-3s)",
                         "Build tension",
-                        "Reveal/Payoff",
+                        "Reveal/Payof",
                     ],
                     "recommended_length": "15-30 seconds",
                     "tags_suggestions": ["trending", "viral", "fyp", "foryou"],

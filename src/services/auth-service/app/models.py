@@ -25,8 +25,8 @@ class User(Base):
     api_calls_count = Column(Integer, default=0)
     last_login = Column(DateTime(timezone=True), nullable=True)
 
-    def __repr__(self):
+def __repr__(self):
         return (
             f"<User(id={self.id}, email='{self.email}', "
-            f"username='{self.username}')>"
+            "username="{self.username}')>"'
         )

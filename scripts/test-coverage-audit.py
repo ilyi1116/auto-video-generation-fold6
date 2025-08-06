@@ -249,14 +249,12 @@ class TestCoverageAuditor:
         """創建測試模板"""
         module_path = file_info["module_name"]
 
-        template = f'''#!/usr/bin/env python3
+        template = '''#!/usr/bin/env python3
 """
 {file_info["relative_path"]} 的測試文件
 自動生成的測試模板 - {datetime.now().strftime("%Y-%m-%d")}
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from {module_path} import *
 
 
@@ -275,7 +273,7 @@ class TestModule:
 
         # 為每個類生成測試
         for class_info in file_info["classes"]:
-            template += f'''
+            template += '''
 class Test{class_info["name"]}:
     """測試 {class_info["name"]} 類"""
 
@@ -288,7 +286,7 @@ class Test{class_info["name"]}:
             # 為每個方法生成測試
             for method in class_info["methods"]:
                 if not method["is_private"]:  # 只為公共方法生成測試
-                    template += f'''    def test_{method["name"]}(self):
+                    template += '''    def test_{method["name"]}(self):
         """測試 {method["name"]} 方法"""
         # TODO: 實現測試邏輯
         assert True
@@ -298,7 +296,7 @@ class Test{class_info["name"]}:
         # 為函數生成測試
         for func_info in file_info["functions"]:
             if not func_info["name"].startswith("_"):  # 只為公共函數生成測試
-                template += f'''def test_{func_info["name"]}():
+                template += '''def test_{func_info["name"]}():
     """測試 {func_info["name"]} 函數"""
     # TODO: 實現測試邏輯
     assert True

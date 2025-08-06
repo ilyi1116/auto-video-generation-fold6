@@ -306,7 +306,7 @@ class VideoComposer:
                 "libx264",
                 "-preset",
                 "fast",  # Fast preset for preview
-                "-crf",
+                "-cr",
                 "28",  # Lower quality for preview
                 "-c:a",
                 "aac",
@@ -349,10 +349,10 @@ class VideoComposer:
 
         # Quality settings
         quality_settings = {
-            "low": {"crf": "28", "preset": "fast"},
-            "medium": {"crf": "23", "preset": "medium"},
-            "high": {"crf": "18", "preset": "slow"},
-            "ultra": {"crf": "15", "preset": "veryslow"},
+            "low": {"cr": "28", "preset": "fast"},
+            "medium": {"cr": "23", "preset": "medium"},
+            "high": {"cr": "18", "preset": "slow"},
+            "ultra": {"cr": "15", "preset": "veryslow"},
         }
 
         settings = quality_settings.get(quality, quality_settings["high"])
@@ -388,8 +388,8 @@ class VideoComposer:
                 "libx264",
                 "-preset",
                 settings["preset"],
-                "-crf",
-                settings["crf"],
+                "-cr",
+                settings["cr"],
                 "-c:a",
                 "aac",
                 "-b:a",
@@ -499,7 +499,7 @@ class VideoComposer:
             "00:00:03",  # 3 seconds into video
             "-vframes",
             "1",
-            "-vf",
+            "-v",
             "scale=1280:720",
             thumbnail_path,
         ]

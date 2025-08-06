@@ -65,7 +65,7 @@ async def upload_file(
         if file.size > settings.max_file_size_mb * 1024 * 1024:
             raise HTTPException(
                 status_code=413,
-                detail=f"File size exceeds maximum allowed size of "
+                detail="File size exceeds maximum allowed size of "
                 f"{settings.max_file_size_mb}MB",
             )
 
@@ -281,7 +281,7 @@ async def upload_from_url(
             if len(file_content) > settings.max_file_size_mb * 1024 * 1024:
                 raise HTTPException(
                     status_code=413,
-                    detail=f"File size exceeds maximum allowed size",
+                    detail="File size exceeds maximum allowed size",
                 )
 
             # Create temporary file-like object

@@ -9,7 +9,6 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from app.entrepreneur_scheduler import (
     EntrepreneurScheduler,
     ScheduledTask,
     SchedulerConfig,
@@ -227,7 +226,7 @@ async def main():
 
     except Exception as e:
         print(f"\n❌ 測試失敗: {e}")
-        import traceback
+import traceback
 
         traceback.print_exc()
         return False

@@ -10,7 +10,6 @@ for the centralized logging system.
 import asyncio
 import json
 import statistics
-import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -163,7 +162,7 @@ class LogAnalyticsDashboard:
                                     response_times.append(
                                         float(fields["duration_ms"])
                                     )
-                                except:
+                                except Exception:
                                     pass
 
                             # Collect errors
@@ -269,7 +268,7 @@ class LogAnalyticsDashboard:
             return await asyncio.get_event_loop().run_in_executor(
                 None, lambda: self.redis_client.keys("logs:*")
             )
-        except:
+        except Exception:
             return []
 
     async def _get_stream_entries(
@@ -310,12 +309,12 @@ class LogAnalyticsDashboard:
                     if batch_time >= cutoff_time:
                         recent_batches.append(batch)
 
-                except:
+                except Exception:
                     continue
 
             return recent_batches
 
-        except:
+        except Exception:
             return []
 
     def print_dashboard(
@@ -358,7 +357,7 @@ class LogAnalyticsDashboard:
             )
 
         # Log levels
-        print(f"\n📊 LOG LEVELS")
+        print("\n📊 LOG LEVELS")
         level_icons = {
             "debug": "🔵",
             "info": "🟢",
@@ -380,7 +379,7 @@ class LogAnalyticsDashboard:
 
         # Top errors
         if analytics.top_errors:
-            print(f"\n🚨 TOP ERRORS")
+            print("\n🚨 TOP ERRORS")
             for i, error in enumerate(analytics.top_errors[:5], 1):
                 print(
                     f"  {i}. {error['error']} ({error['count']} occurrences)"
@@ -393,7 +392,7 @@ class LogAnalyticsDashboard:
                 trend = (
                     "📈" if response_times[-1] > response_times[-2] else "📉"
                 )
-                print(f"\n⚡ PERFORMANCE TRENDS")
+                print("\n⚡ PERFORMANCE TRENDS")
                 print(
                     f"  {trend} Response Time Trend: {response_times[-1]:.1f}ms"
                 )

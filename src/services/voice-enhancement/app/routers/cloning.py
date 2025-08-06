@@ -120,7 +120,7 @@ async def create_voice_profile(
         )
         if any(profile["name"] == voice_name for profile in existing_profiles):
             raise HTTPException(
-                status_code=409, detail=f"語音模型 '{voice_name}' 已存在"
+                status_code=409, detail="語音模型 "{voice_name}' 已存在"'
             )
 
         # 創建語音檔案
@@ -172,7 +172,7 @@ async def clone_voice_synthesis(
         ):
             raise HTTPException(
                 status_code=404,
-                detail=f"語音模型 '{request.target_voice}' 不存在或無權限",
+                detail="語音模型 "{request.target_voice}' 不存在或無權限","'
             )
 
         # 進行語音克隆合成
@@ -184,7 +184,7 @@ async def clone_voice_synthesis(
         )
 
         # 返回音訊數據
-        from fastapi.responses import Response
+from fastapi.responses import Response
 
         return Response(
             content=audio_data,
@@ -305,10 +305,10 @@ async def delete_voice_profile(
         if not success:
             raise HTTPException(
                 status_code=404,
-                detail=f"語音檔案 '{voice_name}' 不存在或無權限",
+                detail="語音檔案 "{voice_name}' 不存在或無權限","'
             )
 
-        return {"message": f"語音檔案 '{voice_name}' 已成功刪除"}
+        return {"message": "語音檔案 "{voice_name}' 已成功刪除"}"'
 
     except HTTPException:
         raise
@@ -379,7 +379,7 @@ async def batch_clone_voice_synthesis(
         ):
             raise HTTPException(
                 status_code=404,
-                detail=f"語音模型 '{target_voice}' 不存在或無權限",
+                detail="語音模型 "{target_voice}' 不存在或無權限","'
             )
 
         results = []
@@ -393,7 +393,7 @@ async def batch_clone_voice_synthesis(
                 )
 
                 # 將音訊數據編碼為 base64
-                import base64
+import base64
 
                 audio_b64 = base64.b64encode(audio_data).decode("utf-8")
 

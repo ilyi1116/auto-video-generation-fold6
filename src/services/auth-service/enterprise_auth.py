@@ -242,7 +242,7 @@ class SAMLAuthenticator:
         issue_instant = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
         # 構建 SAML AuthnRequest
-        authn_request = f"""
+        authn_request = """
         <samlp:AuthnRequest
             xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
             xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"

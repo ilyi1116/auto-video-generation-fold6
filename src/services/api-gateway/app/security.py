@@ -29,7 +29,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["X-Frame-Options"] = "DENY"
 
             # X-Content-Type-Options
-            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Content-Type-Options"] = "nosnif"
 
             # X-XSS-Protection
             response.headers["X-XSS-Protection"] = "1; mode=block"

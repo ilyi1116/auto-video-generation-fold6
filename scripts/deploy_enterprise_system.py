@@ -848,22 +848,22 @@ async def main():
 
     if results.get("deployment_success", False):
         print("\n🎉 恭喜！企業級自動影片生成系統已成功部署！")
-        print(f"\n系統功能:")
-        print(f"• 🎥 AI 驅動的影片自動生成")
-        print(f"• 🔐 企業級認證與授權（LDAP/SAML/OAuth2）")
-        print(f"• 🚀 分散式快取與高效能處理")
-        print(f"• 💾 自動備份與災難恢復")
-        print(f"• ⚖️ GDPR/CCPA 合規性框架")
-        print(f"• 📊 全方位監控與告警")
-        print(f"• 🔄 高可用性與自動擴展")
-        print(f"• 🔒 多層安全防護")
+        print("\n系統功能:")
+        print("• 🎥 AI 驅動的影片自動生成")
+        print("• 🔐 企業級認證與授權（LDAP/SAML/OAuth2）")
+        print("• 🚀 分散式快取與高效能處理")
+        print("• 💾 自動備份與災難恢復")
+        print("• ⚖️ GDPR/CCPA 合規性框架")
+        print("• 📊 全方位監控與告警")
+        print("• 🔄 高可用性與自動擴展")
+        print("• 🔒 多層安全防護")
 
         print("\n後續步驟:")
         for i, step in enumerate(results.get("next_steps", []), 1):
             print(f"{i}. {step}")
 
         print(
-            f"\n系統已達到世界級企業標準，可與 Netflix、Spotify、Uber 等頂級技術公司媲美！"
+            "\n系統已達到世界級企業標準，可與 Netflix、Spotify、Uber 等頂級技術公司媲美！"
         )
         exit(0)
     else:

@@ -6,8 +6,6 @@
 
 import json
 import os
-import re
-import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
@@ -134,71 +132,68 @@ class TestCoverageEnhancer:
         self, component: str, service_name: str
     ) -> str:
         """生成路由器測試模板"""
-        return f'''"""
+        return '''"""
 測試 {component} 路由器
 """
 
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
 
 client = TestClient(app)
 
 
 class Test{component.replace("_", "").title()}Router:
     """測試 {component} 路由器"""
-    
+
     def test_{component}_endpoint_exists(self):
         """測試端點存在性"""
         # TODO: 替換為實際的端點路径
         response = client.get("/api/v1/{component}")
         assert response.status_code in [200, 401, 422]  # 端點應該存在
-        
+
     def test_{component}_get_success(self):
         """測試 GET 請求成功情況"""
         # TODO: 添加認證頭部（如需要）
         # headers = {{"Authorization": "Bearer <test_token>"}}
-        
+
         response = client.get("/api/v1/{component}")
         # TODO: 更新預期狀態碼和響應
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, (dict, list))
-        
+
     def test_{component}_post_success(self):
         """測試 POST 請求成功情況"""
         test_data = {{
             # TODO: 添加測試數據
             "test_field": "test_value"
         }}
-        
+
         response = client.post("/api/v1/{component}", json=test_data)
         # TODO: 更新預期狀態碼
         assert response.status_code in [200, 201]
-        
+
     def test_{component}_validation_error(self):
         """測試驗證錯誤"""
         invalid_data = {{
             # TODO: 添加無效數據
             "invalid_field": None
         }}
-        
+
         response = client.post("/api/v1/{component}", json=invalid_data)
         assert response.status_code == 422
-        
+
     def test_{component}_unauthorized_access(self):
         """測試未授權訪問"""
         # TODO: 如果端點需要認證，測試未授權訪問
         response = client.get("/api/v1/{component}")
         # TODO: 更新預期狀態碼（如果需要認證應該是 401）
         # assert response.status_code == 401
-        
+
     @pytest.mark.asyncio
     async def test_{component}_async_operation(self):
         """測試異步操作"""
         # TODO: 如果有異步操作需要測試
         pass
-        
+
     def test_{component}_error_handling(self):
         """測試錯誤處理"""
         # TODO: 測試各種錯誤情況
@@ -214,73 +209,71 @@ class Test{component.replace("_", "").title()}Router:
         self, component: str, service_name: str
     ) -> str:
         """生成服務層測試模板"""
-        return f'''"""
+        return '''"""
 測試 {component} 服務
 """
 
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
 from app.services.{component} import *  # TODO: 導入具體的類和函數
 
 
 class Test{component.replace("_", "").title()}Service:
     """測試 {component} 服務"""
-    
+
     def setup_method(self):
         """測試前準備"""
         # TODO: 初始化測試數據和依賴
         self.test_data = {{
             "test_field": "test_value"
         }}
-        
+
     @pytest.fixture
     def service_instance(self):
         """服務實例 fixture"""
         # TODO: 創建服務實例
         # return ServiceClass()
         pass
-        
+
     def test_service_initialization(self, service_instance):
         """測試服務初始化"""
         # TODO: 測試服務正確初始化
         assert service_instance is not None
-        
+
     def test_service_method_success(self, service_instance):
         """測試服務方法成功情況"""
         # TODO: 測試主要方法的成功執行
         result = None  # service_instance.main_method(self.test_data)
         # TODO: 添加斷言
         # assert result is not None
-        
+
     def test_service_method_with_invalid_input(self, service_instance):
         """測試無效輸入的處理"""
         with pytest.raises(ValueError):
             # TODO: 測試無效輸入的處理
             pass  # service_instance.main_method(invalid_data)
-            
+
     @pytest.mark.asyncio
     async def test_async_service_method(self, service_instance):
         """測試異步服務方法"""
         # TODO: 如果有異步方法需要測試
         pass
-        
+
     @patch('app.services.{component}.external_dependency')
     def test_service_with_mocked_dependency(self, mock_dependency, service_instance):
         """測試帶模擬依賴的服務方法"""
         # TODO: 配置模擬對象
         mock_dependency.return_value = "mocked_result"
-        
+
         # TODO: 測試使用模擬依賴的方法
         # result = service_instance.method_with_dependency()
-        
+
         # TODO: 驗證模擬對象被正確調用
         # mock_dependency.assert_called_once()
-        
+
     def test_service_error_handling(self, service_instance):
         """測試錯誤處理"""
         # TODO: 測試各種錯誤情況
         pass
-        
+
     def test_service_edge_cases(self, service_instance):
         """測試邊界情況"""
         # TODO: 測試邊界值和特殊情況
@@ -296,20 +289,16 @@ class Test{component.replace("_", "").title()}Service:
         self, component: str, service_name: str
     ) -> str:
         """生成模型測試模板"""
-        return f'''"""
+        return '''"""
 測試 {component} 模型
 """
 
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.models.{component} import *  # TODO: 導入具體的模型類
-from app.database import Base
 
 
 class Test{component.replace("_", "").title()}Model:
     """測試 {component} 模型"""
-    
+
     @pytest.fixture(scope="class")
     def db_engine(self):
         """數據庫引擎 fixture"""
@@ -317,7 +306,7 @@ class Test{component.replace("_", "").title()}Model:
         engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(engine)
         return engine
-        
+
     @pytest.fixture
     def db_session(self, db_engine):
         """數據庫會話 fixture"""
@@ -325,7 +314,7 @@ class Test{component.replace("_", "").title()}Model:
         session = Session()
         yield session
         session.close()
-        
+
     @pytest.fixture
     def sample_model_data(self):
         """示例模型數據"""
@@ -333,49 +322,49 @@ class Test{component.replace("_", "").title()}Model:
             # TODO: 添加模型字段數據
             "test_field": "test_value"
         }}
-        
+
     def test_model_creation(self, db_session, sample_model_data):
         """測試模型創建"""
         # TODO: 創建模型實例
         # model_instance = ModelClass(**sample_model_data)
         # db_session.add(model_instance)
         # db_session.commit()
-        
+
         # TODO: 驗證模型被正確創建
         # assert model_instance.id is not None
-        
+
     def test_model_fields_validation(self, sample_model_data):
         """測試模型字段驗證"""
         # TODO: 測試必填字段
         # with pytest.raises(ValueError):
         #     ModelClass(required_field=None)
-            
+
     def test_model_relationships(self, db_session):
         """測試模型關係"""
         # TODO: 如果模型有關係，測試關係的正確性
         pass
-        
+
     def test_model_methods(self, db_session, sample_model_data):
         """測試模型方法"""
         # TODO: 測試模型的自定義方法
         # model_instance = ModelClass(**sample_model_data)
         # result = model_instance.some_method()
         # assert result is not None
-        
+
     def test_model_str_representation(self, sample_model_data):
         """測試模型字符串表示"""
         # TODO: 測試 __str__ 或 __repr__ 方法
         # model_instance = ModelClass(**sample_model_data)
         # str_repr = str(model_instance)
         # assert "expected_content" in str_repr
-        
+
     def test_model_serialization(self, sample_model_data):
         """測試模型序列化"""
         # TODO: 如果模型有序列化方法，測試序列化
         # model_instance = ModelClass(**sample_model_data)
         # serialized = model_instance.to_dict()
         # assert isinstance(serialized, dict)
-        
+
     def test_model_query_methods(self, db_session):
         """測試模型查詢方法"""
         # TODO: 測試自定義查詢方法
@@ -391,69 +380,67 @@ class Test{component.replace("_", "").title()}Model:
         self, component: str, service_name: str
     ) -> str:
         """生成模組測試模板"""
-        return f'''"""
+        return '''"""
 測試 {component} 模組
 """
 
-import pytest
-from unittest.mock import Mock, patch
 from app.{component} import *  # TODO: 導入具體的函數和類
 
 
 class Test{component.replace("_", "").title()}Module:
     """測試 {component} 模組"""
-    
+
     def setup_method(self):
         """測試前準備"""
         # TODO: 初始化測試數據
         self.test_data = {{
             "test_field": "test_value"
         }}
-        
+
     def test_module_functions_exist(self):
         """測試模組函數存在性"""
         # TODO: 測試主要函數是否存在
         # assert callable(main_function)
-        
+
     def test_module_constants(self):
         """測試模組常量"""
         # TODO: 測試模組常量的值
         pass
-        
+
     def test_main_function_success(self):
         """測試主要函數成功情況"""
         # TODO: 測試主要函數的正常執行
         # result = main_function(self.test_data)
         # assert result is not None
-        
+
     def test_main_function_with_invalid_input(self):
         """測試無效輸入的處理"""
         # TODO: 測試函數對無效輸入的處理
         with pytest.raises((ValueError, TypeError)):
             pass  # main_function(invalid_input)
-            
+
     @patch('app.{component}.external_dependency')
     def test_function_with_mocked_dependency(self, mock_dependency):
         """測試帶模擬依賴的函數"""
         # TODO: 配置模擬對象
         mock_dependency.return_value = "mocked_result"
-        
+
         # TODO: 測試使用模擬依賴的函數
         # result = function_with_dependency()
-        
+
         # TODO: 驗證模擬對象被正確調用
         # mock_dependency.assert_called_once()
-        
+
     def test_helper_functions(self):
         """測試輔助函數"""
         # TODO: 測試模組中的輔助函數
         pass
-        
+
     def test_error_handling(self):
         """測試錯誤處理"""
         # TODO: 測試各種錯誤情況
         pass
-        
+
     def test_edge_cases(self):
         """測試邊界情況"""
         # TODO: 測試邊界值和特殊情況
@@ -467,17 +454,11 @@ class Test{component.replace("_", "").title()}Module:
 
     def generate_conftest_template(self, service_name: str) -> str:
         """生成 conftest.py 模板"""
-        return f'''"""
+        return '''"""
 {service_name} 服務測試配置
 提供通用的測試 fixtures 和配置
 """
 
-import pytest
-import asyncio
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from unittest.mock import Mock
 
 # TODO: 導入應用相關模組
 # from app.main import app
@@ -608,7 +589,7 @@ def setup_test_environment():
         )
 
         print("=" * 60)
-        print(f"📈 總體統計:")
+        print("📈 總體統計:")
         print(f"   服務總數: {total_services}")
         print(f"   組件總數: {total_components}")
         print(f"   缺失測試: {total_missing_tests}")
@@ -779,7 +760,7 @@ echo ""
 if $PYTEST_CMD $TEST_PATH; then
     echo ""
     echo -e "${GREEN}✅ 測試完成！${NC}"
-    
+
     if [[ "$COVERAGE" == true ]]; then
         echo -e "${BLUE}📊 覆蓋率報告已生成: htmlcov/index.html${NC}"
     fi
@@ -883,10 +864,10 @@ def main():
     enhancer.generate_coverage_report()
 
     print("\\n" + "=" * 60)
-    print(f"🎉 測試覆蓋率提升完成！")
+    print("🎉 測試覆蓋率提升完成！")
     print(f"   生成測試文件: {generated_count} 個")
-    print(f"   運行測試: ./scripts/run-tests.sh")
-    print(f"   覆蓋率報告: ./scripts/run-tests.sh --coverage")
+    print("   運行測試: ./scripts/run-tests.sh")
+    print("   覆蓋率報告: ./scripts/run-tests.sh --coverage")
 
 
 if __name__ == "__main__":

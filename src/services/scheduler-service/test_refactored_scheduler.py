@@ -9,7 +9,6 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from app.entrepreneur_scheduler_refactored import (
     EntrepreneurScheduler,
     MockVideoServiceClient,
     ScheduledTask,
@@ -87,7 +86,7 @@ async def test_enhanced_features():
     )
 
     # 模擬任務完成
-    from app.entrepreneur_scheduler_refactored import TaskMetrics
+from app.entrepreneur_scheduler_refactored import TaskMetrics
 
     metrics = TaskMetrics(
         videos_generated=2,
@@ -215,7 +214,7 @@ async def test_scheduler_lifecycle():
 
     # 測試暫停
     await scheduler.pause()
-    from app.entrepreneur_scheduler_refactored import SchedulerState
+from app.entrepreneur_scheduler_refactored import SchedulerState
 
     assert scheduler.state == SchedulerState.PAUSED
     print("✅ 排程器暫停測試通過")
@@ -357,7 +356,7 @@ async def main():
 
     except Exception as e:
         print(f"\n❌ 重構驗證失敗: {e}")
-        import traceback
+import traceback
 
         traceback.print_exc()
         return False

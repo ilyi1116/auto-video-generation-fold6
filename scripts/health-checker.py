@@ -18,8 +18,6 @@ import asyncio
 import json
 import logging
 import os
-import socket
-import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
@@ -162,7 +160,7 @@ class ServiceHealthChecker:
                 # 尝试解析响应内容
                 try:
                     response_data = response.json()
-                except:
+                except Exception:
                     response_data = {"raw_response": response.text[:200]}
 
                 return HealthCheckResult(
@@ -670,7 +668,7 @@ async def main():
 
     # 输出总结到控制台
     summary = report["summary"]
-    print(f"\n📊 健康检查完成:")
+    print("\n📊 健康检查完成:")
     print(
         f"   健康服务: {summary['healthy_services']}/{summary['total_services']} ({summary['health_percentage']}%)"
     )

@@ -293,7 +293,7 @@ class VideoProject(BaseModel):
                     params.extend([limit, offset])
                     param_nums = "$2, $3"
 
-                query = f"""
+                query = """
                 SELECT * FROM video_projects
                 {where_clause}
                 ORDER BY created_at DESC

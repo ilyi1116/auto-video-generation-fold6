@@ -515,7 +515,7 @@ class AuditLogger:
         try:
             alert_config = self.config.get("alerts", {})
             if alert_config.get("enabled", False):
-                alert_message = f"""
+                alert_message = """
                 高風險合規事件警報
 
                 事件ID: {event.event_id}

@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import structlog
-from fastapi import (
     APIRouter,
     Depends,
     File,
@@ -159,7 +158,7 @@ async def upload_audio(
 async def get_user_files(
     request: Request, current_user: dict = Depends(get_current_user)
 ):
-    """Get user's uploaded files"""
+    """Get user's uploaded files"""'
     result = await proxy.forward_request(
         service="data",
         path="/api/v1/files",
@@ -220,7 +219,7 @@ async def start_processing(
 async def get_processing_jobs(
     request: Request, current_user: dict = Depends(get_current_user)
 ):
-    """Get user's processing jobs"""
+    """Get user's processing jobs"""'
     result = await proxy.forward_request(
         service="data",
         path="/api/v1/jobs",
@@ -340,7 +339,7 @@ async def get_synthesis_audio(
 async def get_synthesis_jobs(
     request: Request, current_user: dict = Depends(get_current_user)
 ):
-    """Get user's synthesis jobs"""
+    """Get user's synthesis jobs"""'
     result = await proxy.forward_request(
         service="inference",
         path="/api/v1/jobs",
@@ -498,15 +497,15 @@ async def get_metrics(request: Request):
 
 def get_uptime() -> str:
     """Get system uptime"""
-    import time
+import time
 
-    import psutil
+import psutil
 
     try:
         boot_time = psutil.boot_time()
         uptime_seconds = time.time() - boot_time
         return format_uptime(uptime_seconds)
-    except:
+    except Exception:
         return "unknown"
 
 
@@ -549,7 +548,7 @@ async def get_services_health() -> dict:
 
 def get_system_resources() -> dict:
     """Get system resource usage"""
-    import psutil
+import psutil
 
     try:
         return {
@@ -557,7 +556,7 @@ def get_system_resources() -> dict:
             "memory_percent": psutil.virtual_memory().percent,
             "disk_percent": psutil.disk_usage("/").percent,
         }
-    except:
+    except Exception:
         return {"cpu_percent": 0, "memory_percent": 0, "disk_percent": 0}
 
 

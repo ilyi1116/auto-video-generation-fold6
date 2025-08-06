@@ -20,7 +20,6 @@ import hashlib
 import json
 import logging
 import pickle
-import platform
 import sqlite3
 import statistics
 import threading
@@ -32,8 +31,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import aiohttp
-import lru
 import psutil
 import redis
 import yaml
@@ -456,7 +453,7 @@ class IntelligentCache:
                         is_compressed = True
                     else:
                         is_compressed = False
-                except:
+                except Exception:
                     is_compressed = False
             else:
                 is_compressed = False
@@ -536,11 +533,11 @@ class IntelligentCache:
                     # Try to decompress first
                     decompressed = gzip.decompress(data)
                     value = pickle.loads(decompressed)
-                except:
+                except Exception:
                     # Not compressed or different format
                     try:
                         value = pickle.loads(data)
-                    except:
+                    except Exception:
                         # JSON fallback
                         value = json.loads(data.decode())
 
@@ -574,7 +571,7 @@ class IntelligentCache:
                         data = compressed
                     else:
                         data = serialized
-                except:
+                except Exception:
                     data = serialized
             else:
                 data = serialized
@@ -627,8 +624,8 @@ class IntelligentCache:
 
                 cursor.execute(
                     """
-                    SELECT file_path, compressed, ttl, created_at 
-                    FROM cache_entries 
+                    SELECT file_path, compressed, ttl, created_at
+                    FROM cache_entries
                     WHERE key = ?
                 """,
                     (key,),
@@ -671,8 +668,8 @@ class IntelligentCache:
                 # Update access time
                 cursor.execute(
                     """
-                    UPDATE cache_entries 
-                    SET last_accessed = ?, access_count = access_count + 1 
+                    UPDATE cache_entries
+                    SET last_accessed = ?, access_count = access_count + 1
                     WHERE key = ?
                 """,
                     (datetime.now().isoformat(), key),
@@ -720,7 +717,7 @@ class IntelligentCache:
                     if len(compressed) < entry_size * 0.8:
                         serialized = compressed
                         is_compressed = True
-                except:
+                except Exception:
                     pass
 
             def write_to_disk():
@@ -735,7 +732,7 @@ class IntelligentCache:
 
                 cursor.execute(
                     """
-                    INSERT OR REPLACE INTO cache_entries 
+                    INSERT OR REPLACE INTO cache_entries
                     (key, file_path, size, created_at, last_accessed, access_count, ttl, tags, compressed)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -825,7 +822,7 @@ class IntelligentCache:
             else:  # Large or long-lived
                 return CacheLevel.L3_DISK
 
-        except:
+        except Exception:
             return CacheLevel.L1_MEMORY
 
     def _record_hit(self, level: CacheLevel, access_time: float):
@@ -979,8 +976,8 @@ class IntelligentCache:
                 now = datetime.now()
                 cursor.execute(
                     """
-                    SELECT key, file_path, ttl, created_at 
-                    FROM cache_entries 
+                    SELECT key, file_path, ttl, created_at
+                    FROM cache_entries
                     WHERE ttl IS NOT NULL
                 """
                 )
@@ -1104,7 +1101,7 @@ class IntelligentCache:
                         "entry_count": count or 0,
                         "total_size_mb": (total_size or 0) / (1024 * 1024),
                     }
-                except:
+                except Exception:
                     return {"entry_count": 0, "total_size_mb": 0}
 
             disk_stats = await asyncio.get_event_loop().run_in_executor(

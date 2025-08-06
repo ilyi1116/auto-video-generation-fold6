@@ -53,7 +53,7 @@ class Settings(BaseSettings):
         "image/jpeg",
         "image/png",
         "image/webp",
-        "image/gif",
+        "image/gi",
     ]
     allowed_audio_types: List[str] = [
         "audio/mpeg",
@@ -68,7 +68,7 @@ class Settings(BaseSettings):
         "video/webm",
     ]
     allowed_document_types: List[str] = [
-        "application/pdf",
+        "application/pd",
         "text/plain",
         "application/json",
     ]

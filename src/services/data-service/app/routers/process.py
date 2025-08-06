@@ -3,7 +3,6 @@ from app.audio_validator import audio_validator
 from app.auth import get_current_user
 from app.celery_tasks import start_preprocessing_task
 from app.database import database, processing_jobs, voice_files
-from app.schemas import (
     JobStatus,
     JobType,
     ProcessingJobCreate,
@@ -40,7 +39,7 @@ async def start_processing(
         raise HTTPException(
             status_code=400,
             detail=(
-                f"File is not ready for processing. "
+                "File is not ready for processing. "
                 f"Current status: {file_record.status}"
             ),
         )
@@ -162,7 +161,7 @@ async def list_user_jobs(
     job_type: JobType = None,
     status: JobStatus = None,
 ):
-    """List user's processing jobs"""
+    """List user's processing jobs"""'
 
     user_id = await get_current_user(credentials.credentials)
 
@@ -218,7 +217,7 @@ async def cancel_job(
 
     # Cancel Celery task if it exists
     if job.celery_task_id:
-        from app.celery_app import app as celery_app
+from app.celery_app import app as celery_app
 
         celery_app.control.revoke(job.celery_task_id, terminate=True)
 

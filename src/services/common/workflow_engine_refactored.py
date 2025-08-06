@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-from base_service import (
     BaseService,
     ServiceError,
     TraceContext,
@@ -53,12 +52,12 @@ class StepResult:
     metrics: Dict[str, float] = field(default_factory=dict)
 
     @property
-    def duration(self) -> Optional[float]:
+def duration(self) -> Optional[float]:
         if self.end_time and self.start_time:
             return self.end_time - self.start_time
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+def to_dict(self) -> Dict[str, Any]:
         return {
             "step_name": self.step_name,
             "state": self.state.value,
@@ -83,20 +82,20 @@ class WorkflowContext:
     trace_context: Optional[TraceContext] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def get_step_result(self, step_name: str) -> Optional[StepResult]:
+def get_step_result(self, step_name: str) -> Optional[StepResult]:
         """獲取步驟結果"""
         return self.step_results.get(step_name)
 
-    def get_step_data(self, step_name: str) -> Dict[str, Any]:
+def get_step_data(self, step_name: str) -> Dict[str, Any]:
         """獲取步驟數據"""
         result = self.get_step_result(step_name)
         return result.data if result else {}
 
-    def set_shared_data(self, key: str, value: Any):
+def set_shared_data(self, key: str, value: Any):
         """設定共享數據"""
         self.shared_data[key] = value
 
-    def get_shared_data(self, key: str, default: Any = None) -> Any:
+def get_shared_data(self, key: str, default: Any = None) -> Any:
         """獲取共享數據"""
         return self.shared_data.get(key, default)
 
@@ -104,7 +103,7 @@ class WorkflowContext:
 class WorkflowStep(ABC):
     """工作流程步驟抽象基類 - 責任鏈模式"""
 
-    def __init__(
+def __init__(
         self,
         step_name: str,
         next_step: Optional["WorkflowStep"] = None,
@@ -117,11 +116,11 @@ class WorkflowStep(ABC):
         self.timeout = timeout
         self._observers: List[Callable] = []
 
-    def add_observer(self, observer: Callable[[StepResult], None]):
+def add_observer(self, observer: Callable[[StepResult], None]):
         """添加觀察者"""
         self._observers.append(observer)
 
-    def _notify_observers(self, result: StepResult):
+def _notify_observers(self, result: StepResult):
         """通知觀察者"""
         for observer in self._observers:
             try:
@@ -130,7 +129,7 @@ class WorkflowStep(ABC):
                 # 觀察者錯誤不應影響主流程
                 pass
 
-    def _check_prerequisites(self, context: WorkflowContext) -> bool:
+def _check_prerequisites(self, context: WorkflowContext) -> bool:
         """檢查前置條件"""
         for required_step in self.required_steps:
             result = context.get_step_result(required_step)
@@ -139,10 +138,10 @@ class WorkflowStep(ABC):
         return True
 
     @abstractmethod
-    async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
+async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
         """執行步驟邏輯（子類實作）"""
 
-    async def execute(self, context: WorkflowContext) -> StepResult:
+async def execute(self, context: WorkflowContext) -> StepResult:
         """執行步驟"""
         result = StepResult(
             step_name=self.step_name,
@@ -197,7 +196,7 @@ class WorkflowStep(ABC):
 
         return result
 
-    async def process(self, context: WorkflowContext) -> WorkflowContext:
+async def process(self, context: WorkflowContext) -> WorkflowContext:
         """處理當前步驟並繼續到下一步"""
         # 執行當前步驟
         result = await self.execute(context)
@@ -218,7 +217,7 @@ class WorkflowStep(ABC):
 class WorkflowStepError(ServiceError):
     """工作流程步驟錯誤"""
 
-    def __init__(self, message: str, step_name: str = None):
+def __init__(self, message: str, step_name: str = None):
         super().__init__(
             message, "WORKFLOW_STEP_ERROR", {"step_name": step_name}
         )
@@ -227,7 +226,7 @@ class WorkflowStepError(ServiceError):
 class WorkflowEngine(BaseService):
     """重構後的工作流程引擎"""
 
-    def __init__(self, config: Dict[str, Any] = None):
+def __init__(self, config: Dict[str, Any] = None):
         super().__init__("workflow_engine", "2.0.0", config)
 
         # 工作流程註冊表
@@ -246,18 +245,18 @@ class WorkflowEngine(BaseService):
             "active_workflows": 0,
         }
 
-    async def _initialize(self):
+async def _initialize(self):
         """初始化工作流程引擎"""
         self.add_health_check(
             "workflow_capacity", self._check_workflow_capacity
         )
         self.add_health_check("memory_usage", self._check_memory_usage)
 
-    async def _startup(self):
+async def _startup(self):
         """啟動工作流程引擎"""
         self.logger.info("Workflow engine started")
 
-    async def _shutdown(self):
+async def _shutdown(self):
         """關閉工作流程引擎"""
         # 取消所有活動工作流程
         for workflow_id in list(self._active_workflows.keys()):
@@ -265,33 +264,33 @@ class WorkflowEngine(BaseService):
 
         self.logger.info("Workflow engine shutdown")
 
-    def _check_workflow_capacity(self) -> bool:
+def _check_workflow_capacity(self) -> bool:
         """檢查工作流程容量"""
         max_workflows = self.config.get("max_concurrent_workflows", 100)
         return len(self._active_workflows) < max_workflows
 
-    def _check_memory_usage(self) -> bool:
+def _check_memory_usage(self) -> bool:
         """檢查記憶體使用量"""
         # 簡化的記憶體檢查
         return len(self._active_workflows) < 1000
 
-    def register_workflow_template(self, template: "WorkflowTemplate"):
+def register_workflow_template(self, template: "WorkflowTemplate"):
         """註冊工作流程範本"""
         self._workflow_templates[template.name] = template
         self.logger.info(f"Registered workflow template: {template.name}")
 
-    def add_workflow_observer(
+def add_workflow_observer(
         self, observer: Callable[["WorkflowExecution"], None]
     ):
         """添加工作流程觀察者"""
         self._workflow_observers.append(observer)
 
-    def add_step_observer(self, observer: Callable[[StepResult], None]):
+def add_step_observer(self, observer: Callable[[StepResult], None]):
         """添加步驟觀察者"""
         self._step_observers.append(observer)
 
     @handle_service_errors
-    async def start_workflow(
+async def start_workflow(
         self,
         template_name: str,
         user_id: str,
@@ -354,7 +353,7 @@ class WorkflowEngine(BaseService):
 
         return workflow_id
 
-    async def _execute_workflow(self, execution: "WorkflowExecution"):
+async def _execute_workflow(self, execution: "WorkflowExecution"):
         """執行工作流程"""
         try:
             async with self.trace_operation(
@@ -419,7 +418,7 @@ class WorkflowEngine(BaseService):
                 self._active_workflows
             )
 
-    async def get_workflow_status(
+async def get_workflow_status(
         self, workflow_id: str
     ) -> Optional[Dict[str, Any]]:
         """獲取工作流程狀態"""
@@ -429,7 +428,7 @@ class WorkflowEngine(BaseService):
 
         return execution.to_dict()
 
-    async def cancel_workflow(self, workflow_id: str) -> bool:
+async def cancel_workflow(self, workflow_id: str) -> bool:
         """取消工作流程"""
         execution = self._active_workflows.get(workflow_id)
         if not execution:
@@ -443,7 +442,7 @@ class WorkflowEngine(BaseService):
         )
         return True
 
-    async def get_engine_stats(self) -> Dict[str, Any]:
+async def get_engine_stats(self) -> Dict[str, Any]:
         """獲取引擎統計信息"""
         return {
             "stats": self._execution_stats.copy(),
@@ -463,7 +462,7 @@ class WorkflowTemplate:
     max_retries: int = 3
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def get_step_chain(self) -> List[str]:
+def get_step_chain(self) -> List[str]:
         """獲取步驟鏈"""
         steps = []
         current_step = self.first_step
@@ -476,7 +475,7 @@ class WorkflowTemplate:
 class WorkflowExecution:
     """工作流程執行實例"""
 
-    def __init__(
+def __init__(
         self,
         workflow_id: str,
         template: WorkflowTemplate,
@@ -511,14 +510,14 @@ class WorkflowExecution:
         # 當前執行任務
         self._execution_task: Optional[asyncio.Task] = None
 
-    def add_step_observer(self, observer: Callable[[StepResult], None]):
+def add_step_observer(self, observer: Callable[[StepResult], None]):
         """為所有步驟添加觀察者"""
         current_step = self.template.first_step
         while current_step:
             current_step.add_observer(observer)
             current_step = current_step.next_step
 
-    async def execute(self):
+async def execute(self):
         """執行工作流程"""
         if self.state != WorkflowState.PENDING:
             return
@@ -556,7 +555,7 @@ class WorkflowExecution:
             self.error = str(e)
             self.end_time = time.time()
 
-    def cancel(self):
+def cancel(self):
         """取消工作流程"""
         self._cancelled = True
         if self._execution_task and not self._execution_task.done():
@@ -565,13 +564,13 @@ class WorkflowExecution:
         self.end_time = time.time()
 
     @property
-    def duration(self) -> Optional[float]:
+def duration(self) -> Optional[float]:
         """獲取執行持續時間"""
         if self.start_time and self.end_time:
             return self.end_time - self.start_time
         return None
 
-    def get_progress(self) -> Dict[str, Any]:
+def get_progress(self) -> Dict[str, Any]:
         """獲取執行進度"""
         total_steps = len(self.template.get_step_chain())
         completed_steps = sum(
@@ -589,7 +588,7 @@ class WorkflowExecution:
             "current_step": self._get_current_step(),
         }
 
-    def _get_current_step(self) -> Optional[str]:
+def _get_current_step(self) -> Optional[str]:
         """獲取當前執行步驟"""
         for step_name in self.template.get_step_chain():
             result = self.context.get_step_result(step_name)
@@ -600,7 +599,7 @@ class WorkflowExecution:
                 return step_name
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+def to_dict(self) -> Dict[str, Any]:
         """轉換為字典"""
         return {
             "workflow_id": self.workflow_id,
@@ -628,11 +627,11 @@ class WorkflowExecution:
 class TrendAnalysisStep(WorkflowStep):
     """趨勢分析步驟"""
 
-    def __init__(self, trend_service_client, **kwargs):
+def __init__(self, trend_service_client, **kwargs):
         super().__init__("trend_analysis", **kwargs)
         self.trend_service = trend_service_client
 
-    async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
+async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
         """執行趨勢分析"""
         categories = context.input_data.get("categories", ["technology"])
         platforms = context.input_data.get("platforms", ["tiktok"])
@@ -664,13 +663,13 @@ class TrendAnalysisStep(WorkflowStep):
 class ScriptGenerationStep(WorkflowStep):
     """腳本生成步驟"""
 
-    def __init__(self, ai_service_client, **kwargs):
+def __init__(self, ai_service_client, **kwargs):
         super().__init__(
             "script_generation", required_steps=["trend_analysis"], **kwargs
         )
         self.ai_service = ai_service_client
 
-    async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
+async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
         """執行腳本生成"""
         trends_data = context.get_step_data("trend_analysis")
         trends = trends_data.get("trends", [])

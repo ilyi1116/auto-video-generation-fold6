@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Any
 """
 備份和恢復流程測試腳本
 驗證災難恢復的完整性和可靠性
@@ -416,7 +417,7 @@ class BackupRecoveryTester:
                 test_name=test_name,
                 success=True,
                 duration=duration,
-                message=f"成功通過 S3 備份和恢復檔案",
+                message="成功通過 S3 備份和恢復檔案",
                 details={
                     "file_size": restored_file.stat().st_size,
                     "data_items": len(restored_data["data"]),
@@ -442,7 +443,7 @@ class BackupRecoveryTester:
             with conn.cursor() as cur:
                 # 創建測試表
                 cur.execute(
-                    f"""
+                    """
                     CREATE TABLE IF NOT EXISTS {table_name} (
                         id SERIAL PRIMARY KEY,
                         name VARCHAR(100),
@@ -651,7 +652,7 @@ class BackupRecoveryTester:
         """生成人類可讀的測試報告"""
         summary = report["summary"]
 
-        report_text = f"""
+        report_text = """
 =================================================
 備份恢復測試報告
 =================================================
@@ -668,7 +669,7 @@ class BackupRecoveryTester:
 
         for result in report["results"]:
             status = "✅ 通過" if result["success"] else "❌ 失敗"
-            report_text += f"""
+            report_text += """
 {status} {result["test_name"]}
    耗時: {result["duration"]:.2f} 秒
    訊息: {result["message"]}

@@ -7,7 +7,6 @@ OpenAPI 規範驗證腳本
 import asyncio
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional

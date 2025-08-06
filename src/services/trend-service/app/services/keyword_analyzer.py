@@ -172,7 +172,7 @@ async def compare_keywords(
         "comparison_table": comparison_table,
         "best_opportunity": best_opportunity,
         "recommendations": [
-            f"優先關注 '{best_opportunity['keyword']}'",
+            "優先關注 "{best_opportunity['keyword']}'","'
             "考慮低競爭度的長尾關鍵字",
             "建立內容集群策略",
         ],

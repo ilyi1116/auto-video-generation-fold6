@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 class ServiceProxy:
     """Proxy requests to internal services"""
 
-    def __init__(self):
+def __init__(self):
         self.service_urls = {
             "auth": settings.auth_service_url,
             "data": settings.data_service_url,
@@ -20,7 +20,7 @@ class ServiceProxy:
         }
         self.timeout = httpx.Timeout(settings.service_timeout)
 
-    async def forward_request(
+async def forward_request(
         self,
         service: str,
         path: str,
@@ -36,7 +36,7 @@ class ServiceProxy:
         if service not in self.service_urls:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Service '{service}' not found",
+                detail="Service "{service}' not found","'
             )
 
         service_url = self.service_urls[service]
@@ -103,7 +103,7 @@ class ServiceProxy:
             )
             raise HTTPException(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail=f"Service '{service}' request timed out",
+                detail="Service "{service}' request timed out","'
             )
 
         except httpx.RequestError as e:
@@ -115,10 +115,10 @@ class ServiceProxy:
             )
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Service '{service}' is unavailable",
+                detail="Service "{service}' is unavailable","'
             )
 
-    async def health_check_service(self, service: str) -> bool:
+async def health_check_service(self, service: str) -> bool:
         """Check if service is healthy"""
         if service not in self.service_urls:
             return False
@@ -131,7 +131,7 @@ class ServiceProxy:
         except Exception:
             return False
 
-    async def forward_file_request(
+async def forward_file_request(
         self,
         service: str,
         path: str,
@@ -144,7 +144,7 @@ class ServiceProxy:
         if service not in self.service_urls:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Service '{service}' not found",
+                detail="Service "{service}' not found","'
             )
 
         service_url = self.service_urls[service]
@@ -206,7 +206,7 @@ class ServiceProxy:
             )
             raise HTTPException(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail=f"File upload to '{service}' timed out",
+                detail="File upload to "{service}' timed out","'
             )
 
         except httpx.RequestError as e:
@@ -219,7 +219,7 @@ class ServiceProxy:
             )
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"File upload to '{service}' failed",
+                detail="File upload to "{service}' failed","'
             )
 
 

@@ -17,7 +17,6 @@ def test_model_imports():
     print("🧪 測試模型導入...")
 
     try:
-        from auto_generate_video_fold6.models import (
             Base,
         )
 
@@ -33,7 +32,7 @@ def test_model_imports():
 
     except Exception as e:
         print(f"❌ 模型導入失敗: {e}")
-        import traceback
+import traceback
 
         traceback.print_exc()
         return False
@@ -44,7 +43,6 @@ def test_model_relationships():
     print("\n🔗 測試模型關係...")
 
     try:
-        from auto_generate_video_fold6.models import (
             VideoProject,
         )
 
@@ -107,7 +105,7 @@ def test_migration_scripts():
                 try:
                     with open(script_path, "r") as f:
                         content = f.read()
-                        if "class" in content and "def" in content:
+                        if "class" in content and "de" in content:
                             print(f"   📝 包含類別和函數定義")
                 except Exception:
                     pass
@@ -123,7 +121,7 @@ def test_database_module():
     print("\n🗄️  測試資料庫模組...")
 
     try:
-        from auto_generate_video_fold6.database import DatabaseSyncManager
+from auto_generate_video_fold6.database import DatabaseSyncManager
 
         # 嘗試實例化（不連接資料庫）
         sync_manager = DatabaseSyncManager(project_root)

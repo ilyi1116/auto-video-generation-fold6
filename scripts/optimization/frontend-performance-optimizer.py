@@ -12,13 +12,8 @@ Advanced frontend performance optimization focusing on:
 """
 
 import asyncio
-import gzip
-import hashlib
 import json
-import os
 import re
-import shutil
-import subprocess
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -69,12 +64,12 @@ class OptimizationResult:
 class BundleOptimizer:
     """JavaScript and CSS bundle optimization"""
 
-    def __init__(self, project_root: str):
+def __init__(self, project_root: str):
         self.project_root = Path(project_root)
         self.src_dir = self.project_root / "src" / "frontend"
         self.build_dir = self.project_root / "src" / "frontend" / "build"
 
-    async def analyze_bundle(self) -> Dict[str, Any]:
+async def analyze_bundle(self) -> Dict[str, Any]:
         """Analyze current bundle size and composition"""
         try:
             analysis = {
@@ -133,7 +128,7 @@ class BundleOptimizer:
             print(f"Error analyzing bundle: {e}")
             return {}
 
-    async def optimize_bundle(self) -> OptimizationResult:
+async def optimize_bundle(self) -> OptimizationResult:
         """Optimize JavaScript and CSS bundles"""
         start_time = time.time()
 
@@ -185,7 +180,7 @@ class BundleOptimizer:
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def _optimize_javascript(self):
+async def _optimize_javascript(self):
         """Optimize JavaScript files"""
         try:
             # Create optimized build configuration
@@ -199,7 +194,7 @@ class BundleOptimizer:
         except Exception as e:
             print(f"JavaScript optimization error: {e}")
 
-    async def _optimize_css(self):
+async def _optimize_css(self):
         """Optimize CSS files"""
         try:
             # Install and configure PostCSS plugins if not present
@@ -214,7 +209,7 @@ class BundleOptimizer:
         except Exception as e:
             print(f"CSS optimization error: {e}")
 
-    async def _enable_tree_shaking(self):
+async def _enable_tree_shaking(self):
         """Enable tree shaking for unused code elimination"""
         try:
             package_json = self.src_dir / "package.json"
@@ -231,7 +226,7 @@ class BundleOptimizer:
         except Exception as e:
             print(f"Tree shaking configuration error: {e}")
 
-    async def _optimize_chunks(self):
+async def _optimize_chunks(self):
         """Optimize code splitting and chunks"""
         try:
             # This would involve updating the bundler configuration
@@ -240,11 +235,11 @@ class BundleOptimizer:
         except Exception as e:
             print(f"Chunk optimization error: {e}")
 
-    async def _run_build(self):
+async def _run_build(self):
         """Run production build"""
         await self._run_command("npm run build", cwd=self.src_dir)
 
-    async def _run_command(self, command: str, cwd: Path = None):
+async def _run_command(self, command: str, cwd: Path = None):
         """Run shell command asynchronously"""
         try:
             process = await asyncio.create_subprocess_shell(
@@ -261,38 +256,36 @@ class BundleOptimizer:
                 print(f"Error: {stderr.decode()}")
 
         except Exception as e:
-            print(f"Error running command '{command}': {e}")
+            print("Error running command "{command}': {e}")"'
 
-    async def _update_vite_config_for_optimization(self, config_path: Path):
+async def _update_vite_config_for_optimization(self, config_path: Path):
         """Update Vite config for optimal performance"""
         optimization_config = """
-import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 export default defineConfig({
-  plugins: [svelte()],
-  build: {
+    plugins: [svelte()],
+    build: {
     minify: 'terser',
     terserOptions: {
-      compress: {
+        compress: {
         drop_console: true,
         drop_debugger: true
-      }
+        }
     },
     rollupOptions: {
-      output: {
+        output: {
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: {
-          vendor: ['svelte'],
-          utils: ['src/lib/utils']
+            vendor: ['svelte'],
+            utils: ['src/lib/utils']
         }
-      }
+        }
     },
     reportCompressedSize: true,
     chunkSizeWarningLimit: 500
-  }
+    }
 })
 """
 
@@ -302,16 +295,16 @@ export default defineConfig({
         except Exception as e:
             print(f"Error updating Vite config: {e}")
 
-    async def _create_postcss_config(self, config_path: Path):
+async def _create_postcss_config(self, config_path: Path):
         """Create PostCSS configuration for CSS optimization"""
         postcss_config = """
 module.exports = {
-  plugins: [
+    plugins: [
     require('autoprefixer'),
     require('cssnano')({
-      preset: 'default',
+        preset: 'default',
     }),
-  ],
+    ],
 }
 """
 
@@ -321,7 +314,7 @@ module.exports = {
         except Exception as e:
             print(f"Error creating PostCSS config: {e}")
 
-    async def _optimize_css_file(self, css_file: Path):
+async def _optimize_css_file(self, css_file: Path):
         """Optimize individual CSS file"""
         try:
             # Read CSS file
@@ -346,11 +339,11 @@ module.exports = {
 class ImageOptimizer:
     """Image and asset optimization"""
 
-    def __init__(self, project_root: str):
+def __init__(self, project_root: str):
         self.project_root = Path(project_root)
         self.assets_dir = self.project_root / "src" / "frontend" / "static"
 
-    async def optimize_images(self) -> OptimizationResult:
+async def optimize_images(self) -> OptimizationResult:
         """Optimize all images in the project"""
         start_time = time.time()
         before_size = 0
@@ -413,7 +406,7 @@ class ImageOptimizer:
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def _optimize_jpeg(self, image_file: Path):
+async def _optimize_jpeg(self, image_file: Path):
         """Optimize JPEG image"""
         try:
             # Use basic optimization (would integrate with imagemin or similar)
@@ -422,7 +415,7 @@ class ImageOptimizer:
         except Exception as e:
             print(f"Error optimizing JPEG {image_file}: {e}")
 
-    async def _optimize_png(self, image_file: Path):
+async def _optimize_png(self, image_file: Path):
         """Optimize PNG image"""
         try:
             # PNG optimization logic
@@ -430,7 +423,7 @@ class ImageOptimizer:
         except Exception as e:
             print(f"Error optimizing PNG {image_file}: {e}")
 
-    async def _optimize_svg(self, image_file: Path):
+async def _optimize_svg(self, image_file: Path):
         """Optimize SVG image"""
         try:
             # Read SVG content
@@ -451,7 +444,7 @@ class ImageOptimizer:
         except Exception as e:
             print(f"Error optimizing SVG {image_file}: {e}")
 
-    async def _convert_to_webp(self, image_file: Path) -> bool:
+async def _convert_to_webp(self, image_file: Path) -> bool:
         """Convert image to WebP format if beneficial"""
         try:
             # This would use a tool like cwebp to convert images
@@ -465,11 +458,11 @@ class ImageOptimizer:
 class ServiceWorkerOptimizer:
     """Service Worker and caching optimization"""
 
-    def __init__(self, project_root: str):
+def __init__(self, project_root: str):
         self.project_root = Path(project_root)
         self.src_dir = self.project_root / "src" / "frontend"
 
-    async def create_optimized_service_worker(self) -> OptimizationResult:
+async def create_optimized_service_worker(self) -> OptimizationResult:
         """Create optimized service worker for caching"""
         start_time = time.time()
 
@@ -484,148 +477,148 @@ const DYNAMIC_CACHE = 'dynamic-v1';
 
 // Files to cache immediately
 const STATIC_ASSETS = [
-  '/',
-  '/app.html',
-  '/global.css',
-  '/build/bundle.js',
-  '/build/bundle.css',
-  '/images/logo.svg',
-  '/manifest.json'
+    '/',
+    '/app.html',
+    '/global.css',
+    '/build/bundle.js',
+    '/build/bundle.css',
+    '/images/logo.svg',
+    '/manifest.json'
 ];
 
 // Install event - Cache static assets
 self.addEventListener('install', event => {
-  event.waitUntil(
+    event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
-  );
+        .then(cache => cache.addAll(STATIC_ASSETS))
+        .then(() => self.skipWaiting())
+    );
 });
 
 // Activate event - Clean up old caches
 self.addEventListener('activate', event => {
-  event.waitUntil(
+    event.waitUntil(
     caches.keys().then(cacheNames => {
-      return Promise.all(
+        return Promise.all(
         cacheNames
-          .filter(cacheName => cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE)
-          .map(cacheName => caches.delete(cacheName))
-      );
+            .filter(cacheName => cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE)
+            .map(cacheName => caches.delete(cacheName))
+        );
     }).then(() => self.clients.claim())
-  );
+    );
 });
 
 // Fetch event - Serve from cache with network fallback
 self.addEventListener('fetch', event => {
-  const { request } = event;
-  
-  // Skip non-GET requests
-  if (request.method !== 'GET') return;
-  
-  // Skip external requests
-  if (!request.url.startsWith(self.location.origin)) return;
-  
-  // Handle API requests with network-first strategy
-  if (request.url.includes('/api/')) {
+    const { request } = event;
+
+    // Skip non-GET requests
+    if (request.method !== 'GET') return;
+
+    // Skip external requests
+    if (!request.url.startsWith(self.location.origin)) return;
+
+    // Handle API requests with network-first strategy
+    if (request.url.includes('/api/')) {
     event.respondWith(networkFirst(request));
     return;
-  }
-  
-  // Handle static assets with cache-first strategy
-  event.respondWith(cacheFirst(request));
+    }
+
+    // Handle static assets with cache-first strategy
+    event.respondWith(cacheFirst(request));
 });
 
 // Cache-first strategy for static assets
 async function cacheFirst(request) {
-  try {
+    try {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
-      return cachedResponse;
+        return cachedResponse;
     }
-    
+
     const networkResponse = await fetch(request);
     const cache = await caches.open(DYNAMIC_CACHE);
     cache.put(request, networkResponse.clone());
-    
+
     return networkResponse;
-  } catch (error) {
+    } catch (error) {
     console.error('Cache-first strategy failed:', error);
     return new Response('Offline', { status: 503 });
-  }
+    }
 }
 
 // Network-first strategy for API requests
 async function networkFirst(request) {
-  try {
+    try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, networkResponse.clone());
+        const cache = await caches.open(DYNAMIC_CACHE);
+        cache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
-  } catch (error) {
+    } catch (error) {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
-      return cachedResponse;
+        return cachedResponse;
     }
-    
+
     return new Response('Offline', { status: 503 });
-  }
+    }
 }
 
 // Background sync for video uploads
 self.addEventListener('sync', event => {
-  if (event.tag === 'video-upload') {
+    if (event.tag === 'video-upload') {
     event.waitUntil(handleVideoUploadSync());
-  }
+    }
 });
 
 async function handleVideoUploadSync() {
-  // Handle background video upload sync
-  console.log('Background sync: video upload');
+    // Handle background video upload sync
+    console.log('Background sync: video upload');
 }
 
 // Push notifications for video processing completion
 self.addEventListener('push', event => {
-  const options = {
+    const options = {
     body: event.data ? event.data.text() : 'Video processing completed!',
     icon: '/images/icon-192.png',
     badge: '/images/badge-72.png',
     vibrate: [100, 50, 100],
     data: {
-      dateOfArrival: Date.now(),
-      primaryKey: '1'
+        dateOfArrival: Date.now(),
+        primaryKey: '1'
     },
     actions: [
-      {
+        {
         action: 'view',
         title: 'View Video',
         icon: '/images/checkmark.png'
-      },
-      {
+        },
+        {
         action: 'close',
         title: 'Close',
         icon: '/images/cross.png'
-      }
+        }
     ]
-  };
-  
-  event.waitUntil(
+    };
+
+    event.waitUntil(
     self.registration.showNotification('AI Video Generator', options)
-  );
+    );
 });
 
 // Handle notification clicks
 self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  
-  if (event.action === 'view') {
+    event.notification.close();
+
+    if (event.action === 'view') {
     event.waitUntil(
-      clients.openWindow('/videos')
+        clients.openWindow('/videos')
     );
-  }
+    }
 });
 """
 
@@ -658,7 +651,7 @@ self.addEventListener('notificationclick', event => {
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def _create_pwa_manifest(self):
+async def _create_pwa_manifest(self):
         """Create PWA manifest file"""
         manifest_path = self.src_dir / "static" / "manifest.json"
 
@@ -668,7 +661,7 @@ self.addEventListener('notificationclick', event => {
             "description": "Advanced AI-powered video generation platform",
             "start_url": "/",
             "display": "standalone",
-            "background_color": "#ffffff",
+            "background_color": "#fffff",
             "theme_color": "#000000",
             "icons": [
                 {
@@ -702,11 +695,11 @@ self.addEventListener('notificationclick', event => {
 class CoreWebVitalsOptimizer:
     """Core Web Vitals optimization"""
 
-    def __init__(self, project_root: str):
+def __init__(self, project_root: str):
         self.project_root = Path(project_root)
         self.src_dir = self.project_root / "src" / "frontend"
 
-    async def optimize_lcp(self) -> OptimizationResult:
+async def optimize_lcp(self) -> OptimizationResult:
         """Optimize Largest Contentful Paint"""
         start_time = time.time()
 
@@ -747,7 +740,7 @@ class CoreWebVitalsOptimizer:
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def optimize_fid(self) -> OptimizationResult:
+async def optimize_fid(self) -> OptimizationResult:
         """Optimize First Input Delay"""
         start_time = time.time()
 
@@ -788,7 +781,7 @@ class CoreWebVitalsOptimizer:
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def optimize_cls(self) -> OptimizationResult:
+async def optimize_cls(self) -> OptimizationResult:
         """Optimize Cumulative Layout Shift"""
         start_time = time.time()
 
@@ -829,7 +822,7 @@ class CoreWebVitalsOptimizer:
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def _add_resource_preloads(self):
+async def _add_resource_preloads(self):
         """Add preload directives for critical resources"""
         try:
             # This would scan HTML files and add preload links
@@ -837,7 +830,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error adding resource preloads: {e}")
 
-    async def _optimize_hero_images(self):
+async def _optimize_hero_images(self):
         """Optimize hero/above-the-fold images"""
         try:
             # Find and optimize hero images
@@ -845,7 +838,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error optimizing hero images: {e}")
 
-    async def _minimize_render_blocking(self):
+async def _minimize_render_blocking(self):
         """Minimize render-blocking resources"""
         try:
             # Inline critical CSS, defer non-critical CSS
@@ -853,7 +846,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error minimizing render-blocking resources: {e}")
 
-    async def _implement_code_splitting(self):
+async def _implement_code_splitting(self):
         """Implement code splitting for better FID"""
         try:
             # Configure dynamic imports and lazy loading
@@ -861,7 +854,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error implementing code splitting: {e}")
 
-    async def _defer_non_critical_js(self):
+async def _defer_non_critical_js(self):
         """Defer non-critical JavaScript"""
         try:
             # Add defer/async attributes to script tags
@@ -869,7 +862,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error deferring non-critical JS: {e}")
 
-    async def _optimize_event_handlers(self):
+async def _optimize_event_handlers(self):
         """Optimize event handlers for better responsiveness"""
         try:
             # Use passive event listeners, debounce handlers
@@ -877,7 +870,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error optimizing event handlers: {e}")
 
-    async def _add_image_dimensions(self):
+async def _add_image_dimensions(self):
         """Add width/height attributes to images"""
         try:
             # Scan HTML/Svelte files and add image dimensions
@@ -885,7 +878,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error adding image dimensions: {e}")
 
-    async def _reserve_dynamic_content_space(self):
+async def _reserve_dynamic_content_space(self):
         """Reserve space for dynamically loaded content"""
         try:
             # Add placeholder dimensions for dynamic content
@@ -893,7 +886,7 @@ class CoreWebVitalsOptimizer:
         except Exception as e:
             print(f"Error reserving dynamic content space: {e}")
 
-    async def _optimize_font_loading(self):
+async def _optimize_font_loading(self):
         """Optimize font loading to prevent layout shifts"""
         try:
             # Add font-display: swap, preload fonts
@@ -905,7 +898,7 @@ class CoreWebVitalsOptimizer:
 class FrontendPerformanceOptimizer:
     """Main frontend performance optimizer"""
 
-    def __init__(
+def __init__(
         self, project_root: str = "/data/data/com.termux/files/home/myProject"
     ):
         self.project_root = project_root
@@ -914,7 +907,7 @@ class FrontendPerformanceOptimizer:
         self.service_worker_optimizer = ServiceWorkerOptimizer(project_root)
         self.core_web_vitals_optimizer = CoreWebVitalsOptimizer(project_root)
 
-    async def run_comprehensive_optimization(self) -> Dict[str, Any]:
+async def run_comprehensive_optimization(self) -> Dict[str, Any]:
         """Run comprehensive frontend optimization"""
         start_time = time.time()
 
@@ -1008,7 +1001,7 @@ class FrontendPerformanceOptimizer:
 
         return results
 
-    async def analyze_current_performance(self) -> PerformanceMetrics:
+async def analyze_current_performance(self) -> PerformanceMetrics:
         """Analyze current frontend performance"""
         try:
             # This would integrate with Lighthouse or similar tools
@@ -1049,7 +1042,7 @@ class FrontendPerformanceOptimizer:
                 compression_savings_kb=0,
             )
 
-    async def generate_performance_report(self) -> Dict[str, Any]:
+async def generate_performance_report(self) -> Dict[str, Any]:
         """Generate comprehensive performance report"""
         print("📋 Generating Frontend Performance Report...")
 
@@ -1102,7 +1095,7 @@ class FrontendPerformanceOptimizer:
 
         return report
 
-    def _rate_lcp(self, lcp: float) -> str:
+def _rate_lcp(self, lcp: float) -> str:
         """Rate LCP performance"""
         if lcp <= 2.5:
             return "good"
@@ -1111,7 +1104,7 @@ class FrontendPerformanceOptimizer:
         else:
             return "poor"
 
-    def _rate_fid(self, fid: float) -> str:
+def _rate_fid(self, fid: float) -> str:
         """Rate FID performance"""
         if fid <= 100:
             return "good"
@@ -1120,7 +1113,7 @@ class FrontendPerformanceOptimizer:
         else:
             return "poor"
 
-    def _rate_cls(self, cls: float) -> str:
+def _rate_cls(self, cls: float) -> str:
         """Rate CLS performance"""
         if cls <= 0.1:
             return "good"
@@ -1129,7 +1122,7 @@ class FrontendPerformanceOptimizer:
         else:
             return "poor"
 
-    def _get_lcp_recommendations(self, lcp: float) -> List[str]:
+def _get_lcp_recommendations(self, lcp: float) -> List[str]:
         """Get LCP improvement recommendations"""
         if lcp <= 2.5:
             return ["LCP is in good range. Monitor for any regressions."]
@@ -1144,7 +1137,7 @@ class FrontendPerformanceOptimizer:
 
         return recommendations
 
-    def _get_fid_recommendations(self, fid: float) -> List[str]:
+def _get_fid_recommendations(self, fid: float) -> List[str]:
         """Get FID improvement recommendations"""
         if fid <= 100:
             return ["FID is in good range. Monitor for any regressions."]
@@ -1159,7 +1152,7 @@ class FrontendPerformanceOptimizer:
 
         return recommendations
 
-    def _get_cls_recommendations(self, cls: float) -> List[str]:
+def _get_cls_recommendations(self, cls: float) -> List[str]:
         """Get CLS improvement recommendations"""
         if cls <= 0.1:
             return ["CLS is in good range. Monitor for any regressions."]
@@ -1174,7 +1167,7 @@ class FrontendPerformanceOptimizer:
 
         return recommendations
 
-    def _identify_optimization_opportunities(
+def _identify_optimization_opportunities(
         self, metrics: PerformanceMetrics, bundle_analysis: Dict
     ) -> List[Dict]:
         """Identify specific optimization opportunities"""
@@ -1217,7 +1210,7 @@ class FrontendPerformanceOptimizer:
 
         return opportunities
 
-    def _generate_recommendations(
+def _generate_recommendations(
         self, metrics: PerformanceMetrics, bundle_analysis: Dict
     ) -> List[str]:
         """Generate overall recommendations"""
@@ -1257,7 +1250,7 @@ class FrontendPerformanceOptimizer:
 
 async def main():
     """Main function"""
-    import argparse
+import argparse
 
     parser = argparse.ArgumentParser(
         description="Frontend Performance Optimizer"

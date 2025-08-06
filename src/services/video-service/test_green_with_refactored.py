@@ -11,7 +11,6 @@ from pipeline_executor import PipelineExecutor
 from progress_tracker import ProgressTracker
 from resource_manager import ResourceManager
 from time_estimator import WorkflowTimeEstimator
-from workflow_engine_refactored import (
     VideoWorkflowEngine,
     VideoWorkflowRequest,
 )
@@ -24,30 +23,30 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "video"))
 
 # 簡單的測試框架
 class CompatibilityTest:
-    def __init__(self):
+def __init__(self):
         self.passed = 0
         self.failed = 0
         self.errors = []
 
-    def assert_equal(self, actual, expected, message=""):
+def assert_equal(self, actual, expected, message=""):
         if actual != expected:
             raise AssertionError(
                 f"{message}: Expected {expected}, got {actual}"
             )
 
-    def assert_not_none(self, value, message=""):
+def assert_not_none(self, value, message=""):
         if value is None:
             raise AssertionError(f"{message}: Value should not be None")
 
-    def assert_in(self, item, container, message=""):
+def assert_in(self, item, container, message=""):
         if item not in container:
             raise AssertionError(f"{message}: {item} not found in {container}")
 
-    def assert_true(self, condition, message=""):
+def assert_true(self, condition, message=""):
         if not condition:
             raise AssertionError(f"{message}: Condition should be True")
 
-    def run_test(self, test_func, test_name):
+def run_test(self, test_func, test_name):
         try:
             print(f"🔄 兼容性測試: {test_name}")
             test_func()
@@ -58,7 +57,7 @@ class CompatibilityTest:
             self.failed += 1
             self.errors.append(f"Test {test_name} failed: {str(e)}")
 
-    def summary(self):
+def summary(self):
         total = self.passed + self.failed
         success_rate = (self.passed / total * 100) if total > 0 else 0
         print("\n📊 兼容性測試結果:")

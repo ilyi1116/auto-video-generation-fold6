@@ -8,12 +8,10 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from ai.gemini_client import (
     GeminiClient,
     ScriptGenerationResponse,
     ScriptScene,
 )
-from ai.stable_diffusion_client import (
     ImageGenerationResponse,
     StableDiffusionClient,
 )
@@ -87,7 +85,7 @@ def sample_script_response():
         content="Full script content here...",
         scenes=scenes,
         narration_text="Welcome to our technology overview. AI is \
-            transforming how we work. Thank you for watching.",
+            transforming how we work. Thank you for watching.","
         total_duration=60.0,
         theme="Technology trends in 2024",
         style="modern",
@@ -99,7 +97,7 @@ def sample_script_response():
 class TestVideoServiceHealth:
     """Test health check endpoint"""
 
-    def test_health_check(self):
+def test_health_check(self):
         """Test health check returns correct status"""
         response = client.get("/health")
         assert response.status_code == 200
@@ -115,7 +113,7 @@ class TestVideoGeneration:
 
     @patch("main.verify_token")
     @patch("main.get_db_connection")
-    def test_create_video_project_success(
+def test_create_video_project_success(
         self, mock_db, mock_verify_token, sample_video_request
     ):
         """Test successful video project creation"""
@@ -141,7 +139,7 @@ class TestVideoGeneration:
         assert data["status"] == VideoStatus.INITIALIZING
         assert data["progress"] == 0
 
-    def test_create_video_project_unauthorized(self, sample_video_request):
+def test_create_video_project_unauthorized(self, sample_video_request):
         """Test video project creation without authentication"""
 
         response = client.post(
@@ -151,7 +149,7 @@ class TestVideoGeneration:
 
     @patch("main.verify_token")
     @patch("main.get_db_connection")
-    def test_get_video_project(self, mock_db, mock_verify_token):
+def test_get_video_project(self, mock_db, mock_verify_token):
         """Test retrieving video project details"""
 
         # Mock authentication
@@ -187,7 +185,7 @@ class TestAIIntegration:
     """Test AI service integration"""
 
     @pytest.mark.asyncio
-    async def test_suno_client_health_check(self):
+async def test_suno_client_health_check(self):
         """Test Suno.ai client health check"""
 
         client = SunoAIClient("test_api_key")
@@ -204,7 +202,7 @@ class TestAIIntegration:
             assert health["service"] == "suno.ai"
 
     @pytest.mark.asyncio
-    async def test_gemini_script_generation(self, sample_script_response):
+async def test_gemini_script_generation(self, sample_script_response):
         """Test Gemini script generation"""
 
         client = GeminiClient("test_api_key")
@@ -239,7 +237,7 @@ class TestAIIntegration:
                 assert len(result.scenes) > 0
 
     @pytest.mark.asyncio
-    async def test_stable_diffusion_image_generation(self):
+async def test_stable_diffusion_image_generation(self):
         """Test Stable Diffusion image generation"""
 
         client = StableDiffusionClient("test_api_key")
@@ -282,10 +280,10 @@ class TestVideoComposition:
     """Test video composition and rendering"""
 
     @pytest.mark.asyncio
-    async def test_video_composer_creation(self, sample_script_response):
+async def test_video_composer_creation(self, sample_script_response):
         """Test video composition creation"""
 
-        from video.composer import CompositionResult, VideoComposer
+from video.composer import CompositionResult, VideoComposer
 
         composer = VideoComposer()
 
@@ -328,10 +326,9 @@ class TestSocialMediaIntegration:
     """Test social media platform integration"""
 
     @pytest.mark.asyncio
-    async def test_social_media_manager_publish(self):
+async def test_social_media_manager_publish(self):
         """Test social media publishing"""
 
-        from social.platforms import (
             PublishRequest,
             PublishResult,
             SocialMediaManager,
@@ -369,7 +366,7 @@ class TestDatabase:
     """Test database operations"""
 
     @pytest.mark.asyncio
-    async def test_video_project_save(self):
+async def test_video_project_save(self):
         """Test saving video project to database"""
 
         mock_db = Mock()
@@ -387,7 +384,7 @@ class TestDatabase:
             mock_insert.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_video_project_update_status(self):
+async def test_video_project_update_status(self):
         """Test updating video project status"""
 
         mock_db = Mock()

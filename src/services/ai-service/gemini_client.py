@@ -388,7 +388,7 @@ class GeminiClient:
         self, topic: str, platform: str = "tiktok", style: str = "engaging"
     ) -> GeminiResponse:
         """生成影片腳本"""
-        system_instruction = f"""
+        system_instruction = """
 你是一個專業的{platform}短影片腳本創作者。
 請為給定主題創作一個{style}風格的短影片腳本。
 
@@ -414,7 +414,7 @@ class GeminiClient:
         self, content: str, platform: str, target_audience: str = "年輕人"
     ) -> GeminiResponse:
         """優化內容"""
-        system_instruction = f"""
+        system_instruction = """
 你是一個專業的內容優化師，專門針對{platform}平台優化內容。
 目標受眾是{target_audience}。
 
@@ -458,7 +458,7 @@ async def generate_video_script(
 async def analyze_trends(content: str, api_key: str = None) -> Dict[str, Any]:
     """分析內容趨勢的便利函數"""
 
-    prompt = f"""
+    prompt = """
 分析以下內容的趨勢潛力，並以 JSON 格式返回分析結果：
 
 內容：{content}

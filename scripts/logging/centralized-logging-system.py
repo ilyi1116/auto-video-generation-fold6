@@ -14,8 +14,6 @@ Features:
 """
 
 import asyncio
-import gzip
-import inspect
 import json
 import logging
 import socket
@@ -23,11 +21,9 @@ import threading
 import time
 import traceback
 import uuid
-from collections import defaultdict, deque
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
 from queue import Empty, Queue
 from typing import Any, Dict, List, Optional, Union
 
@@ -242,7 +238,7 @@ class LogProcessor:
         try:
             self.processing_queue.put_nowait(log_entry)
             return True
-        except:
+        except Exception:
             self.metrics["logs_dropped"] += 1
             return False
 
@@ -264,7 +260,7 @@ class LogProcessor:
                 # Add to batch queue
                 try:
                     self.batch_queue.put_nowait(processed_entry)
-                except:
+                except Exception:
                     self.metrics["logs_dropped"] += 1
 
                 # Update metrics
@@ -579,7 +575,7 @@ class LogAnalyzer:
             return await asyncio.get_event_loop().run_in_executor(
                 None, lambda: self.redis_client.keys(pattern)
             )
-        except:
+        except Exception:
             return []
 
     async def _count_recent_entries(
@@ -597,7 +593,7 @@ class LogAnalyzer:
 
             return len(entries)
 
-        except:
+        except Exception:
             return 0
 
 

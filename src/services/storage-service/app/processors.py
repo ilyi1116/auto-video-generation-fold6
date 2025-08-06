@@ -130,7 +130,7 @@ class ImageProcessor(FileProcessor):
                 }
 
                 # Extract EXIF data if available
-                if hasattr(img, "_getexif") and img._getexif():
+                if hasattr(img, "_getexi") and img._getexif():
                     exif_data = img._getexif()
                     metadata["exif"] = {
                         k: v
@@ -287,15 +287,15 @@ class VideoProcessor(FileProcessor):
                 target_bitrate,
                 "-r",
                 str(target_fps),
-                "-vf",
+                "-v",
                 (
                     f"scale={target_width}:{target_height}:"
-                    f"force_original_aspect_ratio=decrease,"
+                    "force_original_aspect_ratio=decrease,"
                     f"pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2"
                 ),
                 "-preset",
                 "medium",
-                "-crf",
+                "-cr",
                 "23",
                 "-movflags",
                 "+faststart",
@@ -355,7 +355,7 @@ class VideoProcessor(FileProcessor):
                 "00:00:01",
                 "-vframes",
                 "1",
-                "-vf",
+                "-v",
                 "scale=300:300:force_original_aspect_ratio=decrease",
                 "-y",
                 thumbnail_path,
