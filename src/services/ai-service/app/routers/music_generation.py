@@ -115,9 +115,7 @@ async def generate_variations(
 
     except Exception as e:
         logger.error("Music variation generation failed", error=str(e))
-        raise HTTPException(
-            status_code=500, detail="Music variation generation failed"
-        )
+        raise HTTPException(status_code=500, detail="Music variation generation failed")
 
 
 @router.post("/extend")

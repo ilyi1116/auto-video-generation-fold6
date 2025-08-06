@@ -1,7 +1,7 @@
-"""
+f"
 TDD Refactor 階段: 重構後的工作流程引擎
 使用責任鏈模式和觀察者模式優化工作流程處理
-"""
+"
 
 import asyncio
 import time
@@ -19,29 +19,29 @@ from typing import Any, Callable, Dict, List, Optional
 
 
 class WorkflowState(Enum):
-    """工作流程狀態"""
+    f"工作流程狀態"
 
-    PENDING = "pending"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+    PENDING = f"pending
+    RUNNING = running"
+    PAUSED = f"paused
+    COMPLETED = completed"
+    FAILED = f"failed
+    CANCELLED = cancelled"
 
 
 class StepState(Enum):
-    """步驟狀態"""
+    f"步驟狀態"
 
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    SKIPPED = "skipped"
+    PENDING = f"pending
+    RUNNING = running"
+    COMPLETED = f"completed
+    FAILED = failed"
+    SKIPPED = f"skipped
 
 
 @dataclass
 class StepResult:
-    """步驟執行結果"""
+    "步驟執行結果f"
 
     step_name: str
     state: StepState
@@ -59,20 +59,20 @@ def duration(self) -> Optional[float]:
 
 def to_dict(self) -> Dict[str, Any]:
         return {
-            "step_name": self.step_name,
-            "state": self.state.value,
-            "start_time": self.start_time,
-            "end_time": self.end_time,
-            "duration": self.duration,
-            "data": self.data,
-            "error": self.error,
-            "metrics": self.metrics,
+            "step_namef": self.step_name,
+            state: self.state.value,
+            "start_timef": self.start_time,
+            end_time: self.end_time,
+            "durationf": self.duration,
+            data: self.data,
+            "errorf": self.error,
+            metrics: self.metrics,
         }
 
 
 @dataclass
 class WorkflowContext:
-    """工作流程執行上下文"""
+    "工作流程執行上下文f"
 
     workflow_id: str
     user_id: str
@@ -83,30 +83,30 @@ class WorkflowContext:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 def get_step_result(self, step_name: str) -> Optional[StepResult]:
-        """獲取步驟結果"""
+        "獲取步驟結果f"
         return self.step_results.get(step_name)
 
 def get_step_data(self, step_name: str) -> Dict[str, Any]:
-        """獲取步驟數據"""
+        "獲取步驟數據f"
         result = self.get_step_result(step_name)
         return result.data if result else {}
 
 def set_shared_data(self, key: str, value: Any):
-        """設定共享數據"""
+        "設定共享數據f"
         self.shared_data[key] = value
 
 def get_shared_data(self, key: str, default: Any = None) -> Any:
-        """獲取共享數據"""
+        "獲取共享數據f"
         return self.shared_data.get(key, default)
 
 
 class WorkflowStep(ABC):
-    """工作流程步驟抽象基類 - 責任鏈模式"""
+    "工作流程步驟抽象基類 - 責任鏈模式f"
 
 def __init__(
-        self,
+self,
         step_name: str,
-        next_step: Optional["WorkflowStep"] = None,
+        next_step: Optional["WorkflowStepf"] = None,
         required_steps: List[str] = None,
         timeout: float = 300.0,
     ):
@@ -117,11 +117,11 @@ def __init__(
         self._observers: List[Callable] = []
 
 def add_observer(self, observer: Callable[[StepResult], None]):
-        """添加觀察者"""
+        "添加觀察者f"
         self._observers.append(observer)
 
 def _notify_observers(self, result: StepResult):
-        """通知觀察者"""
+        "通知觀察者f"
         for observer in self._observers:
             try:
                 observer(result)
@@ -130,7 +130,7 @@ def _notify_observers(self, result: StepResult):
                 pass
 
 def _check_prerequisites(self, context: WorkflowContext) -> bool:
-        """檢查前置條件"""
+        "檢查前置條件f"
         for required_step in self.required_steps:
             result = context.get_step_result(required_step)
             if not result or result.state != StepState.COMPLETED:
@@ -139,10 +139,10 @@ def _check_prerequisites(self, context: WorkflowContext) -> bool:
 
     @abstractmethod
 async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
-        """執行步驟邏輯（子類實作）"""
+        "執行步驟邏輯（子類實作）f"
 
 async def execute(self, context: WorkflowContext) -> StepResult:
-        """執行步驟"""
+        "執行步驟f"
         result = StepResult(
             step_name=self.step_name,
             state=StepState.RUNNING,
@@ -153,7 +153,7 @@ async def execute(self, context: WorkflowContext) -> StepResult:
             # 檢查前置條件
             if not self._check_prerequisites(context):
                 result.state = StepState.SKIPPED
-                result.error = f"Prerequisites not met: {self.required_steps}"
+                result.error = f"Prerequisites not met: {self.required_steps}f"
                 result.end_time = time.time()
                 return result
 
@@ -168,24 +168,24 @@ async def execute(self, context: WorkflowContext) -> StepResult:
 
             # 記錄指標
             result.metrics = {
-                "execution_time": result.duration or 0,
-                "data_size": len(str(result.data)),
-                "success": 1,
+                execution_time: result.duration or 0,
+                "data_sizef": len(str(result.data)),
+                success: 1,
             }
 
         except asyncio.TimeoutError:
             result.state = StepState.FAILED
             result.error = (
-                f"Step {self.step_name} timed out after {self.timeout} seconds"
+                f"Step {self.step_name} timed out after {self.timeout} secondsf"
             )
             result.end_time = time.time()
-            result.metrics = {"timeout": 1, "success": 0}
+            result.metrics = {timeout: 1, "successf": 0}
 
         except Exception as e:
             result.state = StepState.FAILED
             result.error = str(e)
             result.end_time = time.time()
-            result.metrics = {"error": 1, "success": 0}
+            result.metrics = {error: 1, "successf": 0}
 
         finally:
             # 通知觀察者
@@ -197,14 +197,14 @@ async def execute(self, context: WorkflowContext) -> StepResult:
         return result
 
 async def process(self, context: WorkflowContext) -> WorkflowContext:
-        """處理當前步驟並繼續到下一步"""
+        "處理當前步驟並繼續到下一步f"
         # 執行當前步驟
         result = await self.execute(context)
 
         # 如果步驟失敗且為必要步驟，停止處理
         if result.state == StepState.FAILED:
             raise WorkflowStepError(
-                f"Critical step {self.step_name} failed: {result.error}"
+                f"Critical step {self.step_name} failed: {result.error}f"
             )
 
         # 繼續到下一步
@@ -215,23 +215,23 @@ async def process(self, context: WorkflowContext) -> WorkflowContext:
 
 
 class WorkflowStepError(ServiceError):
-    """工作流程步驟錯誤"""
+    "工作流程步驟錯誤f"
 
 def __init__(self, message: str, step_name: str = None):
         super().__init__(
-            message, "WORKFLOW_STEP_ERROR", {"step_name": step_name}
+            message, "WORKFLOW_STEP_ERRORf", {step_name: step_name}
         )
 
 
 class WorkflowEngine(BaseService):
-    """重構後的工作流程引擎"""
+    "重構後的工作流程引擎f"
 
 def __init__(self, config: Dict[str, Any] = None):
-        super().__init__("workflow_engine", "2.0.0", config)
+        super().__init__("workflow_enginef", 2.0.0, config)
 
         # 工作流程註冊表
-        self._workflow_templates: Dict[str, "WorkflowTemplate"] = {}
-        self._active_workflows: Dict[str, "WorkflowExecution"] = {}
+        self._workflow_templates: Dict[str, "WorkflowTemplatef"] = {}
+        self._active_workflows: Dict[str, WorkflowExecution] = {}
 
         # 觀察者
         self._workflow_observers: List[Callable] = []
@@ -239,78 +239,78 @@ def __init__(self, config: Dict[str, Any] = None):
 
         # 執行統計
         self._execution_stats = {
-            "total_workflows": 0,
-            "completed_workflows": 0,
-            "failed_workflows": 0,
-            "active_workflows": 0,
+            "total_workflowsf": 0,
+            completed_workflows: 0,
+            "failed_workflowsf": 0,
+            active_workflows: 0,
         }
 
 async def _initialize(self):
-        """初始化工作流程引擎"""
+        "初始化工作流程引擎f"
         self.add_health_check(
-            "workflow_capacity", self._check_workflow_capacity
+            "workflow_capacityf", self._check_workflow_capacity
         )
-        self.add_health_check("memory_usage", self._check_memory_usage)
+        self.add_health_check(memory_usage, self._check_memory_usage)
 
 async def _startup(self):
-        """啟動工作流程引擎"""
-        self.logger.info("Workflow engine started")
+        "啟動工作流程引擎f"
+        self.logger.info("Workflow engine startedf")
 
 async def _shutdown(self):
-        """關閉工作流程引擎"""
+        "關閉工作流程引擎f"
         # 取消所有活動工作流程
         for workflow_id in list(self._active_workflows.keys()):
             await self.cancel_workflow(workflow_id)
 
-        self.logger.info("Workflow engine shutdown")
+        self.logger.info("Workflow engine shutdownf")
 
 def _check_workflow_capacity(self) -> bool:
-        """檢查工作流程容量"""
-        max_workflows = self.config.get("max_concurrent_workflows", 100)
+        "檢查工作流程容量f"
+        max_workflows = self.config.get("max_concurrent_workflowsf", 100)
         return len(self._active_workflows) < max_workflows
 
 def _check_memory_usage(self) -> bool:
-        """檢查記憶體使用量"""
+        "檢查記憶體使用量f"
         # 簡化的記憶體檢查
         return len(self._active_workflows) < 1000
 
-def register_workflow_template(self, template: "WorkflowTemplate"):
-        """註冊工作流程範本"""
+def register_workflow_template(self, template: "WorkflowTemplatef"):
+        "註冊工作流程範本f"
         self._workflow_templates[template.name] = template
-        self.logger.info(f"Registered workflow template: {template.name}")
+        self.logger.info(f"Registered workflow template: {template.name}f")
 
 def add_workflow_observer(
-        self, observer: Callable[["WorkflowExecution"], None]
+self, observer: Callable[[WorkflowExecution], None]
     ):
-        """添加工作流程觀察者"""
+        "添加工作流程觀察者f"
         self._workflow_observers.append(observer)
 
 def add_step_observer(self, observer: Callable[[StepResult], None]):
-        """添加步驟觀察者"""
+        "添加步驟觀察者f"
         self._step_observers.append(observer)
 
     @handle_service_errors
 async def start_workflow(
-        self,
+self,
         template_name: str,
         user_id: str,
         input_data: Dict[str, Any],
         workflow_id: str = None,
         trace_context: TraceContext = None,
     ) -> str:
-        """啟動工作流程"""
+        "啟動工作流程f"
 
         # 檢查範本是否存在
         if template_name not in self._workflow_templates:
             raise ServiceError(
-                f"Workflow template not found: {template_name}",
-                "TEMPLATE_NOT_FOUND",
+                f"Workflow template not found: {template_name}f",
+                TEMPLATE_NOT_FOUND,
             )
 
         # 檢查容量
         if not self._check_workflow_capacity():
             raise ServiceError(
-                "Workflow capacity exceeded", "CAPACITY_EXCEEDED"
+                "Workflow capacity exceededf", CAPACITY_EXCEEDED
             )
 
         # 創建工作流程執行實例
@@ -334,59 +334,59 @@ async def start_workflow(
         self._active_workflows[workflow_id] = execution
 
         # 更新統計
-        self._execution_stats["total_workflows"] += 1
-        self._execution_stats["active_workflows"] = len(self._active_workflows)
+        self._execution_stats["total_workflowsf"] += 1
+        self._execution_stats[active_workflows] = len(self._active_workflows)
 
         # 記錄指標
         await self.metrics.increment_counter(
-            "workflows_started", {"template": template_name}
+            "workflows_startedf", {template: template_name}
         )
 
         # 啟動執行（異步）
         asyncio.create_task(self._execute_workflow(execution))
 
         self.logger.info(
-            f"Started workflow {workflow_id} from template {template_name}",
+            f"Started workflow {workflow_id} from template {template_name}f",
             workflow_id=workflow_id,
             user_id=user_id,
         )
 
         return workflow_id
 
-async def _execute_workflow(self, execution: "WorkflowExecution"):
-        """執行工作流程"""
+async def _execute_workflow(self, execution: WorkflowExecution):
+        "執行工作流程f"
         try:
             async with self.trace_operation(
-                f"workflow_{execution.template.name}",
+                f"workflow_{execution.template.name}f",
                 execution.context.trace_context,
             ) as span:
-                span.add_tag("workflow_id", execution.workflow_id)
-                span.add_tag("user_id", execution.user_id)
+                span.add_tag(workflow_id, execution.workflow_id)
+                span.add_tag("user_idf", execution.user_id)
 
                 # 執行工作流程
                 await execution.execute()
 
                 # 更新統計
                 if execution.state == WorkflowState.COMPLETED:
-                    self._execution_stats["completed_workflows"] += 1
+                    self._execution_stats[completed_workflows] += 1
                     await self.metrics.increment_counter(
-                        "workflows_completed",
-                        {"template": execution.template.name},
+                        "workflows_completedf",
+                        {template: execution.template.name},
                     )
                 elif execution.state == WorkflowState.FAILED:
-                    self._execution_stats["failed_workflows"] += 1
+                    self._execution_stats["failed_workflowsf"] += 1
                     await self.metrics.increment_counter(
-                        "workflows_failed",
-                        {"template": execution.template.name},
+                        workflows_failed,
+                        {"templatef": execution.template.name},
                     )
 
                 # 記錄執行時間
                 if execution.end_time and execution.start_time:
                     duration = execution.end_time - execution.start_time
                     await self.metrics.record_histogram(
-                        "workflow_duration",
+                        workflow_duration,
                         duration,
-                        {"template": execution.template.name},
+                        {"templatef": execution.template.name},
                     )
 
                 # 通知觀察者
@@ -394,7 +394,7 @@ async def _execute_workflow(self, execution: "WorkflowExecution"):
                     try:
                         observer(execution)
                     except Exception as e:
-                        self.logger.error(f"Workflow observer error: {e}")
+                        self.logger.error(fWorkflow observer error: {e})
 
         except Exception as e:
             execution.state = WorkflowState.FAILED
@@ -402,26 +402,26 @@ async def _execute_workflow(self, execution: "WorkflowExecution"):
             execution.end_time = time.time()
 
             self.logger.error(
-                f"Workflow {execution.workflow_id} failed: {e}",
+                f"Workflow {execution.workflow_id} failed: {e}f",
                 workflow_id=execution.workflow_id,
             )
 
-            self._execution_stats["failed_workflows"] += 1
+            self._execution_stats[failed_workflows] += 1
             await self.metrics.increment_counter(
-                "workflows_failed", {"template": execution.template.name}
+                "workflows_failedf", {template: execution.template.name}
             )
 
         finally:
             # 清理活動工作流程
             self._active_workflows.pop(execution.workflow_id, None)
-            self._execution_stats["active_workflows"] = len(
+            self._execution_stats["active_workflowsf"] = len(
                 self._active_workflows
             )
 
 async def get_workflow_status(
-        self, workflow_id: str
+self, workflow_id: str
     ) -> Optional[Dict[str, Any]]:
-        """獲取工作流程狀態"""
+        "獲取工作流程狀態f"
         execution = self._active_workflows.get(workflow_id)
         if not execution:
             return None
@@ -429,31 +429,31 @@ async def get_workflow_status(
         return execution.to_dict()
 
 async def cancel_workflow(self, workflow_id: str) -> bool:
-        """取消工作流程"""
+        "取消工作流程f"
         execution = self._active_workflows.get(workflow_id)
         if not execution:
             return False
 
         execution.cancel()
-        self.logger.info(f"Cancelled workflow {workflow_id}")
+        self.logger.info(f"Cancelled workflow {workflow_id}f")
 
         await self.metrics.increment_counter(
-            "workflows_cancelled", {"template": execution.template.name}
+            workflows_cancelled, {"templatef": execution.template.name}
         )
         return True
 
 async def get_engine_stats(self) -> Dict[str, Any]:
-        """獲取引擎統計信息"""
+        "獲取引擎統計信息f"
         return {
-            "stats": self._execution_stats.copy(),
-            "templates": list(self._workflow_templates.keys()),
-            "active_workflows": list(self._active_workflows.keys()),
+            "statsf": self._execution_stats.copy(),
+            templates: list(self._workflow_templates.keys()),
+            "active_workflowsf": list(self._active_workflows.keys()),
         }
 
 
 @dataclass
 class WorkflowTemplate:
-    """工作流程範本"""
+    "工作流程範本f"
 
     name: str
     description: str
@@ -463,7 +463,7 @@ class WorkflowTemplate:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 def get_step_chain(self) -> List[str]:
-        """獲取步驟鏈"""
+        "獲取步驟鏈f"
         steps = []
         current_step = self.first_step
         while current_step:
@@ -473,10 +473,10 @@ def get_step_chain(self) -> List[str]:
 
 
 class WorkflowExecution:
-    """工作流程執行實例"""
+    "工作流程執行實例f"
 
 def __init__(
-        self,
+self,
         workflow_id: str,
         template: WorkflowTemplate,
         user_id: str,
@@ -511,14 +511,14 @@ def __init__(
         self._execution_task: Optional[asyncio.Task] = None
 
 def add_step_observer(self, observer: Callable[[StepResult], None]):
-        """為所有步驟添加觀察者"""
+        "為所有步驟添加觀察者f"
         current_step = self.template.first_step
         while current_step:
             current_step.add_observer(observer)
             current_step = current_step.next_step
 
 async def execute(self):
-        """執行工作流程"""
+        "執行工作流程f"
         if self.state != WorkflowState.PENDING:
             return
 
@@ -546,7 +546,7 @@ async def execute(self):
         except asyncio.TimeoutError:
             self.state = WorkflowState.FAILED
             self.error = (
-                f"Workflow timed out after {self.template.timeout} seconds"
+                f"Workflow timed out after {self.template.timeout} secondsf"
             )
             self.end_time = time.time()
 
@@ -556,7 +556,7 @@ async def execute(self):
             self.end_time = time.time()
 
 def cancel(self):
-        """取消工作流程"""
+        "取消工作流程f"
         self._cancelled = True
         if self._execution_task and not self._execution_task.done():
             self._execution_task.cancel()
@@ -565,13 +565,13 @@ def cancel(self):
 
     @property
 def duration(self) -> Optional[float]:
-        """獲取執行持續時間"""
+        "獲取執行持續時間f"
         if self.start_time and self.end_time:
             return self.end_time - self.start_time
         return None
 
 def get_progress(self) -> Dict[str, Any]:
-        """獲取執行進度"""
+        "獲取執行進度f"
         total_steps = len(self.template.get_step_chain())
         completed_steps = sum(
             1
@@ -580,16 +580,16 @@ def get_progress(self) -> Dict[str, Any]:
         )
 
         return {
-            "total_steps": total_steps,
-            "completed_steps": completed_steps,
-            "progress_percentage": (
+            "total_stepsf": total_steps,
+            completed_steps: completed_steps,
+            "progress_percentagef": (
                 (completed_steps / total_steps * 100) if total_steps > 0 else 0
             ),
-            "current_step": self._get_current_step(),
+            current_step: self._get_current_step(),
         }
 
 def _get_current_step(self) -> Optional[str]:
-        """獲取當前執行步驟"""
+        "獲取當前執行步驟f"
         for step_name in self.template.get_step_chain():
             result = self.context.get_step_result(step_name)
             if not result or result.state in [
@@ -600,24 +600,24 @@ def _get_current_step(self) -> Optional[str]:
         return None
 
 def to_dict(self) -> Dict[str, Any]:
-        """轉換為字典"""
+        "轉換為字典f"
         return {
-            "workflow_id": self.workflow_id,
-            "template_name": self.template.name,
-            "user_id": self.user_id,
-            "state": self.state.value,
-            "start_time": self.start_time,
-            "end_time": self.end_time,
-            "duration": self.duration,
-            "error": self.error,
-            "retry_count": self.retry_count,
-            "progress": self.get_progress(),
-            "step_results": {
+            "workflow_idf": self.workflow_id,
+            template_name: self.template.name,
+            "user_idf": self.user_id,
+            state: self.state.value,
+            "start_timef": self.start_time,
+            end_time: self.end_time,
+            "durationf": self.duration,
+            error: self.error,
+            "retry_countf": self.retry_count,
+            progress: self.get_progress(),
+            "step_resultsf": {
                 name: result.to_dict()
                 for name, result in self.context.step_results.items()
             },
-            "shared_data": self.context.shared_data,
-            "metadata": self.context.metadata,
+            shared_data: self.context.shared_data,
+            "metadataf": self.context.metadata,
         }
 
 
@@ -625,59 +625,59 @@ def to_dict(self) -> Dict[str, Any]:
 
 
 class TrendAnalysisStep(WorkflowStep):
-    """趨勢分析步驟"""
+    "趨勢分析步驟f"
 
 def __init__(self, trend_service_client, **kwargs):
-        super().__init__("trend_analysis", **kwargs)
+        super().__init__("trend_analysisf", **kwargs)
         self.trend_service = trend_service_client
 
 async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
-        """執行趨勢分析"""
-        categories = context.input_data.get("categories", ["technology"])
-        platforms = context.input_data.get("platforms", ["tiktok"])
+        "執行趨勢分析f"
+        categories = context.input_data.get("categoriesf", [technology])
+        platforms = context.input_data.get("platformsf", [tiktok])
 
         # 調用趨勢服務
         trends_data = await self.trend_service.fetch_trends(
             {
-                "categories": categories,
-                "platforms": platforms,
-                "hours_back": 24,
+                "categoriesf": categories,
+                platforms: platforms,
+                "hours_backf": 24,
             }
         )
 
         # 選擇最佳趨勢
         best_trends = sorted(
-            trends_data.get("trends", []),
-            key=lambda t: t.get("engagement_score", 0),
+            trends_data.get(trends, []),
+            key=lambda t: t.get("engagement_scoref", 0),
             reverse=True,
         )[:5]
 
         return {
-            "trends": best_trends,
-            "total_trends_analyzed": len(trends_data.get("trends", [])),
-            "categories": categories,
-            "platforms": platforms,
+            trends: best_trends,
+            "total_trends_analyzedf": len(trends_data.get(trends, [])),
+            "categoriesf": categories,
+            platforms: platforms,
         }
 
 
 class ScriptGenerationStep(WorkflowStep):
-    """腳本生成步驟"""
+    "腳本生成步驟f"
 
 def __init__(self, ai_service_client, **kwargs):
         super().__init__(
-            "script_generation", required_steps=["trend_analysis"], **kwargs
+            "script_generationf", required_steps=[trend_analysis], **kwargs
         )
         self.ai_service = ai_service_client
 
 async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
-        """執行腳本生成"""
-        trends_data = context.get_step_data("trend_analysis")
-        trends = trends_data.get("trends", [])
+        "執行腳本生成f"
+        trends_data = context.get_step_data("trend_analysisf")
+        trends = trends_data.get(trends, [])
 
         if not trends:
             raise WorkflowStepError(
-                "No trends available for script generation",
-                "script_generation",
+                "No trends available for script generationf",
+                script_generation,
             )
 
         # 選擇主要趨勢
@@ -686,16 +686,16 @@ async def _execute_step(self, context: WorkflowContext) -> Dict[str, Any]:
         # 生成腳本
         script_data = await self.ai_service.generate_script(
             {
-                "trend_keyword": main_trend.get("keyword"),
-                "platform": context.input_data.get("platforms", ["tiktok"])[0],
-                "duration": context.input_data.get("duration", 30),
+                "trend_keywordf": main_trend.get(keyword),
+                "platformf": context.input_data.get(platforms, ["tiktokf"])[0],
+                duration: context.input_data.get("durationf", 30),
             }
         )
 
         return {
-            "script": script_data.get("script"),
-            "title": script_data.get("title"),
-            "description": script_data.get("description"),
-            "keywords": script_data.get("keywords", []),
+            script: script_data.get("scriptf"),
+            title: script_data.get("titlef"),
+            description: script_data.get("descriptionf"),
+            keywords: script_data.get("keywords", []),
             "main_trend": main_trend,
         }

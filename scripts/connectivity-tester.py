@@ -27,9 +27,7 @@ import httpx
 from pydantic import BaseModel, Field
 
 # 设置日志
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -111,9 +109,7 @@ class NetworkConnectivityTester:
             },
         }
 
-        logger.info(
-            f"连通性测试器初始化完成 - Termux: {self.is_termux}, 超时: {timeout}s"
-        )
+        logger.info(f"连通性测试器初始化完成 - Termux: {self.is_termux}, 超时: {timeout}s")
 
     def _detect_termux(self) -> bool:
         """检测是否在 Termux 环境中运行"""
@@ -189,9 +185,7 @@ class NetworkConnectivityTester:
                 try:
                     details["response_data"] = response.json()
                 except Exception:
-                    details["response_text"] = response.text[
-                        :200
-                    ]  # 只保存前200个字符
+                    details["response_text"] = response.text[:200]  # 只保存前200个字符
 
                 return success, response_time, error_msg, details
 
@@ -258,9 +252,7 @@ class NetworkConnectivityTester:
                     endpoint_results = {}
                     for endpoint in docs_endpoints:
                         try:
-                            docs_response = await client.get(
-                                f"{base_url}{endpoint}", timeout=5
-                            )
+                            docs_response = await client.get(f"{base_url}{endpoint}", timeout=5)
                             endpoint_results[endpoint] = {
                                 "status_code": docs_response.status_code,
                                 "available": docs_response.status_code == 200,
@@ -282,9 +274,7 @@ class NetworkConnectivityTester:
                         health_data = health_response.json()
                         details["service_info"] = health_data
                     except Exception:
-                        details["service_info"] = {
-                            "raw_response": health_response.text[:100]
-                        }
+                        details["service_info"] = {"raw_response": health_response.text[:100]}
 
                     return True, response_time, None, details
                 else:
@@ -302,38 +292,32 @@ class NetworkConnectivityTester:
             response_time = (time.time() - start_time) * 1000
             return False, response_time, f"API 测试异常: {str(e)}", None
 
-    async def test_single_target(
-        self, target_name: str, config: Dict
-    ) -> ConnectivityResult:
+    async def test_single_target(self, target_name: str, config: Dict) -> ConnectivityResult:
         """测试单个目标的连通性"""
         start_time = time.time()
 
         try:
             if config["type"] == "tcp":
-                success, response_time, error_msg = (
-                    await self._test_tcp_connection(
-                        config["host"], config["port"]
-                    )
+                success, response_time, error_msg = await self._test_tcp_connection(
+                    config["host"], config["port"]
                 )
                 details = {"host": config["host"], "port": config["port"]}
 
             elif config["type"] == "http":
-                success, response_time, error_msg, http_details = (
-                    await self._test_http_connection(config["url"])
+                success, response_time, error_msg, http_details = await self._test_http_connection(
+                    config["url"]
                 )
                 details = http_details or {}
 
             elif config["type"] == "dns":
-                success, response_time, error_msg, dns_details = (
-                    await self._test_dns_resolution(
-                        config["host"], config.get("port", 53)
-                    )
+                success, response_time, error_msg, dns_details = await self._test_dns_resolution(
+                    config["host"], config.get("port", 53)
                 )
                 details = dns_details or {}
 
             elif config["type"] == "api":
-                success, response_time, error_msg, api_details = (
-                    await self._test_service_api(config["url"])
+                success, response_time, error_msg, api_details = await self._test_service_api(
+                    config["url"]
                 )
                 details = api_details or {}
 
@@ -342,9 +326,7 @@ class NetworkConnectivityTester:
                     test_name=target_name,
                     test_type=config["type"],
                     source="localhost",
-                    target=config.get(
-                        "url", f"{config.get('host')}:{config.get('port')}"
-                    ),
+                    target=config.get("url", f"{config.get('host')}:{config.get('port')}"),
                     status="failed",
                     error_message=f"不支持的测试类型: {config['type']}",
                 )
@@ -471,15 +453,13 @@ class NetworkConnectivityTester:
 
             if connection["target"].startswith("http"):
                 # HTTP 连接测试
-                success, response_time, error_msg, details = (
-                    await self._test_http_connection(connection["target"])
+                success, response_time, error_msg, details = await self._test_http_connection(
+                    connection["target"]
                 )
             else:
                 # TCP 连接测试
                 host, port = connection["target"].split(":")
-                success, response_time, error_msg = (
-                    await self._test_tcp_connection(host, int(port))
-                )
+                success, response_time, error_msg = await self._test_tcp_connection(host, int(port))
                 details = {"host": host, "port": int(port)}
 
             if details is None:
@@ -507,20 +487,14 @@ class NetworkConnectivityTester:
 
         return results
 
-    def generate_connectivity_report(
-        self, results: List[ConnectivityResult]
-    ) -> Dict:
+    def generate_connectivity_report(self, results: List[ConnectivityResult]) -> Dict:
         """生成连通性测试报告"""
         connected_tests = [r for r in results if r.status == "connected"]
         failed_tests = [r for r in results if r.status == "failed"]
         timeout_tests = [r for r in results if r.status == "timeout"]
 
         total_tests = len(results)
-        success_rate = (
-            (len(connected_tests) / total_tests * 100)
-            if total_tests > 0
-            else 0
-        )
+        success_rate = (len(connected_tests) / total_tests * 100) if total_tests > 0 else 0
 
         # 按测试类型分组统计
         test_types = {}
@@ -538,12 +512,8 @@ class NetworkConnectivityTester:
             test_types[test_type][result.status] += 1
 
         # 性能统计
-        response_times = [
-            r.response_time_ms for r in results if r.response_time_ms > 0
-        ]
-        avg_response_time = (
-            sum(response_times) / len(response_times) if response_times else 0
-        )
+        response_times = [r.response_time_ms for r in results if r.response_time_ms > 0]
+        avg_response_time = sum(response_times) / len(response_times) if response_times else 0
         max_response_time = max(response_times) if response_times else 0
         min_response_time = min(response_times) if response_times else 0
 
@@ -576,9 +546,7 @@ class NetworkConnectivityTester:
             "test_types": test_types,
             "critical_services": critical_status,
             "detailed_results": [result.model_dump() for result in results],
-            "recommendations": self._generate_connectivity_recommendations(
-                results
-            ),
+            "recommendations": self._generate_connectivity_recommendations(results),
         }
 
         return report
@@ -608,18 +576,14 @@ class NetworkConnectivityTester:
             )
 
         if http_failures:
-            timeout_failures = [
-                r for r in http_failures if "超时" in (r.error_message or "")
-            ]
+            timeout_failures = [r for r in http_failures if "超时" in (r.error_message or "")]
             if timeout_failures:
                 recommendations.append(
                     f"⏱️ HTTP 请求超时 ({len(timeout_failures)} 个): "
                     "可能需要增加超时时间或检查网络延迟"
                 )
 
-            connection_failures = [
-                r for r in http_failures if "连接" in (r.error_message or "")
-            ]
+            connection_failures = [r for r in http_failures if "连接" in (r.error_message or "")]
             if connection_failures:
                 recommendations.append(
                     f"🔌 HTTP 连接失败 ({len(connection_failures)} 个): "
@@ -634,9 +598,7 @@ class NetworkConnectivityTester:
 
         # 关键服务失败分析
         critical_failures = [
-            r
-            for r in failed_tests
-            if r.test_name in ["postgres", "redis", "api-gateway"]
+            r for r in failed_tests if r.test_name in ["postgres", "redis", "api-gateway"]
         ]
         if critical_failures:
             critical_names = [r.test_name for r in critical_failures]
@@ -654,9 +616,7 @@ class NetworkConnectivityTester:
 
         return recommendations
 
-    def save_report(
-        self, report: Dict, output_path: str = "connectivity-test-report.json"
-    ):
+    def save_report(self, report: Dict, output_path: str = "connectivity-test-report.json"):
         """保存连通性测试报告"""
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
@@ -732,9 +692,7 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="网络连通性测试工具")
-    parser.add_argument(
-        "--timeout", "-t", type=int, default=30, help="超时时间（秒）"
-    )
+    parser.add_argument("--timeout", "-t", type=int, default=30, help="超时时间（秒）")
     parser.add_argument(
         "--include-optional",
         "-i",
@@ -753,9 +711,7 @@ async def main():
         default="connectivity-test-report",
         help="报告文件名（不含扩展名）",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="详细输出"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="详细输出")
 
     args = parser.parse_args()
 
@@ -766,9 +722,7 @@ async def main():
     tester = NetworkConnectivityTester(timeout=args.timeout)
 
     # 执行连通性测试
-    results = await tester.test_all_connectivity(
-        include_optional=args.include_optional
-    )
+    results = await tester.test_all_connectivity(include_optional=args.include_optional)
 
     # 添加服务间连通性测试
     if args.service_to_service:

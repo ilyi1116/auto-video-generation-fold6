@@ -50,9 +50,7 @@ class SunoAIClient:
                 "User-Agent": "AutoVideoGeneration/1.0",
             }
             timeout = aiohttp.ClientTimeout(total=300)  # 5 minutes timeout
-            self.session = aiohttp.ClientSession(
-                headers=headers, timeout=timeout
-            )
+            self.session = aiohttp.ClientSession(headers=headers, timeout=timeout)
         return self.session
 
     async def health_check(self) -> Dict[str, Any]:
@@ -108,27 +106,19 @@ class SunoAIClient:
                 "quality": "high",
             }
 
-            logger.info(
-                f"Generating voice with Suno.ai: {len(text)} characters"
-            )
+            logger.info(f"Generating voice with Suno.ai: {len(text)} characters")
 
             # Submit generation request
-            async with session.post(
-                f"{self.base_url}/generate", json=payload
-            ) as response:
+            async with session.post(f"{self.base_url}/generate", json=payload) as response:
                 if response.status != 200:
                     error_text = await response.text()
-                    raise Exception(
-                        f"Suno.ai API error: {response.status} - {error_text}"
-                    )
+                    raise Exception(f"Suno.ai API error: {response.status} - {error_text}")
 
                 result = await response.json()
                 generation_id = result["generation_id"]
 
             # Poll for completion
-            audio_url, music_url, duration = await self._wait_for_completion(
-                generation_id
-            )
+            audio_url, music_url, duration = await self._wait_for_completion(generation_id)
 
             return VoiceGenerationResponse(
                 audio_url=audio_url,
@@ -152,9 +142,7 @@ class SunoAIClient:
 
         while True:
             try:
-                async with session.get(
-                    f"{self.base_url}/generate/{generation_id}"
-                ) as response:
+                async with session.get(f"{self.base_url}/generate/{generation_id}") as response:
                     if response.status != 200:
                         raise Exception(
                             f"Failed to check generation status: \
@@ -172,14 +160,10 @@ class SunoAIClient:
                         )
                     elif status == "failed":
                         error_msg = result.get("error", "Unknown error")
-                        raise Exception(
-                            f"Voice generation failed: {error_msg}"
-                        )
+                        raise Exception(f"Voice generation failed: {error_msg}")
                     elif status in ["queued", "processing"]:
                         # Check timeout
-                        elapsed = (
-                            datetime.utcnow() - start_time
-                        ).total_seconds()
+                        elapsed = (datetime.utcnow() - start_time).total_seconds()
                         if elapsed > max_wait:
                             raise Exception(
                                 f"Voice generation timeout after \
@@ -187,9 +171,7 @@ class SunoAIClient:
                             )
 
                         logger.info(f"Voice generation in progress: {status}")
-                        await asyncio.sleep(
-                            5
-                        )  # Wait 5 seconds before next check
+                        await asyncio.sleep(5)  # Wait 5 seconds before next check
                     else:
                         raise Exception(f"Unknown generation status: {status}")
 
@@ -216,13 +198,9 @@ class SunoAIClient:
         """Get list of available music genres"""
         try:
             session = await self._get_session()
-            async with session.get(
-                f"{self.base_url}/music/genres"
-            ) as response:
+            async with session.get(f"{self.base_url}/music/genres") as response:
                 if response.status != 200:
-                    raise Exception(
-                        f"Failed to get music genres: {response.status}"
-                    )
+                    raise Exception(f"Failed to get music genres: {response.status}")
 
                 result = await response.json()
                 return result["genres"]
@@ -231,9 +209,7 @@ class SunoAIClient:
             logger.error(f"Failed to get available music genres: {str(e)}")
             return ["ambient", "cinematic", "upbeat", "calm", "dramatic"]
 
-    async def clone_voice(
-        self, voice_sample_url: str, text: str
-    ) -> VoiceGenerationResponse:
+    async def clone_voice(self, voice_sample_url: str, text: str) -> VoiceGenerationResponse:
         """Clone a voice from a sample and generate speech"""
 
         try:
@@ -251,13 +227,9 @@ class SunoAIClient:
                 "quality": "high",
             }
 
-            logger.info(
-                f"Cloning voice and generating speech: {len(text)} characters"
-            )
+            logger.info(f"Cloning voice and generating speech: {len(text)} characters")
 
-            async with session.post(
-                f"{self.base_url}/clone", json=payload
-            ) as response:
+            async with session.post(f"{self.base_url}/clone", json=payload) as response:
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(
@@ -269,9 +241,7 @@ class SunoAIClient:
                 generation_id = result["generation_id"]
 
             # Wait for completion
-            audio_url, _, duration = await self._wait_for_completion(
-                generation_id
-            )
+            audio_url, _, duration = await self._wait_for_completion(generation_id)
 
             return VoiceGenerationResponse(
                 audio_url=audio_url,

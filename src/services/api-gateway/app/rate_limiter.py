@@ -41,9 +41,7 @@ limiter = Limiter(
 )
 
 
-def custom_rate_limit_exceeded_handler(
-    request: Request, exc: RateLimitExceeded
-):
+def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     """Custom rate limit exceeded handler"""
     response = HTTPException(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,

@@ -24,12 +24,12 @@ import sqlite3
 import statistics
 import threading
 import time
-from collections import defaultdict, deque
-from dataclasses import asdict, dataclass
+from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import psutil
 import redis
@@ -122,31 +122,19 @@ class IntelligentCache:
 
         # Cache analytics
         self.metrics = {
-            CacheLevel.L1_MEMORY: CacheMetrics(
-                CacheLevel.L1_MEMORY, 0, 0, 0, 0, 0.0, 0.0, 0.0
-            ),
-            CacheLevel.L2_REDIS: CacheMetrics(
-                CacheLevel.L2_REDIS, 0, 0, 0, 0, 0.0, 0.0, 0.0
-            ),
-            CacheLevel.L3_DISK: CacheMetrics(
-                CacheLevel.L3_DISK, 0, 0, 0, 0, 0.0, 0.0, 0.0
-            ),
+            CacheLevel.L1_MEMORY: CacheMetrics(CacheLevel.L1_MEMORY, 0, 0, 0, 0, 0.0, 0.0, 0.0),
+            CacheLevel.L2_REDIS: CacheMetrics(CacheLevel.L2_REDIS, 0, 0, 0, 0, 0.0, 0.0, 0.0),
+            CacheLevel.L3_DISK: CacheMetrics(CacheLevel.L3_DISK, 0, 0, 0, 0, 0.0, 0.0, 0.0),
         }
 
         # Pattern analysis
         self.access_patterns = {}
-        self.pattern_analysis_interval = config.get(
-            "pattern_analysis_interval", 300
-        )  # 5 minutes
+        self.pattern_analysis_interval = config.get("pattern_analysis_interval", 300)  # 5 minutes
 
         # Configuration
-        self.l1_max_size = config.get(
-            "l1_max_size", 100 * 1024 * 1024
-        )  # 100MB
+        self.l1_max_size = config.get("l1_max_size", 100 * 1024 * 1024)  # 100MB
         self.l1_max_entries = config.get("l1_max_entries", 10000)
-        self.compression_threshold = config.get(
-            "compression_threshold", 1024
-        )  # 1KB
+        self.compression_threshold = config.get("compression_threshold", 1024)  # 1KB
         self.default_ttl = config.get("default_ttl", 3600)  # 1 hour
 
         # Predictive caching
@@ -216,12 +204,8 @@ class IntelligentCache:
             cursor.execute(
                 "CREATE INDEX IF NOT EXISTS idx_last_accessed ON cache_entries(last_accessed)"
             )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_created_at ON cache_entries(created_at)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_tags ON cache_entries(tags)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_created_at ON cache_entries(created_at)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_tags ON cache_entries(tags)")
 
             conn.commit()
             conn.close()
@@ -236,9 +220,7 @@ class IntelligentCache:
             # L1 Memory cache
             value = await self._get_l1(key)
             if value is not None:
-                self._record_hit(
-                    CacheLevel.L1_MEMORY, time.time() - start_time
-                )
+                self._record_hit(CacheLevel.L1_MEMORY, time.time() - start_time)
                 return value
 
             # L2 Redis cache
@@ -247,9 +229,7 @@ class IntelligentCache:
                 if value is not None:
                     # Promote to L1
                     await self._set_l1(key, value, promote=True)
-                    self._record_hit(
-                        CacheLevel.L2_REDIS, time.time() - start_time
-                    )
+                    self._record_hit(CacheLevel.L2_REDIS, time.time() - start_time)
                     return value
 
             # L3 Disk cache
@@ -287,23 +267,15 @@ class IntelligentCache:
             if force_level:
                 target_level = force_level
             else:
-                target_level = await self._select_optimal_level(
-                    key, value, ttl
-                )
+                target_level = await self._select_optimal_level(key, value, ttl)
 
             # Set in target level and potentially lower levels
             success = False
 
-            if (
-                target_level == CacheLevel.L1_MEMORY
-                or target_level == CacheLevel.L2_REDIS
-            ):
+            if target_level == CacheLevel.L1_MEMORY or target_level == CacheLevel.L2_REDIS:
                 success = await self._set_l1(key, value, ttl, tags)
 
-            if (
-                target_level == CacheLevel.L2_REDIS
-                or target_level == CacheLevel.L3_DISK
-            ):
+            if target_level == CacheLevel.L2_REDIS or target_level == CacheLevel.L3_DISK:
                 if self.redis_client:
                     await self._set_l2(key, value, ttl, tags)
                     success = True
@@ -388,26 +360,20 @@ class IntelligentCache:
                             file_path_obj.unlink()
 
                         # Delete from index
-                        cursor.execute(
-                            "DELETE FROM cache_entries WHERE key = ?", (key,)
-                        )
+                        cursor.execute("DELETE FROM cache_entries WHERE key = ?", (key,))
                         count += 1
 
                 conn.commit()
                 conn.close()
                 return count
 
-            disk_invalidated = await asyncio.get_event_loop().run_in_executor(
-                None, invalidate_disk
-            )
+            disk_invalidated = await asyncio.get_event_loop().run_in_executor(None, invalidate_disk)
             invalidated_count += disk_invalidated
 
         except Exception as e:
             logger.error(f"Disk cache tag invalidation error: {e}")
 
-        logger.info(
-            f"Invalidated {invalidated_count} cache entries for tags: {tags}"
-        )
+        logger.info(f"Invalidated {invalidated_count} cache entries for tags: {tags}")
         return invalidated_count
 
     async def _get_l1(self, key: str) -> Any:
@@ -446,9 +412,7 @@ class IntelligentCache:
             if entry_size > self.compression_threshold:
                 try:
                     compressed = gzip.compress(serialized)
-                    if (
-                        len(compressed) < entry_size * 0.8
-                    ):  # Only if 20% reduction
+                    if len(compressed) < entry_size * 0.8:  # Only if 20% reduction
                         serialized = compressed
                         is_compressed = True
                     else:
@@ -462,8 +426,7 @@ class IntelligentCache:
                 # Evict if necessary
                 while (
                     len(self.l1_cache) >= self.l1_max_entries
-                    or self._get_l1_memory_usage() + entry_size
-                    > self.l1_max_size
+                    or self._get_l1_memory_usage() + entry_size > self.l1_max_size
                 ):
                     if not self.l1_access_order:
                         break
@@ -523,9 +486,7 @@ class IntelligentCache:
             return None
 
         try:
-            data = await asyncio.get_event_loop().run_in_executor(
-                None, self.redis_client.get, key
-            )
+            data = await asyncio.get_event_loop().run_in_executor(None, self.redis_client.get, key)
 
             if data:
                 # Check if compressed
@@ -643,9 +604,7 @@ class IntelligentCache:
                     creation_time = datetime.fromisoformat(created_at)
                     if datetime.now() > creation_time + timedelta(seconds=ttl):
                         # Expired, clean up
-                        cursor.execute(
-                            "DELETE FROM cache_entries WHERE key = ?", (key,)
-                        )
+                        cursor.execute("DELETE FROM cache_entries WHERE key = ?", (key,))
                         conn.commit()
                         Path(file_path).unlink(missing_ok=True)
                         conn.close()
@@ -655,9 +614,7 @@ class IntelligentCache:
                 file_path_obj = Path(file_path)
                 if not file_path_obj.exists():
                     # File missing, clean up index
-                    cursor.execute(
-                        "DELETE FROM cache_entries WHERE key = ?", (key,)
-                    )
+                    cursor.execute("DELETE FROM cache_entries WHERE key = ?", (key,))
                     conn.commit()
                     conn.close()
                     return None
@@ -684,9 +641,7 @@ class IntelligentCache:
 
                 return pickle.loads(data)
 
-            return await asyncio.get_event_loop().run_in_executor(
-                None, get_from_disk
-            )
+            return await asyncio.get_event_loop().run_in_executor(None, get_from_disk)
 
         except Exception as e:
             logger.error(f"L3 cache get error: {e}")
@@ -769,9 +724,7 @@ class IntelligentCache:
                 cursor = conn.cursor()
 
                 # Get file path
-                cursor.execute(
-                    "SELECT file_path FROM cache_entries WHERE key = ?", (key,)
-                )
+                cursor.execute("SELECT file_path FROM cache_entries WHERE key = ?", (key,))
                 result = cursor.fetchone()
 
                 if result:
@@ -779,9 +732,7 @@ class IntelligentCache:
                     file_path.unlink(missing_ok=True)
 
                     # Delete from index
-                    cursor.execute(
-                        "DELETE FROM cache_entries WHERE key = ?", (key,)
-                    )
+                    cursor.execute("DELETE FROM cache_entries WHERE key = ?", (key,))
                     conn.commit()
                     conn.close()
                     return True
@@ -789,36 +740,26 @@ class IntelligentCache:
                 conn.close()
                 return False
 
-            return await asyncio.get_event_loop().run_in_executor(
-                None, delete_from_disk
-            )
+            return await asyncio.get_event_loop().run_in_executor(None, delete_from_disk)
 
         except Exception as e:
             logger.error(f"L3 cache delete error: {e}")
             return False
 
-    async def _select_optimal_level(
-        self, key: str, value: Any, ttl: int
-    ) -> CacheLevel:
+    async def _select_optimal_level(self, key: str, value: Any, ttl: int) -> CacheLevel:
         """Select optimal cache level based on value characteristics"""
         try:
             # Calculate value size
             value_size = len(pickle.dumps(value))
 
             # Get access pattern if available
-            pattern = self.access_patterns.get(key)
+            self.access_patterns.get(key)
 
             # Decision logic
             if value_size < 1024 and ttl < 300:  # Small, short-lived
                 return CacheLevel.L1_MEMORY
-            elif (
-                value_size < 10 * 1024 * 1024 and ttl < 3600
-            ):  # Medium, medium-lived
-                return (
-                    CacheLevel.L2_REDIS
-                    if self.redis_client
-                    else CacheLevel.L1_MEMORY
-                )
+            elif value_size < 10 * 1024 * 1024 and ttl < 3600:  # Medium, medium-lived
+                return CacheLevel.L2_REDIS if self.redis_client else CacheLevel.L1_MEMORY
             else:  # Large or long-lived
                 return CacheLevel.L3_DISK
 
@@ -829,9 +770,7 @@ class IntelligentCache:
         """Record cache hit"""
         metric = self.metrics[level]
         metric.hits += 1
-        metric.avg_access_time = (metric.avg_access_time * 0.9) + (
-            access_time * 0.1
-        )
+        metric.avg_access_time = (metric.avg_access_time * 0.9) + (access_time * 0.1)
         self._update_hit_rate(level)
 
     def _record_miss_all_levels(self, access_time: float):
@@ -867,9 +806,7 @@ class IntelligentCache:
 
             # Keep only recent accesses (last hour)
             cutoff_time = now - timedelta(hours=1)
-            pattern.access_times = [
-                t for t in pattern.access_times if t > cutoff_time
-            ]
+            pattern.access_times = [t for t in pattern.access_times if t > cutoff_time]
 
             # Update frequency (accesses per hour)
             pattern.access_frequency = len(pattern.access_times)
@@ -902,10 +839,7 @@ class IntelligentCache:
         # Clean up old patterns
         keys_to_remove = []
         for key, pattern in self.access_patterns.items():
-            if (
-                not pattern.access_times
-                or max(pattern.access_times) < cutoff_time
-            ):
+            if not pattern.access_times or max(pattern.access_times) < cutoff_time:
                 keys_to_remove.append(key)
 
         for key in keys_to_remove:
@@ -931,22 +865,14 @@ class IntelligentCache:
 
                 if intervals:
                     avg_interval = statistics.mean(intervals)
-                    std_dev = (
-                        statistics.stdev(intervals)
-                        if len(intervals) > 1
-                        else 0
-                    )
+                    std_dev = statistics.stdev(intervals) if len(intervals) > 1 else 0
 
                     # Lower deviation = higher predictability
                     pattern.prediction_score = (
-                        max(0, 1.0 - (std_dev / avg_interval))
-                        if avg_interval > 0
-                        else 0
+                        max(0, 1.0 - (std_dev / avg_interval)) if avg_interval > 0 else 0
                     )
 
-        logger.debug(
-            f"Pattern analysis completed. Active patterns: {len(self.access_patterns)}"
-        )
+        logger.debug(f"Pattern analysis completed. Active patterns: {len(self.access_patterns)}")
 
     async def _cache_maintenance_task(self):
         """Background task for cache maintenance"""
@@ -990,22 +916,16 @@ class IntelligentCache:
                         Path(file_path).unlink(missing_ok=True)
 
                         # Delete from index
-                        cursor.execute(
-                            "DELETE FROM cache_entries WHERE key = ?", (key,)
-                        )
+                        cursor.execute("DELETE FROM cache_entries WHERE key = ?", (key,))
                         expired_count += 1
 
                 conn.commit()
                 conn.close()
                 return expired_count
 
-            expired_count = await asyncio.get_event_loop().run_in_executor(
-                None, cleanup_disk
-            )
+            expired_count = await asyncio.get_event_loop().run_in_executor(None, cleanup_disk)
             if expired_count > 0:
-                logger.debug(
-                    f"Cleaned up {expired_count} expired disk cache entries"
-                )
+                logger.debug(f"Cleaned up {expired_count} expired disk cache entries")
 
         except Exception as e:
             logger.error(f"Disk cache cleanup error: {e}")
@@ -1034,9 +954,7 @@ class IntelligentCache:
             # Check if key is likely to be accessed soon
             if pattern.access_times:
                 last_access = max(pattern.access_times)
-                time_since_access = (
-                    datetime.now() - last_access
-                ).total_seconds()
+                time_since_access = (datetime.now() - last_access).total_seconds()
 
                 # Predict next access based on frequency
                 predicted_interval = 3600 / pattern.access_frequency  # seconds
@@ -1045,9 +963,7 @@ class IntelligentCache:
                     # Queue for preloading
                     self.preload_queue.append((key, datetime.now()))
 
-        logger.debug(
-            f"Predictive caching queued {len(self.preload_queue)} items"
-        )
+        logger.debug(f"Predictive caching queued {len(self.preload_queue)} items")
 
     async def get_cache_statistics(self) -> Dict[str, Any]:
         """Get comprehensive cache statistics"""
@@ -1057,10 +973,7 @@ class IntelligentCache:
             "patterns": {
                 "total_patterns": len(self.access_patterns),
                 "hot_keys": sorted(
-                    [
-                        (k, p.access_frequency)
-                        for k, p in self.access_patterns.items()
-                    ],
+                    [(k, p.access_frequency) for k, p in self.access_patterns.items()],
                     key=lambda x: x[1],
                     reverse=True,
                 )[:10],
@@ -1091,9 +1004,7 @@ class IntelligentCache:
                     conn = sqlite3.connect(str(db_path))
                     cursor = conn.cursor()
 
-                    cursor.execute(
-                        "SELECT COUNT(*), SUM(size) FROM cache_entries"
-                    )
+                    cursor.execute("SELECT COUNT(*), SUM(size) FROM cache_entries")
                     count, total_size = cursor.fetchone()
 
                     conn.close()
@@ -1104,9 +1015,7 @@ class IntelligentCache:
                 except Exception:
                     return {"entry_count": 0, "total_size_mb": 0}
 
-            disk_stats = await asyncio.get_event_loop().run_in_executor(
-                None, get_disk_stats
-            )
+            disk_stats = await asyncio.get_event_loop().run_in_executor(None, get_disk_stats)
             stats["levels"]["l3_disk"].update(disk_stats)
 
         return stats
@@ -1121,24 +1030,16 @@ class IntelligentCache:
         l1_hit_rate = l1_stats["hit_rate"]
         memory_usage_mb = stats["memory_usage"]["l1_memory_mb"]
 
-        if (
-            l1_hit_rate < 80
-            and memory_usage_mb < self.l1_max_size / (1024 * 1024) * 0.8
-        ):
+        if l1_hit_rate < 80 and memory_usage_mb < self.l1_max_size / (1024 * 1024) * 0.8:
             recommendations.append(
                 {
                     "type": "increase_l1_size",
                     "current_size_mb": self.l1_max_size / (1024 * 1024),
-                    "recommended_size_mb": self.l1_max_size
-                    / (1024 * 1024)
-                    * 1.5,
+                    "recommended_size_mb": self.l1_max_size / (1024 * 1024) * 1.5,
                     "reason": f"L1 hit rate is low ({l1_hit_rate:.1f}%) and memory is underutilized",
                 }
             )
-        elif (
-            l1_hit_rate > 95
-            and memory_usage_mb > self.l1_max_size / (1024 * 1024) * 0.9
-        ):
+        elif l1_hit_rate > 95 and memory_usage_mb > self.l1_max_size / (1024 * 1024) * 0.9:
             recommendations.append(
                 {
                     "type": "optimize_l1_efficiency",
@@ -1183,23 +1084,16 @@ class IntelligentCache:
                 "default_ttl": self.default_ttl,
             },
             "performance_summary": {
-                "overall_hit_rate": sum(
-                    s["hits"] for s in stats["levels"].values()
-                )
+                "overall_hit_rate": sum(s["hits"] for s in stats["levels"].values())
                 / max(
                     1,
-                    sum(
-                        s["hits"] + s["misses"]
-                        for s in stats["levels"].values()
-                    ),
+                    sum(s["hits"] + s["misses"] for s in stats["levels"].values()),
                 )
                 * 100,
                 "avg_access_time_ms": statistics.mean(
                     [s["avg_access_time_ms"] for s in stats["levels"].values()]
                 ),
-                "memory_efficiency": memory_usage_mb
-                / (self.l1_max_size / (1024 * 1024))
-                * 100,
+                "memory_efficiency": memory_usage_mb / (self.l1_max_size / (1024 * 1024)) * 100,
             },
             "recommendations": recommendations,
         }
@@ -1286,9 +1180,7 @@ async def example_usage():
     await cache_manager.initialize()
 
     # Basic caching
-    await cache_manager.cache.set(
-        "user:123", {"name": "John", "email": "john@example.com"}
-    )
+    await cache_manager.cache.set("user:123", {"name": "John", "email": "john@example.com"})
     user = await cache_manager.cache.get("user:123")
     print(f"Cached user: {user}")
 
@@ -1316,9 +1208,7 @@ async def example_usage():
 
     # Cache optimization
     optimization = await cache_manager.optimize()
-    print(
-        f"Optimization recommendations: {json.dumps(optimization, indent=2, default=str)}"
-    )
+    print(f"Optimization recommendations: {json.dumps(optimization, indent=2, default=str)}")
 
 
 async def main():

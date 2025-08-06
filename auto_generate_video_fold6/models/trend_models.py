@@ -18,14 +18,12 @@ from .base import Base
 
 class TrendingTopic(Base):
     """熱門話題模型"""
-    
+
     __tablename__ = "trending_topics"
 
     id = Column(Integer, primary_key=True, index=True)
     keyword = Column(String(255), nullable=False, index=True)
-    platform = Column(
-        String(50), nullable=False
-    )  # google, youtube, tiktok, instagram
+    platform = Column(String(50), nullable=False)  # google, youtube, tiktok, instagram
 
     # 趨勢數據
     search_volume = Column(Integer, default=0)
@@ -47,7 +45,7 @@ class TrendingTopic(Base):
 
 class KeywordResearch(Base):
     """關鍵字研究模型"""
-    
+
     __tablename__ = "keyword_research"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -79,7 +77,7 @@ class KeywordResearch(Base):
 
 class ViralContent(Base):
     """病毒式內容模型"""
-    
+
     __tablename__ = "viral_content"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -117,13 +115,11 @@ class ViralContent(Base):
 
 class TrendAnalysis(Base):
     """趨勢分析模型"""
-    
+
     __tablename__ = "trend_analysis"
 
     id = Column(Integer, primary_key=True, index=True)
-    analysis_type = Column(
-        String(50), nullable=False
-    )  # keyword, topic, content
+    analysis_type = Column(String(50), nullable=False)  # keyword, topic, content
     target = Column(String(255), nullable=False)  # 分析目標
 
     # 分析結果

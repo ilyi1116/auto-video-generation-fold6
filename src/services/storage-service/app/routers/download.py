@@ -112,9 +112,7 @@ async def get_file_info(
 ):
     """Get detailed file information"""
     try:
-        file = await FileCRUD.get_file_by_id(
-            db, file_id, current_user.get("id")
-        )
+        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -171,9 +169,7 @@ async def download_file(
 ):
     """Download file by ID"""
     try:
-        file = await FileCRUD.get_file_by_id(
-            db, file_id, current_user.get("id")
-        )
+        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -204,9 +200,7 @@ async def download_file(
                 "Content-Length": str(file.file_size),
             }
 
-            return StreamingResponse(
-                generate(), media_type=file.mime_type, headers=headers
-            )
+            return StreamingResponse(generate(), media_type=file.mime_type, headers=headers)
 
         except Exception as e:
             logger.error(
@@ -214,9 +208,7 @@ async def download_file(
                 error=str(e),
                 file_id=file_id,
             )
-            raise HTTPException(
-                status_code=500, detail="Failed to retrieve file"
-            )
+            raise HTTPException(status_code=500, detail="Failed to retrieve file")
 
     except HTTPException:
         raise
@@ -235,18 +227,14 @@ async def serve_file(
 ):
     """Serve file for viewing (not downloading)"""
     try:
-        file = await FileCRUD.get_file_by_id(
-            db, file_id, current_user.get("id")
-        )
+        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
         # For thumbnails
         if thumbnail and file.has_thumbnail and file.thumbnail_path:
             try:
-                thumbnail_data = await storage_manager.download_file(
-                    file.thumbnail_path
-                )
+                thumbnail_data = await storage_manager.download_file(file.thumbnail_path)
 
                 def generate():
                     yield thumbnail_data
@@ -287,9 +275,7 @@ async def delete_file(
 ):
     """Delete file"""
     try:
-        file = await FileCRUD.get_file_by_id(
-            db, file_id, current_user.get("id")
-        )
+        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -312,9 +298,7 @@ async def delete_file(
             )
 
         # Delete from database
-        success = await FileCRUD.delete_file(
-            db, file_id, current_user.get("id")
-        )
+        success = await FileCRUD.delete_file(db, file_id, current_user.get("id"))
         if not success:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -346,9 +330,7 @@ async def update_file(
 ):
     """Update file metadata"""
     try:
-        file = await FileCRUD.get_file_by_id(
-            db, file_id, current_user.get("id")
-        )
+        file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -368,9 +350,7 @@ async def update_file(
         if not updates:
             raise HTTPException(status_code=400, detail="No updates provided")
 
-        updated_file = await FileCRUD.update_file(
-            db, file_id, current_user.get("id"), updates
-        )
+        updated_file = await FileCRUD.update_file(db, file_id, current_user.get("id"), updates)
         if not updated_file:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -400,13 +380,9 @@ async def bulk_delete_files(
 
         for file_id in file_ids:
             try:
-                file = await FileCRUD.get_file_by_id(
-                    db, file_id, current_user.get("id")
-                )
+                file = await FileCRUD.get_file_by_id(db, file_id, current_user.get("id"))
                 if not file:
-                    failed_files.append(
-                        {"file_id": file_id, "error": "File not found"}
-                    )
+                    failed_files.append({"file_id": file_id, "error": "File not found"})
                     continue
 
                 # Delete from storage
@@ -414,9 +390,7 @@ async def bulk_delete_files(
                     await storage_manager.delete_file(file.object_key)
                     if file.has_thumbnail and file.thumbnail_path:
                         try:
-                            await storage_manager.delete_file(
-                                file.thumbnail_path
-                            )
+                            await storage_manager.delete_file(file.thumbnail_path)
                         except Exception:
                             pass
                 except Exception as e:
@@ -427,9 +401,7 @@ async def bulk_delete_files(
                     )
 
                 # Delete from database
-                success = await FileCRUD.delete_file(
-                    db, file_id, current_user.get("id")
-                )
+                success = await FileCRUD.delete_file(db, file_id, current_user.get("id"))
                 if success:
                     deleted_files.append(file_id)
                 else:

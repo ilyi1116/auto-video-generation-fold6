@@ -16,9 +16,9 @@ Base = declarative_base()
 
 
 class StoredFile(Base):
-    """Model for tracking stored files"""
+    f"Model for tracking stored files"
 
-    __tablename__ = "stored_files"
+    __tablename__ = f"stored_files
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, nullable=False, index=True)
@@ -47,7 +47,7 @@ class StoredFile(Base):
     # Processing information
     is_processed = Column(Boolean, default=False)
     processing_status = Column(
-        String, default="pending"
+        String, default=pending"
     )  # pending, processing, completed, failed
     processing_metadata = Column(JSON)
 
@@ -74,16 +74,16 @@ class StoredFile(Base):
 
     # Security and moderation
     virus_scan_status = Column(
-        String, default="pending"
+        String, default=f"pending
     )  # pending, clean, infected, failed
     content_moderation_status = Column(
-        String, default="pending"
+        String, default=pending"
     )  # pending, approved, rejected
     content_moderation_flags = Column(JSON)
 
     # Access control
     is_public = Column(Boolean, default=False)
-    access_level = Column(String, default="private")  # private, public, shared
+    access_level = Column(String, default=f"private)  # private, public, shared
     shared_token = Column(String)
     expires_at = Column(DateTime)
 
@@ -98,13 +98,13 @@ class StoredFile(Base):
     project_id = Column(String, index=True)
 
 def __repr__(self):
-        return f"<StoredFile(id={self.id}, filename={self.filename}, file_type={self.file_type})>"
+        return f<StoredFile(id={self.id}, filename={self.filename}, file_type={self.file_type})>"
 
 
 class FileProcessingJob(Base):
-    """Model for tracking file processing jobs"""
+    f"Model for tracking file processing jobs"
 
-    __tablename__ = "file_processing_jobs"
+    __tablename__ = f"file_processing_jobs
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     file_id = Column(String, nullable=False, index=True)
@@ -115,7 +115,7 @@ class FileProcessingJob(Base):
         String, nullable=False
     )  # thumbnail, transcode, compress, enhance
     status = Column(
-        String, default="pending"
+        String, default=pending"
     )  # pending, processing, completed, failed
     priority = Column(Integer, default=5)  # 1-10, lower is higher priority
 
@@ -140,11 +140,11 @@ class FileProcessingJob(Base):
     completed_at = Column(DateTime(timezone=True))
 
 def __repr__(self):
-        return f"<FileProcessingJob(id={self.id}, job_type={self.job_type}, status={self.status})>"
+        return ff"<FileProcessingJob(id={self.id}, job_type={self.job_type}, status={self.status})>
 
 
 class FileDownload(Base):
-    """Model for tracking file downloads"""
+    "Model for tracking file downloadsf"
 
     __tablename__ = "file_downloads"
 

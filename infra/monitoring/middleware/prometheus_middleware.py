@@ -88,13 +88,9 @@ class PrometheusMiddleware:
         )
 
         # 系統指標
-        self.memory_usage = Gauge(
-            "memory_usage_bytes", "Memory usage in bytes", ["service"]
-        )
+        self.memory_usage = Gauge("memory_usage_bytes", "Memory usage in bytes", ["service"])
 
-        self.cpu_usage = Gauge(
-            "cpu_usage_percent", "CPU usage percentage", ["service"]
-        )
+        self.cpu_usage = Gauge("cpu_usage_percent", "CPU usage percentage", ["service"])
 
         # 資料庫指標
         self.db_connections = Gauge(
@@ -145,9 +141,7 @@ class PrometheusMiddleware:
             try:
                 # 記憶體使用量
                 memory_info = psutil.virtual_memory()
-                self.memory_usage.labels(service=self.app_name).set(
-                    memory_info.used
-                )
+                self.memory_usage.labels(service=self.app_name).set(memory_info.used)
 
                 # CPU 使用率
                 cpu_percent = psutil.cpu_percent(interval=1)
@@ -158,9 +152,7 @@ class PrometheusMiddleware:
                 print(f"Error collecting system metrics: {e}")
                 await asyncio.sleep(60)
 
-    async def __call__(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def __call__(self, request: Request, call_next: Callable) -> Response:
         """中介軟體主要邏輯"""
         # 記錄請求開始時間
         start_time = time.time()
@@ -182,9 +174,7 @@ class PrometheusMiddleware:
 
         except Exception as e:
             # 記錄錯誤
-            self.error_count.labels(
-                error_type=type(e).__name__, service=self.app_name
-            ).inc()
+            self.error_count.labels(error_type=type(e).__name__, service=self.app_name).inc()
 
             status_code = 500
             raise
@@ -241,36 +231,30 @@ class PrometheusMiddleware:
 
         return path
 
-    def record_video_generation(
-        self, status: str, platform: str, duration: float = None
-    ):
+    def record_video_generation(self, status: str, platform: str, duration: float = None):
         """記錄影片生成指標"""
         self.video_generation_count.labels(
             status=status, platform=platform, service=self.app_name
         ).inc()
 
         if duration is not None:
-            self.video_generation_duration.labels(
-                platform=platform, service=self.app_name
-            ).observe(duration)
+            self.video_generation_duration.labels(platform=platform, service=self.app_name).observe(
+                duration
+            )
 
-    def record_ai_request(
-        self, request_type: str, status: str, duration: float
-    ):
+    def record_ai_request(self, request_type: str, status: str, duration: float):
         """記錄 AI 請求指標"""
         self.ai_request_count.labels(
             request_type=request_type, status=status, service=self.app_name
         ).inc()
 
-        self.ai_request_duration.labels(
-            request_type=request_type, service=self.app_name
-        ).observe(duration)
+        self.ai_request_duration.labels(request_type=request_type, service=self.app_name).observe(
+            duration
+        )
 
     def record_db_query(self, operation: str, duration: float):
         """記錄資料庫查詢指標"""
-        self.db_query_duration.labels(
-            operation=operation, service=self.app_name
-        ).observe(duration)
+        self.db_query_duration.labels(operation=operation, service=self.app_name).observe(duration)
 
     def record_cache_operation(self, operation: str, result: str):
         """記錄快取操作指標"""
@@ -280,9 +264,7 @@ class PrometheusMiddleware:
 
     def record_error(self, error_type: str):
         """記錄錯誤指標"""
-        self.error_count.labels(
-            error_type=error_type, service=self.app_name
-        ).inc()
+        self.error_count.labels(error_type=error_type, service=self.app_name).inc()
 
 
 def setup_metrics_endpoint(app: FastAPI, middleware: PrometheusMiddleware):

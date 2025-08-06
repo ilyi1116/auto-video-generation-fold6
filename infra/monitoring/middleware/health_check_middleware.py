@@ -94,9 +94,7 @@ class HealthChecker:
         self.checks: Dict[str, Callable] = {}
         self.last_results: Dict[str, HealthCheckResult] = {}
 
-    def register_check(
-        self, name: str, check_func: Callable, timeout: float = 5.0
-    ):
+    def register_check(self, name: str, check_func: Callable, timeout: float = 5.0):
         """註冊健康檢查函數"""
         self.checks[name] = {"func": check_func, "timeout": timeout}
 
@@ -116,9 +114,7 @@ class HealthChecker:
 
         try:
             # 執行健康檢查，帶超時控制
-            result = await asyncio.wait_for(
-                check_config["func"](), timeout=check_config["timeout"]
-            )
+            result = await asyncio.wait_for(check_config["func"](), timeout=check_config["timeout"])
 
             duration_ms = (time.time() - start_time) * 1000
 
@@ -128,11 +124,7 @@ class HealthChecker:
             elif isinstance(result, bool):
                 return HealthCheckResult(
                     name=name,
-                    status=(
-                        HealthStatus.HEALTHY
-                        if result
-                        else HealthStatus.UNHEALTHY
-                    ),
+                    status=(HealthStatus.HEALTHY if result else HealthStatus.UNHEALTHY),
                     timestamp=datetime.utcnow(),
                     duration_ms=duration_ms,
                     message="OK" if result else "Check failed",
@@ -144,11 +136,7 @@ class HealthChecker:
                     timestamp=datetime.utcnow(),
                     duration_ms=duration_ms,
                     message="OK",
-                    details=(
-                        result
-                        if isinstance(result, dict)
-                        else {"result": str(result)}
-                    ),
+                    details=(result if isinstance(result, dict) else {"result": str(result)}),
                 )
 
         except asyncio.TimeoutError:
@@ -179,9 +167,7 @@ class HealthChecker:
         check_tasks = [self.run_check(name) for name in self.checks.keys()]
 
         if check_tasks:
-            results = await asyncio.gather(
-                *check_tasks, return_exceptions=True
-            )
+            results = await asyncio.gather(*check_tasks, return_exceptions=True)
 
             # 處理異常結果
             processed_results = []
@@ -217,19 +203,13 @@ class HealthChecker:
             uptime_seconds=uptime,
         )
 
-    def _calculate_overall_status(
-        self, results: List[HealthCheckResult]
-    ) -> HealthStatus:
+    def _calculate_overall_status(self, results: List[HealthCheckResult]) -> HealthStatus:
         """計算整體健康狀態"""
         if not results:
             return HealthStatus.HEALTHY
 
-        unhealthy_count = sum(
-            1 for r in results if r.status == HealthStatus.UNHEALTHY
-        )
-        degraded_count = sum(
-            1 for r in results if r.status == HealthStatus.DEGRADED
-        )
+        unhealthy_count = sum(1 for r in results if r.status == HealthStatus.UNHEALTHY)
+        degraded_count = sum(1 for r in results if r.status == HealthStatus.DEGRADED)
 
         if unhealthy_count > 0:
             # 如果有超過一半的檢查失敗，系統不健康
@@ -489,9 +469,7 @@ class HealthCheckMiddleware:
 
         # 資料庫檢查 (如果配置可用)
         if POSTGRES_AVAILABLE:
-            health_checker.register_check(
-                "database", check_database_connectivity
-            )
+            health_checker.register_check("database", check_database_connectivity)
 
         # Redis 檢查 (如果配置可用)
         if REDIS_AVAILABLE:
@@ -506,22 +484,16 @@ class HealthCheckMiddleware:
 
         # 健康檢查端點
         if path == self.health_endpoint:
-            await self._handle_health_check(
-                scope, receive, send, detailed=False
-            )
+            await self._handle_health_check(scope, receive, send, detailed=False)
             return
         elif path == self.detailed_endpoint:
-            await self._handle_health_check(
-                scope, receive, send, detailed=True
-            )
+            await self._handle_health_check(scope, receive, send, detailed=True)
             return
 
         # 正常請求處理
         await self.app(scope, receive, send)
 
-    async def _handle_health_check(
-        self, scope, receive, send, detailed: bool = False
-    ):
+    async def _handle_health_check(self, scope, receive, send, detailed: bool = False):
         """處理健康檢查請求"""
         try:
             system_health = await health_checker.run_all_checks()
@@ -605,9 +577,7 @@ class HealthCheckMiddleware:
 
 
 # 便捷函數
-def register_health_check(
-    name: str, check_func: Callable, timeout: float = 5.0
-):
+def register_health_check(name: str, check_func: Callable, timeout: float = 5.0):
     """註冊健康檢查的便捷函數"""
     health_checker.register_check(name, check_func, timeout)
 

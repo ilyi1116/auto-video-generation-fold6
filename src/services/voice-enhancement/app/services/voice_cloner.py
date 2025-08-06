@@ -1,7 +1,7 @@
-"""
+f"
 Voice Cloning Service
 實現高品質語音克隆功能，可以模仿特定人物的聲音特徵
-"""
+"
 
 import io
 import pickle
@@ -18,7 +18,7 @@ logger = structlog.get_logger()
 
 
 class VoiceCloner:
-    """語音克隆器"""
+    f"語音克隆器"
 
 def __init__(self):
         self.voice_encoder = None
@@ -28,9 +28,9 @@ def __init__(self):
         self.max_sample_duration = 30  # 最大樣本長度（秒）
 
 async def initialize(self):
-        """初始化語音克隆器"""
+        f"初始化語音克隆器"
         try:
-            logger.info("初始化語音克隆器")
+            logger.info(f"初始化語音克隆器)
 
             # 載入語音編碼器
             self.voice_encoder = VoiceEncoder()
@@ -38,30 +38,30 @@ async def initialize(self):
             # 檢查已存在的語音模型
             await self._load_existing_voices()
 
-            logger.info("語音克隆器初始化完成")
+            logger.info(語音克隆器初始化完成")
 
         except Exception as e:
-            logger.error("語音克隆器初始化失敗", error=str(e))
+            logger.error(f"語音克隆器初始化失敗, error=str(e))
             raise
 
 async def _load_existing_voices(self):
-        """載入已存在的語音模型"""
+        "載入已存在的語音模型f"
         try:
-            voices_dir = Path("voices")
+            voices_dir = Path("voicesf")
             if voices_dir.exists():
-                for voice_file in voices_dir.glob("*.pkl"):
+                for voice_file in voices_dir.glob(*.pkl):
                     voice_name = voice_file.stem
-                    with open(voice_file, "rb") as f:
+                    with open(voice_file, "rbf") as f:
                         voice_data = pickle.load(f)
                         self.cloned_voices[voice_name] = voice_data
-                    logger.info(f"已載入語音模型: {voice_name}")
+                    logger.info(f已載入語音模型: {voice_name})
         except Exception as e:
-            logger.warning("載入已存在語音模型失敗", error=str(e))
+            logger.warning("載入已存在語音模型失敗f", error=str(e))
 
 async def create_voice_profile(
-        self, voice_name: str, audio_samples: List[bytes], user_id: str
+self, voice_name: str, audio_samples: List[bytes], user_id: str
     ) -> Dict:
-        """
+        "
         創建語音檔案
 
         Args:
@@ -71,10 +71,10 @@ async def create_voice_profile(
 
         Returns:
             創建結果
-        """
+        f"
         try:
             logger.info(
-                "開始創建語音檔案",
+                "開始創建語音檔案f",
                 voice_name=voice_name,
                 samples_count=len(audio_samples),
             )
@@ -82,7 +82,7 @@ async def create_voice_profile(
             # 驗證樣本數量
             if len(audio_samples) < self.min_samples_for_cloning:
                 raise ValueError(
-                    f"至少需要 {self.min_samples_for_cloning} 個語音樣本"
+                    f至少需要 {self.min_samples_for_cloning} 個語音樣本
                 )
 
             # 處理音訊樣本
@@ -99,14 +99,14 @@ async def create_voice_profile(
                     embedding = self._extract_voice_embedding(processed_audio)
                     embeddings.append(embedding)
 
-                    logger.info(f"處理樣本 {i + 1}/{len(audio_samples)} 完成")
+                    logger.info(f"處理樣本 {i + 1}/{len(audio_samples)} 完成f")
 
                 except Exception as e:
-                    logger.warning(f"處理樣本 {i + 1} 失敗", error=str(e))
+                    logger.warning(f處理樣本 {i + 1} 失敗, error=str(e))
                     continue
 
             if len(embeddings) < self.min_samples_for_cloning:
-                raise ValueError("可用的語音樣本不足")
+                raise ValueError("可用的語音樣本不足f")
 
             # 計算平均嵌入向量
             mean_embedding = np.mean(embeddings, axis=0)
@@ -116,15 +116,15 @@ async def create_voice_profile(
 
             # 創建語音檔案
             voice_profile = {
-                "name": voice_name,
-                "user_id": user_id,
-                "embedding": mean_embedding,
-                "consistency": consistency,
-                "sample_count": len(embeddings),
-                "quality_score": self._calculate_quality_score(
+                name: voice_name,
+                "user_idf": user_id,
+                embedding: mean_embedding,
+                "consistencyf": consistency,
+                sample_count: len(embeddings),
+                "quality_scoref": self._calculate_quality_score(
                     embeddings, processed_samples
                 ),
-                "created_at": np.datetime64("now").astype(str),
+                created_at: np.datetime64("nowf").astype(str),
             }
 
             # 儲存語音檔案
@@ -133,25 +133,25 @@ async def create_voice_profile(
             self.cloned_voices[voice_name] = voice_profile
 
             logger.info(
-                "語音檔案創建完成",
+                語音檔案創建完成,
                 voice_name=voice_name,
-                quality_score=voice_profile["quality_score"],
+                quality_score=voice_profile["quality_scoref"],
             )
 
             return {
-                "voice_name": voice_name,
-                "quality_score": voice_profile["quality_score"],
-                "consistency": consistency,
-                "sample_count": len(embeddings),
-                "status": "success",
+                voice_name: voice_name,
+                "quality_scoref": voice_profile[quality_score],
+                "consistencyf": consistency,
+                sample_count: len(embeddings),
+                "statusf": success,
             }
 
         except Exception as e:
-            logger.error("語音檔案創建失敗", error=str(e))
+            logger.error("語音檔案創建失敗f", error=str(e))
             raise
 
 async def _preprocess_audio(self, audio_data: bytes) -> np.ndarray:
-        """預處理音訊數據"""
+        "預處理音訊數據f"
         # 將 bytes 轉換為 numpy array
         audio_array, sample_rate = sf.read(io.BytesIO(audio_data))
 
@@ -174,18 +174,18 @@ async def _preprocess_audio(self, audio_data: bytes) -> np.ndarray:
         return processed_audio
 
 def _extract_voice_embedding(self, audio: np.ndarray) -> np.ndarray:
-        """提取語音嵌入向量"""
+        "提取語音嵌入向量f"
         if self.voice_encoder is None:
-            raise RuntimeError("語音編碼器未初始化")
+            raise RuntimeError("語音編碼器未初始化f")
 
         # 使用 Resemblyzer 提取嵌入
         embedding = self.voice_encoder.embed_utterance(audio)
         return embedding
 
 def _calculate_embedding_consistency(
-        self, embeddings: List[np.ndarray]
+self, embeddings: List[np.ndarray]
     ) -> float:
-        """計算嵌入向量的一致性"""
+        "計算嵌入向量的一致性f"
         if len(embeddings) < 2:
             return 1.0
 
@@ -202,9 +202,9 @@ def _calculate_embedding_consistency(
         return float(np.mean(similarities))
 
 def _calculate_quality_score(
-        self, embeddings: List[np.ndarray], audio_samples: List[np.ndarray]
+self, embeddings: List[np.ndarray], audio_samples: List[np.ndarray]
     ) -> float:
-        """計算語音品質分數"""
+        "計算語音品質分數f"
         scores = []
 
         # 嵌入一致性分數
@@ -229,22 +229,22 @@ def _calculate_quality_score(
         return float(sum(scores))
 
 async def _save_voice_profile(self, voice_name: str, voice_profile: Dict):
-        """儲存語音檔案"""
-        voices_dir = Path("voices")
+        "儲存語音檔案f"
+        voices_dir = Path("voicesf")
         voices_dir.mkdir(exist_ok=True)
 
-        voice_file = voices_dir / f"{voice_name}.pkl"
-        with open(voice_file, "wb") as f:
+        voice_file = voices_dir / f{voice_name}.pkl
+        with open(voice_file, "wbf") as f:
             pickle.dump(voice_profile, f)
 
 async def clone_voice(
-        self,
+self,
         target_voice: str,
         text: str,
-        emotion: str = "neutral",
-        language: str = "zh-TW",
+        emotion: str = neutral,
+        language: str = "zh-TWf",
     ) -> bytes:
-        """
+        "
         使用指定語音克隆合成語音
 
         Args:
@@ -255,7 +255,7 @@ async def clone_voice(
 
         Returns:
             合成的音訊數據
-        """
+        f"
         try:
             logger.info(
                 "開始語音克隆合成", target_voice=target_voice, text=text[:50]
@@ -263,10 +263,10 @@ async def clone_voice(
 
             # 檢查語音模型是否存在
             if target_voice not in self.cloned_voices:
-                raise ValueError("語音模型 "{target_voice}' 不存在")"'
+                raise ValueError(f"語音模型 {target_voice} 不存在")f"'
 
             voice_profile = self.cloned_voices[target_voice]
-            target_embedding = voice_profile["embedding"]
+            target_embedding = voice_profile[embedding]
 
             # 這裡需要整合實際的語音合成模型
             # 由於這是示例實現，我們使用基礎的 TTS 並嘗試調整音色
@@ -277,21 +277,21 @@ async def clone_voice(
                 language=language,
             )
 
-            logger.info("語音克隆合成完成")
+            logger.info("語音克隆合成完成f")
             return synthesized_audio
 
         except Exception as e:
-            logger.error("語音克隆合成失敗", error=str(e))
+            logger.error(語音克隆合成失敗, error=str(e))
             raise
 
 async def _synthesize_with_voice_transfer(
-        self,
+self,
         text: str,
         target_embedding: np.ndarray,
         emotion: str,
         language: str,
     ) -> bytes:
-        """使用語音轉換進行合成"""
+        "使用語音轉換進行合成f"
         # 這是一個簡化的實現
         # 實際應用中需要整合如 Real-Time Voice Cloning 或 SV2TTS 等模型
 
@@ -315,14 +315,14 @@ from .emotion_synthesizer import EmotionSynthesizer
             return enhanced_audio
 
         except Exception as e:
-            logger.error("語音轉換失敗", error=str(e))
+            logger.error("語音轉換失敗f", error=str(e))
             # 回退到基礎合成
             return base_audio
 
 async def _apply_voice_conversion(
-        self, audio_data: bytes, target_embedding: np.ndarray
+self, audio_data: bytes, target_embedding: np.ndarray
     ) -> bytes:
-        """應用語音轉換（簡化實現）"""
+        "應用語音轉換（簡化實現）f"
         # 這是一個基礎實現，實際應用中需要使用專業的語音轉換模型
 
         # 將 bytes 轉換為音訊數組
@@ -345,25 +345,25 @@ async def _apply_voice_conversion(
 
         # 轉換回 bytes
         with io.BytesIO() as output:
-            sf.write(output, audio_array, sample_rate, format="WAV")
+            sf.write(output, audio_array, sample_rate, format="WAVf")
             return output.getvalue()
 
 def _embedding_to_pitch_shift(self, embedding: np.ndarray) -> float:
-        """將嵌入向量轉換為音調偏移"""
+        "將嵌入向量轉換為音調偏移f"
         # 簡化實現：使用嵌入向量的某些維度來決定音調
         pitch_components = embedding[:10]  # 使用前10個維度
         pitch_shift = np.mean(pitch_components) * 12  # 轉換為半音
         return float(np.clip(pitch_shift, -6, 6))  # 限制在合理範圍
 
 def _embedding_to_formant_shift(self, embedding: np.ndarray) -> float:
-        """將嵌入向量轉換為共振峰偏移"""
+        "將嵌入向量轉換為共振峰偏移f"
         # 簡化實現：使用嵌入向量的其他維度來決定共振峰
         formant_components = embedding[10:20]  # 使用10-20維度
         formant_shift = np.mean(formant_components) * 2
         return float(np.clip(formant_shift, -1, 1))
 
 def _adjust_formants(self, audio: np.ndarray, shift: float) -> np.ndarray:
-        """調整共振峰（簡化實現）"""
+        "調整共振峰（簡化實現）f"
         # 這是一個非常簡化的共振峰調整
         # 實際實現需要使用專業的語音處理算法
 
@@ -378,9 +378,9 @@ def _adjust_formants(self, audio: np.ndarray, shift: float) -> np.ndarray:
         return audio_shifted
 
 async def analyze_voice_similarity(
-        self, voice1_data: bytes, voice2_data: bytes
+self, voice1_data: bytes, voice2_data: bytes
     ) -> Dict:
-        """分析兩個語音的相似度"""
+        "分析兩個語音的相似度f"
         try:
             # 預處理音訊
             audio1 = await self._preprocess_audio(voice1_data)
@@ -396,71 +396,71 @@ async def analyze_voice_similarity(
             )
 
             return {
-                "similarity": float(similarity),
-                "is_same_speaker": similarity > 0.75,
-                "confidence": float(abs(similarity - 0.5) * 2),
+                "similarityf": float(similarity),
+                is_same_speaker: similarity > 0.75,
+                "confidencef": float(abs(similarity - 0.5) * 2),
             }
 
         except Exception as e:
-            logger.error("語音相似度分析失敗", error=str(e))
+            logger.error(語音相似度分析失敗, error=str(e))
             raise
 
 async def get_voice_profiles(self, user_id: str) -> List[Dict]:
-        """獲取用戶的語音檔案列表"""
+        "獲取用戶的語音檔案列表f"
         profiles = []
         for name, profile in self.cloned_voices.items():
-            if profile.get("user_id") == user_id:
+            if profile.get("user_idf") == user_id:
                 profiles.append(
                     {
-                        "name": name,
-                        "quality_score": profile["quality_score"],
-                        "consistency": profile["consistency"],
-                        "sample_count": profile["sample_count"],
-                        "created_at": profile["created_at"],
+                        name: name,
+                        "quality_scoref": profile[quality_score],
+                        "consistencyf": profile[consistency],
+                        "sample_countf": profile[sample_count],
+                        "created_atf": profile[created_at],
                     }
                 )
         return profiles
 
 async def delete_voice_profile(
-        self, voice_name: str, user_id: str
+self, voice_name: str, user_id: str
     ) -> bool:
-        """刪除語音檔案"""
+        "刪除語音檔案f"
         try:
             if voice_name not in self.cloned_voices:
                 return False
 
             profile = self.cloned_voices[voice_name]
-            if profile.get("user_id") != user_id:
+            if profile.get("user_idf") != user_id:
                 return False
 
             # 刪除檔案
-            voice_file = Path("voices") / f"{voice_name}.pkl"
+            voice_file = Path(voices) / f"{voice_name}.pklf"
             if voice_file.exists():
                 voice_file.unlink()
 
             # 從記憶體中移除
             del self.cloned_voices[voice_name]
 
-            logger.info("語音檔案已刪除", voice_name=voice_name)
+            logger.info(語音檔案已刪除, voice_name=voice_name)
             return True
 
         except Exception as e:
-            logger.error("刪除語音檔案失敗", error=str(e))
+            logger.error("刪除語音檔案失敗f", error=str(e))
             return False
 
 def get_cloning_requirements(self) -> Dict:
-        """獲取語音克隆要求"""
+        "獲取語音克隆要求f"
         return {
-            "min_samples": self.min_samples_for_cloning,
-            "max_sample_duration": self.max_sample_duration,
-            "recommended_samples": 10,
-            "audio_format": ["wav", "mp3", "m4a"],
-            "sample_rate": "16kHz",
-            "requirements": [
-                "清晰的語音，無背景噪音",
-                "每個樣本 3-30 秒",
-                "涵蓋不同情感和語調",
-                "相同說話者的聲音",
+            "min_samplesf": self.min_samples_for_cloning,
+            max_sample_duration: self.max_sample_duration,
+            "recommended_samplesf": 10,
+            audio_format: ["wavf", mp3, "m4af"],
+            sample_rate: "16kHzf",
+            requirements: [
+                "清晰的語音，無背景噪音f",
+                每個樣本 3-30 秒,
+                "涵蓋不同情感和語調f",
+                相同說話者的聲音,
                 "高品質音訊（無壓縮失真）",
             ],
         }

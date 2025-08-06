@@ -86,8 +86,7 @@ class SecurityMonitor:
                         self.add_issue(
                             (
                                 "high"
-                                if "critical"
-                                in issue.get("advisory", "").lower()
+                                if "critical" in issue.get("advisory", "").lower()
                                 else "medium"
                             ),
                             f"Python 依賴漏洞: {issue.get('package')} - {issue.get('advisory')}",
@@ -174,10 +173,7 @@ class SecurityMonitor:
                         "使用 RUN wget/curl 替代",
                     )
 
-                if (
-                    "--NO-INSTALL-RECOMMENDS" not in line
-                    and "APT-GET INSTALL" in line
-                ):
+                if "--NO-INSTALL-RECOMMENDS" not in line and "APT-GET INSTALL" in line:
                     self.add_issue(
                         "low",
                         "Docker 優化建議: 缺少 --no-install-recommends",
@@ -211,9 +207,7 @@ class SecurityMonitor:
                         "LOW": "low",
                     }
 
-                    severity = severity_map.get(
-                        issue.get("issue_severity", "LOW"), "low"
-                    )
+                    severity = severity_map.get(issue.get("issue_severity", "LOW"), "low")
                     self.add_issue(
                         severity,
                         f"代碼安全問題: {issue.get('test_name')}",
@@ -259,9 +253,7 @@ class SecurityMonitor:
 
                 if "ACCESS_TOKEN_EXPIRE" in content:
                     # 檢查是否有過長的過期時間
-                    if any(
-                        word in content for word in ["1440", "24*60", "86400"]
-                    ):
+                    if any(word in content for word in ["1440", "24*60", "86400"]):
                         self.add_issue(
                             "low",
                             "JWT 配置建議: Token 過期時間過長",
@@ -304,10 +296,7 @@ class SecurityMonitor:
                     line = line.strip()
 
                     # 檢查硬編碼密鑰
-                    if any(
-                        keyword in line.lower()
-                        for keyword in ["password=", "secret=", "key="]
-                    ):
+                    if any(keyword in line.lower() for keyword in ["password=", "secret=", "key="]):
                         if not line.endswith("=${RANDOM}") and "=" in line:
                             value = line.split("=", 1)[1]
                             if value and not value.startswith("$"):
@@ -337,9 +326,7 @@ class SecurityMonitor:
         exclude_dirs = {".git", "node_modules", "__pycache__", ".pytest_cache"}
 
         for file_path in self.project_root.rglob("*"):
-            if file_path.is_file() and not any(
-                exc in str(file_path) for exc in exclude_dirs
-            ):
+            if file_path.is_file() and not any(exc in str(file_path) for exc in exclude_dirs):
                 try:
                     if file_path.suffix in [
                         ".py",
@@ -366,9 +353,7 @@ class SecurityMonitor:
                 except Exception:
                     continue  # 跳過無法讀取的文件
 
-    def add_issue(
-        self, severity: str, title: str, location: str, recommendation: str
-    ):
+    def add_issue(self, severity: str, title: str, location: str, recommendation: str):
         """添加安全問題"""
         issue = {
             "title": title,
@@ -401,19 +386,13 @@ class SecurityMonitor:
 
         # 安全建議
         if self.report["critical_issues"]:
-            self.report["recommendations"].append(
-                "🚨 立即處理 Critical 級別的安全問題"
-            )
+            self.report["recommendations"].append("🚨 立即處理 Critical 級別的安全問題")
 
         if self.report["high_issues"]:
-            self.report["recommendations"].append(
-                "⚠️ 優先處理 High 級別的安全問題"
-            )
+            self.report["recommendations"].append("⚠️ 優先處理 High 級別的安全問題")
 
         if self.report["summary"]["total_issues"] == 0:
-            self.report["recommendations"].append(
-                "✅ 沒有發現明顯的安全問題，保持良好的安全實踐"
-            )
+            self.report["recommendations"].append("✅ 沒有發現明顯的安全問題，保持良好的安全實踐")
 
         # 保存報告
         report_file = f"security_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"

@@ -54,9 +54,7 @@ async def analyze_trend(
         return trend_analysis
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Trend analysis failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Trend analysis failed: {str(e)}")
 
 
 @router.get("/viral-potential")
@@ -92,9 +90,7 @@ async def analyze_viral_potential(
 async def analyze_competitor(
     competitor: str,
     platform: str = Query("youtube"),
-    analysis_depth: str = Query(
-        "standard", description="basic, standard, deep"
-    ),
+    analysis_depth: str = Query("standard", description="basic, standard, deep"),
     current_user: dict = Depends(verify_token),
 ) -> CompetitorAnalysis:
     """分析競爭對手"""
@@ -114,9 +110,7 @@ async def analyze_competitor(
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Competitor analysis failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Competitor analysis failed: {str(e)}")
 
 
 @router.get("/market-opportunity")
@@ -129,10 +123,8 @@ async def analyze_market_opportunity(
     """分析市場機會"""
 
     try:
-        opportunity_analysis = (
-            await content_analyzer.analyze_market_opportunity(
-                niche=niche, region=region, timeframe=timeframe
-            )
+        opportunity_analysis = await content_analyzer.analyze_market_opportunity(
+            niche=niche, region=region, timeframe=timeframe
         )
 
         return {
@@ -166,13 +158,11 @@ async def analyze_content_performance(
     """分析內容表現模式"""
 
     try:
-        performance_analysis = (
-            await content_analyzer.analyze_content_performance_patterns(
-                content_type=content_type,
-                platform=platform,
-                category=category,
-                days=days,
-            )
+        performance_analysis = await content_analyzer.analyze_content_performance_patterns(
+            content_type=content_type,
+            platform=platform,
+            category=category,
+            days=days,
         )
 
         return {
@@ -199,9 +189,7 @@ async def analyze_content_performance(
 async def get_audience_insights(
     target_keyword: str = Query(...),
     platform: str = Query("youtube"),
-    demographic_focus: str = Query(
-        "age_gender", description="age_gender, interests, behavior"
-    ),
+    demographic_focus: str = Query("age_gender", description="age_gender, interests, behavior"),
     current_user: dict = Depends(verify_token),
 ):
     """獲取目標受眾洞察"""
@@ -220,9 +208,7 @@ async def get_audience_insights(
             "preferred_content_types": audience_data["content_preferences"],
             "engagement_patterns": audience_data["engagement_patterns"],
             "purchasing_behavior": audience_data["purchasing"],
-            "content_strategy_recommendations": audience_data[
-                "strategy_recommendations"
-            ],
+            "content_strategy_recommendations": audience_data["strategy_recommendations"],
         }
 
     except Exception as e:
@@ -236,9 +222,7 @@ async def get_audience_insights(
 async def get_seasonal_trends(
     keyword: str = Query(...),
     years_back: int = Query(2, ge=1, le=5),
-    granularity: str = Query(
-        "monthly", description="weekly, monthly, quarterly"
-    ),
+    granularity: str = Query("monthly", description="weekly, monthly, quarterly"),
     current_user: dict = Depends(verify_token),
 ):
     """分析季節性趨勢"""

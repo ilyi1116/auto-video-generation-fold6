@@ -14,9 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 # 設置日誌
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -215,7 +213,7 @@ class TestRunner:
 
             # Black 格式檢查
             black_result = subprocess.run(
-                ["black", "--check", "--dif", "."],
+                ["black", "--check", "--diff", "."],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -228,7 +226,7 @@ class TestRunner:
 
             # isort 導入排序檢查
             isort_result = subprocess.run(
-                ["isort", "--check-only", "--dif", "."],
+                ["isort", "--check-only", "--diff", "."],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -241,7 +239,7 @@ class TestRunner:
 
             # Ruff 檢查
             ruff_result = subprocess.run(
-                ["ruf", "check", "."],
+                ["ruff", "check", "."],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -325,9 +323,7 @@ class TestRunner:
 
         return {
             "type": "security",
-            "success": all(
-                result.get("success", False) for result in results.values()
-            ),
+            "success": all(result.get("success", False) for result in results.values()),
             "results": results,
         }
 
@@ -370,9 +366,7 @@ class TestRunner:
         except Exception as e:
             return {"type": "health_check", "success": False, "error": str(e)}
 
-    def generate_report(
-        self, results: List[Dict[str, Any]], format: str = "json"
-    ) -> str:
+    def generate_report(self, results: List[Dict[str, Any]], format: str = "json") -> str:
         """生成測試報告"""
         logger.info(f"生成測試報告: {format}")
 
@@ -406,7 +400,7 @@ class TestRunner:
 
     def _generate_html_report(self, report: Dict[str, Any]) -> str:
         """生成 HTML 報告"""
-        summary = report["summary"]
+        report["summary"]
         results = report["results"]
 
         html = """
@@ -463,15 +457,9 @@ class TestRunner:
 """
 
         for result in results:
-            status_class = (
-                "success" if result.get("success", False) else "failure"
-            )
-            badge_class = (
-                "status-success"
-                if result.get("success", False)
-                else "status-failure"
-            )
-            status_text = "通過" if result.get("success", False) else "失敗"
+            "success" if result.get("success", False) else "failure"
+            "status-success" if result.get("success", False) else "status-failure"
+            "通過" if result.get("success", False) else "失敗"
 
             html += """
     <div class="test-result">
@@ -525,18 +513,14 @@ def main():
         default="all",
         help="前端測試類型",
     )
-    parser.add_argument(
-        "--no-coverage", action="store_true", help="跳過覆蓋率收集"
-    )
+    parser.add_argument("--no-coverage", action="store_true", help="跳過覆蓋率收集")
     parser.add_argument(
         "--report-format",
         choices=["json", "html"],
         default="json",
         help="報告格式",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="詳細輸出"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()
 
@@ -555,9 +539,7 @@ def main():
 
         if args.type in ["all", "frontend"]:
             logger.info("執行前端測試...")
-            frontend_result = runner.run_frontend_tests(
-                test_type=args.frontend_test_type
-            )
+            frontend_result = runner.run_frontend_tests(test_type=args.frontend_test_type)
             results.append(frontend_result)
 
         if args.type in ["all", "lint"]:
@@ -576,9 +558,7 @@ def main():
             results.append(health_result)
 
         # 生成報告
-        report_file = runner.generate_report(
-            results, format=args.report_format
-        )
+        report_file = runner.generate_report(results, format=args.report_format)
         logger.info(f"測試報告已生成: {report_file}")
 
         # 輸出摘要

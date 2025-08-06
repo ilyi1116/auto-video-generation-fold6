@@ -26,9 +26,7 @@ class UserCreate(UserBase):
         if len(v) < 3:
             raise ValueError("Username must be at least 3 characters long")
         if not v.isalnum():
-            raise ValueError(
-                "Username must contain only alphanumeric characters"
-            )
+            raise ValueError("Username must contain only alphanumeric characters")
         return v.lower()
 
 
@@ -44,9 +42,7 @@ class UserUpdate(BaseModel):
         if v and len(v) < 3:
             raise ValueError("Username must be at least 3 characters long")
         if v and not v.isalnum():
-            raise ValueError(
-                "Username must contain only alphanumeric characters"
-            )
+            raise ValueError("Username must contain only alphanumeric characters")
         return v.lower() if v else v
 
 

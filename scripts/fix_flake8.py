@@ -42,9 +42,7 @@ def fix_line_length(content, max_length=79):
                 for i in range(max_length - 10, 40, -1):
                     if line[i] in [" ", ",", ".", "(", ")"]:
                         fixed_lines.append(line[:i] + " \\")
-                        fixed_lines.append(
-                            " " * (indent + 4) + line[i:].lstrip()
-                        )
+                        fixed_lines.append(" " * (indent + 4) + line[i:].lstrip())
                         break
                 else:
                     fixed_lines.append(line)  # 如果找不到好的斷點，保持原樣
@@ -99,22 +97,16 @@ def remove_unused_imports(content):
                         # from xxx import yyy
                         parts = line.split("import", 1)
                         if len(parts) == 2:
-                            import_parts = [
-                                p.strip() for p in parts[1].split(",")
-                            ]
+                            import_parts = [p.strip() for p in parts[1].split(",")]
                     else:
                         # import xxx
                         import_parts = [line.replace("import", "").strip()]
 
                 # 檢查是否在內容中使用
-                rest_content = "\n".join(
-                    lines[lines.index(line) + 1 :]
-                )  # noqa: E203
+                rest_content = "\n".join(lines[lines.index(line) + 1 :])  # noqa: E203
                 used = False
                 for part in import_parts:
-                    clean_part = (
-                        part.split(" as ")[0] if " as " in part else part
-                    )
+                    clean_part = part.split(" as ")[0] if " as " in part else part
                     if clean_part and clean_part in rest_content:
                         used = True
                         break

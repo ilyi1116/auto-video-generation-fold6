@@ -66,9 +66,7 @@ class MockTrendService:
     """趨勢服務模擬"""
 
     async def handle_health(self, request):
-        return web.json_response(
-            {"status": "healthy", "service": "trend-service"}
-        )
+        return web.json_response({"status": "healthy", "service": "trend-service"})
 
     async def handle_fetch_trends(self, request):
         data = await request.json()
@@ -103,9 +101,7 @@ class MockVideoService:
     """影片服務模擬"""
 
     async def handle_health(self, request):
-        return web.json_response(
-            {"status": "healthy", "service": "video-service"}
-        )
+        return web.json_response({"status": "healthy", "service": "video-service"})
 
     async def handle_create_workflow(self, request):
         data = await request.json()
@@ -119,9 +115,7 @@ class MockVideoService:
             return web.json_response({"error": "Missing user_id"}, status=400)
 
         if video_count <= 0:
-            return web.json_response(
-                {"error": "Invalid video_count"}, status=400
-            )
+            return web.json_response({"error": "Invalid video_count"}, status=400)
 
         # trend_keywords 可以為空，系統會自動抓取
 
@@ -156,9 +150,7 @@ class MockVideoService:
         workflow_id = request.match_info["workflow_id"]
 
         if workflow_id not in MOCK_DATA["workflows"]:
-            return web.json_response(
-                {"error": "Workflow not found"}, status=404
-            )
+            return web.json_response({"error": "Workflow not found"}, status=404)
 
         workflow = MOCK_DATA["workflows"][workflow_id]
         return web.json_response(workflow)
@@ -207,9 +199,7 @@ class MockVideoService:
                 for i in range(video_count)
             ]
 
-            logger.info(
-                f"工作流程 {workflow_id} 完成，生成 {video_count} 個影片"
-            )
+            logger.info(f"工作流程 {workflow_id} 完成，生成 {video_count} 個影片")
 
         except Exception as e:
             workflow["status"] = "failed"
@@ -221,9 +211,7 @@ class MockSocialService:
     """社群服務模擬"""
 
     async def handle_health(self, request):
-        return web.json_response(
-            {"status": "healthy", "service": "social-service"}
-        )
+        return web.json_response({"status": "healthy", "service": "social-service"})
 
     async def handle_publish(self, request):
         data = await request.json()
@@ -232,9 +220,7 @@ class MockSocialService:
         platforms = data.get("platforms", [])
 
         if not all([user_id, video_id, platforms]):
-            return web.json_response(
-                {"error": "Missing required parameters"}, status=400
-            )
+            return web.json_response({"error": "Missing required parameters"}, status=400)
 
         publish_id = str(uuid.uuid4())
         publish_data = {
@@ -265,16 +251,12 @@ class MockSocialService:
         publish_id = request.match_info["publish_id"]
 
         if publish_id not in MOCK_DATA["publish_records"]:
-            return web.json_response(
-                {"error": "Publish record not found"}, status=404
-            )
+            return web.json_response({"error": "Publish record not found"}, status=404)
 
         publish_record = MOCK_DATA["publish_records"][publish_id]
         return web.json_response(publish_record)
 
-    async def _simulate_publishing(
-        self, publish_id: str, platforms: List[str]
-    ):
+    async def _simulate_publishing(self, publish_id: str, platforms: List[str]):
         """模擬發布流程"""
         publish_record = MOCK_DATA["publish_records"][publish_id]
 
@@ -380,9 +362,7 @@ async def create_mock_services():
     video_service = MockVideoService()
     video_app = web.Application()
     video_app.router.add_get("/health", video_service.handle_health)
-    video_app.router.add_post(
-        "/api/v1/entrepreneur/create", video_service.handle_create_workflow
-    )
+    video_app.router.add_post("/api/v1/entrepreneur/create", video_service.handle_create_workflow)
     video_app.router.add_get(
         "/api/v1/entrepreneur/status/{workflow_id}",
         video_service.handle_workflow_status,
@@ -392,9 +372,7 @@ async def create_mock_services():
     social_service = MockSocialService()
     social_app = web.Application()
     social_app.router.add_get("/health", social_service.handle_health)
-    social_app.router.add_post(
-        "/api/v1/entrepreneur/publish", social_service.handle_publish
-    )
+    social_app.router.add_post("/api/v1/entrepreneur/publish", social_service.handle_publish)
     social_app.router.add_get(
         "/api/v1/entrepreneur/publish-status/{publish_id}",
         social_service.handle_publish_status,

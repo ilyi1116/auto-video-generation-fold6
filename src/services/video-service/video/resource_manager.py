@@ -21,9 +21,7 @@ class ResourceManager:
             temp_files = [
                 f
                 for f in os.listdir(self.temp_dir)
-                if f.startswith("video_")
-                or f.startswith("audio_")
-                or f.startswith("image_")
+                if f.startswith("video_") or f.startswith("audio_") or f.startswith("image_")
             ]
             return len(temp_files)
         except (OSError, PermissionError):

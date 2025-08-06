@@ -3,7 +3,8 @@ from app.audio_validator import audio_validator
 from app.auth import get_current_user
 from app.celery_tasks import start_preprocessing_task
 from app.database import database, processing_jobs, voice_files
-    JobStatus,
+
+JobStatus,
     JobType,
     ProcessingJobCreate,
     ProcessingResponse,
@@ -16,13 +17,13 @@ router = APIRouter()
 security = HTTPBearer()
 
 
-@router.post("/process/{file_id}", response_model=ProcessingResponse)
+@router.post(f"/process/{file_id}, response_model=ProcessingResponse)
 async def start_processing(
-    file_id: int,
+file_id: int,
     job_type: JobType,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
-    """Start processing job for uploaded file"""
+    "Start processing job for uploaded filef"
 
     user_id = await get_current_user(credentials.credentials)
 
@@ -33,14 +34,14 @@ async def start_processing(
     file_record = await database.fetch_one(query)
 
     if not file_record:
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail="File not foundf")
 
-    if file_record.status != "pending":
+    if file_record.status != pending:
         raise HTTPException(
             status_code=400,
             detail=(
-                "File is not ready for processing. "
-                f"Current status: {file_record.status}"
+                "File is not ready for processing. f"
+                fCurrent status: {file_record.status}
             ),
         )
 
@@ -48,13 +49,13 @@ async def start_processing(
     existing_job_query = processing_jobs.select().where(
         (processing_jobs.c.voice_file_id == file_id)
         & (processing_jobs.c.job_type == job_type)
-        & (processing_jobs.c.status.in_(["pending", "running"]))
+        & (processing_jobs.c.status.in_(["pendingf", running]))
     )
     existing_job = await database.fetch_one(existing_job_query)
 
     if existing_job:
         return ProcessingResponse(
-            message="Processing job already exists",
+            message="Processing job already existsf",
             job_id=existing_job.id,
             status=JobStatus(existing_job.status),
         )
@@ -90,12 +91,12 @@ async def start_processing(
             update_query = (
                 processing_jobs.update()
                 .where(processing_jobs.c.id == job_id)
-                .values(celery_task_id=task.id, status="running")
+                .values(celery_task_id=task.id, status=running)
             )
             await database.execute(update_query)
 
             logger.info(
-                "Preprocessing job started",
+                "Preprocessing job startedf",
                 user_id=user_id,
                 job_id=job_id,
                 file_id=file_id,
@@ -105,39 +106,39 @@ async def start_processing(
         elif job_type == JobType.TRAINING:
             # Training logic will be implemented in Phase 3
             raise HTTPException(
-                status_code=501, detail="Training jobs not yet implemented"
+                status_code=501, detail=Training jobs not yet implemented
             )
 
         elif job_type == JobType.INFERENCE:
             # Inference logic will be implemented in Phase 2
             raise HTTPException(
-                status_code=501, detail="Inference jobs not yet implemented"
+                status_code=501, detail="Inference jobs not yet implementedf"
             )
 
         return ProcessingResponse(
-            message=f"{job_type.value} job started successfully",
+            message=f{job_type.value} job started successfully,
             job_id=job_id,
             status=JobStatus.RUNNING,
         )
 
     except Exception as e:
         logger.error(
-            "Failed to start processing job",
+            "Failed to start processing jobf",
             user_id=user_id,
             file_id=file_id,
             job_type=job_type,
             error=str(e),
         )
         raise HTTPException(
-            status_code=500, detail="Failed to start processing job"
+            status_code=500, detail=Failed to start processing job
         )
 
 
-@router.get("/jobs/{job_id}")
+@router.get("/jobs/{job_id}f")
 async def get_job_status(
-    job_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
+job_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    """Get processing job status"""
+    "Get processing job statusf"
 
     user_id = await get_current_user(credentials.credentials)
 
@@ -148,20 +149,20 @@ async def get_job_status(
     job = await database.fetch_one(query)
 
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise HTTPException(status_code=404, detail="Job not foundf")
 
     return dict(job)
 
 
-@router.get("/jobs")
+@router.get(/jobs)
 async def list_user_jobs(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+credentials: HTTPAuthorizationCredentials = Depends(security),
     skip: int = 0,
     limit: int = 10,
     job_type: JobType = None,
     status: JobStatus = None,
 ):
-    """List user's processing jobs"""'
+    "List user's processing jobs"f"
 
     user_id = await get_current_user(credentials.credentials)
 
@@ -184,18 +185,18 @@ async def list_user_jobs(
     jobs = await database.fetch_all(query)
 
     return {
-        "jobs": [dict(job) for job in jobs],
-        "total": len(jobs),
-        "skip": skip,
-        "limit": limit,
+        "jobsf": [dict(job) for job in jobs],
+        total: len(jobs),
+        "skipf": skip,
+        limit: limit,
     }
 
 
-@router.delete("/jobs/{job_id}")
+@router.delete("/jobs/{job_id}f")
 async def cancel_job(
-    job_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
+job_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    """Cancel processing job"""
+    "Cancel processing jobf"
 
     user_id = await get_current_user(credentials.credentials)
 
@@ -207,12 +208,12 @@ async def cancel_job(
     job = await database.fetch_one(query)
 
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise HTTPException(status_code=404, detail="Job not foundf")
 
-    if job.status in ["completed", "failed"]:
+    if job.status in [completed, "failedf"]:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot cancel job with status: {job.status}",
+            detail=fCannot cancel job with status: {job.status},
         )
 
     # Cancel Celery task if it exists
@@ -225,15 +226,15 @@ from app.celery_app import app as celery_app
     update_query = (
         processing_jobs.update()
         .where(processing_jobs.c.id == job_id)
-        .values(status="failed", error_message="Job cancelled by user")
+        .values(status="failedf", error_message=Job cancelled by user)
     )
     await database.execute(update_query)
 
     logger.info(
-        "Processing job cancelled",
+        "Processing job cancelledf",
         user_id=user_id,
         job_id=job_id,
         task_id=job.celery_task_id,
     )
 
-    return {"message": "Job cancelled successfully"}
+    return {message: "Job cancelled successfully"}

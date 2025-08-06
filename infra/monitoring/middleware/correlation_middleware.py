@@ -39,15 +39,9 @@ except ImportError:
 
 
 # 全域上下文變數
-correlation_id_context: ContextVar[Optional[str]] = ContextVar(
-    "correlation_id", default=None
-)
-trace_id_context: ContextVar[Optional[str]] = ContextVar(
-    "trace_id", default=None
-)
-span_id_context: ContextVar[Optional[str]] = ContextVar(
-    "span_id", default=None
-)
+correlation_id_context: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
+trace_id_context: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
+span_id_context: ContextVar[Optional[str]] = ContextVar("span_id", default=None)
 
 
 class CorrelationMiddleware:
@@ -109,9 +103,7 @@ class CorrelationMiddleware:
                 )
 
                 if request_id:
-                    response_headers.append(
-                        [b"x-request-id", request_id.encode()]
-                    )
+                    response_headers.append([b"x-request-id", request_id.encode()])
 
                 message["headers"] = response_headers
 
@@ -187,9 +179,7 @@ class CorrelationMiddleware:
         # 生成新的追踪ID
         return str(uuid.uuid4()).replace("-", "")[:16]
 
-    def _extract_request_id(
-        self, headers: Dict[bytes, bytes]
-    ) -> Optional[str]:
+    def _extract_request_id(self, headers: Dict[bytes, bytes]) -> Optional[str]:
         """提取請求ID"""
         request_id_headers = [b"x-request-id", b"request-id"]
 
@@ -205,9 +195,7 @@ class CorrelationMiddleware:
         """生成新的 Span ID"""
         return str(uuid.uuid4()).replace("-", "")[:8]
 
-    def _get_client_ip(
-        self, scope: Dict[str, Any], headers: Dict[bytes, bytes]
-    ) -> str:
+    def _get_client_ip(self, scope: Dict[str, Any], headers: Dict[bytes, bytes]) -> str:
         """獲取客戶端IP地址"""
         # 檢查代理頭部
         proxy_headers = [
@@ -320,18 +308,14 @@ def create_child_span(operation_name: str, service_name: str = "unknown"):
     return DistributedTracingContext(operation_name, service_name)
 
 
-def trace_function(
-    operation_name: Optional[str] = None, service_name: str = "unknown"
-):
+def trace_function(operation_name: Optional[str] = None, service_name: str = "unknown"):
     """函數追踪裝飾器"""
 
     def decorator(func):
         import asyncio
         from functools import wraps
 
-        actual_operation_name = (
-            operation_name or f"{func.__module__}.{func.__name__}"
-        )
+        actual_operation_name = operation_name or f"{func.__module__}.{func.__name__}"
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):

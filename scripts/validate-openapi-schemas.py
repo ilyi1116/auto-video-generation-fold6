@@ -9,7 +9,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, Optional
 
 import aiohttp
 import yaml
@@ -53,29 +53,21 @@ class OpenAPIValidator:
                 async with session.get(url, timeout=5) as response:
                     if response.status == 200:
                         spec = await response.json()
-                        logger.info(
-                            f"✅ Retrieved OpenAPI spec for {service_name}"
-                        )
+                        logger.info(f"✅ Retrieved OpenAPI spec for {service_name}")
                         return spec
-            except Exception as e:
+            except Exception:
                 continue
 
-        self.warnings.append(
-            f"Could not retrieve OpenAPI spec for {service_name}"
-        )
+        self.warnings.append(f"Could not retrieve OpenAPI spec for {service_name}")
         return None
 
-    def validate_openapi_structure(
-        self, service_name: str, spec: Dict
-    ) -> None:
+    def validate_openapi_structure(self, service_name: str, spec: Dict) -> None:
         """驗證 OpenAPI 規範結構"""
         required_fields = ["openapi", "info", "paths"]
 
         for field in required_fields:
             if field not in spec:
-                self.errors.append(
-                    f"{service_name}: Missing required field '{field}'"
-                )
+                self.errors.append(f"{service_name}: Missing required field '{field}'")
 
         # 檢查版本
         if "openapi" in spec:
@@ -100,16 +92,12 @@ class OpenAPIValidator:
     def validate_security_schemes(self, service_name: str, spec: Dict) -> None:
         """驗證安全方案"""
         if "components" not in spec:
-            self.warnings.append(
-                f"{service_name}: No security components defined"
-            )
+            self.warnings.append(f"{service_name}: No security components defined")
             return
 
         components = spec["components"]
         if "securitySchemes" not in components:
-            self.warnings.append(
-                f"{service_name}: No security schemes defined"
-            )
+            self.warnings.append(f"{service_name}: No security schemes defined")
             return
 
         security_schemes = components["securitySchemes"]
@@ -121,9 +109,7 @@ class OpenAPIValidator:
         )
 
         if not has_jwt:
-            self.warnings.append(
-                f"{service_name}: No JWT Bearer authentication scheme found"
-            )
+            self.warnings.append(f"{service_name}: No JWT Bearer authentication scheme found")
 
     def validate_response_schemas(self, service_name: str, spec: Dict) -> None:
         """驗證回應結構"""
@@ -151,20 +137,14 @@ class OpenAPIValidator:
                 responses = operation["responses"]
 
                 # 檢查是否有成功回應
-                success_codes = [
-                    code for code in responses.keys() if code.startswith("2")
-                ]
+                success_codes = [code for code in responses.keys() if code.startswith("2")]
                 if not success_codes:
                     self.warnings.append(
                         f"{service_name}: No success response for {method.upper()} {path}"
                     )
 
                 # 檢查是否有錯誤處理
-                error_codes = [
-                    code
-                    for code in responses.keys()
-                    if code.startswith(("4", "5"))
-                ]
+                error_codes = [code for code in responses.keys() if code.startswith(("4", "5"))]
                 if not error_codes:
                     self.warnings.append(
                         f"{service_name}: No error responses for {method.upper()} {path}"
@@ -183,17 +163,12 @@ class OpenAPIValidator:
                     versions[version] = [service_name]
 
         if len(versions) > 1:
-            self.warnings.append(
-                f"Inconsistent API versions across services: {versions}"
-            )
+            self.warnings.append(f"Inconsistent API versions across services: {versions}")
 
         # 檢查安全方案一致性
         security_schemes = {}
         for service_name, spec in specs.items():
-            if (
-                "components" in spec
-                and "securitySchemes" in spec["components"]
-            ):
+            if "components" in spec and "securitySchemes" in spec["components"]:
                 schemes = spec["components"]["securitySchemes"]
                 for scheme_name, scheme_def in schemes.items():
                     key = (
@@ -211,9 +186,7 @@ class OpenAPIValidator:
             scheme_counts = {k: len(v) for k, v in security_schemes.items()}
             max_count = max(scheme_counts.values())
             if max_count < len(specs):
-                self.warnings.append(
-                    "Not all services use the same security schemes"
-                )
+                self.warnings.append("Not all services use the same security schemes")
 
     async def validate_all_services(self) -> None:
         """驗證所有服務的 OpenAPI 規範"""
@@ -235,9 +208,7 @@ class OpenAPIValidator:
                     if spec:
                         specs[service_name] = spec
                 except Exception as e:
-                    self.warnings.append(
-                        f"Error fetching spec for {service_name}: {str(e)}"
-                    )
+                    self.warnings.append(f"Error fetching spec for {service_name}: {str(e)}")
 
             # 驗證每個規範
             for service_name, spec in specs.items():
@@ -273,9 +244,7 @@ class OpenAPIValidator:
                     logger.info(f"✅ Validated static schema: {schema_file}")
 
                 except Exception as e:
-                    self.errors.append(
-                        f"Error validating {schema_file}: {str(e)}"
-                    )
+                    self.errors.append(f"Error validating {schema_file}: {str(e)}")
 
     def generate_report(self) -> int:
         """生成驗證報告"""
@@ -314,9 +283,7 @@ async def main():
     try:
         await validator.validate_all_services()
     except Exception as e:
-        validator.warnings.append(
-            f"Could not validate running services: {str(e)}"
-        )
+        validator.warnings.append(f"Could not validate running services: {str(e)}")
 
     return validator.generate_report()
 

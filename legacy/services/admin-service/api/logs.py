@@ -5,22 +5,30 @@
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Union
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ..auth.permissions import require_permission
-from ..models.admin_user import AdminUser
 from ..logs import (
-    log_collector, log_analyzer, anomaly_detector, 
-    log_predictor, log_aggregator, log_alerting
+    anomaly_detector,
+    log_aggregator,
+    log_alerting,
+    log_analyzer,
+    log_collector,
+    log_predictor,
 )
+from ..logs.aggregator import (
+    AggregationQuery,
+    AggregationType,
+    TimeGranularity,
+)
+from ..logs.alerting import AlertRule, AlertSeverity, AlertType
 from ..logs.analyzer import AnalysisType
-from ..logs.detector import AnomalyType, Severity
-from ..logs.predictor import PredictionType, TimeHorizon
-from ..logs.aggregator import AggregationType, TimeGranularity, AggregationQuery
-from ..logs.alerting import AlertType, AlertSeverity, AlertRule
+from ..logs.predictor import TimeHorizon
+from ..models.admin_user import AdminUser
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +105,7 @@ class AlertActionRequest(BaseModel):
 @router.post("/collect")
 @require_permission("logs:write")
 async def collect_log(
-    log_entry: LogEntryModel,
-    current_user: AdminUser = Depends(require_permission("logs:write"))
+    log_entry: LogEntryModel, current_user: AdminUser = Depends(require_permission("logs:write"))
 ):
     """收集日誌條目"""
     try:
@@ -113,17 +120,17 @@ async def collect_log(
 @require_permission("logs:write")
 async def collect_logs_batch(
     log_entries: List[LogEntryModel],
-    current_user: AdminUser = Depends(require_permission("logs:write"))
+    current_user: AdminUser = Depends(require_permission("logs:write")),
 ):
     """批量收集日誌條目"""
     try:
         for log_entry in log_entries:
             await log_collector.collect_log(log_entry.dict())
-        
+
         return {
-            "status": "success", 
+            "status": "success",
             "message": f"已收集 {len(log_entries)} 條日誌",
-            "count": len(log_entries)
+            "count": len(log_entries),
         }
     except Exception as e:
         logger.error(f"批量收集日誌失敗: {e}")
@@ -140,7 +147,7 @@ async def search_logs(
     end_time: Optional[datetime] = Query(None),
     limit: int = Query(100, ge=1, le=1000),
     error_only: bool = Query(False),
-    current_user: AdminUser = Depends(require_permission("logs:read"))
+    current_user: AdminUser = Depends(require_permission("logs:read")),
 ):
     """搜索日誌"""
     try:
@@ -150,9 +157,9 @@ async def search_logs(
             start_time=start_time,
             end_time=end_time,
             limit=limit,
-            error_only=error_only
+            error_only=error_only,
         )
-        
+
         return {
             "logs": [log.to_dict() for log in logs],
             "count": len(logs),
@@ -162,8 +169,8 @@ async def search_logs(
                 "start_time": start_time.isoformat() if start_time else None,
                 "end_time": end_time.isoformat() if end_time else None,
                 "limit": limit,
-                "error_only": error_only
-            }
+                "error_only": error_only,
+            },
         }
     except Exception as e:
         logger.error(f"搜索日誌失敗: {e}")
@@ -172,9 +179,7 @@ async def search_logs(
 
 @router.get("/stats")
 @require_permission("logs:read")
-async def get_log_stats(
-    current_user: AdminUser = Depends(require_permission("logs:read"))
-):
+async def get_log_stats(current_user: AdminUser = Depends(require_permission("logs:read"))):
     """獲取日誌統計"""
     try:
         stats = log_collector.get_stats()
@@ -188,8 +193,7 @@ async def get_log_stats(
 @router.post("/analyze")
 @require_permission("logs:analyze")
 async def analyze_logs(
-    request: AnalysisRequest,
-    current_user: AdminUser = Depends(require_permission("logs:analyze"))
+    request: AnalysisRequest, current_user: AdminUser = Depends(require_permission("logs:analyze"))
 ):
     """執行日誌分析"""
     try:
@@ -197,14 +201,14 @@ async def analyze_logs(
         try:
             analysis_type = AnalysisType(request.analysis_type)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"不支持的分析類型: {request.analysis_type}")
-        
+            raise HTTPException(
+                status_code=400, detail=f"不支持的分析類型: {request.analysis_type}"
+            )
+
         result = await log_analyzer.analyze_logs(
-            analysis_type=analysis_type,
-            service=request.service,
-            hours=request.hours
+            analysis_type=analysis_type, service=request.service, hours=request.hours
         )
-        
+
         return {
             "status": "success",
             "analysis": {
@@ -216,8 +220,8 @@ async def analyze_logs(
                 "severity": result.severity,
                 "recommendations": result.recommendations,
                 "affected_users": result.affected_users,
-                "affected_requests": result.affected_requests
-            }
+                "affected_requests": result.affected_requests,
+            },
         }
     except Exception as e:
         logger.error(f"日誌分析失敗: {e}")
@@ -228,12 +232,12 @@ async def analyze_logs(
 @require_permission("logs:analyze")
 async def detect_patterns(
     hours: int = Query(24, ge=1, le=168),
-    current_user: AdminUser = Depends(require_permission("logs:analyze"))
+    current_user: AdminUser = Depends(require_permission("logs:analyze")),
 ):
     """檢測日誌模式"""
     try:
         patterns = await log_analyzer.detect_patterns(hours=hours)
-        
+
         return {
             "status": "success",
             "patterns": [
@@ -243,11 +247,11 @@ async def detect_patterns(
                     "description": p.description,
                     "confidence": p.confidence,
                     "evidence": p.evidence,
-                    "impact_score": p.impact_score
+                    "impact_score": p.impact_score,
                 }
                 for p in patterns
             ],
-            "count": len(patterns)
+            "count": len(patterns),
         }
     except Exception as e:
         logger.error(f"模式檢測失敗: {e}")
@@ -259,15 +263,14 @@ async def detect_patterns(
 @require_permission("logs:analyze")
 async def detect_anomalies(
     request: AnomalyDetectionRequest,
-    current_user: AdminUser = Depends(require_permission("logs:analyze"))
+    current_user: AdminUser = Depends(require_permission("logs:analyze")),
 ):
     """檢測異常"""
     try:
         anomalies = await anomaly_detector.detect_anomalies(
-            hours=request.hours,
-            service=request.service
+            hours=request.hours, service=request.service
         )
-        
+
         return {
             "status": "success",
             "anomalies": [
@@ -282,11 +285,11 @@ async def detect_anomalies(
                     "actual_value": a.actual_value,
                     "threshold_value": a.threshold_value,
                     "affected_service": a.affected_service,
-                    "metadata": a.metadata
+                    "metadata": a.metadata,
                 }
                 for a in anomalies
             ],
-            "count": len(anomalies)
+            "count": len(anomalies),
         }
     except Exception as e:
         logger.error(f"異常檢測失敗: {e}")
@@ -295,9 +298,7 @@ async def detect_anomalies(
 
 @router.get("/anomalies/stats")
 @require_permission("logs:read")
-async def get_anomaly_stats(
-    current_user: AdminUser = Depends(require_permission("logs:read"))
-):
+async def get_anomaly_stats(current_user: AdminUser = Depends(require_permission("logs:read"))):
     """獲取異常統計"""
     try:
         stats = anomaly_detector.get_anomaly_stats()
@@ -312,7 +313,7 @@ async def get_anomaly_stats(
 @require_permission("logs:analyze")
 async def generate_predictions(
     request: PredictionRequest,
-    current_user: AdminUser = Depends(require_permission("logs:analyze"))
+    current_user: AdminUser = Depends(require_permission("logs:analyze")),
 ):
     """生成預測"""
     try:
@@ -321,12 +322,11 @@ async def generate_predictions(
             time_horizon = TimeHorizon(request.time_horizon)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"不支持的時間範圍: {request.time_horizon}")
-        
+
         predictions = await log_predictor.generate_predictions(
-            time_horizon=time_horizon,
-            service=request.service
+            time_horizon=time_horizon, service=request.service
         )
-        
+
         return {
             "status": "success",
             "predictions": [
@@ -344,11 +344,11 @@ async def generate_predictions(
                     "trend_direction": p.trend_direction,
                     "risk_level": p.risk_level,
                     "affected_service": p.affected_service,
-                    "recommendations": p.recommendations
+                    "recommendations": p.recommendations,
                 }
                 for p in predictions
             ],
-            "count": len(predictions)
+            "count": len(predictions),
         }
     except Exception as e:
         logger.error(f"預測分析失敗: {e}")
@@ -357,9 +357,7 @@ async def generate_predictions(
 
 @router.get("/predict/stats")
 @require_permission("logs:read")
-async def get_prediction_stats(
-    current_user: AdminUser = Depends(require_permission("logs:read"))
-):
+async def get_prediction_stats(current_user: AdminUser = Depends(require_permission("logs:read"))):
     """獲取預測統計"""
     try:
         stats = log_predictor.get_prediction_stats()
@@ -374,7 +372,7 @@ async def get_prediction_stats(
 @require_permission("logs:analyze")
 async def aggregate_logs(
     request: AggregationRequest,
-    current_user: AdminUser = Depends(require_permission("logs:analyze"))
+    current_user: AdminUser = Depends(require_permission("logs:analyze")),
 ):
     """執行日誌聚合"""
     try:
@@ -387,18 +385,18 @@ async def aggregate_logs(
             end_time=request.end_time,
             group_by=request.group_by,
             filter_conditions=request.filter_conditions,
-            percentile=request.percentile
+            percentile=request.percentile,
         )
-        
+
         result = await log_aggregator.aggregate(query)
-        
+
         return {
             "status": "success",
             "aggregation": {
                 "data_points": result.data_points,
                 "summary": result.summary,
-                "created_at": result.created_at.isoformat()
-            }
+                "created_at": result.created_at.isoformat(),
+            },
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"無效的聚合參數: {str(e)}")
@@ -410,23 +408,22 @@ async def aggregate_logs(
 @router.get("/aggregate/predefined/{query_name}")
 @require_permission("logs:read")
 async def get_predefined_aggregation(
-    query_name: str,
-    current_user: AdminUser = Depends(require_permission("logs:read"))
+    query_name: str, current_user: AdminUser = Depends(require_permission("logs:read"))
 ):
     """獲取預定義聚合結果"""
     try:
         result = await log_aggregator.get_predefined_aggregation(query_name)
-        
+
         if not result:
             raise HTTPException(status_code=404, detail=f"未找到預定義查詢: {query_name}")
-        
+
         return {
             "status": "success",
             "aggregation": {
                 "data_points": result.data_points,
                 "summary": result.summary,
-                "created_at": result.created_at.isoformat()
-            }
+                "created_at": result.created_at.isoformat(),
+            },
         }
     except HTTPException:
         raise
@@ -439,18 +436,15 @@ async def get_predefined_aggregation(
 @require_permission("logs:read")
 async def get_dashboard_data(
     time_range_hours: int = Query(24, ge=1, le=168),
-    current_user: AdminUser = Depends(require_permission("logs:read"))
+    current_user: AdminUser = Depends(require_permission("logs:read")),
 ):
     """獲取儀表板數據"""
     try:
         dashboard_data = await log_aggregator.create_dashboard_data(
             time_range_hours=time_range_hours
         )
-        
-        return {
-            "status": "success",
-            "dashboard": dashboard_data
-        }
+
+        return {"status": "success", "dashboard": dashboard_data}
     except Exception as e:
         logger.error(f"獲取儀表板數據失敗: {e}")
         raise HTTPException(status_code=500, detail=f"獲取儀表板數據失敗: {str(e)}")
@@ -461,22 +455,16 @@ async def get_dashboard_data(
 async def generate_report(
     report_type: str,
     service: Optional[str] = Query(None),
-    current_user: AdminUser = Depends(require_permission("logs:read"))
+    current_user: AdminUser = Depends(require_permission("logs:read")),
 ):
     """生成聚合報告"""
     try:
         if report_type not in ["daily", "weekly", "monthly"]:
             raise HTTPException(status_code=400, detail=f"不支持的報告類型: {report_type}")
-        
-        report = await log_aggregator.generate_report(
-            report_type=report_type,
-            service=service
-        )
-        
-        return {
-            "status": "success",
-            "report": report
-        }
+
+        report = await log_aggregator.generate_report(report_type=report_type, service=service)
+
+        return {"status": "success", "report": report}
     except HTTPException:
         raise
     except Exception as e:
@@ -489,7 +477,7 @@ async def generate_report(
 @require_permission("logs:read")
 async def get_active_alerts(
     severity: Optional[str] = Query(None),
-    current_user: AdminUser = Depends(require_permission("logs:read"))
+    current_user: AdminUser = Depends(require_permission("logs:read")),
 ):
     """獲取活躍告警"""
     try:
@@ -499,9 +487,9 @@ async def get_active_alerts(
                 severity_enum = AlertSeverity(severity)
             except ValueError:
                 raise HTTPException(status_code=400, detail=f"無效的嚴重程度: {severity}")
-        
+
         alerts = log_alerting.get_active_alerts(severity=severity_enum)
-        
+
         return {
             "status": "success",
             "alerts": [
@@ -519,11 +507,11 @@ async def get_active_alerts(
                     "evidence": a.evidence,
                     "recommendations": a.recommendations,
                     "acknowledged_at": a.acknowledged_at.isoformat() if a.acknowledged_at else None,
-                    "acknowledged_by": a.acknowledged_by
+                    "acknowledged_by": a.acknowledged_by,
                 }
                 for a in alerts
             ],
-            "count": len(alerts)
+            "count": len(alerts),
         }
     except HTTPException:
         raise
@@ -537,19 +525,17 @@ async def get_active_alerts(
 async def acknowledge_alert(
     alert_id: str,
     request: AlertActionRequest,
-    current_user: AdminUser = Depends(require_permission("logs:manage"))
+    current_user: AdminUser = Depends(require_permission("logs:manage")),
 ):
     """確認告警"""
     try:
         success = await log_alerting.acknowledge_alert(
-            alert_id=alert_id,
-            acknowledged_by=current_user.username,
-            comment=request.comment
+            alert_id=alert_id, acknowledged_by=current_user.username, comment=request.comment
         )
-        
+
         if not success:
             raise HTTPException(status_code=404, detail="告警不存在")
-        
+
         return {"status": "success", "message": "告警已確認"}
     except HTTPException:
         raise
@@ -563,19 +549,17 @@ async def acknowledge_alert(
 async def resolve_alert(
     alert_id: str,
     request: AlertActionRequest,
-    current_user: AdminUser = Depends(require_permission("logs:manage"))
+    current_user: AdminUser = Depends(require_permission("logs:manage")),
 ):
     """解決告警"""
     try:
         success = await log_alerting.resolve_alert(
-            alert_id=alert_id,
-            resolved_by=current_user.username,
-            comment=request.comment
+            alert_id=alert_id, resolved_by=current_user.username, comment=request.comment
         )
-        
+
         if not success:
             raise HTTPException(status_code=404, detail="告警不存在")
-        
+
         return {"status": "success", "message": "告警已解決"}
     except HTTPException:
         raise
@@ -586,9 +570,7 @@ async def resolve_alert(
 
 @router.get("/alerts/stats")
 @require_permission("logs:read")
-async def get_alert_statistics(
-    current_user: AdminUser = Depends(require_permission("logs:read"))
-):
+async def get_alert_statistics(current_user: AdminUser = Depends(require_permission("logs:read"))):
     """獲取告警統計"""
     try:
         stats = log_alerting.get_alert_statistics()
@@ -601,13 +583,11 @@ async def get_alert_statistics(
 # 告警規則管理 API
 @router.get("/alert-rules")
 @require_permission("logs:read")
-async def get_alert_rules(
-    current_user: AdminUser = Depends(require_permission("logs:read"))
-):
+async def get_alert_rules(current_user: AdminUser = Depends(require_permission("logs:read"))):
     """獲取告警規則"""
     try:
         rules = list(log_alerting.alert_rules.values())
-        
+
         return {
             "status": "success",
             "rules": [
@@ -622,11 +602,11 @@ async def get_alert_rules(
                     "enabled": r.enabled,
                     "cooldown_minutes": r.cooldown_minutes,
                     "auto_resolve": r.auto_resolve,
-                    "notification_channels": r.notification_channels
+                    "notification_channels": r.notification_channels,
                 }
                 for r in rules
             ],
-            "count": len(rules)
+            "count": len(rules),
         }
     except Exception as e:
         logger.error(f"獲取告警規則失敗: {e}")
@@ -636,8 +616,7 @@ async def get_alert_rules(
 @router.post("/alert-rules")
 @require_permission("logs:manage")
 async def create_alert_rule(
-    rule_model: AlertRuleModel,
-    current_user: AdminUser = Depends(require_permission("logs:manage"))
+    rule_model: AlertRuleModel, current_user: AdminUser = Depends(require_permission("logs:manage"))
 ):
     """創建告警規則"""
     try:
@@ -652,11 +631,11 @@ async def create_alert_rule(
             enabled=rule_model.enabled,
             cooldown_minutes=rule_model.cooldown_minutes,
             auto_resolve=rule_model.auto_resolve,
-            notification_channels=rule_model.notification_channels
+            notification_channels=rule_model.notification_channels,
         )
-        
+
         log_alerting.add_alert_rule(rule)
-        
+
         return {"status": "success", "message": "告警規則已創建"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"無效的規則參數: {str(e)}")
@@ -668,16 +647,15 @@ async def create_alert_rule(
 @router.put("/alert-rules/{rule_id}/enable")
 @require_permission("logs:manage")
 async def enable_alert_rule(
-    rule_id: str,
-    current_user: AdminUser = Depends(require_permission("logs:manage"))
+    rule_id: str, current_user: AdminUser = Depends(require_permission("logs:manage"))
 ):
     """啟用告警規則"""
     try:
         success = log_alerting.enable_rule(rule_id)
-        
+
         if not success:
             raise HTTPException(status_code=404, detail="告警規則不存在")
-        
+
         return {"status": "success", "message": "告警規則已啟用"}
     except HTTPException:
         raise
@@ -689,16 +667,15 @@ async def enable_alert_rule(
 @router.put("/alert-rules/{rule_id}/disable")
 @require_permission("logs:manage")
 async def disable_alert_rule(
-    rule_id: str,
-    current_user: AdminUser = Depends(require_permission("logs:manage"))
+    rule_id: str, current_user: AdminUser = Depends(require_permission("logs:manage"))
 ):
     """禁用告警規則"""
     try:
         success = log_alerting.disable_rule(rule_id)
-        
+
         if not success:
             raise HTTPException(status_code=404, detail="告警規則不存在")
-        
+
         return {"status": "success", "message": "告警規則已禁用"}
     except HTTPException:
         raise
@@ -710,16 +687,15 @@ async def disable_alert_rule(
 @router.delete("/alert-rules/{rule_id}")
 @require_permission("logs:manage")
 async def delete_alert_rule(
-    rule_id: str,
-    current_user: AdminUser = Depends(require_permission("logs:manage"))
+    rule_id: str, current_user: AdminUser = Depends(require_permission("logs:manage"))
 ):
     """刪除告警規則"""
     try:
         success = log_alerting.remove_alert_rule(rule_id)
-        
+
         if not success:
             raise HTTPException(status_code=404, detail="告警規則不存在")
-        
+
         return {"status": "success", "message": "告警規則已刪除"}
     except HTTPException:
         raise
@@ -735,27 +711,25 @@ async def export_logs(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     output_format: str = Query("jsonl", regex="^(jsonl|csv)$"),
-    current_user: AdminUser = Depends(require_permission("logs:export"))
+    current_user: AdminUser = Depends(require_permission("logs:export")),
 ):
     """導出日誌"""
     try:
         # 生成導出文件路徑
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         output_path = f"/tmp/logs_export_{timestamp}.{output_format}"
-        
+
         # 執行導出
         exported_count = await log_collector.export_logs(
-            output_path=output_path,
-            start_date=start_date,
-            end_date=end_date
+            output_path=output_path, start_date=start_date, end_date=end_date
         )
-        
+
         return {
             "status": "success",
             "message": f"已導出 {exported_count} 條日誌",
             "exported_count": exported_count,
             "output_path": output_path,
-            "output_format": output_format
+            "output_format": output_format,
         }
     except Exception as e:
         logger.error(f"導出日誌失敗: {e}")
@@ -765,9 +739,7 @@ async def export_logs(
 # 系統管理 API
 @router.post("/cache/clear")
 @require_permission("system:admin")
-async def clear_cache(
-    current_user: AdminUser = Depends(require_permission("system:admin"))
-):
+async def clear_cache(current_user: AdminUser = Depends(require_permission("system:admin"))):
     """清空緩存"""
     try:
         log_aggregator.clear_cache()
@@ -783,7 +755,7 @@ async def health_check():
     try:
         # 檢查各個組件的狀態
         collector_stats = log_collector.get_stats()
-        
+
         health_status = {
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
@@ -791,21 +763,17 @@ async def health_check():
                 "log_collector": {
                     "status": "healthy",
                     "total_logs": collector_stats.get("total_logs", 0),
-                    "memory_logs": collector_stats.get("memory_logs_count", 0)
+                    "memory_logs": collector_stats.get("memory_logs_count", 0),
                 },
                 "log_analyzer": {"status": "healthy"},
                 "anomaly_detector": {"status": "healthy"},
                 "log_predictor": {"status": "healthy"},
                 "log_aggregator": {"status": "healthy"},
-                "log_alerting": {"status": "healthy"}
-            }
+                "log_alerting": {"status": "healthy"},
+            },
         }
-        
+
         return health_status
     except Exception as e:
         logger.error(f"健康檢查失敗: {e}")
-        return {
-            "status": "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "error": str(e)
-        }
+        return {"status": "unhealthy", "timestamp": datetime.utcnow().isoformat(), "error": str(e)}

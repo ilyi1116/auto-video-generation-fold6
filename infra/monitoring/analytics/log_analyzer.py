@@ -109,9 +109,7 @@ class LogAnalyzer:
         }
 
         try:
-            result = await self.es.search(
-                index="auto-video-logs-*", body=query, size=0
-            )
+            result = await self.es.search(index="auto-video-logs-*", body=query, size=0)
 
             total_errors = result["hits"]["total"]["value"]
 
@@ -130,9 +128,7 @@ class LogAnalyzer:
                 await self.send_alert(alert)
 
             # 分析錯誤分佈
-            services_with_errors = result["aggregations"]["error_by_service"][
-                "buckets"
-            ]
+            services_with_errors = result["aggregations"]["error_by_service"]["buckets"]
             for service_bucket in services_with_errors:
                 service = service_bucket["key"]
                 error_count = service_bucket["doc_count"]
@@ -170,26 +166,16 @@ class LogAnalyzer:
             },
             "aggs": {
                 "avg_response_time": {"avg": {"field": "duration_ms"}},
-                "p95_response_time": {
-                    "percentiles": {"field": "duration_ms", "percents": [95]}
-                },
-                "slow_requests": {
-                    "filter": {"range": {"duration_ms": {"gte": 5000}}}
-                },
+                "p95_response_time": {"percentiles": {"field": "duration_ms", "percents": [95]}},
+                "slow_requests": {"filter": {"range": {"duration_ms": {"gte": 5000}}}},
             },
         }
 
         try:
-            result = await self.es.search(
-                index="auto-video-logs-*", body=query, size=0
-            )
+            result = await self.es.search(index="auto-video-logs-*", body=query, size=0)
 
-            p95_time = result["aggregations"]["p95_response_time"]["values"][
-                "95.0"
-            ]
-            slow_requests = result["aggregations"]["slow_requests"][
-                "doc_count"
-            ]
+            p95_time = result["aggregations"]["p95_response_time"]["values"]["95.0"]
+            slow_requests = result["aggregations"]["slow_requests"]["doc_count"]
 
             # 檢查回應時間
             if p95_time > self.thresholds["response_time_p95"]:
@@ -236,11 +222,7 @@ class LogAnalyzer:
                     "bool": {
                         "must": [
                             {"match": {"message": "failed login"}},
-                            {
-                                "range": {
-                                    "@timestamp": {"gte": since.isoformat()}
-                                }
-                            },
+                            {"range": {"@timestamp": {"gte": since.isoformat()}}},
                         ]
                     }
                 },
@@ -252,11 +234,7 @@ class LogAnalyzer:
                     "bool": {
                         "must": [
                             {"terms": {"status_code": [401, 403]}},
-                            {
-                                "range": {
-                                    "@timestamp": {"gte": since.isoformat()}
-                                }
-                            },
+                            {"range": {"@timestamp": {"gte": since.isoformat()}}},
                         ]
                     }
                 },
@@ -267,16 +245,8 @@ class LogAnalyzer:
                 "query": {
                     "bool": {
                         "must": [
-                            {
-                                "regexp": {
-                                    "message": ".*(attack|breach|injection|xss).*"
-                                }
-                            },
-                            {
-                                "range": {
-                                    "@timestamp": {"gte": since.isoformat()}
-                                }
-                            },
+                            {"regexp": {"message": ".*(attack|breach|injection|xss).*"}},
+                            {"range": {"@timestamp": {"gte": since.isoformat()}}},
                         ]
                     }
                 },
@@ -299,17 +269,13 @@ class LogAnalyzer:
                     ip_counter = Counter()
                     for event in events:
                         source = event["_source"]
-                        ip = source.get("ip_address") or source.get(
-                            "source_ip"
-                        )
+                        ip = source.get("ip_address") or source.get("source_ip")
                         if ip:
                             ip_counter[ip] += 1
 
                     # 檢查是否有來自同一 IP 的大量事件
                     for ip, count in ip_counter.items():
-                        if count >= self.thresholds.get(
-                            "failed_login_attempts", 10
-                        ):
+                        if count >= self.thresholds.get("failed_login_attempts", 10):
                             alert = Alert(
                                 id=f"security_{sec_query['name']}_{ip}_{int(time.time())}",
                                 type="security",
@@ -327,9 +293,7 @@ class LogAnalyzer:
                             await self.send_alert(alert)
 
             except Exception as e:
-                logger.error(
-                    f"Security analysis failed for {sec_query['name']}: {e}"
-                )
+                logger.error(f"Security analysis failed for {sec_query['name']}: {e}")
 
     async def analyze_business_metrics(self):
         """分析業務指標"""
@@ -360,38 +324,26 @@ class LogAnalyzer:
                     ]
                 }
             },
-            "aggs": {
-                "status_breakdown": {"terms": {"field": "status.keyword"}}
-            },
+            "aggs": {"status_breakdown": {"terms": {"field": "status.keyword"}}},
         }
 
         try:
             # 用戶註冊分析
-            user_result = await self.es.search(
-                index="auto-video-logs-*", body=user_query, size=0
-            )
+            user_result = await self.es.search(index="auto-video-logs-*", body=user_query, size=0)
             user_registrations = user_result["hits"]["total"]["value"]
 
             # 影片生成分析
-            video_result = await self.es.search(
-                index="auto-video-logs-*", body=video_query, size=0
-            )
+            video_result = await self.es.search(index="auto-video-logs-*", body=video_query, size=0)
             total_generations = video_result["hits"]["total"]["value"]
 
             # 計算成功率
-            status_buckets = video_result["aggregations"]["status_breakdown"][
-                "buckets"
-            ]
+            status_buckets = video_result["aggregations"]["status_breakdown"]["buckets"]
             success_count = 0
             for bucket in status_buckets:
                 if bucket["key"] == "success":
                     success_count = bucket["doc_count"]
 
-            success_rate = (
-                success_count / total_generations
-                if total_generations > 0
-                else 1.0
-            )
+            success_rate = success_count / total_generations if total_generations > 0 else 1.0
 
             # 儲存業務指標到 Redis
             metrics = {
@@ -401,9 +353,7 @@ class LogAnalyzer:
                 "timestamp": now.isoformat(),
             }
 
-            self.redis.setex(
-                "business_metrics", 3600, json.dumps(metrics)
-            )  # 1小時過期
+            self.redis.setex("business_metrics", 3600, json.dumps(metrics))  # 1小時過期
 
             # 檢查業務異常
             if success_rate < 0.8 and total_generations > 10:
@@ -454,9 +404,7 @@ class LogAnalyzer:
         }
 
         try:
-            result = await self.es.search(
-                index="auto-video-logs-*", body=system_query, size=0
-            )
+            result = await self.es.search(index="auto-video-logs-*", body=system_query, size=0)
 
             if "aggregations" in result:
                 avg_memory = result["aggregations"]["avg_memory"]["value"]

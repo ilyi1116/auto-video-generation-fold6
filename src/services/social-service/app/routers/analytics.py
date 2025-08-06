@@ -14,9 +14,7 @@ logger = logging.getLogger(__name__)
 
 @router.get("/platforms", response_model=List[PlatformAnalytics])
 async def get_platform_analytics(
-    platforms: Optional[str] = Query(
-        None, description="Comma-separated platform names"
-    ),
+    platforms: Optional[str] = Query(None, description="Comma-separated platform names"),
     current_user: dict = Depends(verify_token),
 ):
     """獲取平台總體分析數據"""
@@ -61,9 +59,7 @@ async def get_post_analytics(
 
     post_analytics = []
 
-    platforms_to_check = (
-        [platform] if platform else ["tiktok", "youtube", "instagram"]
-    )
+    platforms_to_check = [platform] if platform else ["tiktok", "youtube", "instagram"]
 
     for platform_name in platforms_to_check:
         try:
@@ -86,9 +82,7 @@ async def get_post_analytics(
                 post_analytics.append(PostAnalytics(**post_data))
 
         except Exception as e:
-            logger.error(
-                f"Failed to get post analytics for {platform_name}: {e}"
-            )
+            logger.error(f"Failed to get post analytics for {platform_name}: {e}")
             continue
 
     return post_analytics
@@ -104,17 +98,11 @@ async def get_engagement_metrics(
 
     try:
         if platform == "tiktok":
-            metrics = await tiktok.get_engagement_metrics(
-                current_user["user_id"], days
-            )
+            metrics = await tiktok.get_engagement_metrics(current_user["user_id"], days)
         elif platform == "youtube":
-            metrics = await youtube.get_engagement_metrics(
-                current_user["user_id"], days
-            )
+            metrics = await youtube.get_engagement_metrics(current_user["user_id"], days)
         elif platform == "instagram":
-            metrics = await instagram.get_engagement_metrics(
-                current_user["user_id"], days
-            )
+            metrics = await instagram.get_engagement_metrics(current_user["user_id"], days)
         else:
             raise HTTPException(status_code=400, detail="Unsupported platform")
 
@@ -150,6 +138,4 @@ async def get_trending_content(
 
     except Exception as e:
         logger.error(f"Failed to get trending content for {platform}: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get trending content: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get trending content: {str(e)}")

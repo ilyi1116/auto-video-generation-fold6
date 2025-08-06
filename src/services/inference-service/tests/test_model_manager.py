@@ -2,7 +2,7 @@
 測試 model_manager 服務
 """
 
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 from app.services.model_manager import *  # TODO: 導入具體的類和函數
@@ -21,7 +21,6 @@ class TestModelmanagerService:
         """服務實例 fixture"""
         # TODO: 創建服務實例
         # return ServiceClass()
-        pass
 
     def test_service_initialization(self, service_instance):
         """測試服務初始化"""
@@ -45,12 +44,9 @@ class TestModelmanagerService:
     async def test_async_service_method(self, service_instance):
         """測試異步服務方法"""
         # TODO: 如果有異步方法需要測試
-        pass
 
     @patch("app.services.model_manager.external_dependency")
-    def test_service_with_mocked_dependency(
-        self, mock_dependency, service_instance
-    ):
+    def test_service_with_mocked_dependency(self, mock_dependency, service_instance):
         """測試帶模擬依賴的服務方法"""
         # TODO: 配置模擬對象
         mock_dependency.return_value = "mocked_result"
@@ -64,12 +60,10 @@ class TestModelmanagerService:
     def test_service_error_handling(self, service_instance):
         """測試錯誤處理"""
         # TODO: 測試各種錯誤情況
-        pass
 
     def test_service_edge_cases(self, service_instance):
         """測試邊界情況"""
         # TODO: 測試邊界值和特殊情況
-        pass
 
 
 # TODO: 添加更多特定於 model_manager 的測試

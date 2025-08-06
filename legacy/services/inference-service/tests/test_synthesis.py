@@ -9,9 +9,7 @@ class TestSynthesisEndpoints:
 
     def test_synthesis_without_auth(self, client):
         """Test synthesis endpoint without authentication"""
-        response = client.post(
-            "/api/v1/synthesize", json={"text": "Hello world", "model_id": 1}
-        )
+        response = client.post("/api/v1/synthesize", json={"text": "Hello world", "model_id": 1})
         assert response.status_code == 403  # Unauthorized
 
     def test_synthesis_with_auth(
@@ -42,9 +40,7 @@ class TestSynthesisEndpoints:
         assert data["model_id"] == 1
         assert data["text"] == sample_synthesis_request["text"]
 
-    def test_synthesis_model_not_found(
-        self, client, mock_auth_service, mock_database
-    ):
+    def test_synthesis_model_not_found(self, client, mock_auth_service, mock_database):
         """Test synthesis with non-existent model"""
         # Mock database to return None (model not found)
         mock_database.fetch_one.return_value = None
@@ -86,9 +82,7 @@ class TestSynthesisEndpoints:
         assert "audio_url" in data
         assert "processing_time" in data
 
-    def test_batch_synthesis(
-        self, client, mock_auth_service, mock_database, sample_voice_model
-    ):
+    def test_batch_synthesis(self, client, mock_auth_service, mock_database, sample_voice_model):
         """Test batch synthesis"""
         # Mock database responses
         mock_database.fetch_one.return_value = sample_voice_model
@@ -107,9 +101,7 @@ class TestSynthesisEndpoints:
         assert data["batch_size"] == 2
         assert len(data["job_ids"]) == 2
 
-    def test_get_synthesis_jobs(
-        self, client, mock_auth_service, mock_database
-    ):
+    def test_get_synthesis_jobs(self, client, mock_auth_service, mock_database):
         """Test getting synthesis jobs"""
         # Mock database response
         mock_database.fetch_all.return_value = [
@@ -135,9 +127,7 @@ class TestSynthesisEndpoints:
         assert data[0]["job_id"] == 1
         assert data[0]["status"] == "completed"
 
-    def test_get_synthesis_job_by_id(
-        self, client, mock_auth_service, mock_database
-    ):
+    def test_get_synthesis_job_by_id(self, client, mock_auth_service, mock_database):
         """Test getting specific synthesis job"""
         # Mock database response
         mock_database.fetch_one.return_value = {
@@ -160,9 +150,7 @@ class TestSynthesisEndpoints:
         assert data["job_id"] == 1
         assert data["status"] == "completed"
 
-    def test_get_synthesis_job_not_found(
-        self, client, mock_auth_service, mock_database
-    ):
+    def test_get_synthesis_job_not_found(self, client, mock_auth_service, mock_database):
         """Test getting non-existent synthesis job"""
         # Mock database to return None
         mock_database.fetch_one.return_value = None

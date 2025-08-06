@@ -116,9 +116,7 @@ async def generate_quick_video(
             error=str(e),
             user_id=current_user.get("id"),
         )
-        raise HTTPException(
-            status_code=500, detail=f"Video generation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
 
 
 @router.post("/generate/custom", response_model=VideoGenerationResponse)
@@ -165,20 +163,14 @@ async def generate_custom_video(
             error=str(e),
             user_id=current_user.get("id"),
         )
-        raise HTTPException(
-            status_code=500, detail=f"Video generation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Video generation failed: {str(e)}")
 
 
 @router.get("/status/{generation_id}", response_model=VideoStatusResponse)
-async def get_generation_status(
-    generation_id: str, current_user: dict = Depends(get_current_user)
-):
+async def get_generation_status(generation_id: str, current_user: dict = Depends(get_current_user)):
     """Get current status of video generation"""
     try:
-        status = await video_generation_service.get_generation_status(
-            generation_id
-        )
+        status = await video_generation_service.get_generation_status(generation_id)
 
         return VideoStatusResponse(
             generation_id=generation_id,
@@ -203,9 +195,7 @@ async def get_generation_status(
 
 
 @router.post("/cancel/{generation_id}")
-async def cancel_generation(
-    generation_id: str, current_user: dict = Depends(get_current_user)
-):
+async def cancel_generation(generation_id: str, current_user: dict = Depends(get_current_user)):
     """Cancel ongoing video generation"""
     try:
         # In a real implementation, this would stop the generation process
@@ -228,9 +218,7 @@ async def cancel_generation(
             error=str(e),
             generation_id=generation_id,
         )
-        raise HTTPException(
-            status_code=500, detail="Failed to cancel generation"
-        )
+        raise HTTPException(status_code=500, detail="Failed to cancel generation")
 
 
 @router.get("/templates")
@@ -364,9 +352,7 @@ async def get_generation_presets(
 
 
 @router.get("/history")
-async def get_generation_history(
-    limit: int = 20, current_user: dict = Depends(get_current_user)
-):
+async def get_generation_history(limit: int = 20, current_user: dict = Depends(get_current_user)):
     """Get user's video generation history"""
 
     # In a real implementation, this would query the database
@@ -395,8 +381,6 @@ async def cleanup_generation(
 ):
     """Clean up generation data and temporary files"""
 
-    background_tasks.add_task(
-        video_generation_service.cleanup_generation, generation_id
-    )
+    background_tasks.add_task(video_generation_service.cleanup_generation, generation_id)
 
     return {"message": "Cleanup initiated", "generation_id": generation_id}

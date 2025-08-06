@@ -87,11 +87,7 @@ class SecurityAuditor:
                         if not self.is_safe_value(matched_text):
                             issues.append(
                                 {
-                                    "file": str(
-                                        file_path.relative_to(
-                                            self.project_root
-                                        )
-                                    ),
+                                    "file": str(file_path.relative_to(self.project_root)),
                                     "category": category,
                                     "pattern": pattern,
                                     "match": (
@@ -99,10 +95,7 @@ class SecurityAuditor:
                                         if len(matched_text) > 50
                                         else matched_text
                                     ),
-                                    "line": content[: match.start()].count(
-                                        "\n"
-                                    )
-                                    + 1,
+                                    "line": content[: match.start()].count("\n") + 1,
                                 }
                             )
 
@@ -132,9 +125,7 @@ class SecurityAuditor:
 
         return issues
 
-    def _scan_json_object(
-        self, obj, file_path: Path, issues: List[Dict], path: str = ""
-    ):
+    def _scan_json_object(self, obj, file_path: Path, issues: List[Dict], path: str = ""):
         """遞迴掃描 JSON 物件"""
         if isinstance(obj, dict):
             for key, value in obj.items():
@@ -143,26 +134,14 @@ class SecurityAuditor:
                 # 檢查 key 名稱是否敏感
                 key_lower = key.lower()
                 if any(
-                    sensitive in key_lower
-                    for sensitive in ["password", "secret", "key", "token"]
+                    sensitive in key_lower for sensitive in ["password", "secret", "key", "token"]
                 ):
-                    if (
-                        isinstance(value, str)
-                        and len(value) > 5
-                        and not self.is_safe_value(value)
-                    ):
+                    if isinstance(value, str) and len(value) > 5 and not self.is_safe_value(value):
                         # 檢查是否不是明顯的預設值
-                        if not any(
-                            safe in value.lower()
-                            for safe in self.safe_patterns
-                        ):
+                        if not any(safe in value.lower() for safe in self.safe_patterns):
                             issues.append(
                                 {
-                                    "file": str(
-                                        file_path.relative_to(
-                                            self.project_root
-                                        )
-                                    ),
+                                    "file": str(file_path.relative_to(self.project_root)),
                                     "category": "sensitive_key",
                                     "pattern": f"Key: {key}",
                                     "match": f"{key}: {str(value)[:20]}...",
@@ -218,11 +197,7 @@ class SecurityAuditor:
                         if len(value) > 5 and not self.is_safe_value(value):
                             issues.append(
                                 {
-                                    "file": str(
-                                        file_path.relative_to(
-                                            self.project_root
-                                        )
-                                    ),
+                                    "file": str(file_path.relative_to(self.project_root)),
                                     "category": "env_sensitive",
                                     "pattern": f"Env var: {key}",
                                     "match": f"{key}={value[:20]}...",
@@ -322,8 +297,7 @@ def main():
         "env_sensitive",
     ]
     has_sensitive_issues = any(
-        issue["category"] in sensitive_categories
-        for issue in results["issues"]
+        issue["category"] in sensitive_categories for issue in results["issues"]
     )
 
     return 0 if not has_sensitive_issues else 1

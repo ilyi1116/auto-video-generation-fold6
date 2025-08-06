@@ -21,10 +21,10 @@ import platform
 import sqlite3
 import statistics
 import time
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import matplotlib.pyplot as plt
@@ -186,44 +186,30 @@ class PerformanceBenchmarkRunner:
         try:
             # System benchmarks
             logger.info("Running system performance benchmarks...")
-            benchmark_results["system_benchmarks"] = (
-                await self.run_system_benchmarks()
-            )
+            benchmark_results["system_benchmarks"] = await self.run_system_benchmarks()
 
             # Service benchmarks
             logger.info("Running microservices benchmarks...")
-            benchmark_results["service_benchmarks"] = (
-                await self.run_service_benchmarks()
-            )
+            benchmark_results["service_benchmarks"] = await self.run_service_benchmarks()
 
             # Database benchmarks
             logger.info("Running database benchmarks...")
-            benchmark_results["database_benchmarks"] = (
-                await self.run_database_benchmarks()
-            )
+            benchmark_results["database_benchmarks"] = await self.run_database_benchmarks()
 
             # Frontend benchmarks (if available)
             logger.info("Running frontend benchmarks...")
-            benchmark_results["frontend_benchmarks"] = (
-                await self.run_frontend_benchmarks()
-            )
+            benchmark_results["frontend_benchmarks"] = await self.run_frontend_benchmarks()
 
             # Regression analysis
-            benchmark_results["regression_analysis"] = (
-                self.analyze_regressions(benchmark_results)
-            )
+            benchmark_results["regression_analysis"] = self.analyze_regressions(benchmark_results)
 
             # Generate recommendations
-            benchmark_results["recommendations"] = (
-                self.generate_recommendations(benchmark_results)
-            )
+            benchmark_results["recommendations"] = self.generate_recommendations(benchmark_results)
 
             total_time = time.time() - start_time
             benchmark_results["total_duration"] = total_time
 
-            logger.info(
-                f"All benchmarks completed in {total_time:.2f} seconds"
-            )
+            logger.info(f"All benchmarks completed in {total_time:.2f} seconds")
 
             # Save results
             await self.save_results(benchmark_results)
@@ -250,9 +236,7 @@ class PerformanceBenchmarkRunner:
             "memory_total": psutil.virtual_memory().total,
             "python_version": platform.python_version(),
             "is_arm64": platform.machine().lower() in ["arm64", "aarch64"],
-            "is_m4_optimized": self.config.get("m4_optimizations", {}).get(
-                "enabled", False
-            ),
+            "is_m4_optimized": self.config.get("m4_optimizations", {}).get("enabled", False),
         }
 
     async def run_system_benchmarks(self) -> Dict[str, Any]:
@@ -318,16 +302,9 @@ class PerformanceBenchmarkRunner:
 
         # Run on multiple cores if available
         cpu_count = psutil.cpu_count()
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=cpu_count
-        ) as executor:
-            futures = [
-                executor.submit(cpu_intensive_task) for _ in range(cpu_count)
-            ]
-            results = [
-                future.result()
-                for future in concurrent.futures.as_completed(futures)
-            ]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_count) as executor:
+            futures = [executor.submit(cpu_intensive_task) for _ in range(cpu_count)]
+            results = [future.result() for future in concurrent.futures.as_completed(futures)]
 
         actual_duration = time.time() - start_time
         total_operations = sum(results)
@@ -343,9 +320,7 @@ class PerformanceBenchmarkRunner:
             "operations_per_second": operations_per_second,
             "score": score,
             "cores_used": cpu_count,
-            "cpu_freq": (
-                psutil.cpu_freq().current if psutil.cpu_freq() else None
-            ),
+            "cpu_freq": (psutil.cpu_freq().current if psutil.cpu_freq() else None),
         }
 
     async def _benchmark_memory(self) -> Dict[str, Any]:
@@ -393,27 +368,15 @@ class PerformanceBenchmarkRunner:
                 "data_size": data_size,
             }
 
-        result = await asyncio.get_event_loop().run_in_executor(
-            None, memory_test
-        )
+        result = await asyncio.get_event_loop().run_in_executor(None, memory_test)
 
         # Calculate scores
-        write_speed = (
-            result["data_size"]
-            / result["sequential_write_time"]
-            / (1024 * 1024)
-        )  # MB/s
-        read_speed = (
-            result["data_size"]
-            / result["sequential_read_time"]
-            / (1024 * 1024)
-        )  # MB/s
+        write_speed = result["data_size"] / result["sequential_write_time"] / (1024 * 1024)  # MB/s
+        read_speed = result["data_size"] / result["sequential_read_time"] / (1024 * 1024)  # MB/s
         random_ops_per_sec = 10000 / result["random_access_time"]
 
         # Composite score
-        score = min(
-            1000, (write_speed + read_speed) / 10 + random_ops_per_sec / 100
-        )
+        score = min(1000, (write_speed + read_speed) / 10 + random_ops_per_sec / 100)
 
         return {
             "test_size_mb": test_size_mb,
@@ -448,7 +411,7 @@ class PerformanceBenchmarkRunner:
             # Read test
             start_time = time.time()
             with open(test_file, "rb") as f:
-                read_data = f.read()
+                f.read()
             read_time = time.time() - start_time
 
             # Random I/O test
@@ -473,23 +436,15 @@ class PerformanceBenchmarkRunner:
             }
 
         try:
-            result = await asyncio.get_event_loop().run_in_executor(
-                None, disk_io_test
-            )
+            result = await asyncio.get_event_loop().run_in_executor(None, disk_io_test)
 
             # Calculate scores
-            write_speed = (
-                result["data_size"] / result["write_time"] / (1024 * 1024)
-            )  # MB/s
-            read_speed = (
-                result["data_size"] / result["read_time"] / (1024 * 1024)
-            )  # MB/s
+            write_speed = result["data_size"] / result["write_time"] / (1024 * 1024)  # MB/s
+            read_speed = result["data_size"] / result["read_time"] / (1024 * 1024)  # MB/s
             random_iops = 1000 / result["random_io_time"]
 
             # Composite score
-            score = min(
-                1000, (write_speed + read_speed) / 2 + random_iops / 10
-            )
+            score = min(1000, (write_speed + read_speed) / 2 + random_iops / 10)
 
             return {
                 "test_size_mb": test_size_mb,
@@ -520,23 +475,17 @@ class PerformanceBenchmarkRunner:
             connector = aiohttp.TCPConnector(limit=10)
             timeout = aiohttp.ClientTimeout(total=5)
 
-            async with aiohttp.ClientSession(
-                connector=connector, timeout=timeout
-            ) as session:
+            async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
                 while time.time() - start_time < duration:
                     try:
-                        async with session.get(
-                            "http://httpbin.org/bytes/1024"
-                        ) as response:
+                        async with session.get("http://httpbin.org/bytes/1024") as response:
                             data = await response.read()
                             total_bytes += len(data)
                             request_count += 1
                     except Exception:
                         # If external service fails, use localhost
                         try:
-                            async with session.get(
-                                "http://localhost:8000/health"
-                            ) as response:
+                            async with session.get("http://localhost:8000/health") as response:
                                 data = await response.read()
                                 total_bytes += len(data)
                                 request_count += 1
@@ -553,8 +502,7 @@ class PerformanceBenchmarkRunner:
                 "duration": actual_duration,
                 "total_bytes": total_bytes,
                 "request_count": request_count,
-                "throughput_mbps": (total_bytes * 8)
-                / (actual_duration * 1024 * 1024),
+                "throughput_mbps": (total_bytes * 8) / (actual_duration * 1024 * 1024),
                 "requests_per_second": request_count / actual_duration,
             }
 
@@ -573,9 +521,7 @@ class PerformanceBenchmarkRunner:
             return {
                 **result,
                 "score": score,
-                "network_interfaces": (
-                    dict(net_stats._asdict()) if net_stats else {}
-                ),
+                "network_interfaces": (dict(net_stats._asdict()) if net_stats else {}),
             }
 
         except Exception as e:
@@ -604,17 +550,11 @@ class PerformanceBenchmarkRunner:
             }
 
             for user_count in concurrent_users:
-                logger.info(
-                    f"Running load test with {user_count} concurrent users..."
-                )
+                logger.info(f"Running load test with {user_count} concurrent users...")
 
-                load_test_result = await self._run_load_test(
-                    service_url, user_count, duration
-                )
+                load_test_result = await self._run_load_test(service_url, user_count, duration)
 
-                service_results["load_tests"][
-                    str(user_count)
-                ] = load_test_result
+                service_results["load_tests"][str(user_count)] = load_test_result
 
             results[service_name] = service_results
 
@@ -636,9 +576,7 @@ class PerformanceBenchmarkRunner:
                     request_start = time.time()
                     async with session.get(url) as response:
                         await response.read()
-                        request_time = (
-                            time.time() - request_start
-                        ) * 1000  # ms
+                        request_time = (time.time() - request_start) * 1000  # ms
                         request_times.append(request_time)
 
                         if response.status >= 400:
@@ -661,13 +599,8 @@ class PerformanceBenchmarkRunner:
         connector = aiohttp.TCPConnector(limit=concurrent_users * 2)
         timeout = aiohttp.ClientTimeout(total=10)
 
-        async with aiohttp.ClientSession(
-            connector=connector, timeout=timeout
-        ) as session:
-            tasks = [
-                make_requests(session, user_id)
-                for user_id in range(concurrent_users)
-            ]
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            tasks = [make_requests(session, user_id) for user_id in range(concurrent_users)]
 
             user_results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -691,9 +624,7 @@ class PerformanceBenchmarkRunner:
 
         successful_requests = total_requests - total_errors
         requests_per_second = successful_requests / duration
-        error_rate = (
-            (total_errors / total_requests * 100) if total_requests > 0 else 0
-        )
+        error_rate = (total_errors / total_requests * 100) if total_requests > 0 else 0
 
         return {
             "concurrent_users": concurrent_users,
@@ -706,25 +637,17 @@ class PerformanceBenchmarkRunner:
             "avg_response_time": avg_response_time,
             "p95_response_time": p95_response_time,
             "p99_response_time": p99_response_time,
-            "min_response_time": (
-                min(all_request_times) if all_request_times else 0
-            ),
-            "max_response_time": (
-                max(all_request_times) if all_request_times else 0
-            ),
+            "min_response_time": (min(all_request_times) if all_request_times else 0),
+            "max_response_time": (max(all_request_times) if all_request_times else 0),
         }
 
     async def run_database_benchmarks(self) -> Dict[str, Any]:
         """Run database performance benchmarks"""
         config = self.config.get("database_benchmarks", {})
         test_records = config.get("test_records", 10000)
-        concurrent_connections = config.get(
-            "concurrent_connections", [1, 5, 10, 20]
-        )
+        concurrent_connections = config.get("concurrent_connections", [1, 5, 10, 20])
 
-        logger.info(
-            f"Running database benchmarks with {test_records} test records..."
-        )
+        logger.info(f"Running database benchmarks with {test_records} test records...")
 
         results = {
             "test_records": test_records,
@@ -736,15 +659,11 @@ class PerformanceBenchmarkRunner:
         for conn_count in concurrent_connections:
             logger.info(f"Testing with {conn_count} concurrent connections...")
 
-            conn_result = await self._benchmark_database_connections(
-                conn_count, test_records
-            )
+            conn_result = await self._benchmark_database_connections(conn_count, test_records)
             results["connection_tests"][str(conn_count)] = conn_result
 
         # Detailed operation benchmarks
-        results["operation_benchmarks"] = (
-            await self._benchmark_database_operations(test_records)
-        )
+        results["operation_benchmarks"] = await self._benchmark_database_operations(test_records)
 
         return results
 
@@ -792,10 +711,10 @@ class PerformanceBenchmarkRunner:
                 # Select benchmark
                 start_time = time.time()
                 cursor.execute("SELECT COUNT(*) FROM benchmark_table")
-                count_result = cursor.fetchone()
+                cursor.fetchone()
 
                 cursor.execute("SELECT * FROM benchmark_table LIMIT 1000")
-                select_results = cursor.fetchall()
+                cursor.fetchall()
                 select_time = time.time() - start_time
 
                 # Update benchmark
@@ -809,9 +728,7 @@ class PerformanceBenchmarkRunner:
 
                 # Delete benchmark
                 start_time = time.time()
-                cursor.execute(
-                    "DELETE FROM benchmark_table WHERE id % 100 = 0"
-                )
+                cursor.execute("DELETE FROM benchmark_table WHERE id % 100 = 0")
                 conn.commit()
                 delete_time = time.time() - start_time
 
@@ -836,17 +753,14 @@ class PerformanceBenchmarkRunner:
         # Run concurrent database operations
         records_per_worker = record_count // connection_count
 
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=connection_count
-        ) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=connection_count) as executor:
             futures = [
                 executor.submit(db_worker, worker_id, records_per_worker)
                 for worker_id in range(connection_count)
             ]
 
             worker_results = [
-                future.result()
-                for future in concurrent.futures.as_completed(futures)
+                future.result() for future in concurrent.futures.as_completed(futures)
             ]
 
         # Aggregate results
@@ -856,44 +770,24 @@ class PerformanceBenchmarkRunner:
             avg_connection_time = statistics.mean(
                 [r["connection_time"] for r in successful_workers]
             )
-            total_insert_time = sum(
-                [r["insert_time"] for r in successful_workers]
-            )
-            total_select_time = sum(
-                [r["select_time"] for r in successful_workers]
-            )
-            total_update_time = sum(
-                [r["update_time"] for r in successful_workers]
-            )
-            total_delete_time = sum(
-                [r["delete_time"] for r in successful_workers]
-            )
+            total_insert_time = sum([r["insert_time"] for r in successful_workers])
+            total_select_time = sum([r["select_time"] for r in successful_workers])
+            total_update_time = sum([r["update_time"] for r in successful_workers])
+            total_delete_time = sum([r["delete_time"] for r in successful_workers])
 
-            insert_ops_per_sec = (
-                record_count / total_insert_time
-                if total_insert_time > 0
-                else 0
-            )
+            insert_ops_per_sec = record_count / total_insert_time if total_insert_time > 0 else 0
             select_ops_per_sec = (
-                len(successful_workers) / total_select_time
-                if total_select_time > 0
-                else 0
+                len(successful_workers) / total_select_time if total_select_time > 0 else 0
             )
             update_ops_per_sec = (
-                len(successful_workers) / total_update_time
-                if total_update_time > 0
-                else 0
+                len(successful_workers) / total_update_time if total_update_time > 0 else 0
             )
             delete_ops_per_sec = (
-                len(successful_workers) / total_delete_time
-                if total_delete_time > 0
-                else 0
+                len(successful_workers) / total_delete_time if total_delete_time > 0 else 0
             )
         else:
             avg_connection_time = 0
-            insert_ops_per_sec = select_ops_per_sec = update_ops_per_sec = (
-                delete_ops_per_sec
-            ) = 0
+            insert_ops_per_sec = select_ops_per_sec = update_ops_per_sec = delete_ops_per_sec = 0
 
         return {
             "connection_count": connection_count,
@@ -906,9 +800,7 @@ class PerformanceBenchmarkRunner:
             "errors": [r["error"] for r in worker_results if "error" in r],
         }
 
-    async def _benchmark_database_operations(
-        self, record_count: int
-    ) -> Dict[str, Any]:
+    async def _benchmark_database_operations(self, record_count: int) -> Dict[str, Any]:
         """Detailed database operation benchmarks"""
 
         def detailed_db_test():
@@ -945,12 +837,8 @@ class PerformanceBenchmarkRunner:
                 )
 
                 # Create indexes
-                cursor.execute(
-                    "CREATE INDEX idx_users_email ON benchmark_users(email)"
-                )
-                cursor.execute(
-                    "CREATE INDEX idx_posts_user_id ON benchmark_posts(user_id)"
-                )
+                cursor.execute("CREATE INDEX idx_users_email ON benchmark_users(email)")
+                cursor.execute("CREATE INDEX idx_posts_user_id ON benchmark_posts(user_id)")
 
                 results = {}
 
@@ -984,7 +872,7 @@ class PerformanceBenchmarkRunner:
                     LIMIT 100
                 """
                 )
-                complex_results = cursor.fetchall()
+                cursor.fetchall()
                 results["complex_query_time"] = time.time() - start_time
 
                 # Index performance test
@@ -1020,18 +908,12 @@ class PerformanceBenchmarkRunner:
             except Exception as e:
                 return {"error": str(e)}
 
-        detailed_results = await asyncio.get_event_loop().run_in_executor(
-            None, detailed_db_test
-        )
+        detailed_results = await asyncio.get_event_loop().run_in_executor(None, detailed_db_test)
 
         if "error" not in detailed_results:
             # Calculate performance scores
-            bulk_insert_rate = (
-                record_count / detailed_results["bulk_insert_time"]
-            )
-            indexed_lookup_rate = (
-                1000 / detailed_results["indexed_lookup_time"]
-            )
+            bulk_insert_rate = record_count / detailed_results["bulk_insert_time"]
+            indexed_lookup_rate = 1000 / detailed_results["indexed_lookup_time"]
             transaction_rate = 1000 / detailed_results["transaction_time"]
 
             detailed_results.update(
@@ -1039,8 +921,7 @@ class PerformanceBenchmarkRunner:
                     "bulk_insert_rate": bulk_insert_rate,
                     "indexed_lookup_rate": indexed_lookup_rate,
                     "transaction_rate": transaction_rate,
-                    "complex_query_performance": 1.0
-                    / detailed_results["complex_query_time"],
+                    "complex_query_performance": 1.0 / detailed_results["complex_query_time"],
                 }
             )
 
@@ -1050,7 +931,7 @@ class PerformanceBenchmarkRunner:
         """Run frontend performance benchmarks"""
         config = self.config.get("frontend_benchmarks", {})
         urls = config.get("urls", [])
-        viewport_sizes = config.get("viewport_sizes", [])
+        config.get("viewport_sizes", [])
 
         logger.info("Running frontend performance benchmarks...")
 
@@ -1063,11 +944,7 @@ class PerformanceBenchmarkRunner:
         # This would typically use Playwright or Lighthouse
         # For now, return mock data
         for url in urls:
-            url_key = (
-                url.replace("http://", "")
-                .replace("https://", "")
-                .replace("/", "_")
-            )
+            url_key = url.replace("http://", "").replace("https://", "").replace("/", "_")
 
             results["lighthouse_scores"][url_key] = {
                 "performance": 85,
@@ -1093,9 +970,7 @@ class PerformanceBenchmarkRunner:
 
         return results
 
-    def analyze_regressions(
-        self, current_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def analyze_regressions(self, current_results: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze performance regressions against baseline"""
         if not self.baseline_results:
             return {
@@ -1120,9 +995,7 @@ class PerformanceBenchmarkRunner:
                     baseline_score = baseline_system[category].get("score", 0)
 
                     if baseline_score > 0:
-                        change_percent = (
-                            (current_score - baseline_score) / baseline_score
-                        ) * 100
+                        change_percent = ((current_score - baseline_score) / baseline_score) * 100
 
                         if change_percent < -10:  # 10% degradation
                             regressions["detected_regressions"].append(
@@ -1131,11 +1004,7 @@ class PerformanceBenchmarkRunner:
                                     "current_score": current_score,
                                     "baseline_score": baseline_score,
                                     "change_percent": change_percent,
-                                    "severity": (
-                                        "high"
-                                        if change_percent < -25
-                                        else "medium"
-                                    ),
+                                    "severity": ("high" if change_percent < -25 else "medium"),
                                 }
                             )
                         elif change_percent > 10:  # 10% improvement
@@ -1151,11 +1020,7 @@ class PerformanceBenchmarkRunner:
         # Determine overall status
         if len(regressions["detected_regressions"]) > 0:
             high_severity_count = len(
-                [
-                    r
-                    for r in regressions["detected_regressions"]
-                    if r["severity"] == "high"
-                ]
+                [r for r in regressions["detected_regressions"] if r["severity"] == "high"]
             )
             if high_severity_count > 0:
                 regressions["overall_status"] = "critical"
@@ -1363,7 +1228,9 @@ class PerformanceBenchmarkRunner:
         regression_analysis = results.get("regression_analysis", {})
         if regression_analysis.get("status") != "no_baseline":
             report += "## Regression Analysis\n\n"
-            report += f"**Status:** {regression_analysis.get('overall_status', 'unknown').upper()}\n\n"
+            report += (
+                f"**Status:** {regression_analysis.get('overall_status', 'unknown').upper()}\n\n"
+            )
 
             regressions = regression_analysis.get("detected_regressions", [])
             if regressions:
@@ -1419,9 +1286,7 @@ class PerformanceBenchmarkRunner:
                                 for test_result in load_tests.values()
                             ]
                         )
-                        service_names.append(
-                            service_name.replace("-service", "")
-                        )
+                        service_names.append(service_name.replace("-service", ""))
                         max_rps.append(max_rps_value)
 
                 if service_names and max_rps:
@@ -1433,13 +1298,8 @@ class PerformanceBenchmarkRunner:
             # Database performance chart
             db_results = results.get("database_benchmarks", {})
             if db_results:
-                operation_benchmarks = db_results.get(
-                    "operation_benchmarks", {}
-                )
-                if (
-                    operation_benchmarks
-                    and "error" not in operation_benchmarks
-                ):
+                operation_benchmarks = db_results.get("operation_benchmarks", {})
+                if operation_benchmarks and "error" not in operation_benchmarks:
                     ax3 = axes[1, 0]
 
                     operations = [
@@ -1467,18 +1327,14 @@ class PerformanceBenchmarkRunner:
 
             plt.tight_layout()
 
-            chart_file = (
-                self.reports_dir / f"performance_charts_{timestamp}.png"
-            )
+            chart_file = self.reports_dir / f"performance_charts_{timestamp}.png"
             plt.savefig(chart_file, dpi=300, bbox_inches="tight")
             plt.close()
 
             logger.info(f"Performance charts saved to {chart_file}")
 
         except ImportError:
-            logger.warning(
-                "Matplotlib not available, skipping chart generation"
-            )
+            logger.warning("Matplotlib not available, skipping chart generation")
         except Exception as e:
             logger.error(f"Failed to generate charts: {e}")
 
@@ -1487,9 +1343,7 @@ async def main():
     """Main function"""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Automated Performance Benchmarks"
-    )
+    parser = argparse.ArgumentParser(description="Automated Performance Benchmarks")
     parser.add_argument(
         "--config",
         default="config/benchmark-config.yaml",
@@ -1500,9 +1354,7 @@ async def main():
         action="store_true",
         help="Set current results as baseline",
     )
-    parser.add_argument(
-        "--quick", action="store_true", help="Run quick benchmarks only"
-    )
+    parser.add_argument("--quick", action="store_true", help="Run quick benchmarks only")
 
     args = parser.parse_args()
 
@@ -1533,9 +1385,7 @@ async def main():
     if "overall" in system_results:
         overall_score = system_results["overall"]["score"]
         overall_grade = system_results["overall"]["grade"]
-        print(
-            f"Overall System Performance: {overall_score:.1f} ({overall_grade})"
-        )
+        print(f"Overall System Performance: {overall_score:.1f} ({overall_grade})")
 
     recommendations = results.get("recommendations", [])
     if recommendations:

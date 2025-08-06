@@ -5,9 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = (
-        "postgresql://voiceclone_user:password@postgres:5432/voiceclone_db"
-    )
+    database_url: str = "postgresql://voiceclone_user:password@postgres:5432/voiceclone_db"
 
     # JWT
     jwt_secret_key: str = "your-secret-key-change-in-production"

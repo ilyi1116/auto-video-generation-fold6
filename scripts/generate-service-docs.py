@@ -5,7 +5,7 @@
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 class ServiceDocumentationGenerator:
@@ -622,7 +622,7 @@ print(response.json())
         print(f"📝 生成 {config['name']} 文檔...")
 
         # 分析服務結構
-        structure = self.analyze_service_structure(service_path)
+        self.analyze_service_structure(service_path)
 
         # 準備模板變量
         from datetime import datetime
@@ -633,25 +633,17 @@ print(response.json())
             "description": config["description"],
             "port": config["port"],
             "current_date": datetime.now().strftime("%Y-%m-%d"),
-            "tech_stack_list": "\n".join(
-                [f"- **{tech}**" for tech in config["tech_stack"]]
-            ),
-            "dependencies_list": "\n".join(
-                [f"- {dep}" for dep in config["dependencies"]]
-            ),
+            "tech_stack_list": "\n".join([f"- **{tech}**" for tech in config["tech_stack"]]),
+            "dependencies_list": "\n".join([f"- {dep}" for dep in config["dependencies"]]),
             "endpoints_list": "\n".join(
                 [f"- `{endpoint}`" for endpoint in config["main_endpoints"]]
             ),
-            "api_endpoints_details": self.generate_endpoints_details(
-                config["main_endpoints"]
-            ),
+            "api_endpoints_details": self.generate_endpoints_details(config["main_endpoints"]),
             "data_schemas": "// TODO: 添加數據模式定義",
         }
 
         # 生成 README.md
-        readme_content = self.generate_readme_template().format(
-            **template_vars
-        )
+        readme_content = self.generate_readme_template().format(**template_vars)
         readme_path = service_path / "README.md"
         with open(readme_path, "w", encoding="utf-8") as f:
             f.write(readme_content)
@@ -670,11 +662,7 @@ print(response.json())
         """生成端點詳細說明"""
         details = []
         for endpoint in endpoints:
-            method = (
-                "GET"
-                if "/health" in endpoint or "/metrics" in endpoint
-                else "POST"
-            )
+            "GET" if "/health" in endpoint or "/metrics" in endpoint else "POST"
             details.append(
                 """
 ### {method} {endpoint}
@@ -736,9 +724,7 @@ print(response.json())
         for service_name, config in self.service_configs.items():
             service_path = self.services_dir / service_name
             if service_path.exists():
-                readme_link = (
-                    f"[README](./src/services/{service_name}/README.md)"
-                )
+                readme_link = f"[README](./src/services/{service_name}/README.md)"
                 api_link = f"[API 文檔](./src/services/{service_name}/API.md)"
                 index_content += f"| {config['name']} | {config['description']} | {config['port']} | {readme_link} | {api_link} |\n"
 
@@ -817,9 +803,7 @@ graph TB
 **生成時間**: {current_date}
 **項目版本**: 1.0.0
 """.format(
-            current_date=__import__("datetime")
-            .datetime.now()
-            .strftime("%Y-%m-%d")
+            current_date=__import__("datetime").datetime.now().strftime("%Y-%m-%d")
         )
 
         index_path = self.project_root / "SERVICES.md"

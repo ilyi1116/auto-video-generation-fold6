@@ -4,22 +4,38 @@ version: '3.8'
 x-common-config: &common-config
   platform: linux/arm64
 
+# 共通環境變數
+x-common-env: &common-env
+  PYTHONOPTIMIZE: 2
+  PYTHONHASHSEED: random
+  REDIS_URL: redis://redis:6379/0
+  DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auto_video_db
+
 services:
-  api-gateway:
+  # =============================================================================
+  # 基礎設施服務
+  # =============================================================================
+  
+  postgres:
     <<: *common-config
-    build: 
-      context: ./src/services/api-gateway
-    ports:
-      - "8000:8000"
+    image: postgres:16-alpine
     environment:
-      - DATABASE_URL=sqlite:///./app.db
-      - REDIS_URL=redis://redis:6379/0
-      - PYTHONOPTIMIZE=2
-      - PYTHONHASHSEED=random
-    depends_on:
-      - redis
+      POSTGRES_DB: auto_video_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     deploy:
       resources:
         limits:
@@ -28,11 +44,6 @@ services:
         reservations:
           cpus: '1.0'
           memory: 1G
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   redis:
     <<: *common-config
@@ -63,8 +74,534 @@ services:
     volumes:
       - redis_data:/data
 
+  # =============================================================================
+  # 核心業務服務
+  # =============================================================================
+
+  api-gateway:
+    <<: *common-config
+    build: 
+      context: ./src/services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: api-gateway
+      LOG_LEVEL: info
+      API_PORT: 8000
+      METRICS_PORT: 9090
+    depends_on:
+      - redis
+      - postgres
+      - auth-service
+      - ai-service
+      - video-service
+      - data-service
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  auth-service:
+    <<: *common-config
+    build:
+      context: ./src/services/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: auth-service
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-in-production}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  ai-service:
+    <<: *common-config
+    build:
+      context: ./src/services/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: ai-service
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY}
+      MODEL_CACHE_DIR: /app/models
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    volumes:
+      - ai_models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+
+  data-service:
+    <<: *common-config
+    build:
+      context: ./src/services/data-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: data-service
+      MAX_FILE_SIZE: 100MB
+      ALLOWED_AUDIO_FORMATS: mp3,wav,ogg,m4a,flac
+      STORAGE_PATH: /app/storage
+    depends_on:
+      - postgres
+      - redis
+      - storage-service
+    networks:
+      - app-network
+    volumes:
+      - data_storage:/app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  video-service:
+    <<: *common-config
+    build:
+      context: ./src/services/video-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: video-service
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      VIDEO_OUTPUT_DIR: /app/videos
+      MAX_VIDEO_DURATION: 3600
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+      - storage-service
+    networks:
+      - app-network
+    volumes:
+      - video_storage:/app/videos
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+          memory: 3G
+        reservations:
+          cpus: '1.5'
+          memory: 1.5G
+
+  storage-service:
+    <<: *common-config
+    build:
+      context: ./src/services/storage-service
+      dockerfile: Dockerfile
+    ports:
+      - "8009:8009"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: storage-service
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-west-2}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-auto-video-storage}
+      LOCAL_STORAGE_PATH: /app/storage
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    volumes:
+      - storage_data:/app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =============================================================================
+  # 輔助服務
+  # =============================================================================
+
+  data-ingestion:
+    <<: *common-config
+    build:
+      context: ./src/services/data-ingestion
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: data-ingestion
+    depends_on:
+      - postgres
+      - redis
+      - data-service
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  social-service:
+    <<: *common-config
+    build:
+      context: ./src/services/social-service
+      dockerfile: Dockerfile
+    ports:
+      - "8006:8006"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: social-service
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
+      TWITTER_API_KEY: ${TWITTER_API_KEY}
+      FACEBOOK_ACCESS_TOKEN: ${FACEBOOK_ACCESS_TOKEN}
+    depends_on:
+      - postgres
+      - redis
+      - video-service
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  trend-service:
+    <<: *common-config
+    build:
+      context: ./src/services/trend-service
+      dockerfile: Dockerfile
+    ports:
+      - "8007:8007"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: trend-service
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  scheduler-service:
+    <<: *common-config
+    build:
+      context: ./src/services/scheduler-service
+      dockerfile: Dockerfile
+    ports:
+      - "8008:8008"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: scheduler-service
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  training-worker:
+    <<: *common-config
+    build:
+      context: ./src/services/training-worker
+      dockerfile: Dockerfile
+    environment:
+      <<: *common-env
+      SERVICE_NAME: training-worker
+      WORKER_TYPE: training
+      CELERY_BROKER_URL: redis://redis:6379/1
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+
+  inference-service:
+    <<: *common-config
+    build:
+      context: ./src/services/inference-service
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: inference-service
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =============================================================================
+  # 專業服務
+  # =============================================================================
+
+  graphql-gateway:
+    <<: *common-config
+    build:
+      context: ./src/services/graphql-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8011:8011"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: graphql-gateway
+      GRAPHQL_PLAYGROUND: "true"
+    depends_on:
+      - api-gateway
+      - auth-service
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  voice-enhancement:
+    <<: *common-config
+    build:
+      context: ./src/services/voice-enhancement
+      dockerfile: Dockerfile
+    ports:
+      - "8012:8012"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: voice-enhancement
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  payment-service:
+    <<: *common-config
+    build:
+      context: ./src/services/payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8013:8013"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: payment-service
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8013/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  cache-service:
+    <<: *common-config
+    build:
+      context: ./src/services/cache-service
+      dockerfile: Dockerfile
+    ports:
+      - "8014:8014"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: cache-service
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8014/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  compliance-service:
+    <<: *common-config
+    build:
+      context: ./src/services/compliance-service
+      dockerfile: Dockerfile
+    ports:
+      - "8015:8015"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: compliance-service
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8015/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  music-service:
+    <<: *common-config
+    build:
+      context: ./src/services/music-service
+      dockerfile: Dockerfile
+    ports:
+      - "8016:8016"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: music-service
+      SUNO_API_KEY: ${SUNO_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8016/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =============================================================================
+  # 前端服務
+  # =============================================================================
+
+  frontend:
+    <<: *common-config
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://api-gateway:8000
+      VITE_GRAPHQL_URL: http://graphql-gateway:8011/graphql
+    depends_on:
+      - api-gateway
+      - graphql-gateway
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
 volumes:
+  postgres_data:
+    driver: local
   redis_data:
+    driver: local
+  ai_models:
+    driver: local
+  data_storage:
+    driver: local
+  video_storage:
+    driver: local
+  storage_data:
     driver: local
 
 networks:

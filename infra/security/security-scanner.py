@@ -3,16 +3,17 @@
 整合多種安全掃描工具，提供統一的安全評估
 """
 
-import os
-import json
 import asyncio
-import subprocess
+import json
 import logging
+import os
+import subprocess
 import time
-from typing import Dict, List, Any, Optional
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import docker
 
 
@@ -102,9 +103,7 @@ class SecurityScanner:
 
         results = {}
 
-        self.logger.info(
-            f"Starting comprehensive security scan for {target_path}"
-        )
+        self.logger.info(f"Starting comprehensive security scan for {target_path}")
 
         # 並行執行不同類型的掃描
         tasks = []
@@ -140,9 +139,7 @@ class SecurityScanner:
                         results[scan_result.scanner] = scan_result
 
         # 生成綜合報告
-        comprehensive_report = await self._generate_comprehensive_report(
-            results
-        )
+        await self._generate_comprehensive_report(results)
 
         # 發送告警
         await self._send_security_alerts(results)
@@ -179,15 +176,11 @@ class SecurityScanner:
             end_time=end_time,
             status=status,
             findings=findings,
-            metadata={
-                "scan_duration": (end_time - start_time).total_seconds()
-            },
+            metadata={"scan_duration": (end_time - start_time).total_seconds()},
             summary=self._summarize_findings(findings),
         )
 
-    async def _run_bandit_scan(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _run_bandit_scan(self, target_path: str) -> List[SecurityFinding]:
         """執行 Bandit 掃描"""
         findings = []
 
@@ -211,9 +204,7 @@ class SecurityScanner:
             ]
 
             # 執行掃描
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=300
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
             if result.returncode in [0, 1]:  # 0=無問題, 1=發現問題
                 if result.stdout:
@@ -222,18 +213,14 @@ class SecurityScanner:
                     for result_item in bandit_data.get("results", []):
                         finding = SecurityFinding(
                             id=f"bandit_{result_item.get('test_id')}_{int(time.time())}",
-                            severity=result_item.get(
-                                "issue_severity", "UNKNOWN"
-                            ).upper(),
+                            severity=result_item.get("issue_severity", "UNKNOWN").upper(),
                             title=result_item.get("issue_text", ""),
                             description=result_item.get("issue_text", ""),
                             file_path=result_item.get("filename", ""),
                             line_number=result_item.get("line_number", 0),
                             scanner="bandit",
                             rule_id=result_item.get("test_id", ""),
-                            confidence=result_item.get(
-                                "issue_confidence", "UNKNOWN"
-                            ),
+                            confidence=result_item.get("issue_confidence", "UNKNOWN"),
                             remediation=result_item.get("more_info", ""),
                             created_at=datetime.now().isoformat(),
                         )
@@ -244,9 +231,7 @@ class SecurityScanner:
 
         return findings
 
-    async def _run_semgrep_scan(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _run_semgrep_scan(self, target_path: str) -> List[SecurityFinding]:
         """執行 Semgrep 掃描"""
         findings = []
 
@@ -265,9 +250,7 @@ class SecurityScanner:
             ]
 
             # 執行掃描
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=600
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
 
             if result.returncode in [0, 1]:
                 if result.stdout:
@@ -275,30 +258,20 @@ class SecurityScanner:
 
                     for result_item in semgrep_data.get("results", []):
                         severity = self._map_semgrep_severity(
-                            result_item.get("extra", {}).get(
-                                "severity", "INFO"
-                            )
+                            result_item.get("extra", {}).get("severity", "INFO")
                         )
 
                         finding = SecurityFinding(
                             id=f"semgrep_{result_item.get('check_id')}_{int(time.time())}",
                             severity=severity,
-                            title=result_item.get("extra", {}).get(
-                                "message", ""
-                            ),
-                            description=result_item.get("extra", {}).get(
-                                "message", ""
-                            ),
+                            title=result_item.get("extra", {}).get("message", ""),
+                            description=result_item.get("extra", {}).get("message", ""),
                             file_path=result_item.get("path", ""),
-                            line_number=result_item.get("start", {}).get(
-                                "line", 0
-                            ),
+                            line_number=result_item.get("start", {}).get("line", 0),
                             scanner="semgrep",
                             rule_id=result_item.get("check_id", ""),
                             confidence="HIGH",
-                            remediation=result_item.get("extra", {}).get(
-                                "fix", ""
-                            ),
+                            remediation=result_item.get("extra", {}).get("fix", ""),
                             created_at=datetime.now().isoformat(),
                         )
                         findings.append(finding)
@@ -338,15 +311,11 @@ class SecurityScanner:
             end_time=end_time,
             status=status,
             findings=findings,
-            metadata={
-                "scan_duration": (end_time - start_time).total_seconds()
-            },
+            metadata={"scan_duration": (end_time - start_time).total_seconds()},
             summary=self._summarize_findings(findings),
         )
 
-    async def _run_safety_scan(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _run_safety_scan(self, target_path: str) -> List[SecurityFinding]:
         """執行 Safety 掃描"""
         findings = []
 
@@ -368,9 +337,7 @@ class SecurityScanner:
                     f"/code/{req_file.name}",
                 ]
 
-                result = subprocess.run(
-                    cmd, capture_output=True, text=True, timeout=120
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
 
                 if result.stdout:
                     safety_data = json.loads(result.stdout)
@@ -421,16 +388,12 @@ class SecurityScanner:
                     "--json",
                 ]
 
-                result = subprocess.run(
-                    cmd, capture_output=True, text=True, timeout=180
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
 
                 if result.stdout:
                     audit_data = json.loads(result.stdout)
 
-                    for vuln_id, vuln in audit_data.get(
-                        "vulnerabilities", {}
-                    ).items():
+                    for vuln_id, vuln in audit_data.get("vulnerabilities", {}).items():
                         severity = vuln.get("severity", "unknown").upper()
 
                         finding = SecurityFinding(
@@ -444,11 +407,7 @@ class SecurityScanner:
                             rule_id=vuln_id,
                             confidence="HIGH",
                             remediation=f"Update to version {vuln.get('fixAvailable', {}).get('version', 'latest')}",
-                            cve_id=(
-                                vuln.get("cves", [None])[0]
-                                if vuln.get("cves")
-                                else None
-                            ),
+                            cve_id=(vuln.get("cves", [None])[0] if vuln.get("cves") else None),
                             created_at=datetime.now().isoformat(),
                         )
                         findings.append(finding)
@@ -488,15 +447,11 @@ class SecurityScanner:
             end_time=end_time,
             status=status,
             findings=findings,
-            metadata={
-                "scan_duration": (end_time - start_time).total_seconds()
-            },
+            metadata={"scan_duration": (end_time - start_time).total_seconds()},
             summary=self._summarize_findings(findings),
         )
 
-    async def _run_trivy_secret_scan(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _run_trivy_secret_scan(self, target_path: str) -> List[SecurityFinding]:
         """執行 Trivy 密鑰掃描"""
         findings = []
 
@@ -520,9 +475,7 @@ class SecurityScanner:
                 "/code",
             ]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=300
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
             if result.returncode == 0 and result.stdout:
                 trivy_data = json.loads(result.stdout)
@@ -549,9 +502,7 @@ class SecurityScanner:
 
         return findings
 
-    async def _run_gitleaks_scan(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _run_gitleaks_scan(self, target_path: str) -> List[SecurityFinding]:
         """執行 Gitleaks 掃描"""
         findings = []
 
@@ -569,9 +520,7 @@ class SecurityScanner:
                 "--report-path=/tmp/gitleaks.json",
             ]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=180
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
 
             # Gitleaks 在找到密鑰時返回非零狀態碼
             if result.stdout:
@@ -625,9 +574,7 @@ class SecurityScanner:
                 image_name,
             ]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=600
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
 
             if result.returncode == 0 and result.stdout:
                 trivy_data = json.loads(result.stdout)
@@ -667,9 +614,7 @@ class SecurityScanner:
             end_time=end_time,
             status=status,
             findings=findings,
-            metadata={
-                "scan_duration": (end_time - start_time).total_seconds()
-            },
+            metadata={"scan_duration": (end_time - start_time).total_seconds()},
             summary=self._summarize_findings(findings),
         )
 
@@ -688,9 +633,7 @@ class SecurityScanner:
             findings.extend(k8s_findings)
 
             # 掃描 Docker Compose 配置
-            compose_findings = await self._scan_docker_compose_configs(
-                target_path
-            )
+            compose_findings = await self._scan_docker_compose_configs(target_path)
             findings.extend(compose_findings)
 
             status = "completed"
@@ -709,15 +652,11 @@ class SecurityScanner:
             end_time=end_time,
             status=status,
             findings=findings,
-            metadata={
-                "scan_duration": (end_time - start_time).total_seconds()
-            },
+            metadata={"scan_duration": (end_time - start_time).total_seconds()},
             summary=self._summarize_findings(findings),
         )
 
-    async def _scan_dockerfiles(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _scan_dockerfiles(self, target_path: str) -> List[SecurityFinding]:
         """掃描 Dockerfile 安全問題"""
         findings = []
 
@@ -738,28 +677,20 @@ class SecurityScanner:
                     f"/code/{dockerfile.name}",
                 ]
 
-                result = subprocess.run(
-                    cmd, capture_output=True, text=True, timeout=60
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
                 if result.returncode == 0 and result.stdout:
                     trivy_data = json.loads(result.stdout)
 
                     for result_item in trivy_data.get("Results", []):
-                        for misconfig in result_item.get(
-                            "Misconfigurations", []
-                        ):
+                        for misconfig in result_item.get("Misconfigurations", []):
                             finding = SecurityFinding(
                                 id=f"dockerfile_{misconfig.get('ID')}_{int(time.time())}",
-                                severity=misconfig.get(
-                                    "Severity", "UNKNOWN"
-                                ).upper(),
+                                severity=misconfig.get("Severity", "UNKNOWN").upper(),
                                 title=f"Dockerfile issue: {misconfig.get('Title', '')}",
                                 description=misconfig.get("Description", ""),
                                 file_path=str(dockerfile),
-                                line_number=misconfig.get(
-                                    "CauseMetadata", {}
-                                ).get("StartLine", 0),
+                                line_number=misconfig.get("CauseMetadata", {}).get("StartLine", 0),
                                 scanner="trivy_dockerfile",
                                 rule_id=misconfig.get("ID", ""),
                                 confidence="HIGH",
@@ -769,15 +700,11 @@ class SecurityScanner:
                             findings.append(finding)
 
             except Exception as e:
-                self.logger.error(
-                    f"Dockerfile scan failed for {dockerfile}: {e}"
-                )
+                self.logger.error(f"Dockerfile scan failed for {dockerfile}: {e}")
 
         return findings
 
-    async def _scan_kubernetes_configs(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _scan_kubernetes_configs(self, target_path: str) -> List[SecurityFinding]:
         """掃描 Kubernetes 配置安全問題"""
         findings = []
 
@@ -806,57 +733,41 @@ class SecurityScanner:
                             f"/code/{k8s_file.name}",
                         ]
 
-                        result = subprocess.run(
-                            cmd, capture_output=True, text=True, timeout=60
-                        )
+                        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
                         if result.returncode == 0 and result.stdout:
                             trivy_data = json.loads(result.stdout)
 
                             for result_item in trivy_data.get("Results", []):
-                                for misconfig in result_item.get(
-                                    "Misconfigurations", []
-                                ):
+                                for misconfig in result_item.get("Misconfigurations", []):
                                     finding = SecurityFinding(
                                         id=f"k8s_{misconfig.get('ID')}_{int(time.time())}",
-                                        severity=misconfig.get(
-                                            "Severity", "UNKNOWN"
-                                        ).upper(),
+                                        severity=misconfig.get("Severity", "UNKNOWN").upper(),
                                         title=f"K8s config issue: {misconfig.get('Title', '')}",
-                                        description=misconfig.get(
-                                            "Description", ""
-                                        ),
+                                        description=misconfig.get("Description", ""),
                                         file_path=str(k8s_file),
-                                        line_number=misconfig.get(
-                                            "CauseMetadata", {}
-                                        ).get("StartLine", 0),
+                                        line_number=misconfig.get("CauseMetadata", {}).get(
+                                            "StartLine", 0
+                                        ),
                                         scanner="trivy_k8s",
                                         rule_id=misconfig.get("ID", ""),
                                         confidence="HIGH",
-                                        remediation=misconfig.get(
-                                            "Resolution", ""
-                                        ),
+                                        remediation=misconfig.get("Resolution", ""),
                                         created_at=datetime.now().isoformat(),
                                     )
                                     findings.append(finding)
 
             except Exception as e:
-                self.logger.debug(
-                    f"K8s config scan failed for {k8s_file}: {e}"
-                )
+                self.logger.debug(f"K8s config scan failed for {k8s_file}: {e}")
 
         return findings
 
-    async def _scan_docker_compose_configs(
-        self, target_path: str
-    ) -> List[SecurityFinding]:
+    async def _scan_docker_compose_configs(self, target_path: str) -> List[SecurityFinding]:
         """掃描 Docker Compose 配置安全問題"""
         findings = []
 
         compose_files = list(Path(target_path).rglob("docker-compose*.yml"))
-        compose_files.extend(
-            list(Path(target_path).rglob("docker-compose*.yaml"))
-        )
+        compose_files.extend(list(Path(target_path).rglob("docker-compose*.yaml")))
 
         for compose_file in compose_files:
             try:
@@ -873,28 +784,20 @@ class SecurityScanner:
                     f"/code/{compose_file.name}",
                 ]
 
-                result = subprocess.run(
-                    cmd, capture_output=True, text=True, timeout=60
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
                 if result.returncode == 0 and result.stdout:
                     trivy_data = json.loads(result.stdout)
 
                     for result_item in trivy_data.get("Results", []):
-                        for misconfig in result_item.get(
-                            "Misconfigurations", []
-                        ):
+                        for misconfig in result_item.get("Misconfigurations", []):
                             finding = SecurityFinding(
                                 id=f"compose_{misconfig.get('ID')}_{int(time.time())}",
-                                severity=misconfig.get(
-                                    "Severity", "UNKNOWN"
-                                ).upper(),
+                                severity=misconfig.get("Severity", "UNKNOWN").upper(),
                                 title=f"Docker Compose issue: {misconfig.get('Title', '')}",
                                 description=misconfig.get("Description", ""),
                                 file_path=str(compose_file),
-                                line_number=misconfig.get(
-                                    "CauseMetadata", {}
-                                ).get("StartLine", 0),
+                                line_number=misconfig.get("CauseMetadata", {}).get("StartLine", 0),
                                 scanner="trivy_compose",
                                 rule_id=misconfig.get("ID", ""),
                                 confidence="HIGH",
@@ -904,15 +807,11 @@ class SecurityScanner:
                             findings.append(finding)
 
             except Exception as e:
-                self.logger.error(
-                    f"Docker Compose scan failed for {compose_file}: {e}"
-                )
+                self.logger.error(f"Docker Compose scan failed for {compose_file}: {e}")
 
         return findings
 
-    def _summarize_findings(
-        self, findings: List[SecurityFinding]
-    ) -> Dict[str, int]:
+    def _summarize_findings(self, findings: List[SecurityFinding]) -> Dict[str, int]:
         """統計發現摘要"""
         summary = {
             "CRITICAL": 0,
@@ -971,23 +870,16 @@ class SecurityScanner:
             all_findings.extend(scan_result.findings)
 
         # 生成建議
-        report["recommendations"] = self._generate_recommendations(
-            all_findings
-        )
+        report["recommendations"] = self._generate_recommendations(all_findings)
 
         # 儲存報告
-        report_file = (
-            self.reports_dir
-            / f"comprehensive_security_report_{int(time.time())}.json"
-        )
+        report_file = self.reports_dir / f"comprehensive_security_report_{int(time.time())}.json"
         with open(report_file, "w") as f:
             json.dump(report, f, indent=2, default=str)
 
         return report
 
-    def _generate_recommendations(
-        self, findings: List[SecurityFinding]
-    ) -> List[str]:
+    def _generate_recommendations(self, findings: List[SecurityFinding]) -> List[str]:
         """生成安全建議"""
         recommendations = []
 
@@ -1004,9 +896,7 @@ class SecurityScanner:
         # 檢查常見問題類型
         scanner_counts = {}
         for finding in findings:
-            scanner_counts[finding.scanner] = (
-                scanner_counts.get(finding.scanner, 0) + 1
-            )
+            scanner_counts[finding.scanner] = scanner_counts.get(finding.scanner, 0) + 1
 
         if scanner_counts.get("trivy_secrets", 0) > 0:
             recommendations.append("檢查並移除程式碼中的硬編碼密鑰")
@@ -1024,9 +914,7 @@ class SecurityScanner:
 
     async def _send_security_alerts(self, results: Dict[str, ScanResult]):
         """發送安全告警"""
-        total_critical = sum(
-            r.summary.get("CRITICAL", 0) for r in results.values()
-        )
+        total_critical = sum(r.summary.get("CRITICAL", 0) for r in results.values())
         total_high = sum(r.summary.get("HIGH", 0) for r in results.values())
 
         if total_critical > 0 or total_high > 5:

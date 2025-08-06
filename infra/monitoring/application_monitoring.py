@@ -285,14 +285,10 @@ class ApplicationMonitoring:
                 metric.labels(**labels).observe(value)
 
     @asynccontextmanager
-    async def monitor_operation(
-        self, operation_name: str, labels: Dict[str, str] = None
-    ):
+    async def monitor_operation(self, operation_name: str, labels: Dict[str, str] = None):
         """監控操作的上下文管理器"""
         labels = labels or {}
-        labels.update(
-            {"operation": operation_name, "service": self.service_name}
-        )
+        labels.update({"operation": operation_name, "service": self.service_name})
 
         start_time = time.time()
 
@@ -307,9 +303,7 @@ class ApplicationMonitoring:
 
                 # 記錄成功指標
                 duration = time.time() - start_time
-                self.metrics_middleware.record_ai_request(
-                    operation_name, "success", duration
-                )
+                self.metrics_middleware.record_ai_request(operation_name, "success", duration)
 
                 self.logger.info(
                     "Operation completed successfully",
@@ -398,17 +392,13 @@ def create_monitored_app(
 
     # 添加 Redis 健康檢查
     if redis_url:
-        monitoring.add_health_check(
-            "redis", monitoring.create_redis_health_check(redis_url)
-        )
+        monitoring.add_health_check("redis", monitoring.create_redis_health_check(redis_url))
 
     return app, monitoring
 
 
 # 裝飾器
-def monitor_endpoint(
-    operation_name: str = None, labels: Dict[str, str] = None
-):
+def monitor_endpoint(operation_name: str = None, labels: Dict[str, str] = None):
     """端點監控裝飾器"""
 
     def decorator(func):

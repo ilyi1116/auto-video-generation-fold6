@@ -47,9 +47,7 @@ class ServiceHealth:
 class SystemIntegrationTester:
     """系統整合測試器"""
 
-    def __init__(
-        self, config_file: str = "config/integration-test-config.json"
-    ):
+    def __init__(self, config_file: str = "config/integration-test-config.json"):
         self.config = self._load_config(config_file)
         self.docker_client = docker.from_env()
         self.test_results: List[TestResult] = []
@@ -120,9 +118,7 @@ class SystemIntegrationTester:
             }
         )
 
-        logger.info(
-            f"✅ 系統整合測試完成，狀態: {test_results['overall_status']}"
-        )
+        logger.info(f"✅ 系統整合測試完成，狀態: {test_results['overall_status']}")
         return test_results
 
     async def _test_infrastructure(self) -> Dict[str, Any]:
@@ -133,9 +129,7 @@ class SystemIntegrationTester:
         try:
             # 檢查 Docker 容器狀態
             containers = self.docker_client.containers.list()
-            running_services = [
-                c.name for c in containers if c.status == "running"
-            ]
+            running_services = [c.name for c in containers if c.status == "running"]
 
             # 檢查資料庫連接
             db_status = await self._check_database_connections()
@@ -182,13 +176,9 @@ class SystemIntegrationTester:
             health_results = {}
 
             # 並發檢查所有服務
-            with concurrent.futures.ThreadPoolExecutor(
-                max_workers=10
-            ) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
                 futures = {
-                    executor.submit(
-                        self._check_service_health, service
-                    ): service
+                    executor.submit(self._check_service_health, service): service
                     for service in services
                 }
 
@@ -266,9 +256,7 @@ class SystemIntegrationTester:
                 results.append(result)
 
             passed_tests = [r for r in results if r["status"] == "PASS"]
-            overall_pass = (
-                len(passed_tests) >= len(test_cases) * 0.8
-            )  # 80% 通過率
+            overall_pass = len(passed_tests) >= len(test_cases) * 0.8  # 80% 通過率
 
             return {
                 "status": "PASS" if overall_pass else "FAIL",
@@ -455,17 +443,13 @@ class SystemIntegrationTester:
             duration = load_config.get("duration_seconds", 30)
 
             # 執行負載測試
-            performance_metrics = await self._execute_load_test(
-                concurrent_users, duration
-            )
+            performance_metrics = await self._execute_load_test(concurrent_users, duration)
 
             # 評估性能指標
             performance_acceptable = (
                 performance_metrics.get("avg_response_time_ms", 9999) < 500
-                and performance_metrics.get("error_rate", 1.0)
-                < 0.05  # <5% 錯誤率
-                and performance_metrics.get("throughput_rps", 0)
-                > 100  # >100 RPS
+                and performance_metrics.get("error_rate", 1.0) < 0.05  # <5% 錯誤率
+                and performance_metrics.get("throughput_rps", 0) > 100  # >100 RPS
             )
 
             return {
@@ -495,9 +479,7 @@ class SystemIntegrationTester:
             auto_recovery_result = await self._test_auto_recovery()
 
             # 測試數據一致性
-            data_consistency_result = (
-                await self._test_data_consistency_after_recovery()
-            )
+            data_consistency_result = await self._test_data_consistency_after_recovery()
 
             dr_tests_passed = all(
                 [
@@ -528,9 +510,7 @@ class SystemIntegrationTester:
 
         try:
             # 測試影片生成完整流程
-            video_generation_result = (
-                await self._test_video_generation_workflow()
-            )
+            video_generation_result = await self._test_video_generation_workflow()
 
             # 測試用戶註冊到使用的完整流程
             user_journey_result = await self._test_complete_user_journey()
@@ -616,9 +596,7 @@ class SystemIntegrationTester:
         except Exception as e:
             return {"status": "unhealthy", "error": str(e)}
 
-    async def _execute_api_test(
-        self, test_case: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _execute_api_test(self, test_case: Dict[str, Any]) -> Dict[str, Any]:
         """執行 API 測試"""
         start_time = time.time()
         try:
@@ -628,9 +606,7 @@ class SystemIntegrationTester:
             if method == "GET":
                 response = requests.get(url, timeout=self.test_timeout)
             elif method == "POST":
-                response = requests.post(
-                    url, json=test_case.get("data"), timeout=self.test_timeout
-                )
+                response = requests.post(url, json=test_case.get("data"), timeout=self.test_timeout)
             else:
                 return {
                     "status": "SKIP",
@@ -658,9 +634,7 @@ class SystemIntegrationTester:
                 "error": str(e),
             }
 
-    def _generate_test_summary(
-        self, test_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _generate_test_summary(self, test_results: Dict[str, Any]) -> Dict[str, Any]:
         """生成測試摘要"""
         total_tests = 0
         passed_tests = 0
@@ -743,9 +717,7 @@ class SystemIntegrationTester:
     async def _test_retention_policies(self) -> Dict[str, Any]:
         return {"status": "PASS", "message": "保留政策測試通過"}
 
-    async def _execute_load_test(
-        self, concurrent_users: int, duration: int
-    ) -> Dict[str, Any]:
+    async def _execute_load_test(self, concurrent_users: int, duration: int) -> Dict[str, Any]:
         return {
             "avg_response_time_ms": 150,
             "error_rate": 0.02,
@@ -784,9 +756,7 @@ async def main():
         default="config/integration-test-config.json",
         help="配置檔案路徑",
     )
-    parser.add_argument(
-        "--output", default="test-results.json", help="結果輸出檔案"
-    )
+    parser.add_argument("--output", default="test-results.json", help="結果輸出檔案")
     parser.add_argument("--verbose", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()

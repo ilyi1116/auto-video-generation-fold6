@@ -10,7 +10,7 @@ import logging
 import sys
 import time
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 
 import aiohttp
 
@@ -215,13 +215,9 @@ class ServiceHealthChecker:
                     import urllib.parse
 
                     parsed = urllib.parse.urlparse(config["url"])
-                    result = await self.check_tcp_port(
-                        parsed.hostname or "localhost", parsed.port
-                    )
+                    result = await self.check_tcp_port(parsed.hostname or "localhost", parsed.port)
                 else:
-                    result = await self.check_http_health(
-                        session, name, config
-                    )
+                    result = await self.check_http_health(session, name, config)
 
                 self.results[name] = {**result, "critical": config["critical"]}
 
@@ -247,17 +243,13 @@ class ServiceHealthChecker:
 
     def generate_summary(self) -> Tuple[int, int, int]:
         """生成摘要統計"""
-        healthy = sum(
-            1 for r in self.results.values() if r["status"] == "healthy"
-        )
+        healthy = sum(1 for r in self.results.values() if r["status"] == "healthy")
         critical_failures = sum(
             1
             for r in self.results.values()
             if r["status"] != "healthy" and r.get("critical", False)
         )
-        total_failures = sum(
-            1 for r in self.results.values() if r["status"] != "healthy"
-        )
+        total_failures = sum(1 for r in self.results.values() if r["status"] != "healthy")
 
         logger.info("\n" + "=" * 60)
         logger.info("📊 HEALTH CHECK SUMMARY")
@@ -276,26 +268,18 @@ class ServiceHealthChecker:
             )
             system_status = 2
         elif total_failures > 0:
-            logger.info(
-                f"\n⚠️  SYSTEM STATUS: DEGRADED - {total_failures} services down"
-            )
+            logger.info(f"\n⚠️  SYSTEM STATUS: DEGRADED - {total_failures} services down")
             system_status = 1
         else:
-            logger.info(
-                "\n✅ SYSTEM STATUS: HEALTHY - All services operational"
-            )
+            logger.info("\n✅ SYSTEM STATUS: HEALTHY - All services operational")
             system_status = 0
 
         # 顯示建議
         if critical_failures > 0:
             logger.info("\n💡 RECOMMENDATIONS:")
-            logger.info(
-                "  • Investigate critical service failures immediately"
-            )
+            logger.info("  • Investigate critical service failures immediately")
             logger.info("  • Check Docker containers: docker-compose ps")
-            logger.info(
-                "  • Review service logs: docker-compose logs <service>"
-            )
+            logger.info("  • Review service logs: docker-compose logs <service>")
         elif total_failures > 0:
             logger.info("\n💡 RECOMMENDATIONS:")
             logger.info("  • Monitor non-critical service failures")
@@ -312,16 +296,8 @@ class ServiceHealthChecker:
             "results": self.results,
             "summary": {
                 "total_services": len(self.results),
-                "healthy": sum(
-                    1
-                    for r in self.results.values()
-                    if r["status"] == "healthy"
-                ),
-                "failed": sum(
-                    1
-                    for r in self.results.values()
-                    if r["status"] != "healthy"
-                ),
+                "healthy": sum(1 for r in self.results.values() if r["status"] == "healthy"),
+                "failed": sum(1 for r in self.results.values() if r["status"] != "healthy"),
                 "critical_failures": sum(
                     1
                     for r in self.results.values()
@@ -333,9 +309,7 @@ class ServiceHealthChecker:
         with open("health-check-report.json", "w") as f:
             json.dump(report, f, indent=2)
 
-        logger.info(
-            "📄 Health check report saved to: health-check-report.json"
-        )
+        logger.info("📄 Health check report saved to: health-check-report.json")
 
 
 async def main():

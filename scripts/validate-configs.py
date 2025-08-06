@@ -9,7 +9,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import yaml
 
@@ -49,9 +49,7 @@ def validate_env_file(file_path: Path) -> Dict[str, Any]:
         # 檢查必需變數
         missing_vars = set(required_vars) - found_vars
         if missing_vars:
-            warnings.extend(
-                [f"Missing variable: {var}" for var in missing_vars]
-            )
+            warnings.extend([f"Missing variable: {var}" for var in missing_vars])
 
         logger.info(f"✅ Environment file validated: {file_path}")
 
@@ -148,9 +146,7 @@ def validate_pyproject_toml() -> Dict[str, Any]:
                 tomllib.load(f)
             logger.info("✅ pyproject.toml validated")
         except ImportError:
-            warnings.append(
-                "Cannot validate pyproject.toml: tomli/tomllib not available"
-            )
+            warnings.append("Cannot validate pyproject.toml: tomli/tomllib not available")
     except Exception as e:
         errors.append(f"Error in pyproject.toml: {str(e)}")
 

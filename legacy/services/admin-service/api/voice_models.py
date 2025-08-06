@@ -2,24 +2,28 @@
 語音模型管理 API 端點
 """
 
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel
-from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from ..models.voice_model_manager import (
-    model_manager, TrainingConfig, DeploymentConfig, ModelPerformanceMetrics
-)
-from ..models.voice_model import ModelStatus, ModelType
-from ..security import require_permission, audit_log
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
+
 from ..models import AdminUser
+from ..models.voice_model import ModelStatus, ModelType
+from ..models.voice_model_manager import (
+    DeploymentConfig,
+    ModelPerformanceMetrics,
+    TrainingConfig,
+    model_manager,
+)
 from ..schemas import APIResponse
+from ..security import audit_log, require_permission
 
 router = APIRouter(prefix="/voice-models", tags=["voice-models"])
 
 
 class ModelCreateRequest(BaseModel):
     """創建模型請求"""
+
     name: str
     description: str = ""
     model_type: str
@@ -29,6 +33,7 @@ class ModelCreateRequest(BaseModel):
 
 class TrainingRequest(BaseModel):
     """訓練請求"""
+
     dataset_path: str
     epochs: int = 100
     batch_size: int = 32
@@ -42,6 +47,7 @@ class TrainingRequest(BaseModel):
 
 class DeploymentRequest(BaseModel):
     """部署請求"""
+
     version: str
     environment: str
     cpu_limit: float = 2.0
@@ -54,6 +60,7 @@ class DeploymentRequest(BaseModel):
 
 class MetricsUpdateRequest(BaseModel):
     """指標更新請求"""
+
     accuracy: float
     precision: float
     recall: float
@@ -71,24 +78,16 @@ async def get_models(
     status: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
-    current_user: AdminUser = Depends(require_permission("system:dashboard"))
+    current_user: AdminUser = Depends(require_permission("system:dashboard")),
 ):
     """獲取模型列表"""
     try:
         models = await model_manager.get_model_list(
-            model_type=model_type,
-            status=status,
-            limit=limit,
-            offset=offset
+            model_type=model_type, status=status, limit=limit, offset=offset
         )
-        
+
         return APIResponse(
-            data={
-                "models": models,
-                "total": len(models),
-                "limit": limit,
-                "offset": offset
-            }
+            data={"models": models, "total": len(models), "limit": limit, "offset": offset}
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -97,16 +96,15 @@ async def get_models(
 @router.get("/{model_id}")
 @require_permission("system:dashboard")
 async def get_model_details(
-    model_id: str,
-    current_user: AdminUser = Depends(require_permission("system:dashboard"))
+    model_id: str, current_user: AdminUser = Depends(require_permission("system:dashboard"))
 ):
     """獲取模型詳細信息"""
     try:
         model_details = await model_manager.get_model_details(model_id)
-        
+
         if not model_details:
             raise HTTPException(status_code=404, detail=f"模型 {model_id} 不存在")
-        
+
         return APIResponse(data=model_details)
     except HTTPException:
         raise
@@ -119,7 +117,7 @@ async def get_model_details(
 @audit_log("create_model", "voice_model")
 async def create_model(
     request: ModelCreateRequest,
-    current_user: AdminUser = Depends(require_permission("system:models"))
+    current_user: AdminUser = Depends(require_permission("system:models")),
 ):
     """創建新模型"""
     try:
@@ -128,22 +126,19 @@ async def create_model(
             ModelType(request.model_type)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"無效的模型類型: {request.model_type}")
-        
+
         model_id = await model_manager.create_model(
             model_data={
                 "name": request.name,
                 "description": request.description,
                 "model_type": request.model_type,
                 "tags": request.tags,
-                "metadata": request.metadata
+                "metadata": request.metadata,
             },
-            created_by=current_user.username
+            created_by=current_user.username,
         )
-        
-        return APIResponse(
-            message=f"模型 {request.name} 創建成功",
-            data={"model_id": model_id}
-        )
+
+        return APIResponse(message=f"模型 {request.name} 創建成功", data={"model_id": model_id})
     except HTTPException:
         raise
     except Exception as e:
@@ -156,7 +151,7 @@ async def create_model(
 async def start_training(
     model_id: str,
     request: TrainingRequest,
-    current_user: AdminUser = Depends(require_permission("system:models"))
+    current_user: AdminUser = Depends(require_permission("system:models")),
 ):
     """開始模型訓練"""
     try:
@@ -169,21 +164,18 @@ async def start_training(
             loss_function=request.loss_function,
             validation_split=request.validation_split,
             early_stopping=request.early_stopping,
-            checkpoint_interval=request.checkpoint_interval
+            checkpoint_interval=request.checkpoint_interval,
         )
-        
+
         success = await model_manager.start_training(
-            model_id=model_id,
-            training_config=training_config,
-            created_by=current_user.username
+            model_id=model_id, training_config=training_config, created_by=current_user.username
         )
-        
+
         if not success:
             raise HTTPException(status_code=400, detail="無法開始訓練")
-        
+
         return APIResponse(
-            message=f"模型 {model_id} 開始訓練",
-            data={"model_id": model_id, "status": "training"}
+            message=f"模型 {model_id} 開始訓練", data={"model_id": model_id, "status": "training"}
         )
     except HTTPException:
         raise
@@ -198,7 +190,7 @@ async def update_training_progress(
     epoch: int,
     training_loss: float,
     validation_loss: float,
-    current_user: AdminUser = Depends(require_permission("system:models"))
+    current_user: AdminUser = Depends(require_permission("system:models")),
 ):
     """更新訓練進度"""
     try:
@@ -206,17 +198,17 @@ async def update_training_progress(
             model_id=model_id,
             epoch=epoch,
             training_loss=training_loss,
-            validation_loss=validation_loss
+            validation_loss=validation_loss,
         )
-        
+
         return APIResponse(
             message="訓練進度已更新",
             data={
                 "model_id": model_id,
                 "epoch": epoch,
                 "training_loss": training_loss,
-                "validation_loss": validation_loss
-            }
+                "validation_loss": validation_loss,
+            },
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -229,7 +221,7 @@ async def complete_training(
     model_id: str,
     model_path: str,
     metrics: MetricsUpdateRequest,
-    current_user: AdminUser = Depends(require_permission("system:models"))
+    current_user: AdminUser = Depends(require_permission("system:models")),
 ):
     """完成模型訓練"""
     try:
@@ -241,25 +233,19 @@ async def complete_training(
             inference_time=metrics.inference_time,
             memory_usage=metrics.memory_usage,
             model_size=metrics.model_size,
-            quality_score=metrics.quality_score
+            quality_score=metrics.quality_score,
         )
-        
+
         success = await model_manager.complete_training(
-            model_id=model_id,
-            model_path=model_path,
-            metrics=performance_metrics
+            model_id=model_id, model_path=model_path, metrics=performance_metrics
         )
-        
+
         if not success:
             raise HTTPException(status_code=400, detail="無法完成訓練")
-        
+
         return APIResponse(
             message=f"模型 {model_id} 訓練完成",
-            data={
-                "model_id": model_id,
-                "status": "trained",
-                "metrics": metrics.dict()
-            }
+            data={"model_id": model_id, "status": "trained", "metrics": metrics.dict()},
         )
     except HTTPException:
         raise
@@ -273,7 +259,7 @@ async def complete_training(
 async def deploy_model(
     model_id: str,
     request: DeploymentRequest,
-    current_user: AdminUser = Depends(require_permission("system:deployment"))
+    current_user: AdminUser = Depends(require_permission("system:deployment")),
 ):
     """部署模型"""
     try:
@@ -284,23 +270,23 @@ async def deploy_model(
             gpu_enabled=request.gpu_enabled,
             replicas=request.replicas,
             auto_scale=request.auto_scale,
-            health_check_path=request.health_check_path
+            health_check_path=request.health_check_path,
         )
-        
+
         deployment_id = await model_manager.deploy_model(
             model_id=model_id,
             version=request.version,
             deploy_config=deploy_config,
-            deployed_by=current_user.username
+            deployed_by=current_user.username,
         )
-        
+
         return APIResponse(
             message=f"模型 {model_id} 部署成功",
             data={
                 "model_id": model_id,
                 "deployment_id": deployment_id,
-                "environment": request.environment
-            }
+                "environment": request.environment,
+            },
         )
     except HTTPException:
         raise
@@ -312,23 +298,18 @@ async def deploy_model(
 @require_permission("system:models")
 @audit_log("delete_model", "voice_model")
 async def delete_model(
-    model_id: str,
-    current_user: AdminUser = Depends(require_permission("system:models"))
+    model_id: str, current_user: AdminUser = Depends(require_permission("system:models"))
 ):
     """刪除模型"""
     try:
         success = await model_manager.delete_model(
-            model_id=model_id,
-            deleted_by=current_user.username
+            model_id=model_id, deleted_by=current_user.username
         )
-        
+
         if not success:
             raise HTTPException(status_code=404, detail=f"模型 {model_id} 不存在")
-        
-        return APIResponse(
-            message=f"模型 {model_id} 已刪除",
-            data={"model_id": model_id}
-        )
+
+        return APIResponse(message=f"模型 {model_id} 已刪除", data={"model_id": model_id})
     except HTTPException:
         raise
     except Exception as e:
@@ -340,15 +321,15 @@ async def delete_model(
 async def get_model_metrics(
     model_id: str,
     days: int = 7,
-    current_user: AdminUser = Depends(require_permission("system:dashboard"))
+    current_user: AdminUser = Depends(require_permission("system:dashboard")),
 ):
     """獲取模型使用指標"""
     try:
         metrics = await model_manager.get_model_metrics(model_id, days)
-        
+
         if not metrics:
             raise HTTPException(status_code=404, detail=f"模型 {model_id} 不存在")
-        
+
         return APIResponse(data=metrics)
     except HTTPException:
         raise
@@ -359,16 +340,15 @@ async def get_model_metrics(
 @router.get("/{model_id}/optimization")
 @require_permission("system:dashboard")
 async def get_optimization_suggestions(
-    model_id: str,
-    current_user: AdminUser = Depends(require_permission("system:dashboard"))
+    model_id: str, current_user: AdminUser = Depends(require_permission("system:dashboard"))
 ):
     """獲取模型優化建議"""
     try:
         suggestions = await model_manager.optimize_model(model_id)
-        
+
         if "error" in suggestions:
             raise HTTPException(status_code=404, detail=suggestions["error"])
-        
+
         return APIResponse(data=suggestions)
     except HTTPException:
         raise
@@ -379,30 +359,36 @@ async def get_optimization_suggestions(
 @router.get("/stats/summary")
 @require_permission("system:dashboard")
 async def get_model_summary(
-    current_user: AdminUser = Depends(require_permission("system:dashboard"))
+    current_user: AdminUser = Depends(require_permission("system:dashboard")),
 ):
     """獲取模型統計摘要"""
     try:
         # 獲取所有模型
         all_models = await model_manager.get_model_list(limit=1000)
-        
+
         # 統計各種狀態的模型數量
         status_counts = {}
         type_counts = {}
-        
+
         for model in all_models:
             status = model.get("status", "unknown")
             model_type = model.get("model_type", "unknown")
-            
+
             status_counts[status] = status_counts.get(status, 0) + 1
             type_counts[model_type] = type_counts.get(model_type, 0) + 1
-        
+
         # 計算平均指標
         total_models = len(all_models)
-        avg_accuracy = sum(model.get("accuracy_score", 0) for model in all_models) / max(total_models, 1)
-        avg_quality = sum(model.get("quality_score", 0) for model in all_models) / max(total_models, 1)
-        avg_inference_time = sum(model.get("inference_speed", 0) for model in all_models) / max(total_models, 1)
-        
+        avg_accuracy = sum(model.get("accuracy_score", 0) for model in all_models) / max(
+            total_models, 1
+        )
+        avg_quality = sum(model.get("quality_score", 0) for model in all_models) / max(
+            total_models, 1
+        )
+        avg_inference_time = sum(model.get("inference_speed", 0) for model in all_models) / max(
+            total_models, 1
+        )
+
         return APIResponse(
             data={
                 "total_models": total_models,
@@ -411,10 +397,10 @@ async def get_model_summary(
                 "average_metrics": {
                     "accuracy": round(avg_accuracy, 3),
                     "quality": round(avg_quality, 3),
-                    "inference_time": round(avg_inference_time, 3)
+                    "inference_time": round(avg_inference_time, 3),
                 },
                 "available_types": [t.value for t in ModelType],
-                "available_statuses": [s.value for s in ModelStatus]
+                "available_statuses": [s.value for s in ModelStatus],
             }
         )
     except Exception as e:
@@ -428,39 +414,40 @@ async def upload_model_file(
     model_id: str,
     file: UploadFile = File(...),
     file_type: str = Form(...),  # model, config, checkpoint
-    current_user: AdminUser = Depends(require_permission("system:models"))
+    current_user: AdminUser = Depends(require_permission("system:models")),
 ):
     """上傳模型文件"""
     try:
         if file_type not in ["model", "config", "checkpoint"]:
             raise HTTPException(status_code=400, detail="無效的文件類型")
-        
+
         # 檢查模型是否存在
         model_details = await model_manager.get_model_details(model_id)
         if not model_details:
             raise HTTPException(status_code=404, detail=f"模型 {model_id} 不存在")
-        
+
         # 保存文件
-        import aiofiles
         from pathlib import Path
-        
+
+        import aiofiles
+
         model_dir = Path(f"/data/data/com.termux/files/home/myProject/models/models/{model_id}")
         model_dir.mkdir(parents=True, exist_ok=True)
-        
+
         file_path = model_dir / f"{file_type}_{file.filename}"
-        
-        async with aiofiles.open(file_path, 'wb') as f:
+
+        async with aiofiles.open(file_path, "wb") as f:
             content = await file.read()
             await f.write(content)
-        
+
         return APIResponse(
             message=f"文件 {file.filename} 上傳成功",
             data={
                 "model_id": model_id,
                 "file_type": file_type,
                 "file_path": str(file_path),
-                "file_size": len(content)
-            }
+                "file_size": len(content),
+            },
         )
     except HTTPException:
         raise

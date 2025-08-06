@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, validator
-from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field, validator
 
 
 class AIProviderTypeEnum(str, Enum):
@@ -92,7 +93,7 @@ class AIProviderResponse(AIProviderBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -115,10 +116,10 @@ class CrawlerConfigBase(BaseModel):
     use_proxy: bool = False
     proxy_config: Optional[Dict[str, str]] = None
 
-    @validator('keywords')
+    @validator("keywords")
     def validate_keywords(cls, v):
         if not v or len(v) == 0:
-            raise ValueError('至少需要一個關鍵字')
+            raise ValueError("至少需要一個關鍵字")
         return v
 
 
@@ -150,7 +151,7 @@ class CrawlerConfigResponse(CrawlerConfigBase):
     next_run_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -192,7 +193,7 @@ class SocialTrendConfigResponse(SocialTrendConfigBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -217,7 +218,7 @@ class TrendingKeywordCreate(TrendingKeywordBase):
 class TrendingKeywordResponse(TrendingKeywordBase):
     id: int
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -249,7 +250,7 @@ class SystemLogCreate(SystemLogBase):
 class SystemLogResponse(SystemLogBase):
     id: int
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -286,7 +287,7 @@ class AdminUserResponse(AdminUserBase):
     login_count: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -344,13 +345,13 @@ class CrawlerTaskBase(BaseModel):
     schedule_time: Optional[str] = Field(None, max_length=100)
     is_active: bool = True
 
-    @validator('keywords')
+    @validator("keywords")
     def validate_keywords(cls, v):
         if not v or len(v) == 0:
-            raise ValueError('至少需要一個關鍵字')
+            raise ValueError("至少需要一個關鍵字")
         return v
-    
-    @validator('schedule_type')
+
+    @validator("schedule_type")
     def validate_schedule_type(cls, v):
         allowed_types = ["daily", "weekly", "hourly", "cron"]
         if v not in allowed_types:
@@ -370,7 +371,7 @@ class CrawlerTaskUpdate(BaseModel):
     schedule_time: Optional[str] = Field(None, max_length=100)
     is_active: Optional[bool] = None
 
-    @validator('schedule_type')
+    @validator("schedule_type")
     def validate_schedule_type(cls, v):
         if v is not None:
             allowed_types = ["daily", "weekly", "hourly", "cron"]
@@ -384,7 +385,7 @@ class CrawlerTaskResponse(CrawlerTaskBase):
     last_run_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 

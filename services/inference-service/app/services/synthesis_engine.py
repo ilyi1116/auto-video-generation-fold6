@@ -30,9 +30,7 @@ class SynthesisEngine:
 
         # Validate input
         if len(text) > settings.max_text_length:
-            raise ValueError(
-                f"Text too long: {len(text)} > {settings.max_text_length}"
-            )
+            raise ValueError(f"Text too long: {len(text)} > {settings.max_text_length}")
 
         if not text.strip():
             raise ValueError("Text cannot be empty")
@@ -101,10 +99,7 @@ class SynthesisEngine:
                 timeout=settings.synthesis_timeout,
             )
             raise RuntimeError(
-                (
-                    f"Synthesis timed out after "
-                    f"{settings.synthesis_timeout} seconds"
-                )
+                (f"Synthesis timed out after " f"{settings.synthesis_timeout} seconds")
             )
 
         except Exception as e:

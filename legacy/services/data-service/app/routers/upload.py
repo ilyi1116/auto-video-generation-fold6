@@ -31,16 +31,12 @@ async def upload_voice_file(
         raise HTTPException(status_code=400, detail="No filename provided")
 
     # Generate unique filename
-    file_extension = (
-        file.filename.split(".")[-1] if "." in file.filename else ""
-    )
+    file_extension = file.filename.split(".")[-1] if "." in file.filename else ""
     unique_filename = f"{uuid.uuid4()}.{file_extension}"
 
     try:
         # Save file temporarily
-        temp_file_path = await local_storage.save_upload(
-            file.file, unique_filename
-        )
+        temp_file_path = await local_storage.save_upload(file.file, unique_filename)
 
         logger.info(
             "File upload started",
@@ -52,9 +48,7 @@ async def upload_voice_file(
 
         # Validate file
         try:
-            metadata = await audio_validator.validate_file_upload(
-                temp_file_path, file.filename
-            )
+            metadata = await audio_validator.validate_file_upload(temp_file_path, file.filename)
         except FileValidationError as e:
             # Clean up temp file
             await local_storage.delete_file(temp_file_path)
@@ -90,9 +84,7 @@ async def upload_voice_file(
                 error=str(e),
             )
 
-            raise HTTPException(
-                status_code=500, detail="Failed to upload file to storage"
-            )
+            raise HTTPException(status_code=500, detail="Failed to upload file to storage")
 
         # Save file record to database
         file_data = VoiceFileCreate(
@@ -140,9 +132,7 @@ async def upload_voice_file(
             filename=file.filename,
             error=str(e),
         )
-        raise HTTPException(
-            status_code=500, detail="Internal server error during file upload"
-        )
+        raise HTTPException(status_code=500, detail="Internal server error during file upload")
 
 
 @router.get("/files")
@@ -174,9 +164,7 @@ async def list_user_files(
 
 
 @router.delete("/files/{file_id}")
-async def delete_file(
-    file_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+async def delete_file(file_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Delete user's uploaded file"""
 
     user_id = await get_current_user(credentials.credentials)
@@ -195,9 +183,7 @@ async def delete_file(
         await s3_storage.delete_file(file_record.s3_key)
 
     # Delete local file if it exists
-    if file_record.file_path and local_storage.file_exists(
-        file_record.file_path
-    ):
+    if file_record.file_path and local_storage.file_exists(file_record.file_path):
         await local_storage.delete_file(file_record.file_path)
 
     # Delete from database

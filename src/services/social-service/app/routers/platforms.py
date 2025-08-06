@@ -63,9 +63,7 @@ async def handle_oauth_callback(platform: str, callback: OAuthCallback):
 
     except Exception as e:
         logger.error(f"OAuth callback error for {platform}: {e}")
-        raise HTTPException(
-            status_code=400, detail=f"Authentication failed: {str(e)}"
-        )
+        raise HTTPException(status_code=400, detail=f"Authentication failed: {str(e)}")
 
 
 @router.post("/tiktok/publish", response_model=PublishResponse)
@@ -86,9 +84,7 @@ async def publish_to_tiktok(request: PublishRequest):
 
     except Exception as e:
         logger.error(f"TikTok publish error: {e}")
-        return PublishResponse(
-            success=False, error=f"Failed to publish to TikTok: {str(e)}"
-        )
+        return PublishResponse(success=False, error=f"Failed to publish to TikTok: {str(e)}")
 
 
 @router.post("/youtube/publish", response_model=PublishResponse)
@@ -109,9 +105,7 @@ async def publish_to_youtube(request: PublishRequest):
 
     except Exception as e:
         logger.error(f"YouTube publish error: {e}")
-        return PublishResponse(
-            success=False, error=f"Failed to publish to YouTube: {str(e)}"
-        )
+        return PublishResponse(success=False, error=f"Failed to publish to YouTube: {str(e)}")
 
 
 @router.post("/instagram/publish", response_model=PublishResponse)
@@ -132,9 +126,7 @@ async def publish_to_instagram(request: PublishRequest):
 
     except Exception as e:
         logger.error(f"Instagram publish error: {e}")
-        return PublishResponse(
-            success=False, error=f"Failed to publish to Instagram: {str(e)}"
-        )
+        return PublishResponse(success=False, error=f"Failed to publish to Instagram: {str(e)}")
 
 
 @router.get("/status/{platform}")

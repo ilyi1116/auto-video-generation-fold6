@@ -33,9 +33,7 @@ class TDDReportGenerator:
             "required_test_patterns": ["test_*.py", "*_test.py", "tests/"],
         }
 
-    def run_command(
-        self, cmd: str, cwd: Optional[Path] = None, timeout: int = 60
-    ) -> tuple:
+    def run_command(self, cmd: str, cwd: Optional[Path] = None, timeout: int = 60) -> tuple:
         """安全執行命令並返回結果"""
         try:
             result = subprocess.run(
@@ -82,9 +80,7 @@ class TDDReportGenerator:
         elif commit_msg.startswith("refactor:"):
             tdd_phase = "refactor"
 
-        git_info.update(
-            {"short_hash": git_info["commit_hash"][:8], "tdd_phase": tdd_phase}
-        )
+        git_info.update({"short_hash": git_info["commit_hash"][:8], "tdd_phase": tdd_phase})
 
         return git_info
 
@@ -136,14 +132,10 @@ class TDDReportGenerator:
             # 檢查是否有 node_modules
             if (frontend_dir / "node_modules").exists():
                 # 執行測試
-                success, stdout, stderr = self.run_command(
-                    "npm test -- --run --reporter=json"
-                )
+                success, stdout, stderr = self.run_command("npm test -- --run --reporter=json")
                 if success:
                     frontend_data["tests_run"] = True
-                    frontend_data["test_results"] = self.parse_test_output(
-                        stdout
-                    )
+                    frontend_data["test_results"] = self.parse_test_output(stdout)
                 else:
                     print(f"⚠️ 前端測試執行失敗: {stderr}")
             else:
@@ -187,9 +179,7 @@ class TDDReportGenerator:
             ) / len(valid_services)
 
         backend_data["total_tests"] = sum(
-            s["test_results"]["total"]
-            for s in backend_data["services"]
-            if s["test_results"]
+            s["test_results"]["total"] for s in backend_data["services"] if s["test_results"]
         )
 
         return backend_data
@@ -223,9 +213,7 @@ class TDDReportGenerator:
                     service_data["requirements"] = {}
                 try:
                     with open(req_path) as f:
-                        service_data["requirements"][
-                            req_file
-                        ] = f.read().splitlines()
+                        service_data["requirements"][req_file] = f.read().splitlines()
                 except Exception as e:
                     print(f"⚠️ 無法讀取 {req_file}: {e}")
 
@@ -250,33 +238,23 @@ class TDDReportGenerator:
                             coverage_data = json.load(f)
 
                         service_data["coverage"] = {
-                            "statements": round(
-                                coverage_data["totals"]["percent_covered"] or 0
-                            ),
-                            "missing": coverage_data["totals"]["missing_lines"]
-                            or 0,
-                            "total": coverage_data["totals"]["num_statements"]
-                            or 0,
+                            "statements": round(coverage_data["totals"]["percent_covered"] or 0),
+                            "missing": coverage_data["totals"]["missing_lines"] or 0,
+                            "total": coverage_data["totals"]["num_statements"] or 0,
                         }
                     except Exception as e:
                         print(f"⚠️ {service_name} 覆蓋率解析失敗: {e}")
 
             # 收集測試結果
-            success, stdout, stderr = self.run_command(
-                "python -m pytest --tb=no --quiet"
-            )
+            success, stdout, stderr = self.run_command("python -m pytest --tb=no --quiet")
             if success or stderr:  # pytest 可能返回非零但有有效輸出
-                service_data["test_results"] = self.parse_pytest_output(
-                    stdout + stderr
-                )
+                service_data["test_results"] = self.parse_pytest_output(stdout + stderr)
 
             # 收集程式碼品質
             success, stdout, stderr = self.run_command(
                 f"flake8 app/ --max-complexity={self.tdd_config['complexity_limit']} --statistics"
             )
-            service_data["code_quality"] = self.parse_flake8_output(
-                stdout + stderr
-            )
+            service_data["code_quality"] = self.parse_flake8_output(stdout + stderr)
 
         except Exception as e:
             print(f"⚠️ {service_name} 數據收集錯誤: {e}")
@@ -313,9 +291,7 @@ class TDDReportGenerator:
                 if match:
                     results["skipped"] = int(match.group(1))
 
-        results["total"] = (
-            results["passed"] + results["failed"] + results["skipped"]
-        )
+        results["total"] = results["passed"] + results["failed"] + results["skipped"]
         return results
 
     def parse_pytest_output(self, output: str) -> Dict[str, int]:
@@ -343,9 +319,7 @@ class TDDReportGenerator:
                 elif "error" in pattern:
                     results["errors"] = count
 
-        results["total"] = (
-            results["passed"] + results["failed"] + results["errors"]
-        )
+        results["total"] = results["passed"] + results["failed"] + results["errors"]
         return results
 
     def parse_flake8_output(self, output: str) -> Dict[str, Any]:
@@ -369,9 +343,7 @@ class TDDReportGenerator:
                 match = re.search(r"([A-Z]\d{3})", line)
                 if match:
                     error_code = match.group(1)
-                    error_types[error_code] = (
-                        error_types.get(error_code, 0) + 1
-                    )
+                    error_types[error_code] = error_types.get(error_code, 0) + 1
 
         return {
             "total_issues": issues,
@@ -397,32 +369,23 @@ class TDDReportGenerator:
         # 檢查覆蓋率 (40分)
         avg_coverage = backend.get("total_coverage", 0)
         frontend_coverage = (
-            frontend.get("coverage", {}).get("statements", 0)
-            if frontend.get("coverage")
-            else 0
+            frontend.get("coverage", {}).get("statements", 0) if frontend.get("coverage") else 0
         )
 
         overall_coverage = (
-            (avg_coverage + frontend_coverage) / 2
-            if frontend_coverage
-            else avg_coverage
+            (avg_coverage + frontend_coverage) / 2 if frontend_coverage else avg_coverage
         )
-        compliance["coverage"] = (
-            overall_coverage >= self.tdd_config["coverage_threshold"]
-        )
+        compliance["coverage"] = overall_coverage >= self.tdd_config["coverage_threshold"]
         compliance["details"]["coverage_score"] = overall_coverage
 
         # 檢查測試存在性 (30分)
-        has_backend_tests = any(
-            s["has_tests"] for s in backend.get("services", [])
-        )
+        has_backend_tests = any(s["has_tests"] for s in backend.get("services", []))
         has_frontend_tests = frontend.get("tests_run", False)
         compliance["test_existence"] = has_backend_tests or has_frontend_tests
 
         # 檢查程式碼品質 (20分)
         total_quality_issues = sum(
-            s.get("code_quality", {}).get("total_issues", 0)
-            for s in backend.get("services", [])
+            s.get("code_quality", {}).get("total_issues", 0) for s in backend.get("services", [])
         )
         compliance["code_quality"] = total_quality_issues < 10
         compliance["details"]["quality_issues"] = total_quality_issues
@@ -589,33 +552,15 @@ class TDDReportGenerator:
         template_vars = {
             "timestamp": self.timestamp,
             "compliance_score": compliance["score"],
-            "compliance_color": (
-                "#27ae60" if compliance["overall"] else "#e74c3c"
-            ),
-            "compliance_class": (
-                "success" if compliance["overall"] else "error"
-            ),
-            "compliance_status": (
-                "✅ 通過" if compliance["overall"] else "❌ 需改進"
-            ),
-            "coverage_class": (
-                "success" if compliance["coverage"] else "warning"
-            ),
-            "coverage_status": (
-                "✅ 達標" if compliance["coverage"] else "⚠️ 不足"
-            ),
-            "test_class": (
-                "success" if compliance["test_existence"] else "error"
-            ),
-            "test_status": (
-                "✅ 存在" if compliance["test_existence"] else "❌ 缺失"
-            ),
-            "quality_class": (
-                "success" if compliance["code_quality"] else "warning"
-            ),
-            "quality_status": (
-                "✅ 良好" if compliance["code_quality"] else "⚠️ 有問題"
-            ),
+            "compliance_color": ("#27ae60" if compliance["overall"] else "#e74c3c"),
+            "compliance_class": ("success" if compliance["overall"] else "error"),
+            "compliance_status": ("✅ 通過" if compliance["overall"] else "❌ 需改進"),
+            "coverage_class": ("success" if compliance["coverage"] else "warning"),
+            "coverage_status": ("✅ 達標" if compliance["coverage"] else "⚠️ 不足"),
+            "test_class": ("success" if compliance["test_existence"] else "error"),
+            "test_status": ("✅ 存在" if compliance["test_existence"] else "❌ 缺失"),
+            "quality_class": ("success" if compliance["code_quality"] else "warning"),
+            "quality_status": ("✅ 良好" if compliance["code_quality"] else "⚠️ 有問題"),
         }
 
         # Git 資訊
@@ -635,7 +580,7 @@ class TDDReportGenerator:
         if frontend["exists"]:
             frontend_html = []
             if frontend.get("coverage"):
-                cov = frontend["coverage"]
+                frontend["coverage"]
                 frontend_html.append(
                     """
                     <div class="metric">
@@ -651,7 +596,7 @@ class TDDReportGenerator:
                 )
 
             if frontend.get("test_results"):
-                test = frontend["test_results"]
+                frontend["test_results"]
                 frontend_html.append(
                     """
                     <div class="metric">
@@ -667,13 +612,9 @@ class TDDReportGenerator:
                 """
                 )
 
-            template_vars["frontend_content"] = (
-                "".join(frontend_html) or "<p>⚠️ 未找到測試數據</p>"
-            )
+            template_vars["frontend_content"] = "".join(frontend_html) or "<p>⚠️ 未找到測試數據</p>"
         else:
-            template_vars["frontend_content"] = (
-                '<p class="error">❌ 前端目錄不存在</p>'
-            )
+            template_vars["frontend_content"] = '<p class="error">❌ 前端目錄不存在</p>'
 
         # 後端內容
         if backend["services"]:
@@ -753,9 +694,7 @@ class TDDReportGenerator:
             # 顯示摘要
             compliance = self.check_tdd_compliance(data)
             print(f"📊 TDD 合規性評分: {compliance['score']}/100")
-            print(
-                f"🎯 整體合規: {'✅ 通過' if compliance['overall'] else '❌ 需改進'}"
-            )
+            print(f"🎯 整體合規: {'✅ 通過' if compliance['overall'] else '❌ 需改進'}")
 
             return True
 

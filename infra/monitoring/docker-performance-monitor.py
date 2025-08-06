@@ -15,9 +15,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import psutil
-
 import docker
+import psutil
 
 # Configure logging
 logging.basicConfig(
@@ -91,9 +90,7 @@ class DockerPerformanceMonitor:
         self.cpu_threshold = self.config.get("cpu_threshold", 80.0)
         self.memory_threshold = self.config.get("memory_threshold", 85.0)
         self.disk_threshold = self.config.get("disk_threshold", 90.0)
-        self.network_threshold = self.config.get(
-            "network_threshold", 100 * 1024 * 1024
-        )  # 100MB/s
+        self.network_threshold = self.config.get("network_threshold", 100 * 1024 * 1024)  # 100MB/s
 
         # Monitoring intervals
         self.monitor_interval = self.config.get("monitor_interval", 30)
@@ -156,8 +153,7 @@ class DockerPerformanceMonitor:
                 - stats["precpu_stats"]["cpu_usage"]["total_usage"]
             )
             system_delta = (
-                stats["cpu_stats"]["system_cpu_usage"]
-                - stats["precpu_stats"]["system_cpu_usage"]
+                stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
             )
 
             cpu_percent = 0.0
@@ -182,13 +178,8 @@ class DockerPerformanceMonitor:
 
             # Block I/O metrics
             block_read = block_write = 0
-            if (
-                "blkio_stats" in stats
-                and "io_service_bytes_recursive" in stats["blkio_stats"]
-            ):
-                for entry in stats["blkio_stats"][
-                    "io_service_bytes_recursive"
-                ]:
+            if "blkio_stats" in stats and "io_service_bytes_recursive" in stats["blkio_stats"]:
+                for entry in stats["blkio_stats"]["io_service_bytes_recursive"]:
                     if entry["op"] == "Read":
                         block_read += entry["value"]
                     elif entry["op"] == "Write":
@@ -257,11 +248,7 @@ class DockerPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     type="system_cpu",
-                    severity=(
-                        "warning"
-                        if system_metrics.cpu_percent < 95
-                        else "critical"
-                    ),
+                    severity=("warning" if system_metrics.cpu_percent < 95 else "critical"),
                     message=f"High system CPU usage: {system_metrics.cpu_percent:.1f}%",
                     container=None,
                     value=system_metrics.cpu_percent,
@@ -274,11 +261,7 @@ class DockerPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     type="system_memory",
-                    severity=(
-                        "warning"
-                        if system_metrics.memory_percent < 95
-                        else "critical"
-                    ),
+                    severity=("warning" if system_metrics.memory_percent < 95 else "critical"),
                     message=f"High system memory usage: {system_metrics.memory_percent:.1f}%",
                     container=None,
                     value=system_metrics.memory_percent,
@@ -291,11 +274,7 @@ class DockerPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     type="system_disk",
-                    severity=(
-                        "warning"
-                        if system_metrics.disk_usage_percent < 95
-                        else "critical"
-                    ),
+                    severity=("warning" if system_metrics.disk_usage_percent < 95 else "critical"),
                     message=f"High disk usage: {system_metrics.disk_usage_percent:.1f}%",
                     container=None,
                     value=system_metrics.disk_usage_percent,
@@ -310,11 +289,7 @@ class DockerPerformanceMonitor:
                 alerts.append(
                     PerformanceAlert(
                         type="container_cpu",
-                        severity=(
-                            "warning"
-                            if metrics.cpu_percent < 95
-                            else "critical"
-                        ),
+                        severity=("warning" if metrics.cpu_percent < 95 else "critical"),
                         message=f"High CPU usage in {metrics.name}: {metrics.cpu_percent:.1f}%",
                         container=metrics.name,
                         value=metrics.cpu_percent,
@@ -327,11 +302,7 @@ class DockerPerformanceMonitor:
                 alerts.append(
                     PerformanceAlert(
                         type="container_memory",
-                        severity=(
-                            "warning"
-                            if metrics.memory_percent < 95
-                            else "critical"
-                        ),
+                        severity=("warning" if metrics.memory_percent < 95 else "critical"),
                         message=f"High memory usage in {metrics.name}: {metrics.memory_percent:.1f}%",
                         container=metrics.name,
                         value=metrics.memory_percent,
@@ -345,11 +316,7 @@ class DockerPerformanceMonitor:
 
         # Log alerts
         for alert in alerts:
-            level = (
-                logging.WARNING
-                if alert.severity == "warning"
-                else logging.CRITICAL
-            )
+            level = logging.WARNING if alert.severity == "warning" else logging.CRITICAL
             logger.log(level, f"ALERT: {alert.message}")
 
         return alerts
@@ -363,12 +330,8 @@ class DockerPerformanceMonitor:
         recommendations = []
 
         # Analyze container resource usage
-        high_cpu_containers = [
-            m for m in container_metrics if m.cpu_percent > 70
-        ]
-        high_memory_containers = [
-            m for m in container_metrics if m.memory_percent > 70
-        ]
+        high_cpu_containers = [m for m in container_metrics if m.cpu_percent > 70]
+        high_memory_containers = [m for m in container_metrics if m.memory_percent > 70]
 
         if high_cpu_containers:
             for container in high_cpu_containers:
@@ -415,14 +378,11 @@ class DockerPerformanceMonitor:
             self.metrics_history.append(metrics_data)
 
             # Cleanup old data
-            cutoff_time = datetime.utcnow() - timedelta(
-                hours=self.history_retention
-            )
+            cutoff_time = datetime.utcnow() - timedelta(hours=self.history_retention)
             self.metrics_history = [
                 m
                 for m in self.metrics_history
-                if datetime.fromisoformat(m["timestamp"].replace("Z", ""))
-                > cutoff_time
+                if datetime.fromisoformat(m["timestamp"].replace("Z", "")) > cutoff_time
             ]
 
             # Save to file
@@ -430,12 +390,8 @@ class DockerPerformanceMonitor:
                 json.dump(
                     {
                         "current": metrics_data,
-                        "history": self.metrics_history[
-                            -100:
-                        ],  # Keep last 100 entries
-                        "alerts": [
-                            asdict(a) for a in self.alerts[-50:]
-                        ],  # Keep last 50 alerts
+                        "history": self.metrics_history[-100:],  # Keep last 100 entries
+                        "alerts": [asdict(a) for a in self.alerts[-50:]],  # Keep last 50 alerts
                     },
                     f,
                     indent=2,
@@ -468,9 +424,7 @@ class DockerPerformanceMonitor:
                             container_metrics.append(metrics)
 
                 # Check for alerts
-                alerts = self.check_performance_alerts(
-                    container_metrics, system_metrics
-                )
+                self.check_performance_alerts(container_metrics, system_metrics)
 
                 # Generate recommendations
                 recommendations = self.generate_optimization_recommendations(
@@ -507,9 +461,7 @@ class DockerPerformanceMonitor:
             return
 
         self.running = True
-        self.monitor_thread = threading.Thread(
-            target=self.monitor_loop, daemon=True
-        )
+        self.monitor_thread = threading.Thread(target=self.monitor_loop, daemon=True)
         self.monitor_thread.start()
         logger.info("Docker performance monitoring started")
 
@@ -535,26 +487,23 @@ class DockerPerformanceMonitor:
         recent_metrics = [
             m
             for m in self.metrics_history
-            if datetime.fromisoformat(m["timestamp"].replace("Z", ""))
-            > hour_ago
+            if datetime.fromisoformat(m["timestamp"].replace("Z", "")) > hour_ago
         ]
 
         if recent_metrics:
-            avg_system_cpu = sum(
-                m["system"]["cpu_percent"] for m in recent_metrics
-            ) / len(recent_metrics)
-            avg_system_memory = sum(
-                m["system"]["memory_percent"] for m in recent_metrics
-            ) / len(recent_metrics)
+            avg_system_cpu = sum(m["system"]["cpu_percent"] for m in recent_metrics) / len(
+                recent_metrics
+            )
+            avg_system_memory = sum(m["system"]["memory_percent"] for m in recent_metrics) / len(
+                recent_metrics
+            )
         else:
             avg_system_cpu = latest_metrics["system"]["cpu_percent"]
             avg_system_memory = latest_metrics["system"]["memory_percent"]
 
         return {
             "report_time": datetime.utcnow().isoformat(),
-            "monitoring_duration_hours": len(self.metrics_history)
-            * self.monitor_interval
-            / 3600,
+            "monitoring_duration_hours": len(self.metrics_history) * self.monitor_interval / 3600,
             "current_metrics": latest_metrics,
             "hourly_averages": {
                 "system_cpu_percent": round(avg_system_cpu, 2),

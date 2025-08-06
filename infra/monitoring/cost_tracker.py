@@ -91,9 +91,7 @@ class CostTracker:
                 "stable-diffusion-xl": {"per_image": 0.04},
                 "stable-diffusion-3": {"per_image": 0.065},
             },
-            ProviderType.ELEVENLABS.value: {
-                "voice_synthesis": {"per_character": 0.00003}
-            },
+            ProviderType.ELEVENLABS.value: {"voice_synthesis": {"per_character": 0.00003}},
             ProviderType.ANTHROPIC.value: {
                 "claude-3-opus": {
                     "input_per_1k": 0.015,
@@ -216,8 +214,7 @@ class CostTracker:
             operation_type=operation_type,
             tokens_used=tokens_used,
             cost_usd=cost,
-            request_id=request_id
-            or f"{provider}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            request_id=request_id or f"{provider}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             success=success,
             metadata=metadata,
         )
@@ -260,12 +257,8 @@ class CostTracker:
         # 根據操作類型計算成本
         if operation_type == "text_generation":
             # 假設輸入輸出比例 1:1
-            input_cost = (tokens_used / 2 / 1000) * model_rates.get(
-                "input_per_1k", 0
-            )
-            output_cost = (tokens_used / 2 / 1000) * model_rates.get(
-                "output_per_1k", 0
-            )
+            input_cost = (tokens_used / 2 / 1000) * model_rates.get("input_per_1k", 0)
+            output_cost = (tokens_used / 2 / 1000) * model_rates.get("output_per_1k", 0)
             return input_cost + output_cost
 
         elif operation_type == "image_generation":
@@ -276,9 +269,7 @@ class CostTracker:
 
         elif operation_type == "music_generation":
             # Suno 音樂生成成本按分鐘計算
-            duration_minutes = (
-                tokens_used / 60.0 if tokens_used > 0 else 0.5
-            )  # 預設30秒
+            duration_minutes = tokens_used / 60.0 if tokens_used > 0 else 0.5  # 預設30秒
             return duration_minutes * model_rates.get("per_minute", 0.5)
 
         else:
@@ -365,9 +356,7 @@ class CostTracker:
         if not self.config_manager:
             return
 
-        daily_budget = self.config_manager.get(
-            "cost_control.daily_budget_usd", 100.0
-        )
+        daily_budget = self.config_manager.get("cost_control.daily_budget_usd", 100.0)
         current_cost = self._daily_cache.get("total_cost", 0) + new_cost
 
         # 預算使用率警告
@@ -377,16 +366,12 @@ class CostTracker:
             logger.warning(
                 f"⚠️  預算警告: 已使用 {usage_rate:.1%} ({current_cost:.2f}/${daily_budget})"
             )
-            await self._send_budget_alert(
-                "critical", usage_rate, current_cost, daily_budget
-            )
+            await self._send_budget_alert("critical", usage_rate, current_cost, daily_budget)
         elif usage_rate >= 0.8:
             logger.warning(
                 f"📊 預算提醒: 已使用 {usage_rate:.1%} ({current_cost:.2f}/${daily_budget})"
             )
-            await self._send_budget_alert(
-                "warning", usage_rate, current_cost, daily_budget
-            )
+            await self._send_budget_alert("warning", usage_rate, current_cost, daily_budget)
 
     async def _send_budget_alert(
         self, level: str, usage_rate: float, current_cost: float, budget: float
@@ -419,9 +404,7 @@ class CostTracker:
         async with aiofiles.open(alert_file, "w", encoding="utf-8") as f:
             await f.write(json.dumps(alerts, indent=2, ensure_ascii=False))
 
-    async def get_daily_summary(
-        self, target_date: date = None
-    ) -> DailyCostSummary:
+    async def get_daily_summary(self, target_date: date = None) -> DailyCostSummary:
         """獲取每日成本摘要"""
         if target_date is None:
             target_date = date.today()
@@ -432,9 +415,7 @@ class CostTracker:
 
             daily_budget = 100.0
             if self.config_manager:
-                daily_budget = self.config_manager.get(
-                    "cost_control.daily_budget_usd", 100.0
-                )
+                daily_budget = self.config_manager.get("cost_control.daily_budget_usd", 100.0)
 
             total_cost = self._daily_cache.get("total_cost", 0)
 
@@ -525,9 +506,7 @@ class CostTracker:
                 daily_stats[call_date]["operations"][operation_type] = 0
 
             daily_stats[call_date]["providers"][provider] += daily_cost or 0
-            daily_stats[call_date]["operations"][operation_type] += (
-                daily_cost or 0
-            )
+            daily_stats[call_date]["operations"][operation_type] += daily_cost or 0
 
             total_cost += daily_cost or 0
             total_calls += daily_calls or 0
@@ -552,8 +531,7 @@ class CostTracker:
             "current_cost": summary.total_cost,
             "budget_limit": summary.budget_limit,
             "budget_remaining": summary.budget_remaining,
-            "usage_percentage": (summary.total_cost / summary.budget_limit)
-            * 100,
+            "usage_percentage": (summary.total_cost / summary.budget_limit) * 100,
             "is_over_budget": summary.is_over_budget,
             "can_continue": not summary.is_over_budget
             or not self._should_stop_on_budget_exceeded(),
@@ -565,9 +543,7 @@ class CostTracker:
         """檢查是否應該在預算超支時停止"""
         if not self.config_manager:
             return True
-        return self.config_manager.get(
-            "cost_control.stop_on_budget_exceeded", True
-        )
+        return self.config_manager.get("cost_control.stop_on_budget_exceeded", True)
 
     async def export_cost_data(self, days: int = 30) -> str:
         """匯出成本資料"""
@@ -612,9 +588,7 @@ class CostTracker:
         }
 
         async with aiofiles.open(export_file, "w", encoding="utf-8") as f:
-            await f.write(
-                json.dumps(export_data, indent=2, ensure_ascii=False)
-            )
+            await f.write(json.dumps(export_data, indent=2, ensure_ascii=False))
 
         logger.info(f"成本資料已匯出至: {export_file}")
         return str(export_file)
@@ -639,9 +613,7 @@ async def main():
     print("=== 成本追蹤器測試 ===")
 
     # 模擬一些 API 呼叫
-    await tracker.track_api_call(
-        "openai", "gpt-4", "text_generation", tokens_used=1000
-    )
+    await tracker.track_api_call("openai", "gpt-4", "text_generation", tokens_used=1000)
     await tracker.track_api_call(
         "stability_ai",
         "stable-diffusion-xl",

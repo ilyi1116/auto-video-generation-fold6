@@ -163,19 +163,13 @@ class SecurityScanner:
             scan_results = {}
 
             if "static_analysis" in self.config.get("scan_types", []):
-                scan_results["static_analysis"] = (
-                    await self._run_static_analysis()
-                )
+                scan_results["static_analysis"] = await self._run_static_analysis()
 
             if "dependency_scan" in self.config.get("scan_types", []):
-                scan_results["dependency_scan"] = (
-                    await self._run_dependency_scan()
-                )
+                scan_results["dependency_scan"] = await self._run_dependency_scan()
 
             if "container_scan" in self.config.get("scan_types", []):
-                scan_results["container_scan"] = (
-                    await self._run_container_scan()
-                )
+                scan_results["container_scan"] = await self._run_container_scan()
 
             if "network_scan" in self.config.get("scan_types", []):
                 scan_results["network_scan"] = await self._run_network_scan()
@@ -184,22 +178,16 @@ class SecurityScanner:
                 scan_results["web_app_scan"] = await self._run_web_app_scan()
 
             if "compliance_check" in self.config.get("scan_types", []):
-                scan_results["compliance_check"] = (
-                    await self._run_compliance_check()
-                )
+                scan_results["compliance_check"] = await self._run_compliance_check()
 
             # API 安全測試
             scan_results["api_security"] = await self._run_api_security_scan()
 
             # 配置安全檢查
-            scan_results["config_security"] = (
-                await self._run_config_security_scan()
-            )
+            scan_results["config_security"] = await self._run_config_security_scan()
 
             # 密碼學安全檢查
-            scan_results["crypto_security"] = (
-                await self._run_crypto_security_scan()
-            )
+            scan_results["crypto_security"] = await self._run_crypto_security_scan()
 
             end_time = datetime.utcnow()
             duration = (end_time - start_time).total_seconds()
@@ -225,9 +213,7 @@ class SecurityScanner:
             # 保存報告
             await self._save_security_report(report)
 
-            logger.info(
-                f"✅ 安全掃描完成，發現 {len(self.findings)} 個安全問題"
-            )
+            logger.info(f"✅ 安全掃描完成，發現 {len(self.findings)} 個安全問題")
             return report
 
         except Exception as e:
@@ -282,12 +268,8 @@ class SecurityScanner:
                             description=issue.text,
                             severity=self._map_bandit_severity(issue.severity),
                             category=self._map_bandit_category(issue.test_id),
-                            cwe_id=self._get_cwe_for_bandit_issue(
-                                issue.test_id
-                            ),
-                            owasp_category=self._get_owasp_for_bandit_issue(
-                                issue.test_id
-                            ),
+                            cwe_id=self._get_cwe_for_bandit_issue(issue.test_id),
+                            owasp_category=self._get_owasp_for_bandit_issue(issue.test_id),
                             file_path=py_file,
                             line_number=issue.lineno,
                             code_snippet=issue.get_code(),
@@ -295,8 +277,7 @@ class SecurityScanner:
                             references=[
                                 f"https://bandit.readthedocs.io/en/latest/plugins/{issue.test_id.lower()}.html"
                             ],
-                            confidence=issue.confidence.value
-                            / 3.0,  # 轉換為 0-1 範圍
+                            confidence=issue.confidence.value / 3.0,  # 轉換為 0-1 範圍
                             scanner="bandit",
                             timestamp=datetime.utcnow(),
                         )
@@ -347,9 +328,7 @@ class SecurityScanner:
                         ".",
                     ]
 
-                    result = subprocess.run(
-                        cmd, capture_output=True, text=True, timeout=300
-                    )
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
                     if result.returncode == 0 and result.stdout:
                         semgrep_results = json.loads(result.stdout)
@@ -357,12 +336,12 @@ class SecurityScanner:
                         for finding_data in semgrep_results.get("results", []):
                             # Create unique ID from path, line, and check_id
                             path = finding_data.get("path", "")
-                            line = finding_data.get("start", {}).get(
-                                "line", ""
-                            )
+                            line = finding_data.get("start", {}).get("line", "")
                             check_id = finding_data.get("check_id", "")
                             id_string = f"{path}_{line}_{check_id}"
-                            finding_id = f"semgrep_{hashlib.md5(id_string.encode()).hexdigest()[:8]}"
+                            finding_id = (
+                                f"semgrep_{hashlib.md5(id_string.encode()).hexdigest()[:8]}"
+                            )
 
                             finding = SecurityFinding(
                                 finding_id=finding_id,
@@ -374,19 +353,11 @@ class SecurityScanner:
                                 category=self._map_semgrep_category(
                                     finding_data.get("check_id", "")
                                 ),
-                                cwe_id=self._extract_cwe_from_semgrep(
-                                    finding_data
-                                ),
-                                owasp_category=self._extract_owasp_from_semgrep(
-                                    finding_data
-                                ),
+                                cwe_id=self._extract_cwe_from_semgrep(finding_data),
+                                owasp_category=self._extract_owasp_from_semgrep(finding_data),
                                 file_path=finding_data.get("path"),
-                                line_number=finding_data.get("start", {}).get(
-                                    "line"
-                                ),
-                                code_snippet=finding_data.get("extra", {}).get(
-                                    "lines", ""
-                                ),
+                                line_number=finding_data.get("start", {}).get("line"),
+                                code_snippet=finding_data.get("extra", {}).get("lines", ""),
                                 remediation=f"修復 {finding_data.get('check_id')} 漏洞",
                                 references=[
                                     f"https://semgrep.dev/r/{finding_data.get('check_id', '')}"
@@ -407,15 +378,9 @@ class SecurityScanner:
                 "rulesets_used": rulesets,
                 "findings_count": len(findings),
                 "critical_count": len(
-                    [
-                        f
-                        for f in findings
-                        if f.severity == SeverityLevel.CRITICAL
-                    ]
+                    [f for f in findings if f.severity == SeverityLevel.CRITICAL]
                 ),
-                "high_count": len(
-                    [f for f in findings if f.severity == SeverityLevel.HIGH]
-                ),
+                "high_count": len([f for f in findings if f.severity == SeverityLevel.HIGH]),
                 "findings": [asdict(f) for f in findings],
             }
 
@@ -548,8 +513,7 @@ class SecurityScanner:
 
         for config_file in config_files:
             if any(
-                exclude in str(config_file)
-                for exclude in self.config.get("exclude_patterns", [])
+                exclude in str(config_file) for exclude in self.config.get("exclude_patterns", [])
             ):
                 continue
 
@@ -561,9 +525,7 @@ class SecurityScanner:
         return {
             "config_files_scanned": len(config_files),
             "findings_count": len(findings),
-            "insecure_settings": len(
-                [f for f in findings if "insecure" in f.title.lower()]
-            ),
+            "insecure_settings": len([f for f in findings if "insecure" in f.title.lower()]),
         }
 
     async def _run_crypto_security_scan(self) -> Dict[str, Any]:
@@ -589,9 +551,7 @@ class SecurityScanner:
         return {
             "crypto_checks": 3,
             "findings_count": len(findings),
-            "weak_crypto_count": len(
-                [f for f in findings if "weak" in f.title.lower()]
-            ),
+            "weak_crypto_count": len([f for f in findings if "weak" in f.title.lower()]),
             "deprecated_crypto_count": len(
                 [f for f in findings if "deprecated" in f.title.lower()]
             ),
@@ -606,13 +566,9 @@ class SecurityScanner:
 
         for framework in frameworks:
             if framework == "OWASP":
-                compliance_results["OWASP"] = (
-                    await self._check_owasp_compliance()
-                )
+                compliance_results["OWASP"] = await self._check_owasp_compliance()
             elif framework == "NIST":
-                compliance_results["NIST"] = (
-                    await self._check_nist_compliance()
-                )
+                compliance_results["NIST"] = await self._check_nist_compliance()
             elif framework == "CIS":
                 compliance_results["CIS"] = await self._check_cis_compliance()
 
@@ -649,15 +605,12 @@ class SecurityScanner:
 
         for code_file in code_files:
             if any(
-                exclude in str(code_file)
-                for exclude in self.config.get("exclude_patterns", [])
+                exclude in str(code_file) for exclude in self.config.get("exclude_patterns", [])
             ):
                 continue
 
             try:
-                with open(
-                    code_file, "r", encoding="utf-8", errors="ignore"
-                ) as f:
+                with open(code_file, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
                     lines = content.split("\n")
 
@@ -711,15 +664,12 @@ class SecurityScanner:
 
         for config_file in config_files:
             if any(
-                exclude in str(config_file)
-                for exclude in self.config.get("exclude_patterns", [])
+                exclude in str(config_file) for exclude in self.config.get("exclude_patterns", [])
             ):
                 continue
 
             try:
-                with open(
-                    config_file, "r", encoding="utf-8", errors="ignore"
-                ) as f:
+                with open(config_file, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
                     lines = content.split("\n")
 
@@ -803,15 +753,12 @@ class SecurityScanner:
 
             for code_file in code_files:
                 if any(
-                    exclude in str(code_file)
-                    for exclude in self.config.get("exclude_patterns", [])
+                    exclude in str(code_file) for exclude in self.config.get("exclude_patterns", [])
                 ):
                     continue
 
                 try:
-                    with open(
-                        code_file, "r", encoding="utf-8", errors="ignore"
-                    ) as f:
+                    with open(code_file, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
                         lines = content.split("\n")
 
@@ -867,15 +814,12 @@ class SecurityScanner:
 
         for code_file in code_files:
             if any(
-                exclude in str(code_file)
-                for exclude in self.config.get("exclude_patterns", [])
+                exclude in str(code_file) for exclude in self.config.get("exclude_patterns", [])
             ):
                 continue
 
             try:
-                with open(
-                    code_file, "r", encoding="utf-8", errors="ignore"
-                ) as f:
+                with open(code_file, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
                     lines = content.split("\n")
 
@@ -991,9 +935,7 @@ class SecurityScanner:
         """檢查 CSRF 保護"""
         return {"csrf_vulnerabilities": 0, "forms_checked": 0}
 
-    async def _analyze_config_file(
-        self, config_file: Path
-    ) -> List[SecurityFinding]:
+    async def _analyze_config_file(self, config_file: Path) -> List[SecurityFinding]:
         """分析配置檔案"""
         # 簡化實現
         return []
@@ -1086,51 +1028,27 @@ class SecurityScanner:
         else:
             return "A05"  # Security Misconfiguration
 
-    def _extract_cwe_from_semgrep(
-        self, finding_data: Dict[str, Any]
-    ) -> Optional[str]:
+    def _extract_cwe_from_semgrep(self, finding_data: Dict[str, Any]) -> Optional[str]:
         """從 Semgrep 結果中提取 CWE"""
         # 檢查 metadata 中是否有 CWE 資訊
         metadata = finding_data.get("extra", {}).get("metadata", {})
         return metadata.get("cwe")
 
-    def _extract_owasp_from_semgrep(
-        self, finding_data: Dict[str, Any]
-    ) -> Optional[str]:
+    def _extract_owasp_from_semgrep(self, finding_data: Dict[str, Any]) -> Optional[str]:
         """從 Semgrep 結果中提取 OWASP 類別"""
         metadata = finding_data.get("extra", {}).get("metadata", {})
         return metadata.get("owasp")
 
-    def _generate_security_summary(
-        self, scan_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _generate_security_summary(self, scan_results: Dict[str, Any]) -> Dict[str, Any]:
         """生成安全摘要"""
         total_findings = len(self.findings)
 
         severity_counts = {
-            "critical": len(
-                [
-                    f
-                    for f in self.findings
-                    if f.severity == SeverityLevel.CRITICAL
-                ]
-            ),
-            "high": len(
-                [f for f in self.findings if f.severity == SeverityLevel.HIGH]
-            ),
-            "medium": len(
-                [
-                    f
-                    for f in self.findings
-                    if f.severity == SeverityLevel.MEDIUM
-                ]
-            ),
-            "low": len(
-                [f for f in self.findings if f.severity == SeverityLevel.LOW]
-            ),
-            "info": len(
-                [f for f in self.findings if f.severity == SeverityLevel.INFO]
-            ),
+            "critical": len([f for f in self.findings if f.severity == SeverityLevel.CRITICAL]),
+            "high": len([f for f in self.findings if f.severity == SeverityLevel.HIGH]),
+            "medium": len([f for f in self.findings if f.severity == SeverityLevel.MEDIUM]),
+            "low": len([f for f in self.findings if f.severity == SeverityLevel.LOW]),
+            "info": len([f for f in self.findings if f.severity == SeverityLevel.INFO]),
         }
 
         category_counts = {}
@@ -1155,12 +1073,8 @@ class SecurityScanner:
     def _check_compliance_status(self) -> Dict[str, bool]:
         """檢查合規狀態"""
         # 基於發現的問題評估合規性
-        critical_issues = len(
-            [f for f in self.findings if f.severity == SeverityLevel.CRITICAL]
-        )
-        high_issues = len(
-            [f for f in self.findings if f.severity == SeverityLevel.HIGH]
-        )
+        critical_issues = len([f for f in self.findings if f.severity == SeverityLevel.CRITICAL])
+        high_issues = len([f for f in self.findings if f.severity == SeverityLevel.HIGH])
 
         return {
             "OWASP_TOP_10": critical_issues == 0 and high_issues < 5,
@@ -1183,9 +1097,7 @@ class SecurityScanner:
             SeverityLevel.INFO: 0.5,
         }
 
-        total_score = sum(
-            weights.get(finding.severity, 0) for finding in self.findings
-        )
+        total_score = sum(weights.get(finding.severity, 0) for finding in self.findings)
 
         # 正規化到 0-100 範圍
         # 假設 100 個高嚴重程度問題為最大分數
@@ -1209,9 +1121,7 @@ class SecurityScanner:
 
         # 保存 JSON 報告
         with open(report_file, "w", encoding="utf-8") as f:
-            json.dump(
-                report_data, f, indent=2, ensure_ascii=False, default=str
-            )
+            json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
 
         logger.info(f"安全報告已保存: {report_file}")
 
@@ -1222,12 +1132,8 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="安全漏洞掃描")
-    parser.add_argument(
-        "--config", default="config/security-config.json", help="配置檔案路徑"
-    )
-    parser.add_argument(
-        "--output", default="security-report.json", help="結果輸出檔案"
-    )
+    parser.add_argument("--config", default="config/security-config.json", help="配置檔案路徑")
+    parser.add_argument("--output", default="security-report.json", help="結果輸出檔案")
     parser.add_argument(
         "--severity",
         choices=["critical", "high", "medium", "low"],

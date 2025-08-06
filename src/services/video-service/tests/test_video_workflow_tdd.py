@@ -108,9 +108,7 @@ class TestVideoWorkflowCore:
         engine = VideoWorkflowEngine()
 
         # 行動 (Act)
-        result = await engine.initialize_workflow(
-            request, user_id="test_user_123"
-        )
+        result = await engine.initialize_workflow(request, user_id="test_user_123")
 
         # 斷言 (Assert)
         assert result.workflow_id is not None
@@ -142,9 +140,7 @@ class TestVideoWorkflowCore:
         executor = PipelineExecutor()
 
         # 行動
-        workflow_result = await engine.initialize_workflow(
-            request, user_id="test_user_456"
-        )
+        workflow_result = await engine.initialize_workflow(request, user_id="test_user_456")
         pipeline_result = await executor.execute_pipeline(
             workflow_result.workflow_id,
             stages=[
@@ -176,21 +172,15 @@ class TestVideoWorkflowCore:
         )
 
         # 模擬某個階段失敗的情況
-        with patch(
-            "video.ai_services.script_generator.generate_script"
-        ) as mock_script_gen:
-            mock_script_gen.side_effect = Exception(
-                "Script generation service unavailable"
-            )
+        with patch("video.ai_services.script_generator.generate_script") as mock_script_gen:
+            mock_script_gen.side_effect = Exception("Script generation service unavailable")
 
             from video.workflow_engine import VideoWorkflowEngine
 
             engine = VideoWorkflowEngine()
 
             # 行動
-            result = await engine.initialize_workflow(
-                request, user_id="test_user_789"
-            )
+            result = await engine.initialize_workflow(request, user_id="test_user_789")
 
             # 斷言 - 應該能夠處理錯誤並提供有意義的錯誤訊息
             assert result.status == "failed"
@@ -219,27 +209,15 @@ class TestVideoWorkflowCore:
         tracker = ProgressTracker()
 
         # 行動 - 模擬工作流程各階段
-        workflow_result = await engine.initialize_workflow(
-            request, user_id="test_user_progress"
-        )
+        workflow_result = await engine.initialize_workflow(request, user_id="test_user_progress")
 
         # 模擬各階段進度更新
-        await tracker.update_progress(
-            workflow_result.workflow_id, "script_generation", 25
-        )
-        await tracker.update_progress(
-            workflow_result.workflow_id, "image_creation", 50
-        )
-        await tracker.update_progress(
-            workflow_result.workflow_id, "voice_synthesis", 75
-        )
-        await tracker.update_progress(
-            workflow_result.workflow_id, "video_composition", 100
-        )
+        await tracker.update_progress(workflow_result.workflow_id, "script_generation", 25)
+        await tracker.update_progress(workflow_result.workflow_id, "image_creation", 50)
+        await tracker.update_progress(workflow_result.workflow_id, "voice_synthesis", 75)
+        await tracker.update_progress(workflow_result.workflow_id, "video_composition", 100)
 
-        final_status = await tracker.get_current_status(
-            workflow_result.workflow_id
-        )
+        final_status = await tracker.get_current_status(workflow_result.workflow_id)
 
         # 斷言
         assert final_status.progress_percentage == 100
@@ -281,13 +259,9 @@ class TestVideoWorkflowCore:
 
         # 行動與斷言
         for case in test_cases:
-            estimated_time = estimator.estimate_completion_time(
-                case["request"]
-            )
+            estimated_time = estimator.estimate_completion_time(case["request"])
 
-            assert estimated_time <= timedelta(
-                minutes=case["expected_max_minutes"]
-            )
+            assert estimated_time <= timedelta(minutes=case["expected_max_minutes"])
             assert estimated_time > timedelta(minutes=0)
 
     @pytest.mark.asyncio
@@ -308,22 +282,16 @@ class TestVideoWorkflowCore:
         engine = VideoWorkflowEngine()
 
         # 行動
-        workflow_result = await engine.initialize_workflow(
-            request, user_id="test_cancel_user"
-        )
+        workflow_result = await engine.initialize_workflow(request, user_id="test_cancel_user")
 
         # 模擬工作流程開始執行
-        execution_task = asyncio.create_task(
-            engine.execute_workflow(workflow_result.workflow_id)
-        )
+        execution_task = asyncio.create_task(engine.execute_workflow(workflow_result.workflow_id))
 
         # 等待一點時間讓工作流程開始
         await asyncio.sleep(0.1)
 
         # 取消工作流程
-        cancel_result = await engine.cancel_workflow(
-            workflow_result.workflow_id
-        )
+        cancel_result = await engine.cancel_workflow(workflow_result.workflow_id)
 
         # 斷言
         assert cancel_result.status == "cancelled"
@@ -349,9 +317,7 @@ class TestVideoWorkflowCore:
         resource_manager = ResourceManager()
 
         # 行動
-        workflow_result = await engine.initialize_workflow(
-            request, user_id="test_cleanup_user"
-        )
+        workflow_result = await engine.initialize_workflow(request, user_id="test_cleanup_user")
 
         # 記錄初始資源使用情況
         initial_temp_files = resource_manager.count_temporary_files()
@@ -368,9 +334,7 @@ class TestVideoWorkflowCore:
         final_memory_usage = resource_manager.get_memory_usage()
 
         assert final_temp_files <= initial_temp_files
-        assert (
-            final_memory_usage <= initial_memory_usage * 1.1
-        )  # 允許 10% 的記憶體增長
+        assert final_memory_usage <= initial_memory_usage * 1.1  # 允許 10% 的記憶體增長
 
 
 class TestVideoWorkflowEdgeCases:
@@ -382,9 +346,7 @@ class TestVideoWorkflowEdgeCases:
         # 安排 - 創建超長主題
         extremely_long_topic = "人工智慧" * 1000  # 4000 字符
 
-        request = VideoWorkflowRequest(
-            topic=extremely_long_topic, target_platform="youtube"
-        )
+        request = VideoWorkflowRequest(topic=extremely_long_topic, target_platform="youtube")
 
         from video.workflow_engine import VideoWorkflowEngine
 
@@ -392,9 +354,7 @@ class TestVideoWorkflowEdgeCases:
 
         # 行動與斷言
         # 應該能夠處理或適當拒絕極長的輸入
-        result = await engine.initialize_workflow(
-            request, user_id="test_long_topic"
-        )
+        result = await engine.initialize_workflow(request, user_id="test_long_topic")
 
         # 要麼成功處理（截斷主題），要麼拒絕請求
         assert result.status in ["initialized", "failed"]
@@ -427,9 +387,7 @@ class TestVideoWorkflowEdgeCases:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # 斷言 - 所有請求都應該被正確處理
-        successful_results = [
-            r for r in results if not isinstance(r, Exception)
-        ]
+        successful_results = [r for r in results if not isinstance(r, Exception)]
         assert len(successful_results) >= 8  # 至少 80% 成功率
 
         # 檢查沒有重複的 workflow_id
@@ -449,9 +407,7 @@ class TestVideoWorkflowPerformance:
         """測試：工作流程初始化應該在時間限制內完成"""
         import time
 
-        request = VideoWorkflowRequest(
-            topic="性能測試主題", target_platform="youtube"
-        )
+        request = VideoWorkflowRequest(topic="性能測試主題", target_platform="youtube")
 
         from video.workflow_engine import VideoWorkflowEngine
 
@@ -459,9 +415,7 @@ class TestVideoWorkflowPerformance:
 
         # 行動 - 測量初始化時間
         start_time = time.time()
-        result = await engine.initialize_workflow(
-            request, user_id="perf_test_user"
-        )
+        result = await engine.initialize_workflow(request, user_id="perf_test_user")
         end_time = time.time()
 
         initialization_time = end_time - start_time
@@ -494,9 +448,7 @@ class TestVideoWorkflowPerformance:
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
         # 行動 - 執行工作流程
-        workflow_result = await engine.initialize_workflow(
-            request, user_id="memory_test_user"
-        )
+        workflow_result = await engine.initialize_workflow(request, user_id="memory_test_user")
         await engine.execute_workflow(workflow_result.workflow_id)
 
         # 記錄最終記憶體使用

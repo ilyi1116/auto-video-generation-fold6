@@ -23,9 +23,9 @@ import statistics
 import time
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 import redis
@@ -159,9 +159,7 @@ class CircuitBreaker:
             return False
 
         time_since_failure = datetime.now() - self.last_failure_time
-        return (
-            time_since_failure.total_seconds() >= self.config.timeout_duration
-        )
+        return time_since_failure.total_seconds() >= self.config.timeout_duration
 
 
 class ConnectionPool:
@@ -220,9 +218,7 @@ class ConnectionPool:
 
             return session
 
-    async def return_session(
-        self, service_key: str, session: aiohttp.ClientSession
-    ):
+    async def return_session(self, service_key: str, session: aiohttp.ClientSession):
         """Return session to pool"""
         async with self.lock:
             if len(self.connections[service_key]) < self.max_connections:
@@ -282,9 +278,7 @@ class ResponseCache:
             ttl = ttl or self.default_ttl
             await asyncio.get_event_loop().run_in_executor(
                 None,
-                lambda: self.redis_client.setex(
-                    cache_key, ttl, json.dumps(data, default=str)
-                ),
+                lambda: self.redis_client.setex(cache_key, ttl, json.dumps(data, default=str)),
             )
             self.cache_stats["sets"] += 1
 
@@ -295,11 +289,7 @@ class ResponseCache:
     def get_cache_stats(self) -> Dict:
         """Get cache statistics"""
         total_requests = self.cache_stats["hits"] + self.cache_stats["misses"]
-        hit_rate = (
-            (self.cache_stats["hits"] / total_requests * 100)
-            if total_requests > 0
-            else 0
-        )
+        hit_rate = (self.cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0
 
         return {
             **self.cache_stats,
@@ -311,9 +301,7 @@ class ResponseCache:
 class MicroservicesCommunicationOptimizer:
     """Microservices communication optimizer"""
 
-    def __init__(
-        self, config_path: str = "config/communication-optimizer.yaml"
-    ):
+    def __init__(self, config_path: str = "config/communication-optimizer.yaml"):
         self.config = self._load_config(config_path)
         self.services: Dict[str, List[ServiceInstance]] = {}
         self.load_balancing_strategy = LoadBalancingStrategy(
@@ -351,21 +339,11 @@ class MicroservicesCommunicationOptimizer:
                 "failure_rate_threshold": 0.5,
             },
             "services": {
-                "api-gateway": [
-                    {"host": "localhost", "port": 8000, "weight": 1.0}
-                ],
-                "auth-service": [
-                    {"host": "localhost", "port": 8001, "weight": 1.0}
-                ],
-                "ai-service": [
-                    {"host": "localhost", "port": 8002, "weight": 1.0}
-                ],
-                "video-service": [
-                    {"host": "localhost", "port": 8003, "weight": 1.0}
-                ],
-                "storage-service": [
-                    {"host": "localhost", "port": 8004, "weight": 1.0}
-                ],
+                "api-gateway": [{"host": "localhost", "port": 8000, "weight": 1.0}],
+                "auth-service": [{"host": "localhost", "port": 8001, "weight": 1.0}],
+                "ai-service": [{"host": "localhost", "port": 8002, "weight": 1.0}],
+                "video-service": [{"host": "localhost", "port": 8003, "weight": 1.0}],
+                "storage-service": [{"host": "localhost", "port": 8004, "weight": 1.0}],
             },
             "redis": {"host": "localhost", "port": 6379, "db": 1},
         }
@@ -386,12 +364,10 @@ class MicroservicesCommunicationOptimizer:
                 self.services[service_name].append(instance)
 
                 # Initialize circuit breaker for each service
-                cb_config = CircuitBreakerConfig(
-                    **self.config.get("circuit_breaker", {})
+                cb_config = CircuitBreakerConfig(**self.config.get("circuit_breaker", {}))
+                self.circuit_breakers[f"{service_name}:{instance.host}:{instance.port}"] = (
+                    CircuitBreaker(cb_config)
                 )
-                self.circuit_breakers[
-                    f"{service_name}:{instance.host}:{instance.port}"
-                ] = CircuitBreaker(cb_config)
 
         # Initialize cache if enabled
         if self.config.get("cache_enabled", True):
@@ -402,54 +378,32 @@ class MicroservicesCommunicationOptimizer:
                 db=redis_config.get("db", 1),
                 decode_responses=True,
             )
-            self.response_cache = ResponseCache(
-                redis_client, self.config.get("cache_ttl", 300)
-            )
+            self.response_cache = ResponseCache(redis_client, self.config.get("cache_ttl", 300))
 
         logger.info("Microservices communication optimizer initialized")
         logger.info(f"Registered services: {list(self.services.keys())}")
-        logger.info(
-            f"Load balancing strategy: {self.load_balancing_strategy.value}"
-        )
+        logger.info(f"Load balancing strategy: {self.load_balancing_strategy.value}")
 
-    async def select_service_instance(
-        self, service_name: str
-    ) -> Optional[ServiceInstance]:
+    async def select_service_instance(self, service_name: str) -> Optional[ServiceInstance]:
         """Select optimal service instance using load balancing strategy"""
         if service_name not in self.services:
             logger.error(f"Service {service_name} not found")
             return None
 
-        instances = [
-            inst for inst in self.services[service_name] if inst.is_healthy
-        ]
+        instances = [inst for inst in self.services[service_name] if inst.is_healthy]
         if not instances:
             logger.warning(f"No healthy instances for service {service_name}")
             return None
 
         if self.load_balancing_strategy == LoadBalancingStrategy.ROUND_ROBIN:
             return self._round_robin_select(service_name, instances)
-        elif (
-            self.load_balancing_strategy
-            == LoadBalancingStrategy.WEIGHTED_ROUND_ROBIN
-        ):
+        elif self.load_balancing_strategy == LoadBalancingStrategy.WEIGHTED_ROUND_ROBIN:
             return self._weighted_round_robin_select(service_name, instances)
-        elif (
-            self.load_balancing_strategy
-            == LoadBalancingStrategy.LEAST_CONNECTIONS
-        ):
+        elif self.load_balancing_strategy == LoadBalancingStrategy.LEAST_CONNECTIONS:
             return min(instances, key=lambda x: x.current_connections)
-        elif (
-            self.load_balancing_strategy
-            == LoadBalancingStrategy.FASTEST_RESPONSE
-        ):
-            return min(
-                instances, key=lambda x: x.avg_response_time or float("in")
-            )
-        elif (
-            self.load_balancing_strategy
-            == LoadBalancingStrategy.RESOURCE_BASED
-        ):
+        elif self.load_balancing_strategy == LoadBalancingStrategy.FASTEST_RESPONSE:
+            return min(instances, key=lambda x: x.avg_response_time or float("in"))
+        elif self.load_balancing_strategy == LoadBalancingStrategy.RESOURCE_BASED:
             return self._resource_based_select(instances)
         else:
             return instances[0]  # Fallback
@@ -476,15 +430,11 @@ class MicroservicesCommunicationOptimizer:
             weight_count = max(1, int(instance.weight * 10))
             weighted_instances.extend([instance] * weight_count)
 
-        index = self.round_robin_counters[service_name] % len(
-            weighted_instances
-        )
+        index = self.round_robin_counters[service_name] % len(weighted_instances)
         self.round_robin_counters[service_name] += 1
         return weighted_instances[index]
 
-    def _resource_based_select(
-        self, instances: List[ServiceInstance]
-    ) -> ServiceInstance:
+    def _resource_based_select(self, instances: List[ServiceInstance]) -> ServiceInstance:
         """Resource-based selection considering CPU and memory"""
 
         def resource_score(instance: ServiceInstance) -> float:
@@ -494,12 +444,7 @@ class MicroservicesCommunicationOptimizer:
             connection_score = instance.current_connections / 100.0
             response_time_score = (instance.avg_response_time or 0) / 1000.0
 
-            return (
-                cpu_score
-                + memory_score
-                + connection_score
-                + response_time_score
-            )
+            return cpu_score + memory_score + connection_score + response_time_score
 
         return min(instances, key=resource_score)
 
@@ -569,28 +514,20 @@ class MicroservicesCommunicationOptimizer:
                 request_data["json"] = kwargs["json"]
                 if self.config.get("compression_enabled", True):
                     json_str = json.dumps(kwargs["json"])
-                    if len(json_str) > self.config.get(
-                        "compression_threshold", 1024
-                    ):
+                    if len(json_str) > self.config.get("compression_threshold", 1024):
                         # Use compression
                         compressed_data = gzip.compress(json_str.encode())
                         request_data["data"] = compressed_data
                         request_data.pop("json")
-                        kwargs.setdefault("headers", {})[
-                            "Content-Encoding"
-                        ] = "gzip"
+                        kwargs.setdefault("headers", {})["Content-Encoding"] = "gzip"
                         kwargs["headers"]["Content-Type"] = "application/json"
-                        metrics.compression_ratio = len(compressed_data) / len(
-                            json_str
-                        )
+                        metrics.compression_ratio = len(compressed_data) / len(json_str)
 
             # Update connection count
             instance.current_connections += 1
 
             # Make request
-            async with session.request(
-                method, url, **request_data, **kwargs
-            ) as response:
+            async with session.request(method, url, **request_data, **kwargs) as response:
                 response_data = (
                     await response.json()
                     if response.content_type == "application/json"
@@ -608,10 +545,7 @@ class MicroservicesCommunicationOptimizer:
 
                 # Update instance metrics
                 instance.avg_response_time = (
-                    (
-                        (instance.avg_response_time * 0.9)
-                        + (response_time * 1000 * 0.1)
-                    )
+                    ((instance.avg_response_time * 0.9) + (response_time * 1000 * 0.1))
                     if instance.avg_response_time
                     else response_time * 1000
                 )
@@ -657,9 +591,7 @@ class MicroservicesCommunicationOptimizer:
             return None, metrics
 
         finally:
-            instance.current_connections = max(
-                0, instance.current_connections - 1
-            )
+            instance.current_connections = max(0, instance.current_connections - 1)
 
     async def health_check_services(self):
         """Perform health checks on all service instances"""
@@ -685,10 +617,7 @@ class MicroservicesCommunicationOptimizer:
                         if is_healthy:
                             # Update response time moving average
                             instance.avg_response_time = (
-                                (
-                                    (instance.avg_response_time * 0.8)
-                                    + (response_time * 0.2)
-                                )
+                                ((instance.avg_response_time * 0.8) + (response_time * 0.2))
                                 if instance.avg_response_time
                                 else response_time
                             )
@@ -741,18 +670,14 @@ class MicroservicesCommunicationOptimizer:
             avg_response_time = statistics.mean(
                 [inst.avg_response_time or 0 for inst in healthy_instances]
             )
-            max_response_time = max(
-                [inst.avg_response_time or 0 for inst in healthy_instances]
-            )
+            max_response_time = max([inst.avg_response_time or 0 for inst in healthy_instances])
 
             optimization_report["service_performance"][service_name] = {
                 "healthy_instances": len(healthy_instances),
                 "total_instances": len(instances),
                 "avg_response_time": avg_response_time,
                 "max_response_time": max_response_time,
-                "load_distribution": [
-                    inst.current_connections for inst in healthy_instances
-                ],
+                "load_distribution": [inst.current_connections for inst in healthy_instances],
             }
 
             # Generate recommendations
@@ -813,9 +738,7 @@ class MicroservicesCommunicationOptimizer:
                     len([inst for inst in instances if inst.is_healthy])
                     for instances in self.services.values()
                 )
-                total_instances = sum(
-                    len(instances) for instances in self.services.values()
-                )
+                total_instances = sum(len(instances) for instances in self.services.values())
 
                 logger.info(
                     f"Health check completed - {total_healthy}/{total_instances} instances healthy"
@@ -868,20 +791,14 @@ async def main():
     """Main function"""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Microservices Communication Optimizer"
-    )
+    parser = argparse.ArgumentParser(description="Microservices Communication Optimizer")
     parser.add_argument(
         "--config",
         default="config/communication-optimizer.yaml",
         help="Configuration file",
     )
-    parser.add_argument(
-        "--monitor", action="store_true", help="Start monitoring mode"
-    )
-    parser.add_argument(
-        "--example", action="store_true", help="Run example usage"
-    )
+    parser.add_argument("--monitor", action="store_true", help="Start monitoring mode")
+    parser.add_argument("--example", action="store_true", help="Run example usage")
     parser.add_argument(
         "--interval",
         type=int,

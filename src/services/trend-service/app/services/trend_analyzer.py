@@ -54,18 +54,12 @@ async def generate_trend_suggestions(
         }
 
         if category in category_keywords:
-            suggestions = [
-                s
-                for s in suggestions
-                if s["keyword"] in category_keywords[category]
-            ]
+            suggestions = [s for s in suggestions if s["keyword"] in category_keywords[category]]
 
     return suggestions
 
 
-async def fetch_realtime_trends(
-    platform: str, region: str = "TW"
-) -> List[Dict[str, Any]]:
+async def fetch_realtime_trends(platform: str, region: str = "TW") -> List[Dict[str, Any]]:
     """獲取實時趨勢數據"""
 
     # 模擬實時趨勢數據
@@ -120,18 +114,12 @@ async def get_trending_hashtags(
 
         if category in category_hashtags:
             relevant_tags = category_hashtags[category]
-            hashtags = [
-                h
-                for h in hashtags
-                if any(tag in h["tag"] for tag in relevant_tags)
-            ]
+            hashtags = [h for h in hashtags if any(tag in h["tag"] for tag in relevant_tags)]
 
     return hashtags[:limit]
 
 
-async def refresh_platform_data(
-    platform: str, region: str = "TW"
-) -> Dict[str, int]:
+async def refresh_platform_data(platform: str, region: str = "TW") -> Dict[str, int]:
     """刷新平台數據"""
 
     # 模擬數據刷新
@@ -164,9 +152,7 @@ async def get_keyword_performance_history(
                 {
                     "date": date.strftime("%Y-%m-%d"),
                     "volume": max(0, volume),
-                    "trend_score": min(
-                        100, max(0, 50 + (i * 2) + ((-1) ** i * 10))
-                    ),
+                    "trend_score": min(100, max(0, 50 + (i * 2) + ((-1) ** i * 10))),
                 }
             )
 
@@ -177,9 +163,7 @@ async def get_keyword_performance_history(
         "period": f"{days} days",
         "platforms": platform_data,
         "summary": {
-            "average_volume": sum(
-                d["volume"] for data in platform_data.values() for d in data
-            )
+            "average_volume": sum(d["volume"] for data in platform_data.values() for d in data)
             // (len(platforms) * days),
             "peak_date": (end_date - timedelta(days=5)).strftime("%Y-%m-%d"),
             "growth_rate": 15.5,

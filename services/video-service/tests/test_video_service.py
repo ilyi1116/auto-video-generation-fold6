@@ -118,9 +118,7 @@ class TestVideoGeneration:
 
     @patch("main.verify_token")
     @patch("main.get_db_connection")
-    def test_create_video_project_success(
-        self, mock_db, mock_verify_token, sample_video_request
-    ):
+    def test_create_video_project_success(self, mock_db, mock_verify_token, sample_video_request):
         """Test successful video project creation"""
 
         # Mock authentication
@@ -147,9 +145,7 @@ class TestVideoGeneration:
     def test_create_video_project_unauthorized(self, sample_video_request):
         """Test video project creation without authentication"""
 
-        response = client.post(
-            "/api/v1/video/generate", json=sample_video_request
-        )
+        response = client.post("/api/v1/video/generate", json=sample_video_request)
         assert response.status_code == 403  # Missing Authorization header
 
     @patch("main.verify_token")
@@ -176,9 +172,7 @@ class TestVideoGeneration:
             return_value=mock_project,
         ):
             headers = {"Authorization": "Bearer valid_token"}
-            response = client.get(
-                "/api/v1/video/projects/project123", headers=headers
-            )
+            response = client.get("/api/v1/video/projects/project123", headers=headers)
 
             assert response.status_code == 200
             data = response.json()
@@ -213,9 +207,7 @@ class TestAIIntegration:
         client = GeminiClient("test_api_key")
 
         with patch.object(client, "_generate_content") as mock_generate:
-            mock_generate.return_value = (
-                '{"full_script": "test script", "scenes": []}'
-            )
+            mock_generate.return_value = '{"full_script": "test script", "scenes": []}'
 
             with patch.object(
                 client,
@@ -301,9 +293,7 @@ class TestVideoComposition:
                 "/tmp/img3.png",
             ]
 
-            with patch.object(
-                composer, "_create_preview", return_value="/tmp/preview.mp4"
-            ):
+            with patch.object(composer, "_create_preview", return_value="/tmp/preview.mp4"):
                 with patch.object(
                     composer,
                     "_upload_media",
@@ -404,9 +394,7 @@ class TestDatabase:
         )
 
         with patch.object(project, "save") as mock_save:
-            await project.update_status(
-                mock_db, VideoStatus.GENERATING_SCRIPT, 25, None
-            )
+            await project.update_status(mock_db, VideoStatus.GENERATING_SCRIPT, 25, None)
 
             assert project.status == VideoStatus.GENERATING_SCRIPT
             assert project.progress == 25

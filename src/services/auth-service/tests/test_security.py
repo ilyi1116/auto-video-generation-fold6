@@ -2,7 +2,7 @@
 測試 security 模組
 """
 
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from app.security import *  # TODO: 導入具體的函數和類
@@ -24,7 +24,6 @@ class TestSecurityModule:
     def test_module_constants(self):
         """測試模組常量"""
         # TODO: 測試模組常量的值
-        pass
 
     def test_main_function_success(self):
         """測試主要函數成功情況"""
@@ -53,17 +52,14 @@ class TestSecurityModule:
     def test_helper_functions(self):
         """測試輔助函數"""
         # TODO: 測試模組中的輔助函數
-        pass
 
     def test_error_handling(self):
         """測試錯誤處理"""
         # TODO: 測試各種錯誤情況
-        pass
 
     def test_edge_cases(self):
         """測試邊界情況"""
         # TODO: 測試邊界值和特殊情況
-        pass
 
 
 # TODO: 添加更多特定於 security 的測試

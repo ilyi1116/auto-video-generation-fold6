@@ -57,9 +57,7 @@ class GeminiClient:
                 "User-Agent": "AutoVideoGeneration/1.0",
             }
             timeout = aiohttp.ClientTimeout(total=120)  # 2 minutes timeout
-            self.session = aiohttp.ClientSession(
-                headers=headers, timeout=timeout
-            )
+            self.session = aiohttp.ClientSession(headers=headers, timeout=timeout)
         return self.session
 
     async def health_check(self) -> Dict[str, Any]:
@@ -95,13 +93,10 @@ class GeminiClient:
 
         try:
             # Create detailed prompt for script generation
-            prompt = self._create_script_prompt(
-                theme, duration, style, target_platform
-            )
+            prompt = self._create_script_prompt(theme, duration, style, target_platform)
 
             logger.info(
-                f"Generating script with Gemini Pro: "
-                f"theme='{theme}', duration={duration}s"
+                f"Generating script with Gemini Pro: " f"theme='{theme}', duration={duration}s"
             )
 
             # Generate script using Gemini Pro
@@ -141,9 +136,7 @@ class GeminiClient:
             logger.error(f"Script generation failed: {str(e)}")
             raise Exception(f"Failed to generate script: {str(e)}")
 
-    def _create_script_prompt(
-        self, theme: str, duration: int, style: str, platform: str
-    ) -> str:
+    def _create_script_prompt(self, theme: str, duration: int, style: str, platform: str) -> str:
         """Create detailed prompt for script generation"""
 
         platform_specs = {
@@ -155,10 +148,7 @@ class GeminiClient:
                 "TikTok short-form content with quick hook, trending "
                 "elements, and viral potential"
             ),
-            "instagram": (
-                "Instagram Reels format with visual appeal and "
-                "hashtag optimization"
-            ),
+            "instagram": ("Instagram Reels format with visual appeal and " "hashtag optimization"),
         }
 
         platform_desc = platform_specs.get(platform, platform_specs["youtube"])
@@ -204,10 +194,7 @@ seconds.
         """Generate content using Gemini Pro API"""
 
         session = await self._get_session()
-        url = (
-            f"{self.base_url}/models/gemini-pro:generateContent"
-            f"?key={self.api_key}"
-        )
+        url = f"{self.base_url}/models/gemini-pro:generateContent" f"?key={self.api_key}"
 
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -241,9 +228,7 @@ seconds.
         async with session.post(url, json=payload) as response:
             if response.status != 200:
                 error_text = await response.text()
-                raise Exception(
-                    f"Gemini API error: {response.status} - {error_text}"
-                )
+                raise Exception(f"Gemini API error: {response.status} - {error_text}")
 
             result = await response.json()
 
@@ -281,10 +266,7 @@ seconds.
 
         except json.JSONDecodeError as e:
             # Fallback: create simple structure from text
-            logger.warning(
-                f"Failed to parse JSON response, creating fallback structure: "
-                f"{e}"
-            )
+            logger.warning(f"Failed to parse JSON response, creating fallback structure: " f"{e}")
             return self._create_fallback_script(response_text)
         except Exception as e:
             logger.error(f"Error parsing script response: {e}")
@@ -302,37 +284,25 @@ seconds.
 
         for i in range(scene_count):
             start_idx = i * sentences_per_scene
-            end_idx = (
-                start_idx + sentences_per_scene
-                if i < scene_count - 1
-                else len(sentences)
-            )
+            end_idx = start_idx + sentences_per_scene if i < scene_count - 1 else len(sentences)
 
             scene_text = ". ".join(sentences[start_idx:end_idx])
 
-            scene_type = (
-                "intro"
-                if i == 0
-                else "outro" if i == scene_count - 1 else "main"
-            )
+            scene_type = "intro" if i == 0 else "outro" if i == scene_count - 1 else "main"
 
             scenes.append(
                 {
                     "type": scene_type,
                     "duration": 60.0 / scene_count,  # Distribute evenly
                     "narration": scene_text,
-                    "visual": (
-                        f"Visual representation of: {scene_text[:100]}..."
-                    ),
+                    "visual": (f"Visual representation of: {scene_text[:100]}..."),
                     "keywords": ["generic", "content", "scene"],
                 }
             )
 
         return {"full_script": text, "scenes": scenes}
 
-    async def generate_caption_text(
-        self, narration: str, style: str = "modern"
-    ) -> List[str]:
+    async def generate_caption_text(self, narration: str, style: str = "modern") -> List[str]:
         """Generate formatted captions for video"""
 
         prompt = f"""
@@ -372,19 +342,13 @@ Please provide only the JSON array of caption segments.
             else:
                 # Fallback: split narration into chunks
                 words = narration.split()
-                return [
-                    " ".join(words[i : i + 5])  # noqa: E203
-                    for i in range(0, len(words), 5)
-                ]
+                return [" ".join(words[i : i + 5]) for i in range(0, len(words), 5)]  # noqa: E203
 
         except Exception as e:
             logger.error(f"Caption generation failed: {e}")
             # Fallback: simple word chunking
             words = narration.split()
-            return [
-                " ".join(words[i : i + 5])  # noqa: E203
-                for i in range(0, len(words), 5)
-            ]
+            return [" ".join(words[i : i + 5]) for i in range(0, len(words), 5)]  # noqa: E203
 
     async def close(self):
         """Close the HTTP session"""

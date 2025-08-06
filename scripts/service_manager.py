@@ -73,9 +73,7 @@ class ServiceStatus:
         return {
             **asdict(self),
             "state": self.state.value,
-            "start_time": (
-                self.start_time.isoformat() if self.start_time else None
-            ),
+            "start_time": (self.start_time.isoformat() if self.start_time else None),
             "metadata": self.metadata or {},
         }
 
@@ -191,9 +189,7 @@ class ServiceManager:
 
         for service in default_services:
             self.services[service.name] = service
-            self.status[service.name] = ServiceStatus(
-                name=service.name, state=ServiceState.STOPPED
-            )
+            self.status[service.name] = ServiceStatus(name=service.name, state=ServiceState.STOPPED)
 
         # 保存預設配置
         self._save_config()
@@ -201,11 +197,7 @@ class ServiceManager:
     def _save_config(self):
         """保存服務配置"""
         try:
-            config_data = {
-                "services": [
-                    asdict(service) for service in self.services.values()
-                ]
-            }
+            config_data = {"services": [asdict(service) for service in self.services.values()]}
 
             config_path = Path(self.config_file)
             config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -282,16 +274,10 @@ class ServiceManager:
                 if service.health_check_url.startswith("http"):
                     # HTTP 健康檢查
                     timeout = aiohttp.ClientTimeout(total=5)
-                    async with aiohttp.ClientSession(
-                        timeout=timeout
-                    ) as session:
-                        async with session.get(
-                            service.health_check_url
-                        ) as response:
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        async with session.get(service.health_check_url) as response:
                             if response.status == 200:
-                                logger.info(
-                                    f"服務 {service_name} 健康檢查通過"
-                                )
+                                logger.info(f"服務 {service_name} 健康檢查通過")
                                 return True
 
                 elif service.health_check_url.startswith("redis://"):
@@ -299,9 +285,7 @@ class ServiceManager:
                     try:
                         import redis
 
-                        r = redis.Redis(
-                            host="localhost", port=6379, decode_responses=True
-                        )
+                        r = redis.Redis(host="localhost", port=6379, decode_responses=True)
                         r.ping()
                         logger.info(f"服務 {service_name} 健康檢查通過")
                         return True
@@ -369,9 +353,7 @@ class ServiceManager:
             if await self._wait_for_health_check(service_name):
                 status.state = ServiceState.RUNNING
                 status.health_status = "healthy"
-                logger.info(
-                    f"服務 {service_name} 啟動成功 (PID: {process.pid})"
-                )
+                logger.info(f"服務 {service_name} 啟動成功 (PID: {process.pid})")
                 return True
             else:
                 # 健康檢查失敗，停止進程
@@ -417,9 +399,7 @@ class ServiceManager:
                     try:
                         process.wait(timeout=service.shutdown_timeout)
                     except psutil.TimeoutExpired:
-                        logger.warning(
-                            f"服務 {service_name} 優雅停止超時，強制終止"
-                        )
+                        logger.warning(f"服務 {service_name} 優雅停止超時，強制終止")
                         process.kill()
                         process.wait(timeout=10)
 
@@ -465,9 +445,7 @@ class ServiceManager:
             ready = []
             for service_name in remaining:
                 service = self.services[service_name]
-                if not service.dependencies or all(
-                    dep in ordered for dep in service.dependencies
-                ):
+                if not service.dependencies or all(dep in ordered for dep in service.dependencies):
                     ready.append(service_name)
 
             if not ready:
@@ -532,24 +510,12 @@ class ServiceManager:
 
         return {
             "total_services": len(self.services),
-            "running": sum(
-                1 for state in states if state == ServiceState.RUNNING
-            ),
-            "stopped": sum(
-                1 for state in states if state == ServiceState.STOPPED
-            ),
-            "failed": sum(
-                1 for state in states if state == ServiceState.FAILED
-            ),
-            "starting": sum(
-                1 for state in states if state == ServiceState.STARTING
-            ),
-            "stopping": sum(
-                1 for state in states if state == ServiceState.STOPPING
-            ),
-            "services": {
-                name: status.to_dict() for name, status in self.status.items()
-            },
+            "running": sum(1 for state in states if state == ServiceState.RUNNING),
+            "stopped": sum(1 for state in states if state == ServiceState.STOPPED),
+            "failed": sum(1 for state in states if state == ServiceState.FAILED),
+            "starting": sum(1 for state in states if state == ServiceState.STARTING),
+            "stopping": sum(1 for state in states if state == ServiceState.STOPPING),
+            "services": {name: status.to_dict() for name, status in self.status.items()},
             "timestamp": datetime.now().isoformat(),
         }
 
@@ -569,10 +535,7 @@ class ServiceManager:
 
                             # 自動重啟 (如果啟用)
                             service = self.services[service_name]
-                            if (
-                                service.auto_restart
-                                and status.restart_count < service.max_restarts
-                            ):
+                            if service.auto_restart and status.restart_count < service.max_restarts:
                                 logger.info(
                                     f"自動重啟服務 {service_name} (第 {status.restart_count + 1} 次)"
                                 )
@@ -604,9 +567,7 @@ async def main():
         if command == "start":
             if service_name:
                 success = await manager.start_service(service_name)
-                print(
-                    f"服務 {service_name} 啟動 {'成功' if success else '失敗'}"
-                )
+                print(f"服務 {service_name} 啟動 {'成功' if success else '失敗'}")
             else:
                 success = await manager.start_all_services()
                 print(f"所有服務啟動 {'成功' if success else '失敗'}")
@@ -614,9 +575,7 @@ async def main():
         elif command == "stop":
             if service_name:
                 success = await manager.stop_service(service_name)
-                print(
-                    f"服務 {service_name} 停止 {'成功' if success else '失敗'}"
-                )
+                print(f"服務 {service_name} 停止 {'成功' if success else '失敗'}")
             else:
                 success = await manager.stop_all_services()
                 print(f"所有服務停止 {'成功' if success else '失敗'}")
@@ -624,9 +583,7 @@ async def main():
         elif command == "restart":
             if service_name:
                 success = await manager.restart_service(service_name)
-                print(
-                    f"服務 {service_name} 重啟 {'成功' if success else '失敗'}"
-                )
+                print(f"服務 {service_name} 重啟 {'成功' if success else '失敗'}")
             else:
                 await manager.stop_all_services()
                 await asyncio.sleep(3)
@@ -637,11 +594,7 @@ async def main():
             if service_name:
                 status = manager.get_service_status(service_name)
                 if status:
-                    print(
-                        json.dumps(
-                            status.to_dict(), indent=2, ensure_ascii=False
-                        )
-                    )
+                    print(json.dumps(status.to_dict(), indent=2, ensure_ascii=False))
                 else:
                     print(f"服務 {service_name} 不存在")
             else:

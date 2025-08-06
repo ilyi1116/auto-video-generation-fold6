@@ -76,16 +76,10 @@ class DeploymentValidator:
             ServiceEndpoint(name="auth-service", url="http://localhost:8001"),
             ServiceEndpoint(name="video-service", url="http://localhost:8004"),
             ServiceEndpoint(name="ai-service", url="http://localhost:8005"),
-            ServiceEndpoint(
-                name="social-service", url="http://localhost:8006"
-            ),
+            ServiceEndpoint(name="social-service", url="http://localhost:8006"),
             ServiceEndpoint(name="trend-service", url="http://localhost:8007"),
-            ServiceEndpoint(
-                name="scheduler-service", url="http://localhost:8008"
-            ),
-            ServiceEndpoint(
-                name="storage-service", url="http://localhost:8009"
-            ),
+            ServiceEndpoint(name="scheduler-service", url="http://localhost:8008"),
+            ServiceEndpoint(name="storage-service", url="http://localhost:8009"),
         ]
 
         # 基础设施端点
@@ -109,9 +103,7 @@ class DeploymentValidator:
             ),
         ]
 
-        logger.info(
-            f"初始化部署验证器 - Termux: {self.is_termux}, Docker: {self.docker_available}"
-        )
+        logger.info(f"初始化部署验证器 - Termux: {self.is_termux}, Docker: {self.docker_available}")
 
     def _detect_termux(self) -> bool:
         """检测是否在 Termux 环境中运行"""
@@ -134,9 +126,7 @@ class DeploymentValidator:
         except (subprocess.TimeoutExpired, FileNotFoundError):
             return False
 
-    def _run_command(
-        self, command: List[str], timeout: int = 30
-    ) -> Tuple[bool, str, str]:
+    def _run_command(self, command: List[str], timeout: int = 30) -> Tuple[bool, str, str]:
         """运行命令并返回结果"""
         try:
             result = subprocess.run(
@@ -173,9 +163,7 @@ class DeploymentValidator:
         status = "✅" if success else "❌"
         logger.info(f"{status} {test_name}: {message}")
         if details:
-            logger.debug(
-                f"详细信息: {json.dumps(details, indent=2, ensure_ascii=False)}"
-            )
+            logger.debug(f"详细信息: {json.dumps(details, indent=2, ensure_ascii=False)}")
 
     async def validate_docker_compose_config(self) -> bool:
         """验证 Docker Compose 配置"""
@@ -205,9 +193,7 @@ class DeploymentValidator:
 
             # 验证配置语法
             for file in found_files:
-                success, stdout, stderr = self._run_command(
-                    ["docker-compose", "-", file, "config"]
-                )
+                success, stdout, stderr = self._run_command(["docker-compose", "-", file, "config"])
 
                 if not success:
                     self._add_result(
@@ -273,9 +259,7 @@ class DeploymentValidator:
                 compose_file = "docker-compose.unified.yml"
 
             # 检查是否有正在运行的容器
-            success, stdout, stderr = self._run_command(
-                ["docker-compose", "-", compose_file, "ps"]
-            )
+            success, stdout, stderr = self._run_command(["docker-compose", "-", compose_file, "ps"])
 
             details = {
                 "compose_file": compose_file,
@@ -286,11 +270,7 @@ class DeploymentValidator:
             self._add_result(
                 "Docker Compose Deployment",
                 success,
-                (
-                    "Docker Compose 状态检查完成"
-                    if success
-                    else f"检查失败: {stderr}"
-                ),
+                ("Docker Compose 状态检查完成" if success else f"检查失败: {stderr}"),
                 details=details,
                 duration=time.time() - start_time,
             )
@@ -320,11 +300,7 @@ class DeploymentValidator:
                 self._add_result(
                     f"Service Health - {service.name}",
                     success,
-                    (
-                        "PostgreSQL 连接正常"
-                        if success
-                        else f"连接失败: {stderr}"
-                    ),
+                    ("PostgreSQL 连接正常" if success else f"连接失败: {stderr}"),
                     details={"type": "postgres", "command": "pg_isready"},
                     duration=time.time() - start_time,
                 )
@@ -350,9 +326,7 @@ class DeploymentValidator:
 
             else:
                 # HTTP 服务健康检查
-                async with httpx.AsyncClient(
-                    timeout=service.timeout
-                ) as client:
+                async with httpx.AsyncClient(timeout=service.timeout) as client:
                     health_url = f"{service.url}{service.health_path}"
                     response = await client.get(health_url)
 
@@ -362,8 +336,7 @@ class DeploymentValidator:
                         "url": health_url,
                         "status_code": response.status_code,
                         "expected_status": service.expected_status,
-                        "response_time_ms": response.elapsed.total_seconds()
-                        * 1000,
+                        "response_time_ms": response.elapsed.total_seconds() * 1000,
                     }
 
                     self._add_result(
@@ -422,11 +395,7 @@ class DeploymentValidator:
                 "application_services": dict(service_results),
                 "total_tests": total_tests,
                 "passed_tests": passed_tests,
-                "pass_rate": (
-                    f"{passed_tests/total_tests*100:.1f}%"
-                    if total_tests > 0
-                    else "0%"
-                ),
+                "pass_rate": (f"{passed_tests/total_tests*100:.1f}%" if total_tests > 0 else "0%"),
             }
 
             self._add_result(
@@ -484,9 +453,7 @@ class DeploymentValidator:
 
             # 检查关键配置
             critical_configs = ["pyproject.toml", "docker-compose.yml"]
-            has_critical = all(
-                config in found_configs for config in critical_configs
-            )
+            has_critical = all(config in found_configs for config in critical_configs)
 
             success = has_critical and len(found_configs) >= 3
 
@@ -524,9 +491,7 @@ class DeploymentValidator:
             frontend_paths = [
                 self.project_path / "src" / "frontend",
                 self.project_path / "frontend",
-                self.project_path
-                / "auto_generate_video_fold6.old"
-                / "frontend",
+                self.project_path / "auto_generate_video_fold6.old" / "frontend",
             ]
 
             frontend_path = None
@@ -540,9 +505,7 @@ class DeploymentValidator:
                     "Frontend Build Test",
                     False,
                     "未找到前端项目目录或 package.json",
-                    details={
-                        "searched_paths": [str(p) for p in frontend_paths]
-                    },
+                    details={"searched_paths": [str(p) for p in frontend_paths]},
                     duration=time.time() - start_time,
                 )
                 return False
@@ -578,9 +541,7 @@ class DeploymentValidator:
 
             # 检查依赖是否安装
             node_modules_exists = (frontend_path / "node_modules").exists()
-            package_lock_exists = (
-                frontend_path / "package-lock.json"
-            ).exists()
+            package_lock_exists = (frontend_path / "package-lock.json").exists()
 
             details = {
                 "frontend_path": str(frontend_path),
@@ -596,15 +557,9 @@ class DeploymentValidator:
                 message = f"前端项目结构验证通过 (Termux 环境) - Node.js {node_version}"
             else:
                 # 在非 Termux 环境中可以尝试实际构建
-                success, stdout, stderr = self._run_command(
-                    ["npm", "run", "build"], timeout=120
-                )
-                message = (
-                    "前端构建成功" if success else f"构建失败: {stderr[:200]}"
-                )
-                details["build_output"] = (
-                    stdout[:500] if success else stderr[:500]
-                )
+                success, stdout, stderr = self._run_command(["npm", "run", "build"], timeout=120)
+                message = "前端构建成功" if success else f"构建失败: {stderr[:200]}"
+                details["build_output"] = stdout[:500] if success else stderr[:500]
 
             self._add_result(
                 "Frontend Build Test",
@@ -644,9 +599,7 @@ class DeploymentValidator:
                 await validation
             except Exception as e:
                 logger.error(f"{name} 执行异常: {str(e)}")
-                self._add_result(
-                    name, False, f"执行异常: {str(e)}", duration=0
-                )
+                self._add_result(name, False, f"执行异常: {str(e)}", duration=0)
 
         # 生成总结报告
         total_duration = time.time() - start_time
@@ -664,11 +617,7 @@ class DeploymentValidator:
                 "total_tests": total_tests,
                 "passed_tests": passed_tests,
                 "failed_tests": total_tests - passed_tests,
-                "pass_rate": (
-                    f"{passed_tests/total_tests*100:.1f}%"
-                    if total_tests > 0
-                    else "0%"
-                ),
+                "pass_rate": (f"{passed_tests/total_tests*100:.1f}%" if total_tests > 0 else "0%"),
                 "total_duration_seconds": round(total_duration, 2),
             },
             "results": [result.model_dump() for result in self.results],
@@ -720,9 +669,7 @@ class DeploymentValidator:
             markdown_content += f"### {result['test_name']}\n"
             markdown_content += f"**状态**: {status}\n"
             markdown_content += f"**信息**: {result['message']}\n"
-            markdown_content += (
-                f"**耗时**: {result['duration_seconds']:.2f} 秒\n\n"
-            )
+            markdown_content += f"**耗时**: {result['duration_seconds']:.2f} 秒\n\n"
 
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(markdown_content)
@@ -742,9 +689,7 @@ async def main():
         default="deployment-validation-report",
         help="报告文件名（不含扩展名）",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="详细输出"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="详细输出")
 
     args = parser.parse_args()
 

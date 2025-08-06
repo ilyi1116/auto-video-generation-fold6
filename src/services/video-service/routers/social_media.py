@@ -81,9 +81,7 @@ async def publish_to_social_media(
 
         # Validate platforms
         available_platforms = social_manager.get_available_platforms()
-        invalid_platforms = [
-            p for p in request.platforms if p not in available_platforms
-        ]
+        invalid_platforms = [p for p in request.platforms if p not in available_platforms]
 
         if invalid_platforms:
             raise HTTPException(
@@ -123,9 +121,7 @@ async def publish_to_social_media(
             )
         else:
             # Publish immediately
-            results = await social_manager.publish_to_all(
-                publish_request, request.platforms
-            )
+            results = await social_manager.publish_to_all(publish_request, request.platforms)
 
             # Format results
             formatted_results = []
@@ -173,9 +169,7 @@ async def publish_to_social_media(
             error=str(e),
             user_id=current_user.get("id"),
         )
-        raise HTTPException(
-            status_code=500, detail=f"Publishing failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Publishing failed: {str(e)}")
 
 
 @router.get("/platforms")
@@ -237,9 +231,7 @@ async def get_available_platforms(
 
     except Exception as e:
         logger.error("Failed to get platforms", error=str(e))
-        raise HTTPException(
-            status_code=500, detail="Failed to retrieve platforms"
-        )
+        raise HTTPException(status_code=500, detail="Failed to retrieve platforms")
 
 
 @router.get("/platforms/health")
@@ -272,9 +264,7 @@ async def check_platform_health(
         raise HTTPException(status_code=500, detail="Health check failed")
 
 
-@router.get(
-    "/stats/{platform}/{platform_id}", response_model=PlatformStatsResponse
-)
+@router.get("/stats/{platform}/{platform_id}", response_model=PlatformStatsResponse)
 async def get_video_stats(
     platform: str,
     platform_id: str,
@@ -303,9 +293,7 @@ async def get_video_stats(
             platform=platform,
             platform_id=platform_id,
         )
-        raise HTTPException(
-            status_code=500, detail="Failed to retrieve video statistics"
-        )
+        raise HTTPException(status_code=500, detail="Failed to retrieve video statistics")
 
 
 @router.delete("/videos/{platform}/{platform_id}")
@@ -316,9 +304,7 @@ async def delete_video_from_platform(
 ):
     """Delete video from specific platform"""
     try:
-        success = await social_manager.delete_from_platform(
-            platform, platform_id
-        )
+        success = await social_manager.delete_from_platform(platform, platform_id)
 
         if success:
             logger.info(
@@ -333,9 +319,7 @@ async def delete_video_from_platform(
                 "platform_id": platform_id,
             }
         else:
-            raise HTTPException(
-                status_code=400, detail="Failed to delete video"
-            )
+            raise HTTPException(status_code=400, detail="Failed to delete video")
 
     except HTTPException:
         raise
@@ -350,9 +334,7 @@ async def delete_video_from_platform(
 
 
 @router.get("/templates/{platform}")
-async def get_platform_templates(
-    platform: str, current_user: dict = Depends(get_current_user)
-):
+async def get_platform_templates(platform: str, current_user: dict = Depends(get_current_user)):
     """Get platform-specific content templates and best practices"""
 
     templates = {
@@ -499,14 +481,10 @@ async def schedule_publication(
     """Schedule video publication for later"""
     try:
         if not request.scheduled_time:
-            raise HTTPException(
-                status_code=400, detail="scheduled_time is required"
-            )
+            raise HTTPException(status_code=400, detail="scheduled_time is required")
 
         if request.scheduled_time <= datetime.utcnow():
-            raise HTTPException(
-                status_code=400, detail="scheduled_time must be in the future"
-            )
+            raise HTTPException(status_code=400, detail="scheduled_time must be in the future")
 
         # Store scheduled publication
         # (in production, this would use a job queue)
@@ -541,17 +519,11 @@ async def schedule_publication(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            "Scheduling failed", error=str(e), user_id=current_user.get("id")
-        )
-        raise HTTPException(
-            status_code=500, detail="Failed to schedule publication"
-        )
+        logger.error("Scheduling failed", error=str(e), user_id=current_user.get("id"))
+        raise HTTPException(status_code=500, detail="Failed to schedule publication")
 
 
-async def _scheduled_publish(
-    request: PublishRequest, platforms: List[str], user_id: str
-):
+async def _scheduled_publish(request: PublishRequest, platforms: List[str], user_id: str):
     """Execute scheduled publication (background task)"""
     try:
         # In production, this would be handled by a proper job queue like
@@ -576,6 +548,4 @@ async def _scheduled_publish(
         )
 
     except Exception as e:
-        logger.error(
-            "Scheduled publication failed", error=str(e), user_id=user_id
-        )
+        logger.error("Scheduled publication failed", error=str(e), user_id=user_id)

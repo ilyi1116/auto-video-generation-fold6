@@ -44,9 +44,7 @@ def main():
 
     # 測試 Alembic 命令
     try:
-        result = subprocess.run(
-            ["alembic", "current"], capture_output=True, text=True, timeout=30
-        )
+        result = subprocess.run(["alembic", "current"], capture_output=True, text=True, timeout=30)
         if result.returncode == 0:
             print("✅ Alembic 命令可以正常執行")
             if result.stdout.strip():

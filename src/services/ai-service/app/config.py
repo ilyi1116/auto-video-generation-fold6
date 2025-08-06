@@ -6,9 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # API Configuration
     api_v1_str: str = "/api/v1"
-    project_name: str = os.getenv(
-        "PROJECT_NAME", "Auto Video Generation AI Service"
-    )
+    project_name: str = os.getenv("PROJECT_NAME", "Auto Video Generation AI Service")
     debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Database Configuration
@@ -40,21 +38,15 @@ class Settings(BaseSettings):
     s3_endpoint_url: str = os.getenv("S3_ENDPOINT_URL", "http://minio:9000")
 
     # Service Configuration
-    max_concurrent_requests: int = int(
-        os.getenv("MAX_CONCURRENT_REQUESTS", "10")
-    )
+    max_concurrent_requests: int = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
     request_timeout: int = int(os.getenv("REQUEST_TIMEOUT", "60"))
 
     # File Processing
-    temp_storage_path: str = os.getenv(
-        "TEMP_STORAGE_PATH", "/tmp/ai_processing"
-    )
+    temp_storage_path: str = os.getenv("TEMP_STORAGE_PATH", "/tmp/ai_processing")
     max_file_size_mb: int = int(os.getenv("MAX_FILE_SIZE_MB", "50"))
 
     # Audio Processing
-    max_audio_duration_seconds: int = int(
-        os.getenv("MAX_AUDIO_DURATION_SECONDS", "300")
-    )
+    max_audio_duration_seconds: int = int(os.getenv("MAX_AUDIO_DURATION_SECONDS", "300"))
     default_sample_rate: int = int(os.getenv("DEFAULT_SAMPLE_RATE", "44100"))
 
     # Image Processing
@@ -63,23 +55,15 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
-    structured_logging: bool = (
-        os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
-    )
+    structured_logging: bool = os.getenv("STRUCTURED_LOGGING", "true").lower() == "true"
 
     # Monitoring
     sentry_dsn: str = os.getenv("SENTRY_DSN", "")
-    prometheus_enabled: bool = (
-        os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
-    )
+    prometheus_enabled: bool = os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
 
     # Celery Configuration
-    celery_broker_url: str = os.getenv(
-        "CELERY_BROKER_URL", "redis://redis:6379/1"
-    )
-    celery_result_backend: str = os.getenv(
-        "CELERY_RESULT_BACKEND", "redis://redis:6379/2"
-    )
+    celery_broker_url: str = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/1")
+    celery_result_backend: str = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/2")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

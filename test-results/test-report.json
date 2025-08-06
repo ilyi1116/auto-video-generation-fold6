@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "total_tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.7494258880615234,
+    "timestamp": 1754450756.9315572
+  },
+  "results": [
+    {
+      "type": "python",
+      "test_type": "all",
+      "success": false,
+      "return_code": 4,
+      "duration": 0.7494258880615234,
+      "stdout": "",
+      "stderr": "ImportError while loading conftest '/Users/chenghengtsai/Documents/auto-video-generation-fold6/src/services/api-gateway/tests/conftest.py'.\n_pytest.pathlib.ImportPathMismatchError: ('tests.conftest', '/Users/chenghengtsai/Documents/auto-video-generation-fold6/src/services/ai-service/tests/conftest.py', PosixPath('/Users/chenghengtsai/Documents/auto-video-generation-fold6/src/services/api-gateway/tests/conftest.py'))\n",
+      "coverage_enabled": true
+    }
+  ]
+}

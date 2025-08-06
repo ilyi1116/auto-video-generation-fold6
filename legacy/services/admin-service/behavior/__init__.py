@@ -4,12 +4,17 @@
 提供用戶行為收集、分析、模式識別和洞察生成功能。
 """
 
-from .collector import behavior_collector, init_behavior_collector, BehaviorCollector
+from .analyzer import behavior_analyzer, init_behavior_analyzer
+from .collector import (
+    BehaviorCollector,
+    behavior_collector,
+    init_behavior_collector,
+)
+from .insights import init_insight_generator, insight_generator
+from .models import BehaviorSession, UserAction, UserSegment
+from .pattern import init_pattern_detector, pattern_detector
 from .tracker import behavior_tracker, init_behavior_tracker
-from .analyzer import behavior_analyzer, init_behavior_analyzer  
-from .pattern import pattern_detector, init_pattern_detector
-from .insights import insight_generator, init_insight_generator
-from .models import UserAction, BehaviorSession, UserSegment
+
 
 # 初始化所有組件的便捷函數
 def init_behavior_system(config=None):
@@ -20,20 +25,21 @@ def init_behavior_system(config=None):
     init_pattern_detector(behavior_collector)
     init_insight_generator(behavior_collector, behavior_analyzer, pattern_detector)
 
+
 __all__ = [
-    'behavior_collector',
-    'behavior_tracker',
-    'behavior_analyzer', 
-    'pattern_detector',
-    'insight_generator',
-    'BehaviorCollector',
-    'UserAction',
-    'BehaviorSession', 
-    'UserSegment',
-    'init_behavior_collector',
-    'init_behavior_tracker',
-    'init_behavior_analyzer',
-    'init_pattern_detector',
-    'init_insight_generator',
-    'init_behavior_system'
+    "behavior_collector",
+    "behavior_tracker",
+    "behavior_analyzer",
+    "pattern_detector",
+    "insight_generator",
+    "BehaviorCollector",
+    "UserAction",
+    "BehaviorSession",
+    "UserSegment",
+    "init_behavior_collector",
+    "init_behavior_tracker",
+    "init_behavior_analyzer",
+    "init_pattern_detector",
+    "init_insight_generator",
+    "init_behavior_system",
 ]

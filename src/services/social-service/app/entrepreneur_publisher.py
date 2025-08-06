@@ -70,9 +70,7 @@ class PublishRequest:
     scheduled_time: Optional[datetime] = None
     retry_on_failure: bool = True
     max_retries: int = 3
-    platform_specific_settings: Dict[Platform, Dict[str, Any]] = field(
-        default_factory=dict
-    )
+    platform_specific_settings: Dict[Platform, Dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass
@@ -158,9 +156,7 @@ class EntrepreneurPublisher:
             ),
         }
 
-    async def publish_to_multiple_platforms(
-        self, request: PublishRequest
-    ) -> BatchPublishResult:
+    async def publish_to_multiple_platforms(self, request: PublishRequest) -> BatchPublishResult:
         """多平台批次發布"""
 
         try:
@@ -179,17 +175,13 @@ class EntrepreneurPublisher:
             # 記錄為活動中的發布
             self.active_publications[request_id] = batch_result
 
-            logger.info(
-                f"開始多平台發布 - 請求ID: {request_id}, 平台數: {len(request.platforms)}"
-            )
+            logger.info(f"開始多平台發布 - 請求ID: {request_id}, 平台數: {len(request.platforms)}")
 
             # 為每個平台優化內容
             optimized_content = {}
             for platform in request.platforms:
-                optimized_content[platform] = (
-                    self._optimize_content_for_platform(
-                        platform, request.content, request.assets
-                    )
+                optimized_content[platform] = self._optimize_content_for_platform(
+                    platform, request.content, request.assets
                 )
 
             # 並行發布到所有平台
@@ -201,9 +193,7 @@ class EntrepreneurPublisher:
                 publish_tasks.append(task)
 
             # 等待所有發布任務完成
-            platform_results = await asyncio.gather(
-                *publish_tasks, return_exceptions=True
-            )
+            platform_results = await asyncio.gather(*publish_tasks, return_exceptions=True)
 
             # 處理結果
             for i, result in enumerate(platform_results):
@@ -229,9 +219,7 @@ class EntrepreneurPublisher:
 
             # 計算成功率
             batch_result.overall_success_rate = (
-                len(batch_result.successful_platforms)
-                / len(request.platforms)
-                * 100
+                len(batch_result.successful_platforms) / len(request.platforms) * 100
             )
             batch_result.completed_at = datetime.utcnow()
 
@@ -271,9 +259,7 @@ class EntrepreneurPublisher:
                 raise Exception(f"不支援的平台: {platform.value}")
 
             # 獲取用戶的平台認證信息
-            access_token = await self._get_platform_access_token(
-                request.user_id, platform
-            )
+            access_token = await self._get_platform_access_token(request.user_id, platform)
             if not access_token:
                 raise Exception(f"缺少 {platform.value} 平台的認證信息")
 
@@ -302,9 +288,7 @@ class EntrepreneurPublisher:
 
                 # 啟動分析追蹤
                 asyncio.create_task(
-                    self._start_analytics_tracking(
-                        platform, result.post_id, request.user_id
-                    )
+                    self._start_analytics_tracking(platform, result.post_id, request.user_id)
                 )
 
                 logger.info(f"成功發布到 {platform.value}: {result.post_url}")
@@ -314,9 +298,7 @@ class EntrepreneurPublisher:
 
                 # 如果啟用重試且未達到最大重試次數
                 if request.retry_on_failure and request.max_retries > 0:
-                    logger.warning(
-                        f"{platform.value} 發布失敗，準備重試: {error_msg}"
-                    )
+                    logger.warning(f"{platform.value} 發布失敗，準備重試: {error_msg}")
 
                     # 延遲後重試
                     await asyncio.sleep(5)
@@ -364,9 +346,7 @@ class EntrepreneurPublisher:
         # 優化描述
         description = content.get("description", "")
         if len(description) > config.description_max_length:
-            optimized["description"] = (
-                description[: config.description_max_length - 3] + "..."
-            )
+            optimized["description"] = description[: config.description_max_length - 3] + "..."
         else:
             optimized["description"] = description
 
@@ -421,13 +401,9 @@ class EntrepreneurPublisher:
                     tags=content["hashtags"],
                     settings={
                         "disable_duet": content.get("disable_duet", False),
-                        "disable_comment": content.get(
-                            "disable_comment", False
-                        ),
+                        "disable_comment": content.get("disable_comment", False),
                         "disable_stitch": content.get("disable_stitch", False),
-                        "cover_timestamp": content.get(
-                            "cover_timestamp", 1000
-                        ),
+                        "cover_timestamp": content.get("cover_timestamp", 1000),
                     },
                 )
             elif platform == Platform.YOUTUBE_SHORTS:
@@ -456,9 +432,7 @@ class EntrepreneurPublisher:
             logger.error(f"平台發布執行失敗 {platform.value}: {e}")
             return {"success": False, "error": str(e)}
 
-    async def _get_platform_access_token(
-        self, user_id: str, platform: Platform
-    ) -> Optional[str]:
+    async def _get_platform_access_token(self, user_id: str, platform: Platform) -> Optional[str]:
         """獲取平台訪問令牌"""
 
         # 這裡應該從資料庫或認證服務獲取用戶的平台令牌
@@ -485,9 +459,7 @@ class EntrepreneurPublisher:
                 return
 
             # 獲取初始統計數據
-            access_token = await self._get_platform_access_token(
-                user_id, platform
-            )
+            access_token = await self._get_platform_access_token(user_id, platform)
             if not access_token:
                 return
 
@@ -529,17 +501,11 @@ class EntrepreneurPublisher:
             for platform, scheduled_time in publish_times.items():
                 if platform in request.platforms:
                     # 計算延遲時間
-                    delay_seconds = (
-                        scheduled_time - datetime.utcnow()
-                    ).total_seconds()
+                    delay_seconds = (scheduled_time - datetime.utcnow()).total_seconds()
 
                     if delay_seconds > 0:
                         # 創建延遲任務
-                        asyncio.create_task(
-                            self._delayed_publish(
-                                request, platform, delay_seconds
-                            )
-                        )
+                        asyncio.create_task(self._delayed_publish(request, platform, delay_seconds))
 
                         logger.info(
                             f"已排程 {platform.value} 發布: \
@@ -574,9 +540,7 @@ class EntrepreneurPublisher:
             )
 
             # 執行發布
-            result = await self.publish_to_multiple_platforms(
-                single_platform_request
-            )
+            await self.publish_to_multiple_platforms(single_platform_request)
 
             logger.info(f"延遲發布到 {platform.value} 完成")
 
@@ -599,9 +563,7 @@ class EntrepreneurPublisher:
 
         return user_history[offset : offset + limit]
 
-    def get_active_publications(
-        self, user_id: str
-    ) -> List[BatchPublishResult]:
+    def get_active_publications(self, user_id: str) -> List[BatchPublishResult]:
         """獲取活動中的發布"""
 
         active = []

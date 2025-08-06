@@ -20,9 +20,7 @@ class BackupMonitor:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(exist_ok=True)
 
-    def log_backup_start(
-        self, backup_id: str, backup_type: str, source: str
-    ) -> None:
+    def log_backup_start(self, backup_id: str, backup_type: str, source: str) -> None:
         """記錄備份開始"""
         log_entry = {
             "timestamp": datetime.now().isoformat(),
@@ -51,9 +49,7 @@ class BackupMonitor:
         }
         self._write_log(log_entry)
 
-    def log_restore_start(
-        self, restore_id: str, backup_id: str, target: str
-    ) -> None:
+    def log_restore_start(self, restore_id: str, backup_id: str, target: str) -> None:
         """記錄恢復開始"""
         log_entry = {
             "timestamp": datetime.now().isoformat(),
@@ -64,9 +60,7 @@ class BackupMonitor:
         }
         self._write_log(log_entry)
 
-    def log_restore_complete(
-        self, restore_id: str, success: bool, message: str = ""
-    ) -> None:
+    def log_restore_complete(self, restore_id: str, success: bool, message: str = "") -> None:
         """記錄恢復完成"""
         log_entry = {
             "timestamp": datetime.now().isoformat(),
@@ -110,36 +104,18 @@ class BackupMonitor:
         records = self.get_recent_backups(days)
 
         # 統計資訊
-        backup_starts = [
-            r for r in records if r.get("event") == "backup_started"
-        ]
-        backup_completes = [
-            r for r in records if r.get("event") == "backup_completed"
-        ]
-        successful_backups = [
-            r for r in backup_completes if r.get("success", False)
-        ]
-        failed_backups = [
-            r for r in backup_completes if not r.get("success", True)
-        ]
+        backup_starts = [r for r in records if r.get("event") == "backup_started"]
+        backup_completes = [r for r in records if r.get("event") == "backup_completed"]
+        successful_backups = [r for r in backup_completes if r.get("success", False)]
+        failed_backups = [r for r in backup_completes if not r.get("success", True)]
 
-        restore_starts = [
-            r for r in records if r.get("event") == "restore_started"
-        ]
-        restore_completes = [
-            r for r in records if r.get("event") == "restore_completed"
-        ]
-        successful_restores = [
-            r for r in restore_completes if r.get("success", False)
-        ]
-        failed_restores = [
-            r for r in restore_completes if not r.get("success", True)
-        ]
+        restore_starts = [r for r in records if r.get("event") == "restore_started"]
+        restore_completes = [r for r in records if r.get("event") == "restore_completed"]
+        successful_restores = [r for r in restore_completes if r.get("success", False)]
+        failed_restores = [r for r in restore_completes if not r.get("success", True)]
 
         # 計算總備份大小
-        total_backup_size = sum(
-            r.get("size_bytes", 0) for r in successful_backups
-        )
+        total_backup_size = sum(r.get("size_bytes", 0) for r in successful_backups)
 
         report = {
             "period": f"最近 {days} 天",

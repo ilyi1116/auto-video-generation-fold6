@@ -1,8 +1,8 @@
+import logging
+import os
+
 from celery import Celery
 from celery.schedules import crontab
-import os
-import logging
-from datetime import datetime, timedelta
 
 # Celery 配置
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1")
@@ -23,8 +23,8 @@ celery_app = Celery(
         "services.admin-service.tasks.tracing_tasks",
         "services.admin-service.tasks.log_tasks",
         "services.admin-service.tasks.behavior_tasks",
-        "services.admin-service.tasks.auth_tasks"
-    ]
+        "services.admin-service.tasks.auth_tasks",
+    ],
 )
 
 # Celery 配置
@@ -33,15 +33,13 @@ celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
-    
     # 時區設置
     timezone="UTC",
     enable_utc=True,
-    
     # 任務路由
     task_routes={
         "crawler.*": {"queue": "crawler"},
-        "trends.*": {"queue": "trends"}, 
+        "trends.*": {"queue": "trends"},
         "maintenance.*": {"queue": "maintenance"},
         "notifications.*": {"queue": "notifications"},
         "model.*": {"queue": "models"},
@@ -50,326 +48,280 @@ celery_app.conf.update(
         "behavior.*": {"queue": "behavior"},
         "auth.*": {"queue": "auth"},
     },
-    
     # 任務過期設置
     task_time_limit=3600,  # 1小時超時
     task_soft_time_limit=3000,  # 50分鐘軟超時
-    
     # 工作器設置
     worker_prefetch_multiplier=1,
     worker_max_tasks_per_child=100,
-    
     # 結果設置
     result_expires=3600,  # 結果保存1小時
-    
     # 監控設置
     worker_send_task_events=True,
     task_send_sent_event=True,
-    
     # 定時任務配置
     beat_schedule={
         # 爬蟲任務 - 每分鐘檢查一次
         "check-crawler-schedules": {
             "task": "crawler.check_scheduled_crawlers",
             "schedule": crontab(minute="*"),  # 每分鐘
-            "options": {"queue": "crawler"}
+            "options": {"queue": "crawler"},
         },
-        
         # CrawlerTask 任務檢查 - 每分鐘檢查一次
         "check-crawler-task-schedules": {
             "task": "crawler.check_scheduled_crawler_tasks",
             "schedule": crontab(minute="*"),  # 每分鐘
-            "options": {"queue": "crawler"}
+            "options": {"queue": "crawler"},
         },
-        
         # 社交媒體趨勢收集 - 每小時一次
         "collect-social-trends": {
             "task": "trends.collect_all_trends",
             "schedule": crontab(minute=0),  # 每小時整點
-            "options": {"queue": "trends"}
+            "options": {"queue": "trends"},
         },
-        
         # 關鍵字趨勢收集 (新版本) - 每小時一次
         "collect-keyword-trends": {
             "task": "trends.collect_keyword_trends_new",
             "schedule": crontab(minute=15),  # 每小時15分
-            "options": {"queue": "trends"}
+            "options": {"queue": "trends"},
         },
-        
         # YouTube 趨勢收集 - 每2小時一次
         "collect-youtube-trends": {
             "task": "trends.collect_youtube_trends",
             "schedule": crontab(minute=0, hour="*/2"),  # 每2小時
-            "options": {"queue": "trends"}
+            "options": {"queue": "trends"},
         },
-        
         # Twitter 趨勢收集 - 每30分鐘一次
         "collect-twitter-trends": {
-            "task": "trends.collect_twitter_trends", 
+            "task": "trends.collect_twitter_trends",
             "schedule": crontab(minute="*/30"),  # 每30分鐘
-            "options": {"queue": "trends"}
+            "options": {"queue": "trends"},
         },
-        
         # 日誌清理 - 每天凌晨2點
         "cleanup-old-logs": {
             "task": "maintenance.cleanup_old_logs",
             "schedule": crontab(hour=2, minute=0),  # 每天2:00
-            "options": {"queue": "maintenance"}
+            "options": {"queue": "maintenance"},
         },
-        
         # 系統健康檢查 - 每5分鐘
         "system-health-check": {
             "task": "maintenance.system_health_check",
             "schedule": crontab(minute="*/5"),  # 每5分鐘
-            "options": {"queue": "maintenance"}
+            "options": {"queue": "maintenance"},
         },
-        
         # 數據備份 - 每天凌晨3點
         "backup-database": {
             "task": "maintenance.backup_database",
             "schedule": crontab(hour=3, minute=0),  # 每天3:00
-            "options": {"queue": "maintenance"}
+            "options": {"queue": "maintenance"},
         },
-        
         # 性能監控報告 - 每小時
         "performance-monitoring": {
             "task": "maintenance.performance_monitoring",
             "schedule": crontab(minute=15),  # 每小時15分
-            "options": {"queue": "maintenance"}
+            "options": {"queue": "maintenance"},
         },
-        
         # 錯誤報告 - 每天早上8點
         "daily-error-report": {
             "task": "notifications.daily_error_report",
             "schedule": crontab(hour=8, minute=0),  # 每天8:00
-            "options": {"queue": "notifications"}
+            "options": {"queue": "notifications"},
         },
-        
         # 系統統計報告 - 每週一早上9點
         "weekly-stats-report": {
             "task": "notifications.weekly_stats_report",
             "schedule": crontab(hour=9, minute=0, day_of_week=1),  # 每週一9:00
-            "options": {"queue": "notifications"}
+            "options": {"queue": "notifications"},
         },
-        
         # 健康監控 - 每分鐘檢查一次
         "health-monitoring": {
             "task": "monitoring.health_monitoring_task",
             "schedule": crontab(minute="*"),  # 每分鐘
-            "options": {"queue": "maintenance"}
+            "options": {"queue": "maintenance"},
         },
-        
         # 模型健康檢查 - 每5分鐘
         "model-health-check": {
             "task": "model.model_health_check_task",
             "schedule": crontab(minute="*/5"),  # 每5分鐘
-            "options": {"queue": "models"}
+            "options": {"queue": "models"},
         },
-        
         # 模型指標收集 - 每30分鐘
         "model-metrics-collection": {
-            "task": "model.model_metrics_collection_task", 
+            "task": "model.model_metrics_collection_task",
             "schedule": crontab(minute="*/30"),  # 每30分鐘
-            "options": {"queue": "models"}
+            "options": {"queue": "models"},
         },
-        
         # 模型優化分析 - 每天凌晨1點
         "model-optimization-analysis": {
             "task": "model.model_optimization_analysis_task",
             "schedule": crontab(hour=1, minute=0),  # 每天1:00
-            "options": {"queue": "models"}
+            "options": {"queue": "models"},
         },
-        
         # 模型清理 - 每週日凌晨4點
         "model-cleanup": {
             "task": "model.model_cleanup_task",
             "schedule": crontab(hour=4, minute=0, day_of_week=0),  # 每週日4:00
-            "options": {"queue": "models"}
+            "options": {"queue": "models"},
         },
-        
         # 追蹤健康檢查 - 每10分鐘
         "tracing-health-check": {
             "task": "tracing.health_check_task",
             "schedule": crontab(minute="*/10"),  # 每10分鐘
-            "options": {"queue": "tracing"}
+            "options": {"queue": "tracing"},
         },
-        
         # 追蹤資料清理 - 每天凌晨5點
         "tracing-cleanup": {
             "task": "tracing.cleanup_old_traces_task",
             "schedule": crontab(hour=5, minute=0),  # 每天5:00
-            "options": {"queue": "tracing"}
+            "options": {"queue": "tracing"},
         },
-        
         # 生成追蹤分析報告 - 每天早上9點
         "tracing-daily-report": {
             "task": "tracing.generate_report_task",
             "schedule": crontab(hour=9, minute=0),  # 每天9:00
-            "options": {"queue": "tracing"}
+            "options": {"queue": "tracing"},
         },
-        
         # 日誌系統健康檢查 - 每5分鐘
         "logs-health-check": {
             "task": "logs.log_health_check_task",
             "schedule": crontab(minute="*/5"),  # 每5分鐘
-            "options": {"queue": "logs"}
+            "options": {"queue": "logs"},
         },
-        
         # 自動化日誌分析 - 每小時
         "logs-automated-analysis": {
             "task": "logs.automated_analysis_task",
             "schedule": crontab(minute=0),  # 每小時整點
-            "options": {"queue": "logs"}
+            "options": {"queue": "logs"},
         },
-        
         # 日誌異常檢測 - 每15分鐘
         "logs-anomaly-detection": {
             "task": "logs.detect_anomalies_task",
             "schedule": crontab(minute="*/15"),  # 每15分鐘
             "options": {"queue": "logs"},
-            "kwargs": {"detection_params": {"hours": 1}}
+            "kwargs": {"detection_params": {"hours": 1}},
         },
-        
         # 告警監控 - 每5分鐘
         "logs-alert-monitoring": {
             "task": "logs.alert_monitoring_task",
             "schedule": crontab(minute="*/5"),  # 每5分鐘
-            "options": {"queue": "logs"}
+            "options": {"queue": "logs"},
         },
-        
         # 日誌清理 - 每天凌晨6點
         "logs-cleanup": {
             "task": "logs.cleanup_old_logs_task",
             "schedule": crontab(hour=6, minute=0),  # 每天6:00
             "options": {"queue": "logs"},
-            "kwargs": {"cleanup_params": {"days": 30}}
+            "kwargs": {"cleanup_params": {"days": 30}},
         },
-        
         # 生成日誌分析報告 - 每天早上10點
         "logs-daily-report": {
             "task": "logs.generate_report_task",
             "schedule": crontab(hour=10, minute=0),  # 每天10:00
             "options": {"queue": "logs"},
-            "kwargs": {"report_params": {"report_type": "daily"}}
+            "kwargs": {"report_params": {"report_type": "daily"}},
         },
-        
         # 行為追蹤健康檢查 - 每10分鐘
         "behavior-health-check": {
             "task": "behavior.behavior_health_check_task",
             "schedule": crontab(minute="*/10"),  # 每10分鐘
-            "options": {"queue": "behavior"}
+            "options": {"queue": "behavior"},
         },
-        
         # 每日行為分析 - 每天早上6點
         "behavior-daily-analysis": {
             "task": "behavior.daily_behavior_analysis_task",
             "schedule": crontab(hour=6, minute=0),  # 每天6:00
-            "options": {"queue": "behavior"}
+            "options": {"queue": "behavior"},
         },
-        
         # 行為模式檢測 - 每4小時
         "behavior-pattern-detection": {
             "task": "behavior.detect_behavior_patterns_task",
             "schedule": crontab(minute=0, hour="*/4"),  # 每4小時
             "options": {"queue": "behavior"},
-            "kwargs": {"pattern_type": "all", "days": 1}
+            "kwargs": {"pattern_type": "all", "days": 1},
         },
-        
         # 行為洞察生成 - 每天早上8點
         "behavior-insights-generation": {
             "task": "behavior.generate_behavior_insights_task",
             "schedule": crontab(hour=8, minute=0),  # 每天8:00
             "options": {"queue": "behavior"},
-            "kwargs": {"days": 1}
+            "kwargs": {"days": 1},
         },
-        
         # 行為異常檢測 - 每30分鐘
         "behavior-anomaly-detection": {
             "task": "behavior.detect_behavior_anomalies_task",
             "schedule": crontab(minute="*/30"),  # 每30分鐘
             "options": {"queue": "behavior"},
-            "kwargs": {"hours": 2}
+            "kwargs": {"hours": 2},
         },
-        
         # 每週行為報告 - 每週一早上9點
         "behavior-weekly-report": {
             "task": "behavior.weekly_behavior_report_task",
             "schedule": crontab(hour=9, minute=0, day_of_week=1),  # 每週一9:00
-            "options": {"queue": "behavior"}
+            "options": {"queue": "behavior"},
         },
-        
         # 行為數據清理 - 每天凌晨7點
         "behavior-data-cleanup": {
             "task": "behavior.cleanup_old_behavior_data_task",
             "schedule": crontab(hour=7, minute=0),  # 每天7:00
             "options": {"queue": "behavior"},
-            "kwargs": {"days": 30}
+            "kwargs": {"days": 30},
         },
-        
         # 認證系統健康檢查 - 每10分鐘
         "auth-health-check": {
             "task": "auth.auth_health_check_task",
             "schedule": crontab(minute="*/10"),  # 每10分鐘
-            "options": {"queue": "auth"}
+            "options": {"queue": "auth"},
         },
-        
         # 會話清理 - 每小時
         "auth-session-cleanup": {
             "task": "auth.session_cleanup_task",
             "schedule": crontab(minute=0),  # 每小時整點
-            "options": {"queue": "auth"}
+            "options": {"queue": "auth"},
         },
-        
         # 安全監控 - 每15分鐘
         "auth-security-monitoring": {
             "task": "auth.security_monitoring_task",
             "schedule": crontab(minute="*/15"),  # 每15分鐘
-            "options": {"queue": "auth"}
+            "options": {"queue": "auth"},
         },
-        
         # 密碼策略檢查 - 每天早上9點
         "auth-password-policy-check": {
             "task": "auth.password_policy_check_task",
             "schedule": crontab(hour=9, minute=0),  # 每天9:00
-            "options": {"queue": "auth"}
+            "options": {"queue": "auth"},
         },
-        
         # 角色審計 - 每週二早上10點
         "auth-role-audit": {
             "task": "auth.role_audit_task",
             "schedule": crontab(hour=10, minute=0, day_of_week=2),  # 每週二10:00
-            "options": {"queue": "auth"}
+            "options": {"queue": "auth"},
         },
-        
         # 用戶活動分析 - 每6小時
         "auth-user-activity-analysis": {
             "task": "auth.user_activity_analysis_task",
             "schedule": crontab(minute=0, hour="*/6"),  # 每6小時
             "options": {"queue": "auth"},
-            "kwargs": {"hours": 6}
+            "kwargs": {"hours": 6},
         },
-        
         # 安全報告生成 - 每天早上8點
         "auth-security-report": {
             "task": "auth.generate_security_report_task",
             "schedule": crontab(hour=8, minute=0),  # 每天8:00
             "options": {"queue": "auth"},
-            "kwargs": {"days": 1}
+            "kwargs": {"days": 1},
         },
-        
         # 認證配置備份 - 每天凌晨4點
         "auth-config-backup": {
             "task": "auth.backup_auth_config_task",
             "schedule": crontab(hour=4, minute=0),  # 每天4:00
-            "options": {"queue": "auth"}
-        }
-    }
+            "options": {"queue": "auth"},
+        },
+    },
 )
 
 # 日誌配置
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)
@@ -377,53 +329,33 @@ logger = logging.getLogger(__name__)
 
 class CeleryConfig:
     """Celery 配置類"""
-    
+
     @staticmethod
     def configure_queues():
         """配置隊列"""
         return {
-            "crawler": {
-                "exchange": "crawler",
-                "exchange_type": "direct",
-                "routing_key": "crawler"
-            },
-            "trends": {
-                "exchange": "trends", 
-                "exchange_type": "direct",
-                "routing_key": "trends"
-            },
+            "crawler": {"exchange": "crawler", "exchange_type": "direct", "routing_key": "crawler"},
+            "trends": {"exchange": "trends", "exchange_type": "direct", "routing_key": "trends"},
             "maintenance": {
                 "exchange": "maintenance",
-                "exchange_type": "direct", 
-                "routing_key": "maintenance"
+                "exchange_type": "direct",
+                "routing_key": "maintenance",
             },
             "notifications": {
                 "exchange": "notifications",
                 "exchange_type": "direct",
-                "routing_key": "notifications"
+                "routing_key": "notifications",
             },
-            "tracing": {
-                "exchange": "tracing",
-                "exchange_type": "direct",
-                "routing_key": "tracing"
-            },
-            "logs": {
-                "exchange": "logs",
-                "exchange_type": "direct",
-                "routing_key": "logs"
-            },
+            "tracing": {"exchange": "tracing", "exchange_type": "direct", "routing_key": "tracing"},
+            "logs": {"exchange": "logs", "exchange_type": "direct", "routing_key": "logs"},
             "behavior": {
                 "exchange": "behavior",
                 "exchange_type": "direct",
-                "routing_key": "behavior"
+                "routing_key": "behavior",
             },
-            "auth": {
-                "exchange": "auth",
-                "exchange_type": "direct",
-                "routing_key": "auth"
-            }
+            "auth": {"exchange": "auth", "exchange_type": "direct", "routing_key": "auth"},
         }
-    
+
     @staticmethod
     def get_worker_config():
         """獲取工作器配置"""
@@ -431,43 +363,35 @@ class CeleryConfig:
             "crawler": {
                 "concurrency": 2,
                 "max_memory_per_child": 200000,  # 200MB
-                "queues": ["crawler"]
+                "queues": ["crawler"],
             },
             "trends": {
                 "concurrency": 4,
                 "max_memory_per_child": 300000,  # 300MB
-                "queues": ["trends"]
+                "queues": ["trends"],
             },
             "maintenance": {
                 "concurrency": 1,
                 "max_memory_per_child": 100000,  # 100MB
-                "queues": ["maintenance"]
+                "queues": ["maintenance"],
             },
             "notifications": {
                 "concurrency": 2,
                 "max_memory_per_child": 100000,  # 100MB
-                "queues": ["notifications"]
+                "queues": ["notifications"],
             },
             "tracing": {
                 "concurrency": 3,
                 "max_memory_per_child": 200000,  # 200MB
-                "queues": ["tracing"]
+                "queues": ["tracing"],
             },
-            "logs": {
-                "concurrency": 4,
-                "max_memory_per_child": 300000,  # 300MB
-                "queues": ["logs"]
-            },
+            "logs": {"concurrency": 4, "max_memory_per_child": 300000, "queues": ["logs"]},  # 300MB
             "behavior": {
                 "concurrency": 3,
                 "max_memory_per_child": 250000,  # 250MB
-                "queues": ["behavior"]
+                "queues": ["behavior"],
             },
-            "auth": {
-                "concurrency": 2,
-                "max_memory_per_child": 200000,  # 200MB
-                "queues": ["auth"]
-            }
+            "auth": {"concurrency": 2, "max_memory_per_child": 200000, "queues": ["auth"]},  # 200MB
         }
 
 
@@ -484,7 +408,7 @@ def task_failure_handler(self, task_id, error, traceback):
     """任務失敗處理器"""
     logger.error(f"任務 {task_id} 失敗: {error}")
     logger.error(f"堆疊追蹤: {traceback}")
-    
+
     # 這裡可以發送通知或記錄到數據庫
     # send_failure_notification(task_id, error)
 
@@ -501,13 +425,9 @@ def task_success_handler(self, retval, task_id, args, kwargs):
 def setup_periodic_tasks(sender, **kwargs):
     """設置週期性任務"""
     logger.info("正在設置週期性任務...")
-    
+
     # 動態添加任務
-    sender.add_periodic_task(
-        60.0,  # 60秒
-        debug_task.s(),
-        name="每分鐘調試任務"
-    )
+    sender.add_periodic_task(60.0, debug_task.s(), name="每分鐘調試任務")  # 60秒
 
 
 # 工作器準備就緒時的鉤子
@@ -522,7 +442,7 @@ def setup_routing(sender, **kwargs):
 def base_task(self, *args, **kwargs):
     """基礎任務類"""
     logger.info(f"任務 {self.name} 開始執行")
-    
+
     try:
         result = super().run(*args, **kwargs)
         logger.info(f"任務 {self.name} 執行成功")
@@ -535,38 +455,38 @@ def base_task(self, *args, **kwargs):
 # 監控工具
 class CeleryMonitor:
     """Celery 監控器"""
-    
+
     def __init__(self):
         self.app = celery_app
-    
+
     def get_active_tasks(self):
         """獲取活躍任務"""
         inspect = self.app.control.inspect()
         return inspect.active()
-    
+
     def get_scheduled_tasks(self):
         """獲取計劃任務"""
         inspect = self.app.control.inspect()
         return inspect.scheduled()
-    
+
     def get_worker_stats(self):
         """獲取工作器統計"""
         inspect = self.app.control.inspect()
         return inspect.stats()
-    
+
     def get_registered_tasks(self):
         """獲取註冊任務"""
         inspect = self.app.control.inspect()
         return inspect.registered()
-    
+
     def cancel_task(self, task_id):
         """取消任務"""
         self.app.control.revoke(task_id, terminate=True)
-    
+
     def purge_queue(self, queue_name):
         """清空隊列"""
         self.app.control.purge()
-    
+
     def get_queue_length(self, queue_name):
         """獲取隊列長度"""
         # 這需要根據具體的訊息代理實現
@@ -576,7 +496,7 @@ class CeleryMonitor:
 # 任務重試配置
 class TaskRetryMixin:
     """任務重試混合類"""
-    
+
     autoretry_for = (Exception,)
     retry_kwargs = {"max_retries": 3, "countdown": 60}
     retry_backoff = True
@@ -596,26 +516,20 @@ def get_task_status(task_id):
         "id": task_id,
         "status": result.status,
         "result": result.result if result.ready() else None,
-        "traceback": result.traceback if result.failed() else None
+        "traceback": result.traceback if result.failed() else None,
     }
 
 
 def schedule_task(task_name, args=None, kwargs=None, eta=None, countdown=None, queue=None):
     """排程任務"""
     return celery_app.send_task(
-        task_name,
-        args=args or [],
-        kwargs=kwargs or {},
-        eta=eta,
-        countdown=countdown,
-        queue=queue
+        task_name, args=args or [], kwargs=kwargs or {}, eta=eta, countdown=countdown, queue=queue
     )
 
 
 def schedule_periodic_task(task_name, schedule, args=None, kwargs=None):
     """排程週期性任務"""
     # 這需要動態添加到 beat_schedule
-    pass
 
 
 # 健康檢查
@@ -625,17 +539,17 @@ def celery_health_check():
         # 檢查工作器是否響應
         inspect = celery_app.control.inspect()
         stats = inspect.stats()
-        
+
         if not stats:
             return False, "沒有活躍的工作器"
-        
+
         # 檢查隊列是否正常
         active = inspect.active()
         if active is None:
             return False, "無法獲取活躍任務信息"
-        
+
         return True, "Celery 運行正常"
-        
+
     except Exception as e:
         return False, f"Celery 健康檢查失敗: {str(e)}"
 

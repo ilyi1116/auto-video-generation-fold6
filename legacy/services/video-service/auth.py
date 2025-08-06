@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 class AuthenticationError(Exception):
     """Custom authentication error"""
 
-    pass
 
 
 async def verify_token(token: str) -> Optional[str]:
@@ -38,9 +37,7 @@ async def verify_token(token: str) -> Optional[str]:
         # Get JWT settings from environment
         jwt_secret = os.getenv("JWT_SECRET_KEY")
         jwt_algorithm = os.getenv("JWT_ALGORITHM", "RS256")
-        auth_service_url = os.getenv(
-            "AUTH_SERVICE_URL", "http://localhost:8001"
-        )
+        auth_service_url = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 
         if not jwt_secret:
             # If no local JWT secret, validate with auth service
@@ -82,9 +79,7 @@ async def verify_token(token: str) -> Optional[str]:
         return None
 
 
-async def verify_token_remote(
-    token: str, auth_service_url: str
-) -> Optional[str]:
+async def verify_token_remote(token: str, auth_service_url: str) -> Optional[str]:
     """
     Verify token with remote authentication service
 
@@ -110,14 +105,10 @@ async def verify_token_remote(
                     user_id = result.get("user_id")
 
                     if user_id:
-                        logger.debug(
-                            f"Remote token validated for user: {user_id}"
-                        )
+                        logger.debug(f"Remote token validated for user: {user_id}")
                         return user_id
                     else:
-                        logger.warning(
-                            "Remote verification returned no user ID"
-                        )
+                        logger.warning("Remote verification returned no user ID")
                         return None
 
                 elif response.status == 401:
@@ -147,9 +138,7 @@ async def get_user_info(token: str) -> Optional[Dict[str, Any]]:
     """
 
     try:
-        auth_service_url = os.getenv(
-            "AUTH_SERVICE_URL", "http://localhost:8001"
-        )
+        auth_service_url = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 
         async with aiohttp.ClientSession() as session:
             headers = {"Authorization": f"Bearer {token}"}
@@ -161,14 +150,10 @@ async def get_user_info(token: str) -> Optional[Dict[str, Any]]:
             ) as response:
                 if response.status == 200:
                     user_info = await response.json()
-                    logger.debug(
-                        f"Retrieved user info for: {user_info.get('id')}"
-                    )
+                    logger.debug(f"Retrieved user info for: {user_info.get('id')}")
                     return user_info
                 else:
-                    logger.warning(
-                        f"Failed to get user info: {response.status}"
-                    )
+                    logger.warning(f"Failed to get user info: {response.status}")
                     return None
 
     except Exception as e:
@@ -201,9 +186,7 @@ def create_service_token(service_name: str, expires_in: int = 3600) -> str:
             "service": service_name,
         }
 
-        token = jwt.encode(
-            payload, jwt_secret, algorithm=os.getenv("JWT_ALGORITHM", "RS256")
-        )
+        token = jwt.encode(payload, jwt_secret, algorithm=os.getenv("JWT_ALGORITHM", "RS256"))
 
         logger.debug(f"Created service token for: {service_name}")
         return token
@@ -213,9 +196,7 @@ def create_service_token(service_name: str, expires_in: int = 3600) -> str:
         raise AuthenticationError(f"Failed to create service token: {str(e)}")
 
 
-async def check_user_permissions(
-    user_id: str, resource: str, action: str
-) -> bool:
+async def check_user_permissions(user_id: str, resource: str, action: str) -> bool:
     """
     Check if user has permission to perform action on resource
 
@@ -229,9 +210,7 @@ async def check_user_permissions(
     """
 
     try:
-        auth_service_url = os.getenv(
-            "AUTH_SERVICE_URL", "http://localhost:8001"
-        )
+        auth_service_url = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
         service_token = create_service_token("video-service")
 
         async with aiohttp.ClientSession() as session:
@@ -259,9 +238,7 @@ async def check_user_permissions(
                     )
                     return has_permission
                 else:
-                    logger.warning(
-                        f"Permission check failed: {response.status}"
-                    )
+                    logger.warning(f"Permission check failed: {response.status}")
                     return False
 
     except Exception as e:
@@ -347,9 +324,7 @@ class TokenValidator:
                 detail="Invalid token",
             )
 
-    async def validate_service_token(
-        self, token: str, required_service: str
-    ) -> bool:
+    async def validate_service_token(self, token: str, required_service: str) -> bool:
         """
         Validate service-to-service token
 

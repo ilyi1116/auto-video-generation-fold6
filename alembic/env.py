@@ -10,43 +10,37 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from alembic import context
 
 # 添加專案根目錄到路徑
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "auto_generate_video_fold6"))
 
-# 導入統一的模型
+# 導入統一的資料庫模型
 try:
-    from auto_generate_video_fold6.models import (
+    from src.shared.database.models import (
         Base,
-        User,
-        TrendingTopic,
-        KeywordResearch,
-        ViralContent,
-        TrendAnalysis,
-        StoredFile,
-        FileProcessingJob,
-        FileDownload,
-        VideoProject,
-        VideoGeneration,
-        VideoAsset,
-        ScheduledTask,
-        TaskExecution,
     )
 
-    print("✅ 成功導入所有資料庫模型")
+    print("✅ 成功導入所有統一資料庫模型")
 
 except ImportError as e:
-    print(f"警告: 無法導入某些模型: {e}")
-    # 建立基礎 Base 物件
-    from sqlalchemy.ext.declarative import declarative_base
+    print(f"警告: 無法導入統一模型: {e}")
+    # 嘗試舊版導入
+    try:
+        from auto_generate_video_fold6.models import Base
 
-    Base = declarative_base()
+        print("✅ 使用舊版模型作為備選")
+    except ImportError:
+        from sqlalchemy.ext.declarative import declarative_base
+
+        Base = declarative_base()
+        print("⚠️ 使用基礎 Base 物件")
 
 # 配置設定
 config = context.config
@@ -54,7 +48,7 @@ config = context.config
 # 設定資料庫 URL
 database_url = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:password@localhost:5432/auto_video_generation",
+    "postgresql://postgres:postgres@localhost:5432/auto_video_db",
 )
 
 config.set_main_option("sqlalchemy.url", database_url)

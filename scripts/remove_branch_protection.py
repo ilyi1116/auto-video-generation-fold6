@@ -124,9 +124,7 @@ def main():
         print("2. Token 是否有足夠權限 (需要 repo 權限)")
         print("3. 倉庫名稱是否正確")
         print("\n💡 或者直接在 GitHub 網頁移除:")
-        print(
-            "https://github.com/ilyi1116/auto-video-generation-fold6/settings/branches"
-        )
+        print("https://github.com/ilyi1116/auto-video-generation-fold6/settings/branches")
 
 
 if __name__ == "__main__":

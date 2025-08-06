@@ -8,7 +8,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import yaml
 
@@ -127,9 +127,7 @@ class CICDValidator:
 
         for path in outdated_paths:
             if path in workflow_str:
-                self.warnings.append(
-                    f"{filename}: 包含过时的路径引用 '{path}'"
-                )
+                self.warnings.append(f"{filename}: 包含过时的路径引用 '{path}'")
 
         # 检查推荐的路径引用
         if filename == "ci-cd-main.yml":
@@ -141,9 +139,7 @@ class CICDValidator:
 
             for path in recommended_paths:
                 if path not in workflow_str:
-                    self.warnings.append(
-                        f"{filename}: 缺少推荐的路径引用 '{path}'"
-                    )
+                    self.warnings.append(f"{filename}: 缺少推荐的路径引用 '{path}'")
 
     def validate_microservices(self):
         """验证微服务结构"""
@@ -154,11 +150,7 @@ class CICDValidator:
             self.errors.append("微服务目录 src/services 不存在")
             return
 
-        services = [
-            d
-            for d in services_dir.iterdir()
-            if d.is_dir() and not d.name.startswith(".")
-        ]
+        services = [d for d in services_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
 
         if not services:
             self.warnings.append("没有找到微服务")
@@ -217,17 +209,11 @@ class CICDValidator:
                 if "project" not in pyproject:
                     self.errors.append("pyproject.toml 缺少 [project] 部分")
 
-                if (
-                    "project" in pyproject
-                    and "dependencies" not in pyproject["project"]
-                ):
+                if "project" in pyproject and "dependencies" not in pyproject["project"]:
                     self.warnings.append("pyproject.toml 缺少依赖定义")
 
                 # 检查开发依赖
-                if (
-                    "project" in pyproject
-                    and "optional-dependencies" not in pyproject["project"]
-                ):
+                if "project" in pyproject and "optional-dependencies" not in pyproject["project"]:
                     self.warnings.append("pyproject.toml 缺少可选依赖定义")
 
             except Exception as e:
@@ -249,14 +235,10 @@ class CICDValidator:
 
                     required_scripts = ["build", "test", "lint"]
                     missing_scripts = [
-                        s
-                        for s in required_scripts
-                        if s not in package_data.get("scripts", {})
+                        s for s in required_scripts if s not in package_data.get("scripts", {})
                     ]
                     if missing_scripts:
-                        self.warnings.append(
-                            f"package.json 缺少必需的脚本: {missing_scripts}"
-                        )
+                        self.warnings.append(f"package.json 缺少必需的脚本: {missing_scripts}")
 
                 except Exception as e:
                     self.errors.append(f"package.json 解析失败: {e}")
@@ -286,9 +268,7 @@ class CICDValidator:
                         recommended_services = ["postgres", "redis"]
                         for service in recommended_services:
                             if service not in services:
-                                self.warnings.append(
-                                    f"{compose_file}: 缺少推荐服务 {service}"
-                                )
+                                self.warnings.append(f"{compose_file}: 缺少推荐服务 {service}")
 
                 except Exception as e:
                     self.errors.append(f"{compose_file}: 解析失败 - {e}")
@@ -307,9 +287,7 @@ class CICDValidator:
                     config = yaml.safe_load(f)
 
                 if "repos" in config:
-                    print(
-                        f"✅ 找到 {len(config['repos'])} 个 pre-commit hooks"
-                    )
+                    print(f"✅ 找到 {len(config['repos'])} 个 pre-commit hooks")
                 else:
                     self.warnings.append("pre-commit 配置文件格式不正确")
 

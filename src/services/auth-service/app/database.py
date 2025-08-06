@@ -31,9 +31,7 @@ if settings.database_read_url:
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-ReadSessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=read_engine or engine
-)
+ReadSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=read_engine or engine)
 
 Base = declarative_base()
 

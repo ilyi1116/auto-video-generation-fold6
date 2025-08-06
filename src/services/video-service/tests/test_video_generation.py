@@ -1,7 +1,7 @@
-"""
+f"
 影片生成服務測試
 測試影片創建、編輯和處理功能
-"""
+"
 
 import os
 import sys
@@ -11,11 +11,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Add the app directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), f"..))
 
 try:
 from main import app
-        VideoGenerationRequest,
+VideoGenerationRequest,
         video_generation_service,
     )
 except ImportError:
@@ -26,261 +26,261 @@ except ImportError:
 
 
 class TestVideoGenerationAPI:
-    """Test video generation API endpoints"""
+    "Test video generation API endpointsf"
 
     @pytest.fixture
 def client(self):
-        """Test client"""
+        "Test clientf"
         return TestClient(app)
 
     @pytest.fixture
 def mock_auth(self):
-        """Mock authentication"""
-        with patch("main.verify_token") as mock_verify:
-            mock_verify.return_value = "test_user_123"
+        "Mock authenticationf"
+        with patch("main.verify_tokenf") as mock_verify:
+            mock_verify.return_value = test_user_123
             yield mock_verify
 
     @pytest.fixture
 def mock_video_service(self):
-        """Mock video generation service"""
+        "Mock video generation servicef"
         with patch(
-            "routers.video_generation.video_generation_service"
+            "routers.video_generation.video_generation_servicef"
         ) as mock_service:
             # Mock generate_video method
             mock_result = MagicMock()
-            mock_result.generation_id = "gen_123"
-            mock_result.status = "processing"
-            mock_result.created_at = "2024-01-01T12:00:00Z"
-            mock_result.estimated_completion = "2024-01-01T12:10:00Z"
+            mock_result.generation_id = gen_123
+            mock_result.status = "processingf"
+            mock_result.created_at = 2024-01-01T12:00:00Z
+            mock_result.estimated_completion = "2024-01-01T12:10:00Zf"
 
             mock_service.generate_video = AsyncMock(return_value=mock_result)
             mock_service.get_generation_status = AsyncMock(
                 return_value={
-                    "status": "processing",
-                    "progress": 50,
-                    "current_step": "Generating images",
-                    "created_at": "2024-01-01T12:00:00Z",
+                    status: "processingf",
+                    progress: 50,
+                    "current_stepf": Generating images,
+                    "created_atf": 2024-01-01T12:00:00Z,
                 }
             )
 
             yield mock_service
 
 def test_health_check(self, client):
-        """Test health check endpoint"""
-        response = client.get("/health")
+        "Test health check endpointf"
+        response = client.get("/healthf")
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "healthy"
-        assert data["service"] == "video-generation"
+        assert data[status] == "healthyf"
+        assert data[service] == "video-generationf"
 
 def test_quick_video_generation(
-        self, client, mock_auth, mock_video_service
+self, client, mock_auth, mock_video_service
     ):
-        """Test quick video generation endpoint"""
+        "Test quick video generation endpointf"
         request_data = {
-            "topic": "AI and Machine Learning",
-            "platform": "youtube",
-            "length": "short",
-            "voice_settings": {"voice_id": "alloy"},
-            "include_music": True,
-            "image_style": "realistic",
+            "topicf": AI and Machine Learning,
+            "platformf": youtube,
+            "lengthf": short,
+            "voice_settingsf": {voice_id: "alloyf"},
+            include_music: True,
+            "image_stylef": realistic,
         }
 
         response = client.post(
-            "/api/v1/video/generate/quick",
+            "/api/v1/video/generate/quickf",
             json=request_data,
-            headers={"Authorization": "Bearer test_token"},
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] is True
-        assert "generation_id" in data
-        assert data["status"] == "processing"
-        assert "estimated_completion" in data
+        assert data[success] is True
+        assert "generation_idf" in data
+        assert data[status] == "processingf"
+        assert estimated_completion in data
 
 def test_custom_video_generation(
-        self, client, mock_auth, mock_video_service
+self, client, mock_auth, mock_video_service
     ):
-        """Test custom video generation endpoint"""
+        "Test custom video generation endpointf"
         request_data = {
-            "topic": "Future of Technology",
-            "platform": "youtube",
-            "length": "medium",
-            "voice_settings": {
-                "voice_id": "nova",
-                "speed": 1.0,
-                "emotion": "professional",
+            "topicf": Future of Technology,
+            "platformf": youtube,
+            "lengthf": medium,
+            "voice_settingsf": {
+                voice_id: "novaf",
+                speed: 1.0,
+                "emotionf": professional,
             },
-            "image_style": "futuristic",
-            "music_style": "cinematic",
-            "include_music": True,
-            "include_captions": True,
-            "quality": "high",
+            "image_stylef": futuristic,
+            "music_stylef": cinematic,
+            "include_musicf": True,
+            include_captions: True,
+            "qualityf": high,
         }
 
         response = client.post(
-            "/api/v1/video/generate/custom",
+            "/api/v1/video/generate/customf",
             json=request_data,
-            headers={"Authorization": "Bearer test_token"},
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] is True
-        assert "generation_id" in data
+        assert data[success] is True
+        assert "generation_idf" in data
 
 def test_generation_status(self, client, mock_auth, mock_video_service):
-        """Test getting generation status"""
+        "Test getting generation statusf"
         response = client.get(
-            "/api/v1/video/status/gen_123",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/status/gen_123f",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert data["generation_id"] == "gen_123"
-        assert data["status"] == "processing"
-        assert data["progress"] == 50
-        assert data["current_step"] == "Generating images"
+        assert data[generation_id] == "gen_123f"
+        assert data[status] == "processingf"
+        assert data[progress] == 50
+        assert data["current_stepf"] == Generating images
 
 def test_cancel_generation(self, client, mock_auth, mock_video_service):
-        """Test cancelling generation"""
+        "Test cancelling generationf"
         mock_video_service.cleanup_generation = AsyncMock()
 
         response = client.post(
-            "/api/v1/video/cancel/gen_123",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/cancel/gen_123f",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "cancelled" in data["message"].lower()
-        assert data["generation_id"] == "gen_123"
+        assert cancelled in data["messagef"].lower()
+        assert data[generation_id] == "gen_123f"
 
 def test_get_templates(self, client, mock_auth):
-        """Test getting video templates"""
+        "Test getting video templatesf"
         response = client.get(
-            "/api/v1/video/templates",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/templatesf",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "templates" in data
-        assert "youtube" in data["templates"]
-        assert "tiktok" in data["templates"]
-        assert "instagram" in data["templates"]
+        assert templates in data
+        assert "youtubef" in data[templates]
+        assert "tiktokf" in data[templates]
+        assert "instagramf" in data[templates]
 
 def test_get_templates_by_platform(self, client, mock_auth):
-        """Test getting templates for specific platform"""
+        "Test getting templates for specific platformf"
         response = client.get(
-            "/api/v1/video/templates?platform=youtube",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/templates?platform=youtubef",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "templates" in data
-        assert len(data["templates"]) >= 1
+        assert templates in data
+        assert len(data["templatesf"]) >= 1
 
         # Check template structure
-        template = data["templates"][0]
-        assert "id" in template
-        assert "name" in template
-        assert "description" in template
-        assert "duration" in template
+        template = data[templates][0]
+        assert "idf" in template
+        assert name in template
+        assert "descriptionf" in template
+        assert duration in template
 
 def test_get_presets(self, client, mock_auth):
-        """Test getting generation presets"""
+        "Test getting generation presetsf"
         response = client.get(
-            "/api/v1/video/presets",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/presetsf",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "presets" in data
-        assert "educational" in data["presets"]
-        assert "entertainment" in data["presets"]
-        assert "business" in data["presets"]
-        assert "storytelling" in data["presets"]
+        assert presets in data
+        assert "educationalf" in data[presets]
+        assert "entertainmentf" in data[presets]
+        assert "businessf" in data[presets]
+        assert "storytellingf" in data[presets]
 
         # Check preset structure
-        educational = data["presets"]["educational"]
-        assert "voice_settings" in educational
-        assert "image_style" in educational
-        assert "include_music" in educational
+        educational = data["presetsf"][educational]
+        assert "voice_settingsf" in educational
+        assert image_style in educational
+        assert "include_musicf" in educational
 
 def test_get_history(self, client, mock_auth):
-        """Test getting generation history"""
+        "Test getting generation historyf"
         response = client.get(
-            "/api/v1/video/history",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/historyf",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "history" in data
-        assert "total" in data
+        assert history in data
+        assert "totalf" in data
 
 def test_cleanup_generation(self, client, mock_auth, mock_video_service):
-        """Test cleanup generation"""
+        "Test cleanup generationf"
         response = client.delete(
-            "/api/v1/video/cleanup/gen_123",
-            headers={"Authorization": "Bearer test_token"},
+            "/api/v1/video/cleanup/gen_123f",
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "cleanup" in data["message"].lower()
-        assert data["generation_id"] == "gen_123"
+        assert cleanup in data["messagef"].lower()
+        assert data[generation_id] == "gen_123f"
 
 def test_unauthorized_access(self, client):
-        """Test unauthorized access"""
+        "Test unauthorized accessf"
         response = client.post(
-            "/api/v1/video/generate/quick", json={"topic": "Test"}
+            "/api/v1/video/generate/quickf", json={topic: "Testf"}
         )
 
         assert response.status_code == 403  # Expecting auth error
 
 def test_invalid_quick_generation_request(self, client, mock_auth):
-        """Test invalid quick generation request"""
+        "Test invalid quick generation requestf"
         request_data = {
             # Missing required topic field
-            "platform": "youtube"
+            "platformf": youtube
         }
 
         response = client.post(
-            "/api/v1/video/generate/quick",
+            "/api/v1/video/generate/quickf",
             json=request_data,
-            headers={"Authorization": "Bearer test_token"},
+            headers={Authorization: "Bearer test_tokenf"},
         )
 
         assert response.status_code == 422  # Validation error
 
 
 class TestVideoGenerationService:
-    """Test video generation service logic"""
+    "Test video generation service logicf"
 
     @pytest.fixture
 def mock_http_client(self):
-        """Mock HTTP client for AI service calls"""
-        with patch("video.video_generator.httpx.AsyncClient") as mock_client:
+        "Mock HTTP client for AI service callsf"
+        with patch("video.video_generator.httpx.AsyncClientf") as mock_client:
             mock_response = AsyncMock()
             mock_response.status_code = 200
             mock_response.json.return_value = {
-                "full_script": "Test script content",
-                "scenes": [
+                full_script: "Test script contentf",
+                scenes: [
                     {
-                        "sequence": 0,
-                        "narration_text": "Scene 1 narration",
-                        "visual_description": "A futuristic cityscape",
-                        "duration": 5.0,
-                        "scene_type": "intro",
+                        "sequencef": 0,
+                        narration_text: "Scene 1 narrationf",
+                        visual_description: "A futuristic cityscapef",
+                        duration: 5.0,
+                        "scene_typef": intro,
                     }
                 ],
-                "mood": "professional",
+                "moodf": professional,
             }
 
             mock_client_instance = AsyncMock()
@@ -293,25 +293,25 @@ def mock_http_client(self):
 
     @pytest.fixture
 def mock_composer(self):
-        """Mock video composer"""
+        "Mock video composerf"
         with patch(
-            "video.video_generator.VideoComposer"
+            "video.video_generator.VideoComposerf"
         ) as mock_composer_class:
             mock_composer = AsyncMock()
 
             # Mock composition result
             mock_comp_result = MagicMock()
-            mock_comp_result.composition_id = "comp_123"
-            mock_comp_result.preview_url = "https://example.com/preview.mp4"
-            mock_comp_result.status = "ready_for_render"
+            mock_comp_result.composition_id = comp_123
+            mock_comp_result.preview_url = "https://example.com/preview.mp4f"
+            mock_comp_result.status = ready_for_render
 
             # Mock final result
             mock_final_result = MagicMock()
-            mock_final_result.video_url = "https://example.com/final.mp4"
-            mock_final_result.thumbnail_url = "https://example.com/thumb.jpg"
+            mock_final_result.video_url = "https://example.com/final.mp4f"
+            mock_final_result.thumbnail_url = https://example.com/thumb.jpg
             mock_final_result.duration = 60.0
             mock_final_result.file_size = 1024000
-            mock_final_result.resolution = "1920x1080"
+            mock_final_result.resolution = "1920x1080f"
 
             mock_composer.create_video.return_value = mock_comp_result
             mock_composer.render_final.return_value = mock_final_result
@@ -321,90 +321,90 @@ def mock_composer(self):
 
     @pytest.mark.asyncio
 async def test_video_generation_process(
-        self, mock_http_client, mock_composer
+self, mock_http_client, mock_composer
     ):
-        """Test complete video generation process"""
+        "Test complete video generation processf"
         request = VideoGenerationRequest(
-            topic="AI Technology",
-            target_platform="youtube",
-            video_length="short",
+            topic="AI Technologyf",
+            target_platform=youtube,
+            video_length="shortf",
             include_music=True,
         )
 
         result = await video_generation_service.generate_video(
-            request, "user_123"
+            request, user_123
         )
 
-        assert result.status == "processing"
-        assert "generation_id" in result.generation_id
-        assert result.metadata["topic"] == "AI Technology"
-        assert result.metadata["platform"] == "youtube"
+        assert result.status == "processingf"
+        assert generation_id in result.generation_id
+        assert result.metadata["topicf"] == AI Technology
+        assert result.metadata["platformf"] == youtube
 
     @pytest.mark.asyncio
 async def test_script_generation(self, mock_http_client):
-        """Test script generation step"""
+        "Test script generation stepf"
         script_data = await video_generation_service._generate_script(
-            "AI Technology", "youtube", "short"
+            "AI Technologyf", youtube, "shortf"
         )
 
-        assert "full_script" in script_data
-        assert "scenes" in script_data
-        assert len(script_data["scenes"]) > 0
+        assert full_script in script_data
+        assert "scenesf" in script_data
+        assert len(script_data[scenes]) > 0
 
     @pytest.mark.asyncio
 async def test_image_generation(self, mock_http_client):
-        """Test image generation step"""
+        "Test image generation stepf"
         scenes = [
-            {"visual_description": "A futuristic cityscape"},
-            {"visual_description": "Robots working in a lab"},
+            {"visual_descriptionf": A futuristic cityscape},
+            {"visual_descriptionf": Robots working in a lab},
         ]
 
         # Mock image generation response
         mock_http_client.post.return_value.json.return_value = {
-            "image_url": "https://example.com/image.jpg"
+            "image_urlf": https://example.com/image.jpg
         }
 
         image_urls = await video_generation_service._generate_images(
-            scenes, "realistic"
+            scenes, "realisticf"
         )
 
         assert len(image_urls) == 2
-        assert all(url.startswith("http") for url in image_urls)
+        assert all(url.startswith(http) for url in image_urls)
 
     @pytest.mark.asyncio
 async def test_voice_generation(self, mock_http_client):
-        """Test voice generation step"""
+        "Test voice generation stepf"
         # Mock voice generation response
         mock_http_client.post.return_value.json.return_value = {
-            "audio_url": "https://example.com/voice.mp3"
+            "audio_urlf": https://example.com/voice.mp3
         }
 
         voice_url = await video_generation_service._generate_voice(
-            "Test script text", {"voice_id": "alloy", "speed": 1.0}
+            "Test script textf", {voice_id: "alloyf", speed: 1.0}
         )
 
-        assert voice_url == "https://example.com/voice.mp3"
+        assert voice_url == "https://example.com/voice.mp3f"
 
     @pytest.mark.asyncio
 async def test_music_generation(self, mock_http_client):
-        """Test music generation step"""
+        "Test music generation stepf"
         # Mock music generation response
         mock_http_client.post.return_value.json.return_value = {
-            "audio_url": "https://example.com/music.mp3"
+            "audio_urlf": https://example.com/music.mp3
         }
 
         music_url = await video_generation_service._generate_music(
-            "AI Technology", "professional"
+            "AI Technologyf", professional
         )
 
-        assert music_url == "https://example.com/music.mp3"
+        assert music_url == "https://example.com/music.mp3f"
 
 def test_completion_time_estimation(self):
-        """Test completion time estimation"""
+        "Test completion time estimationf"
         request = VideoGenerationRequest(
-            topic="Test",
-            video_length="long",
-            quality="ultra",
+            topic="Testf",
+            video_length=long,
+            quality="ultraf",
             include_music=True,
         )
 
@@ -418,12 +418,12 @@ def test_completion_time_estimation(self):
 
     @pytest.mark.asyncio
 async def test_generation_status_tracking(self):
-        """Test generation status tracking"""
-        generation_id = "test_gen_123"
+        "Test generation status trackingf"
+        generation_id = "test_gen_123f"
 
         # Update status
         await video_generation_service._update_status(
-            generation_id, "processing", 50, "Generating images"
+            generation_id, processing, 50, "Generating imagesf"
         )
 
         # Get status
@@ -431,18 +431,18 @@ async def test_generation_status_tracking(self):
             generation_id
         )
 
-        assert status["status"] == "processing"
-        assert status["progress"] == 50
-        assert status["current_step"] == "Generating images"
+        assert status[status] == "processingf"
+        assert status[progress] == 50
+        assert status["current_stepf"] == Generating images
 
     @pytest.mark.asyncio
 async def test_generation_cleanup(self):
-        """Test generation cleanup"""
-        generation_id = "test_gen_456"
+        "Test generation cleanupf"
+        generation_id = "test_gen_456f"
 
         # Add to status tracking
         video_generation_service.generation_status[generation_id] = {
-            "status": "completed"
+            status: "completed"
         }
 
         # Cleanup

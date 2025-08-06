@@ -132,9 +132,7 @@ class CostDataCollector:
 
             for record_json in daily_records:
                 record_data = json.loads(record_json)
-                record_data["timestamp"] = datetime.fromisoformat(
-                    record_data["timestamp"]
-                )
+                record_data["timestamp"] = datetime.fromisoformat(record_data["timestamp"])
                 record_data["category"] = CostCategory(record_data["category"])
 
                 record = CostRecord(**record_data)
@@ -167,9 +165,7 @@ class CostPredictor:
         end_date = datetime.utcnow()
         start_date = end_date - timedelta(days=90)  # 90天歷史數據
 
-        cost_data = await self.cost_collector.get_cost_data(
-            start_date, end_date
-        )
+        cost_data = await self.cost_collector.get_cost_data(start_date, end_date)
 
         if len(cost_data) < 30:  # 需要至少30個數據點
             logger.warning("歷史數據不足，無法訓練預測模型")
@@ -183,15 +179,11 @@ class CostPredictor:
 
         logger.info(f"完成 {len(categories)} 個類別的預測模型訓練")
 
-    async def _train_category_model(
-        self, cost_data: List[CostRecord], category: CostCategory
-    ):
+    async def _train_category_model(self, cost_data: List[CostRecord], category: CostCategory):
         """為特定類別訓練預測模型"""
 
         # 篩選類別數據
-        category_data = [
-            record for record in cost_data if record.category == category
-        ]
+        category_data = [record for record in cost_data if record.category == category]
 
         if len(category_data) < 10:
             return
@@ -213,15 +205,9 @@ class CostPredictor:
 
         # 創建時間序列特徵
         df = df.sort_values("timestamp")
-        df["days_since_start"] = (
-            df["timestamp"] - df["timestamp"].min()
-        ).dt.days
-        df["rolling_mean_7d"] = (
-            df["amount"].rolling(window=7, min_periods=1).mean()
-        )
-        df["rolling_std_7d"] = (
-            df["amount"].rolling(window=7, min_periods=1).std().fillna(0)
-        )
+        df["days_since_start"] = (df["timestamp"] - df["timestamp"].min()).dt.days
+        df["rolling_mean_7d"] = df["amount"].rolling(window=7, min_periods=1).mean()
+        df["rolling_std_7d"] = df["amount"].rolling(window=7, min_periods=1).std().fillna(0)
 
         # 準備特徵矩陣
         features = [
@@ -252,9 +238,7 @@ class CostPredictor:
 
         # 計算特徵重要性
         feature_importance = dict(zip(features, model.feature_importances_))
-        logger.info(
-            f"{category.value} 模型訓練完成，特徵重要性: {feature_importance}"
-        )
+        logger.info(f"{category.value} 模型訓練完成，特徵重要性: {feature_importance}")
 
     async def predict_future_costs(
         self, category: CostCategory, days_ahead: int = 30
@@ -267,10 +251,7 @@ class CostPredictor:
         model = self.models[category]
 
         # 生成未來時間點的特徵
-        future_dates = [
-            datetime.utcnow() + timedelta(days=i)
-            for i in range(1, days_ahead + 1)
-        ]
+        future_dates = [datetime.utcnow() + timedelta(days=i) for i in range(1, days_ahead + 1)]
 
         predictions = []
 
@@ -336,9 +317,7 @@ class CostPredictor:
         else:
             return "stable"
 
-    async def _analyze_cost_factors(
-        self, category: CostCategory
-    ) -> Dict[str, float]:
+    async def _analyze_cost_factors(self, category: CostCategory) -> Dict[str, float]:
         """分析成本影響因素"""
 
         if category not in self.models:
@@ -363,9 +342,7 @@ class CostPredictor:
 class CostOptimizer:
     """成本優化器"""
 
-    def __init__(
-        self, cost_collector: CostDataCollector, cost_predictor: CostPredictor
-    ):
+    def __init__(self, cost_collector: CostDataCollector, cost_predictor: CostPredictor):
         self.cost_collector = cost_collector
         self.cost_predictor = cost_predictor
         self.optimization_rules = {}
@@ -432,9 +409,7 @@ class CostOptimizer:
         # 獲取最近30天的成本數據
         end_date = datetime.utcnow()
         start_date = end_date - timedelta(days=30)
-        cost_data = await self.cost_collector.get_cost_data(
-            start_date, end_date
-        )
+        cost_data = await self.cost_collector.get_cost_data(start_date, end_date)
 
         # 按類別分析成本
         category_costs = {}
@@ -449,10 +424,8 @@ class CostOptimizer:
             avg_daily_cost = total_cost / 30
 
             if category in self.optimization_rules:
-                category_recommendations = (
-                    await self._generate_category_recommendations(
-                        category, total_cost, avg_daily_cost, strategy
-                    )
+                category_recommendations = await self._generate_category_recommendations(
+                    category, total_cost, avg_daily_cost, strategy
                 )
                 recommendations.extend(category_recommendations)
 
@@ -475,9 +448,7 @@ class CostOptimizer:
 
         for rule_name, rule_config in rules.items():
             # 計算潛在節省
-            potential_savings = (
-                total_cost * rule_config["potential_savings_rate"]
-            )
+            potential_savings = total_cost * rule_config["potential_savings_rate"]
 
             # 根據策略調整建議優先級
             if strategy == OptimizationStrategy.COST_FIRST:
@@ -504,9 +475,7 @@ class CostOptimizer:
 
         return recommendations
 
-    def _assess_risk_level(
-        self, rule_name: str, category: CostCategory
-    ) -> str:
+    def _assess_risk_level(self, rule_name: str, category: CostCategory) -> str:
         """評估風險等級"""
         high_risk_rules = ["spot_instances", "aggressive_caching"]
         medium_risk_rules = ["auto_scaling", "model_selection"]
@@ -523,9 +492,7 @@ class CostOptimizer:
         effort_to_days = {"low": 3, "medium": 7, "high": 14}
         return effort_to_days.get(implementation_effort, 7)
 
-    def _generate_action_items(
-        self, rule_name: str, category: CostCategory
-    ) -> List[str]:
+    def _generate_action_items(self, rule_name: str, category: CostCategory) -> List[str]:
         """生成行動項目"""
         action_templates = {
             "model_selection": [
@@ -542,9 +509,7 @@ class CostOptimizer:
             "auto_scaling": ["配置HPA規則", "設置性能閾值", "實施預測性擴展"],
         }
 
-        return action_templates.get(
-            rule_name, ["分析當前配置", "制定優化計劃", "實施並監控"]
-        )
+        return action_templates.get(rule_name, ["分析當前配置", "制定優化計劃", "實施並監控"])
 
 
 class CostAnomalyDetector:
@@ -554,17 +519,13 @@ class CostAnomalyDetector:
         self.cost_collector = cost_collector
         self.anomaly_threshold = 2.0  # 標準差倍數
 
-    async def detect_anomalies(
-        self, lookback_days: int = 7
-    ) -> List[Dict[str, Any]]:
+    async def detect_anomalies(self, lookback_days: int = 7) -> List[Dict[str, Any]]:
         """檢測成本異常"""
 
         end_date = datetime.utcnow()
         start_date = end_date - timedelta(days=lookback_days)
 
-        cost_data = await self.cost_collector.get_cost_data(
-            start_date, end_date
-        )
+        cost_data = await self.cost_collector.get_cost_data(start_date, end_date)
 
         # 按服務分組
         service_costs = {}
@@ -578,9 +539,7 @@ class CostAnomalyDetector:
         anomalies = []
 
         for service, costs in service_costs.items():
-            service_anomalies = await self._detect_service_anomalies(
-                service, costs
-            )
+            service_anomalies = await self._detect_service_anomalies(service, costs)
             anomalies.extend(service_anomalies)
 
         return anomalies
@@ -649,9 +608,7 @@ class BudgetManager:
         budget_key = f"budget:{period}:{budget_config['category']}"
         self.redis_client.set(budget_key, json.dumps(budget_config))
 
-        logger.info(
-            f"設置 {period} 預算: ${amount} ({budget_config['category']})"
-        )
+        logger.info(f"設置 {period} 預算: ${amount} ({budget_config['category']})")
 
     async def check_budget_status(self) -> List[Dict[str, Any]]:
         """檢查預算狀態"""
@@ -709,25 +666,17 @@ class BudgetManager:
         end_date = datetime.utcnow()
 
         if period == "daily":
-            start_date = end_date.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            start_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
         elif period == "weekly":
             days_since_monday = end_date.weekday()
             start_date = end_date - timedelta(days=days_since_monday)
-            start_date = start_date.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
         elif period == "monthly":
-            start_date = end_date.replace(
-                day=1, hour=0, minute=0, second=0, microsecond=0
-            )
+            start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         else:
             raise ValueError(f"不支持的期間類型: {period}")
 
-        cost_data = await self.cost_collector.get_cost_data(
-            start_date, end_date, category=category
-        )
+        cost_data = await self.cost_collector.get_cost_data(start_date, end_date, category=category)
 
         return sum(record.amount for record in cost_data)
 
@@ -751,9 +700,7 @@ class IntelligentCostOptimizer:
     def __init__(self):
         self.cost_collector = CostDataCollector()
         self.cost_predictor = CostPredictor(self.cost_collector)
-        self.cost_optimizer = CostOptimizer(
-            self.cost_collector, self.cost_predictor
-        )
+        self.cost_optimizer = CostOptimizer(self.cost_collector, self.cost_predictor)
         self.anomaly_detector = CostAnomalyDetector(self.cost_collector)
         self.budget_manager = BudgetManager(self.cost_collector)
 
@@ -778,19 +725,13 @@ class IntelligentCostOptimizer:
             predictions = {}
             for category in CostCategory:
                 try:
-                    prediction = (
-                        await self.cost_predictor.predict_future_costs(
-                            category, 30
-                        )
-                    )
+                    prediction = await self.cost_predictor.predict_future_costs(category, 30)
                     predictions[category.value] = asdict(prediction)
                 except Exception as e:
                     logger.warning(f"無法預測 {category.value} 的成本: {e}")
 
             # 2. 優化建議
-            recommendations = (
-                await self.cost_optimizer.generate_optimization_recommendations()
-            )
+            recommendations = await self.cost_optimizer.generate_optimization_recommendations()
 
             # 3. 異常檢測
             anomalies = await self.anomaly_detector.detect_anomalies()
@@ -799,9 +740,7 @@ class IntelligentCostOptimizer:
             budget_status = await self.budget_manager.check_budget_status()
 
             # 5. 計算總體節省潛力
-            total_potential_savings = sum(
-                rec.potential_savings for rec in recommendations
-            )
+            total_potential_savings = sum(rec.potential_savings for rec in recommendations)
 
             analysis_result = {
                 "timestamp": datetime.utcnow().isoformat(),
@@ -813,11 +752,7 @@ class IntelligentCostOptimizer:
                 "summary": {
                     "total_recommendations": len(recommendations),
                     "high_priority_recommendations": len(
-                        [
-                            r
-                            for r in recommendations
-                            if r.potential_savings > 100
-                        ]
+                        [r for r in recommendations if r.potential_savings > 100]
                     ),
                     "anomalies_detected": len(anomalies),
                     "budgets_exceeded": len(
@@ -826,9 +761,7 @@ class IntelligentCostOptimizer:
                 },
             }
 
-            logger.info(
-                f"綜合分析完成 - 潛在節省: ${total_potential_savings:.2f}"
-            )
+            logger.info(f"綜合分析完成 - 潛在節省: ${total_potential_savings:.2f}")
             return analysis_result
 
         except Exception as e:

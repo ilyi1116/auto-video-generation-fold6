@@ -53,7 +53,7 @@ class TestMusicgenerationRouter:
     def test_music_generation_unauthorized_access(self):
         """測試未授權訪問"""
         # TODO: 如果端點需要認證，測試未授權訪問
-        response = client.get("/api/v1/music_generation")
+        client.get("/api/v1/music_generation")
         # TODO: 更新預期狀態碼（如果需要認證應該是 401）
         # assert response.status_code == 401
 
@@ -61,12 +61,10 @@ class TestMusicgenerationRouter:
     async def test_music_generation_async_operation(self):
         """測試異步操作"""
         # TODO: 如果有異步操作需要測試
-        pass
 
     def test_music_generation_error_handling(self):
         """測試錯誤處理"""
         # TODO: 測試各種錯誤情況
-        pass
 
 
 # TODO: 添加更多特定於 music_generation 的測試

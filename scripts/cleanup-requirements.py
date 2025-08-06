@@ -45,10 +45,7 @@ class RequirementsCleanup:
             path_str = str(relative_path)
 
             # 保護遺留和備份目錄
-            if any(
-                pattern in path_str
-                for pattern in ["legacy/", "backup_", "src/services/"]
-            ):
+            if any(pattern in path_str for pattern in ["legacy/", "backup_", "src/services/"]):
                 categories["protect"].append(file_path)
             # 舊 services/ 結構 - 可以移除
             elif path_str.startswith("services/"):
@@ -57,10 +54,7 @@ class RequirementsCleanup:
             elif path_str.startswith("backend/"):
                 categories["remove"].append(file_path)
             # 舊專案根目錄結構 - 可以移除
-            elif any(
-                pattern in path_str
-                for pattern in ["auto_generate_video_fold", ".old/"]
-            ):
+            elif any(pattern in path_str for pattern in ["auto_generate_video_fold", ".old/"]):
                 categories["remove"].append(file_path)
             # 基礎設施監控文件 - 可以移除（已統一到 pyproject.toml）
             elif path_str.startswith("infra/monitoring/"):
@@ -129,9 +123,7 @@ class RequirementsCleanup:
 
         for file_path in categories["remove"]:
             if self.safe_remove_file(file_path):
-                print(
-                    f"   ✅ 已移除: {file_path.relative_to(self.project_root)}"
-                )
+                print(f"   ✅ 已移除: {file_path.relative_to(self.project_root)}")
                 removed_count += 1
             else:
                 failed_count += 1
@@ -162,9 +154,7 @@ class RequirementsCleanup:
                     # 檢查目錄是否為空
                     if not any(dir_path.iterdir()):
                         dir_path.rmdir()
-                        print(
-                            f"   ✅ 已移除空目錄: {dir_path.relative_to(self.project_root)}"
-                        )
+                        print(f"   ✅ 已移除空目錄: {dir_path.relative_to(self.project_root)}")
                 except OSError:
                     # 目錄不為空，跳過
                     pass

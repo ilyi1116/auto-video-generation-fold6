@@ -85,16 +85,10 @@ class DockerOptimizer:
             if line.startswith("FROM "):
                 image = line.split()[1]
                 if ":" not in image or image.endswith(":latest"):
-                    analysis["security_issues"].append(
-                        "使用具體版本標籤而非 latest"
-                    )
+                    analysis["security_issues"].append("使用具體版本標籤而非 latest")
                 if "ubuntu" in image or "debian" in image:
-                    analysis["size_issues"].append(
-                        f"考慮使用更小的基礎映像，當前: {image}"
-                    )
-                    analysis["recommendations"].append(
-                        "建議使用 alpine 或 distroless 映像"
-                    )
+                    analysis["size_issues"].append(f"考慮使用更小的基礎映像，當前: {image}")
+                    analysis["recommendations"].append("建議使用 alpine 或 distroless 映像")
 
         # 檢查 RUN 指令
         consecutive_runs = 0
@@ -102,13 +96,8 @@ class DockerOptimizer:
             line = line.strip()
             if line.startswith("RUN "):
                 consecutive_runs += 1
-                if (
-                    "apt-get update" in line
-                    and "&& rm -rf /var/lib/apt/lists/*" not in line
-                ):
-                    analysis["size_issues"].append(
-                        "RUN apt-get update 後應清理快取"
-                    )
+                if "apt-get update" in line and "&& rm -rf /var/lib/apt/lists/*" not in line:
+                    analysis["size_issues"].append("RUN apt-get update 後應清理快取")
             else:
                 if consecutive_runs > 1:
                     analysis["performance_issues"].append(
@@ -120,9 +109,7 @@ class DockerOptimizer:
         for line in lines:
             line = line.strip()
             if line.startswith("COPY ") and ". " in line:
-                analysis["size_issues"].append(
-                    "避免 COPY . 複製不必要的文件，使用 .dockerignore"
-                )
+                analysis["size_issues"].append("避免 COPY . 複製不必要的文件，使用 .dockerignore")
 
         # 檢查用戶配置
         has_user = any(line.strip().startswith("USER ") for line in lines)
@@ -131,9 +118,7 @@ class DockerOptimizer:
 
         return analysis
 
-    def build_and_analyze(
-        self, service_name: str, dockerfile_path: str = "Dockerfile"
-    ) -> Dict:
+    def build_and_analyze(self, service_name: str, dockerfile_path: str = "Dockerfile") -> Dict:
         """建構映像並分析大小"""
         service_dir = self.services_dir / service_name
         dockerfile = service_dir / dockerfile_path
@@ -211,8 +196,7 @@ class DockerOptimizer:
                     layers.append(
                         {
                             "size": layer_info.get("Size", "0B"),
-                            "created_by": layer_info.get("CreatedBy", "")[:100]
-                            + "...",
+                            "created_by": layer_info.get("CreatedBy", "")[:100] + "...",
                             "comment": layer_info.get("Comment", ""),
                         }
                     )
@@ -228,15 +212,10 @@ class DockerOptimizer:
         # 查找所有服務目錄
         if self.services_dir.exists():
             for service_dir in self.services_dir.iterdir():
-                if (
-                    service_dir.is_dir()
-                    and (service_dir / "Dockerfile").exists()
-                ):
+                if service_dir.is_dir() and (service_dir / "Dockerfile").exists():
                     service_name = service_dir.name
                     print(f"\n📊 分析服務: {service_name}")
-                    results[service_name] = self.build_and_analyze(
-                        service_name
-                    )
+                    results[service_name] = self.build_and_analyze(service_name)
 
         return results
 
@@ -280,9 +259,7 @@ class DockerOptimizer:
                     for rec in analysis["recommendations"]:
                         report.append(f"  - {rec}")
             else:
-                report.append(
-                    f"- **建構失敗**: {result.get('error', 'Unknown error')}"
-                )
+                report.append(f"- **建構失敗**: {result.get('error', 'Unknown error')}")
 
             report.append("")
 
@@ -322,9 +299,7 @@ def main():
         help="輸出報告文件路徑",
         default="docker-optimization-report.md",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="詳細輸出"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()
 
@@ -358,11 +333,7 @@ def main():
         print(report)
 
     # 檢查是否有建構失敗
-    failed_services = [
-        name
-        for name, result in results.items()
-        if not result.get("build_success")
-    ]
+    failed_services = [name for name, result in results.items() if not result.get("build_success")]
 
     if failed_services:
         print(f"\n⚠️  建構失敗的服務: {', '.join(failed_services)}")

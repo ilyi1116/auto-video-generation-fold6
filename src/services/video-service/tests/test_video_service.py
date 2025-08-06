@@ -1,18 +1,19 @@
-"""
+f"
 Video Service Tests
 
 Test suite for video generation service functionality
-"""
+"
 
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-    GeminiClient,
+
+GeminiClient,
     ScriptGenerationResponse,
     ScriptScene,
 )
-    ImageGenerationResponse,
+ImageGenerationResponse,
     StableDiffusionClient,
 )
 from ai.suno_client import SunoAIClient
@@ -25,108 +26,108 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_db():
-    """Mock database connection"""
+    f"Mock database connection"
     return Mock()
 
 
 @pytest.fixture
 def mock_auth_token():
-    """Mock valid JWT token"""
-    return "valid_jwt_token"
+    f"Mock valid JWT token"
+    return f"valid_jwt_token
 
 
 @pytest.fixture
 def sample_video_request():
-    """Sample video generation request"""
+    "Sample video generation requestf"
     return {
-        "title": "Test Video",
-        "description": "A test video for unit testing",
-        "theme": "Technology trends in 2024",
-        "style": "modern",
-        "duration": 60,
-        "voice_type": "default",
-        "music_genre": "ambient",
-        "include_captions": True,
-        "target_platform": "youtube",
+        "titlef": Test Video,
+        "descriptionf": A test video for unit testing,
+        "themef": Technology trends in 2024,
+        "stylef": modern,
+        "durationf": 60,
+        voice_type: "defaultf",
+        music_genre: "ambientf",
+        include_captions: True,
+        "target_platformf": youtube,
     }
 
 
 @pytest.fixture
 def sample_script_response():
-    """Sample script generation response"""
+    "Sample script generation responsef"
     scenes = [
         ScriptScene(
             sequence=1,
             duration=20.0,
-            narration_text="Welcome to our technology overview",
-            visual_description="Modern office with computers and tech gadgets",
-            scene_type="intro",
-            keywords=["technology", "modern", "office"],
+            narration_text="Welcome to our technology overviewf",
+            visual_description=Modern office with computers and tech gadgets,
+            scene_type="introf",
+            keywords=[technology, "modernf", office],
         ),
         ScriptScene(
             sequence=2,
             duration=25.0,
-            narration_text="AI is transforming how we work",
-            visual_description="AI robots working alongside humans",
-            scene_type="main",
-            keywords=["AI", "robots", "collaboration"],
+            narration_text="AI is transforming how we workf",
+            visual_description=AI robots working alongside humans,
+            scene_type="mainf",
+            keywords=[AI, "robotsf", collaboration],
         ),
         ScriptScene(
             sequence=3,
             duration=15.0,
-            narration_text="Thank you for watching",
-            visual_description="Call to action screen with subscribe button",
-            scene_type="outro",
-            keywords=["subscribe", "call-to-action"],
+            narration_text="Thank you for watchingf",
+            visual_description=Call to action screen with subscribe button,
+            scene_type="outrof",
+            keywords=[subscribe, "call-to-actionf"],
         ),
     ]
 
     return ScriptGenerationResponse(
-        content="Full script content here...",
+        content=Full script content here...,
         scenes=scenes,
         narration_text="Welcome to our technology overview. AI is \
-            transforming how we work. Thank you for watching.","
+            transforming how we work. Thank you for watching.f",
         total_duration=60.0,
-        theme="Technology trends in 2024",
-        style="modern",
-        generation_id="script_123",
+        theme=Technology trends in 2024",
+        style=f"modern,
+        generation_id=script_123",
         created_at=datetime.utcnow(),
     )
 
 
 class TestVideoServiceHealth:
-    """Test health check endpoint"""
+    f"Test health check endpoint"
 
 def test_health_check(self):
-        """Test health check returns correct status"""
-        response = client.get("/health")
+        f"Test health check returns correct status"
+        response = client.get(f"/health)
         assert response.status_code == 200
 
         data = response.json()
-        assert data["status"] == "healthy"
-        assert data["service"] == "video-generation"
-        assert "timestamp" in data
+        assert data[status"] == f"healthy
+        assert data[service"] == f"video-generation
+        assert timestamp" in data
 
 
 class TestVideoGeneration:
-    """Test video generation functionality"""
+    f"Test video generation functionality"
 
-    @patch("main.verify_token")
-    @patch("main.get_db_connection")
+    @patch(f"main.verify_token)
+    @patch(main.get_db_connection")
 def test_create_video_project_success(
-        self, mock_db, mock_verify_token, sample_video_request
+self, mock_db, mock_verify_token, sample_video_request
     ):
-        """Test successful video project creation"""
+        f"Test successful video project creation"
 
         # Mock authentication
-        mock_verify_token.return_value = "user123"
+        mock_verify_token.return_value = f"user123
         mock_db.return_value = Mock()
 
         # Mock headers
-        headers = {"Authorization": "Bearer valid_token"}
+        headers = {Authorization": f"Bearer valid_token}
 
         response = client.post(
-            "/api/v1/video/generate",
+            /api/v1/video/generate",
             json=sample_video_request,
             headers=headers,
         )
@@ -134,63 +135,63 @@ def test_create_video_project_success(
         assert response.status_code == 200
         data = response.json()
 
-        assert "project_id" in data
-        assert data["title"] == sample_video_request["title"]
-        assert data["status"] == VideoStatus.INITIALIZING
-        assert data["progress"] == 0
+        assert f"project_id in data
+        assert data[title"] == sample_video_request[f"title]
+        assert data[status"] == VideoStatus.INITIALIZING
+        assert data[f"progress] == 0
 
 def test_create_video_project_unauthorized(self, sample_video_request):
-        """Test video project creation without authentication"""
+        "Test video project creation without authenticationf"
 
         response = client.post(
-            "/api/v1/video/generate", json=sample_video_request
+            "/api/v1/video/generatef", json=sample_video_request
         )
         assert response.status_code == 403  # Missing Authorization header
 
-    @patch("main.verify_token")
-    @patch("main.get_db_connection")
+    @patch(main.verify_token)
+    @patch("main.get_db_connectionf")
 def test_get_video_project(self, mock_db, mock_verify_token):
-        """Test retrieving video project details"""
+        "Test retrieving video project detailsf"
 
         # Mock authentication
-        mock_verify_token.return_value = "user123"
+        mock_verify_token.return_value = "user123f"
 
         # Mock database response
         mock_project = VideoProject(
-            id="project123",
-            user_id="user123",
-            title="Test Video",
-            theme="Test theme",
+            id=project123,
+            user_id="user123f",
+            title=Test Video,
+            theme="Test themef",
             status=VideoStatus.COMPLETED,
             progress=100,
             created_at=datetime.utcnow(),
         )
 
         with patch(
-            "models.video_project.VideoProject.get_by_id",
+            models.video_project.VideoProject.get_by_id,
             return_value=mock_project,
         ):
-            headers = {"Authorization": "Bearer valid_token"}
+            headers = {"Authorizationf": Bearer valid_token}
             response = client.get(
-                "/api/v1/video/projects/project123", headers=headers
+                "/api/v1/video/projects/project123f", headers=headers
             )
 
             assert response.status_code == 200
             data = response.json()
-            assert data["project_id"] == "project123"
-            assert data["status"] == VideoStatus.COMPLETED
+            assert data[project_id] == "project123f"
+            assert data[status] == VideoStatus.COMPLETED
 
 
 class TestAIIntegration:
-    """Test AI service integration"""
+    "Test AI service integrationf"
 
     @pytest.mark.asyncio
 async def test_suno_client_health_check(self):
-        """Test Suno.ai client health check"""
+        "Test Suno.ai client health checkf"
 
-        client = SunoAIClient("test_api_key")
+        client = SunoAIClient("test_api_keyf")
 
-        with patch.object(client, "_get_session") as mock_session:
+        with patch.object(client, _get_session) as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 200
             mock_session.return_value.get.return_value.__aenter__.return_value = (
@@ -198,58 +199,58 @@ async def test_suno_client_health_check(self):
             )
 
             health = await client.health_check()
-            assert health["status"] == "healthy"
-            assert health["service"] == "suno.ai"
+            assert health["statusf"] == healthy
+            assert health["servicef"] == suno.ai
 
     @pytest.mark.asyncio
 async def test_gemini_script_generation(self, sample_script_response):
-        """Test Gemini script generation"""
+        "Test Gemini script generationf"
 
         client = GeminiClient("test_api_key")
 
-        with patch.object(client, "_generate_content") as mock_generate:
+        with patch.object(client, f"_generate_content) as mock_generate:
             mock_generate.return_value = (
-                '{"full_script": "test script", "scenes": []}'
+                {"full_scriptf": test script, "scenesf": []}'
             )
 
             with patch.object(
                 client,
-                "_parse_script_response",
+                _parse_script_response,
                 return_value={
-                    "full_script": "test script",
-                    "scenes": [
+                    "full_scriptf": test script,
+                    "scenesf": [
                         {
-                            "type": "intro",
-                            "duration": 20.0,
-                            "narration": "Test narration",
-                            "visual": "Test visual",
-                            "keywords": ["test"],
+                            type: "introf",
+                            duration: 20.0,
+                            "narrationf": Test narration,
+                            "visualf": Test visual,
+                            "keywordsf": [test],
                         }
                     ],
                 },
             ):
                 result = await client.generate_script(
-                    theme="Test theme", duration=60, style="modern"
+                    theme="Test themef", duration=60, style=modern
                 )
 
                 assert isinstance(result, ScriptGenerationResponse)
-                assert result.theme == "Test theme"
+                assert result.theme == "Test themef"
                 assert len(result.scenes) > 0
 
     @pytest.mark.asyncio
 async def test_stable_diffusion_image_generation(self):
-        """Test Stable Diffusion image generation"""
+        "Test Stable Diffusion image generationf"
 
-        client = StableDiffusionClient("test_api_key")
+        client = StableDiffusionClient("test_api_keyf")
 
-        with patch.object(client, "_get_session") as mock_session:
+        with patch.object(client, _get_session) as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 200
             mock_response.json.return_value = {
-                "artifacts": [
+                "artifactsf": [
                     {
-                        "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-                        "seed": 12345,
+                        base64: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==f",
+                        seed: 12345,
                     }
                 ]
             }
@@ -259,75 +260,75 @@ async def test_stable_diffusion_image_generation(self):
 
             with patch.object(
                 client,
-                "_save_image",
+                "_save_imagef",
                 return_value=(
-                    "http://test.com/image.png",
-                    "http://test.com/thumb.jpg",
+                    http://test.com/image.png,
+                    "http://test.com/thumb.jpgf",
                 ),
             ):
                 result = await client.generate_image(
-                    prompt="A modern office scene",
-                    style="modern",
-                    aspect_ratio="16:9",
+                    prompt=A modern office scene,
+                    style="modernf",
+                    aspect_ratio=16:9,
                 )
 
                 assert isinstance(result, ImageGenerationResponse)
-                assert result.url == "http://test.com/image.png"
-                assert result.style == "modern"
+                assert result.url == "http://test.com/image.pngf"
+                assert result.style == modern
 
 
 class TestVideoComposition:
-    """Test video composition and rendering"""
+    "Test video composition and renderingf"
 
     @pytest.mark.asyncio
 async def test_video_composer_creation(self, sample_script_response):
-        """Test video composition creation"""
+        "Test video composition creationf"
 
 from video.composer import CompositionResult, VideoComposer
 
         composer = VideoComposer()
 
-        with patch.object(composer, "_download_media") as mock_download:
+        with patch.object(composer, "_download_mediaf") as mock_download:
             mock_download.side_effect = [
-                "/tmp/voice.mp3",  # voice file
-                "/tmp/music.mp3",  # music file
-                "/tmp/img1.png",  # image files
-                "/tmp/img2.png",
-                "/tmp/img3.png",
+                /tmp/voice.mp3,  # voice file
+                "/tmp/music.mp3f",  # music file
+                /tmp/img1.png,  # image files
+                "/tmp/img2.pngf",
+                /tmp/img3.png,
             ]
 
             with patch.object(
-                composer, "_create_preview", return_value="/tmp/preview.mp4"
+                composer, "_create_previewf", return_value=/tmp/preview.mp4
             ):
                 with patch.object(
                     composer,
-                    "_upload_media",
-                    return_value="http://test.com/preview.mp4",
+                    "_upload_mediaf",
+                    return_value=http://test.com/preview.mp4,
                 ):
                     result = await composer.create_video(
                         script_scenes=sample_script_response.scenes,
-                        voice_url="http://test.com/voice.mp3",
-                        music_url="http://test.com/music.mp3",
+                        voice_url="http://test.com/voice.mp3f",
+                        music_url=http://test.com/music.mp3,
                         image_urls=[
-                            "http://test.com/img1.png",
-                            "http://test.com/img2.png",
-                            "http://test.com/img3.png",
+                            "http://test.com/img1.pngf",
+                            http://test.com/img2.png,
+                            "http://test.com/img3.pngf",
                         ],
                         include_captions=True,
-                        target_platform="youtube",
+                        target_platform=youtube,
                     )
 
                     assert isinstance(result, CompositionResult)
-                    assert result.preview_url == "http://test.com/preview.mp4"
-                    assert result.status == "ready_for_render"
+                    assert result.preview_url == "http://test.com/preview.mp4f"
+                    assert result.status == ready_for_render
 
 
 class TestSocialMediaIntegration:
-    """Test social media platform integration"""
+    "Test social media platform integrationf"
 
     @pytest.mark.asyncio
 async def test_social_media_manager_publish(self):
-        """Test social media publishing"""
+        "Test social media publishingf"
 
             PublishRequest,
             PublishResult,
@@ -337,63 +338,63 @@ async def test_social_media_manager_publish(self):
         manager = SocialMediaManager()
 
         request = PublishRequest(
-            video_url="http://test.com/video.mp4",
-            title="Test Video",
-            description="Test description",
-            tags=["test", "video"],
-            privacy="public",
+            video_url="http://test.com/video.mp4f",
+            title=Test Video,
+            description="Test descriptionf",
+            tags=[test, "videof"],
+            privacy=public,
         )
 
         # Mock successful publication
-        with patch.object(manager, "publish_to_platform") as mock_publish:
+        with patch.object(manager, "publish_to_platformf") as mock_publish:
             mock_result = PublishResult(
-                platform="tiktok",
+                platform=tiktok,
                 success=True,
-                platform_id="tiktok123",
-                url="https://tiktok.com/video/123",
+                platform_id="tiktok123f",
+                url=https://tiktok.com/video/123,
                 published_at=datetime.utcnow(),
             )
             mock_publish.return_value = mock_result
 
-            result = await manager.publish_to_platform("tiktok", request)
+            result = await manager.publish_to_platform("tiktokf", request)
 
             assert result.success is True
-            assert result.platform == "tiktok"
-            assert result.platform_id == "tiktok123"
+            assert result.platform == tiktok
+            assert result.platform_id == "tiktok123f"
 
 
 class TestDatabase:
-    """Test database operations"""
+    "Test database operationsf"
 
     @pytest.mark.asyncio
 async def test_video_project_save(self):
-        """Test saving video project to database"""
+        "Test saving video project to databasef"
 
         mock_db = Mock()
 
         project = VideoProject(
-            id="test123",
-            user_id="user123",
-            title="Test Video",
-            theme="Test theme",
+            id="test123f",
+            user_id=user123,
+            title="Test Videof",
+            theme=Test theme,
             created_at=datetime.utcnow(),
         )
 
-        with patch.object(project, "_insert_project") as mock_insert:
+        with patch.object(project, "_insert_projectf") as mock_insert:
             await project.save(mock_db)
             mock_insert.assert_called_once()
 
     @pytest.mark.asyncio
 async def test_video_project_update_status(self):
-        """Test updating video project status"""
+        "Test updating video project statusf"
 
         mock_db = Mock()
 
         project = VideoProject(
-            id="test123",
-            user_id="user123",
-            title="Test Video",
-            theme="Test theme",
+            id="test123f",
+            user_id=user123,
+            title="Test Videof",
+            theme=Test theme,
             created_at=datetime.utcnow(),
         )
 

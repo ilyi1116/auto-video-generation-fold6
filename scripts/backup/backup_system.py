@@ -145,14 +145,10 @@ class BackupSystem:
                 "s3",
                 region_name=s3_config.get("region"),
                 aws_access_key_id=os.getenv(
-                    s3_config.get("access_key", "")
-                    .replace("${", "")
-                    .replace("}", "")
+                    s3_config.get("access_key", "").replace("${", "").replace("}", "")
                 ),
                 aws_secret_access_key=os.getenv(
-                    s3_config.get("secret_key", "")
-                    .replace("${", "")
-                    .replace("}", "")
+                    s3_config.get("secret_key", "").replace("${", "").replace("}", "")
                 ),
             )
         return None
@@ -252,9 +248,7 @@ class BackupSystem:
         except Exception:
             return False
 
-    async def _backup_database(
-        self, job: BackupJob, start_time: datetime
-    ) -> BackupResult:
+    async def _backup_database(self, job: BackupJob, start_time: datetime) -> BackupResult:
         """備份資料庫"""
         timestamp = start_time.strftime("%Y%m%d_%H%M%S")
         backup_filename = f"{job.name}_{timestamp}.sql"
@@ -325,9 +319,7 @@ class BackupSystem:
                 backup_path.unlink()
             raise e
 
-    async def _backup_files(
-        self, job: BackupJob, start_time: datetime
-    ) -> BackupResult:
+    async def _backup_files(self, job: BackupJob, start_time: datetime) -> BackupResult:
         """備份檔案系統"""
         timestamp = start_time.strftime("%Y%m%d_%H%M%S")
         backup_filename = f"{job.name}_{timestamp}.tar"
@@ -373,9 +365,7 @@ class BackupSystem:
                 backup_path.unlink()
             raise e
 
-    async def _backup_container(
-        self, job: BackupJob, start_time: datetime
-    ) -> BackupResult:
+    async def _backup_container(self, job: BackupJob, start_time: datetime) -> BackupResult:
         """備份 Docker 容器"""
         timestamp = start_time.strftime("%Y%m%d_%H%M%S")
         backup_filename = f"{job.name}_{timestamp}.tar"
@@ -407,9 +397,7 @@ class BackupSystem:
                 await gzip_process.wait()
             else:
                 with open(backup_path, "wb") as f:
-                    process = await asyncio.create_subprocess_exec(
-                        *export_cmd, stdout=f
-                    )
+                    process = await asyncio.create_subprocess_exec(*export_cmd, stdout=f)
                     await process.wait()
 
             if job.encryption:
@@ -439,9 +427,7 @@ class BackupSystem:
                 backup_path.unlink()
             raise e
 
-    async def _backup_configuration(
-        self, job: BackupJob, start_time: datetime
-    ) -> BackupResult:
+    async def _backup_configuration(self, job: BackupJob, start_time: datetime) -> BackupResult:
         """備份配置檔案"""
         timestamp = start_time.strftime("%Y%m%d_%H%M%S")
         backup_filename = f"{job.name}_{timestamp}.tar.gz"
@@ -532,9 +518,7 @@ class BackupSystem:
             raise Exception("Backup file not found")
 
         # 重新計算校驗和
-        current_checksum = await self._calculate_checksum(
-            Path(result.backup_path)
-        )
+        current_checksum = await self._calculate_checksum(Path(result.backup_path))
 
         if current_checksum != result.checksum:
             raise Exception("Backup verification failed: checksum mismatch")
@@ -591,13 +575,9 @@ class BackupSystem:
                 await process.wait()
 
                 if process.returncode == 0:
-                    self.logger.info(
-                        f"Backup synced to remote: {backup_file.name}"
-                    )
+                    self.logger.info(f"Backup synced to remote: {backup_file.name}")
                 else:
-                    raise Exception(
-                        f"rsync failed with code {process.returncode}"
-                    )
+                    raise Exception(f"rsync failed with code {process.returncode}")
 
             except Exception as e:
                 self.logger.error(f"Failed to sync to remote: {e}")
@@ -624,9 +604,7 @@ class BackupSystem:
                         if response.status == 200:
                             self.logger.info("Backup alert sent successfully")
                         else:
-                            self.logger.error(
-                                f"Failed to send backup alert: {response.status}"
-                            )
+                            self.logger.error(f"Failed to send backup alert: {response.status}")
 
             except Exception as e:
                 self.logger.error(f"Failed to send backup alert: {e}")
@@ -636,9 +614,7 @@ class BackupSystem:
         self.logger.info(f"Starting disaster recovery: {recovery_plan}")
 
         # 載入恢復計劃
-        plan_path = Path(
-            f"./scripts/backup/recovery_plans/{recovery_plan}.yaml"
-        )
+        plan_path = Path(f"./scripts/backup/recovery_plans/{recovery_plan}.yaml")
 
         if not plan_path.exists():
             raise Exception(f"Recovery plan not found: {recovery_plan}")

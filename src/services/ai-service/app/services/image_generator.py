@@ -52,9 +52,7 @@ class ImageGenerator:
 
     def is_healthy(self) -> bool:
         """Check if image generation service is healthy"""
-        return self.initialized and (
-            settings.stability_api_key or settings.openai_api_key
-        )
+        return self.initialized and (settings.stability_api_key or settings.openai_api_key)
 
     async def generate_image(
         self,
@@ -86,8 +84,7 @@ class ImageGenerator:
             # Generate image using available service
             image_data = await self._generate_with_stability(
                 prompt=enhanced_prompt,
-                negative_prompt=negative_prompt
-                or self._get_default_negative_prompt(),
+                negative_prompt=negative_prompt or self._get_default_negative_prompt(),
                 aspect_ratio=aspect_ratio,
                 resolution=resolution,
                 seed=seed,
@@ -96,9 +93,7 @@ class ImageGenerator:
             )
 
             # Save image and get URL
-            image_url = await self._save_image(
-                image_data, image_id, "generated"
-            )
+            image_url = await self._save_image(image_data, image_id, "generated")
 
             generation_time = time.time() - start_time
 
@@ -130,9 +125,7 @@ class ImageGenerator:
             return result
 
         except Exception as e:
-            logger.error(
-                "Image generation failed", prompt=prompt[:50], error=str(e)
-            )
+            logger.error("Image generation failed", prompt=prompt[:50], error=str(e))
             raise
 
     async def generate_variations(
@@ -166,9 +159,7 @@ class ImageGenerator:
                 )
 
                 # Save variation
-                variation_url = await self._save_image(
-                    variation_data, variation_id, "variation"
-                )
+                variation_url = await self._save_image(variation_data, variation_id, "variation")
 
                 variations.append(
                     {
@@ -200,9 +191,7 @@ class ImageGenerator:
             logger.error("Image variation generation failed", error=str(e))
             raise
 
-    async def upscale_image(
-        self, image_url: str, scale_factor: int = 2
-    ) -> Dict[str, Any]:
+    async def upscale_image(self, image_url: str, scale_factor: int = 2) -> Dict[str, Any]:
         """Upscale image resolution using AI"""
         try:
             logger.info(
@@ -222,15 +211,11 @@ class ImageGenerator:
             new_height = original_height * scale_factor
 
             # Upscale using Real-ESRGAN or similar service
-            upscaled_data = await self._upscale_with_ai(
-                original_image, scale_factor
-            )
+            upscaled_data = await self._upscale_with_ai(original_image, scale_factor)
 
             # Save upscaled image
             upscale_id = str(uuid.uuid4())
-            upscaled_url = await self._save_image(
-                upscaled_data, upscale_id, "upscaled"
-            )
+            upscaled_url = await self._save_image(upscaled_data, upscale_id, "upscaled")
 
             result = {
                 "upscale_id": upscale_id,
@@ -239,9 +224,7 @@ class ImageGenerator:
                 "scale_factor": scale_factor,
                 "original_dimensions": [original_width, original_height],
                 "upscaled_dimensions": [new_width, new_height],
-                "file_size_increase": round(
-                    len(upscaled_data) / len(original_image), 2
-                ),
+                "file_size_increase": round(len(upscaled_data) / len(original_image), 2),
             }
 
             logger.info("Image upscaling completed", scale_factor=scale_factor)
@@ -256,23 +239,17 @@ class ImageGenerator:
     ) -> Dict[str, Any]:
         """Enhance image quality using AI"""
         try:
-            logger.info(
-                "Enhancing image", image_url=image_url, type=enhancement_type
-            )
+            logger.info("Enhancing image", image_url=image_url, type=enhancement_type)
 
             # Download original image
             original_image = await self._download_image(image_url)
 
             # Enhance based on type
-            enhanced_data = await self._enhance_with_ai(
-                original_image, enhancement_type
-            )
+            enhanced_data = await self._enhance_with_ai(original_image, enhancement_type)
 
             # Save enhanced image
             enhance_id = str(uuid.uuid4())
-            enhanced_url = await self._save_image(
-                enhanced_data, enhance_id, "enhanced"
-            )
+            enhanced_url = await self._save_image(enhanced_data, enhance_id, "enhanced")
 
             result = {
                 "enhance_id": enhance_id,
@@ -377,9 +354,7 @@ class ImageGenerator:
             data["text_prompts[0][weight]"] = 1.0
 
         # Make request
-        response = await self.http_client.post(
-            url, headers=headers, files=files, data=data
-        )
+        response = await self.http_client.post(url, headers=headers, files=files, data=data)
         response.raise_for_status()
 
         # Extract image data
@@ -387,9 +362,7 @@ class ImageGenerator:
         image_b64 = result["artifacts"][0]["base64"]
         return base64.b64decode(image_b64)
 
-    async def _upscale_with_ai(
-        self, image_data: bytes, scale_factor: int
-    ) -> bytes:
+    async def _upscale_with_ai(self, image_data: bytes, scale_factor: int) -> bytes:
         """Upscale image using AI service (placeholder implementation)"""
         # This would integrate with Real-ESRGAN or similar service
         # For now, use simple PIL upscaling as fallback
@@ -401,9 +374,7 @@ class ImageGenerator:
             upscaled.save(output, format="JPEG", quality=95)
             return output.getvalue()
 
-    async def _enhance_with_ai(
-        self, image_data: bytes, enhancement_type: str
-    ) -> bytes:
+    async def _enhance_with_ai(self, image_data: bytes, enhancement_type: str) -> bytes:
         """Enhance image using AI service (placeholder implementation)"""
         # This would integrate with specialized enhancement services
         # For now, apply basic PIL enhancements
@@ -435,9 +406,7 @@ class ImageGenerator:
         response.raise_for_status()
         return response.content
 
-    async def _save_image(
-        self, image_data: bytes, image_id: str, category: str
-    ) -> str:
+    async def _save_image(self, image_data: bytes, image_id: str, category: str) -> str:
         """Save image to storage and return URL"""
         # This would integrate with your storage service (S3, MinIO, etc.)
         # For now, return a placeholder URL
@@ -520,9 +489,7 @@ class ImageGenerator:
         }
         return style_map.get(style)
 
-    def _calculate_quality_improvement(
-        self, original: bytes, enhanced: bytes
-    ) -> float:
+    def _calculate_quality_improvement(self, original: bytes, enhanced: bytes) -> float:
         """Calculate quality improvement score (placeholder)"""
         # This would use actual image quality metrics
         # For now, return a placeholder score

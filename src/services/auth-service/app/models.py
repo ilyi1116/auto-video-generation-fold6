@@ -5,7 +5,7 @@ from .database import Base
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "u"sers"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -27,6 +27,6 @@ class User(Base):
 
 def __repr__(self):
         return (
-            f"<User(id={self.id}, email='{self.email}', "
-            "username="{self.username}')>"'
+            "ff"<User(id={self.id}, email='{self.email}', 
+            username={self.username}")>"'
         )

@@ -68,16 +68,10 @@ class StandardResponse(BaseModel, Generic[T]):
     status: ResponseStatus = Field(description="回應狀態")
     message: str = Field(description="回應消息")
     data: Optional[T] = Field(default=None, description="回應數據")
-    errors: Optional[List[Dict[str, Any]]] = Field(
-        default=None, description="錯誤詳情"
-    )
+    errors: Optional[List[Dict[str, Any]]] = Field(default=None, description="錯誤詳情")
     warnings: Optional[List[str]] = Field(default=None, description="警告信息")
-    pagination: Optional[PaginationInfo] = Field(
-        default=None, description="分頁信息"
-    )
-    metadata: APIMetadata = Field(
-        default_factory=APIMetadata, description="元數據"
-    )
+    pagination: Optional[PaginationInfo] = Field(default=None, description="分頁信息")
+    metadata: APIMetadata = Field(default_factory=APIMetadata, description="元數據")
 
     class Config:
         use_enum_values = True
@@ -123,9 +117,7 @@ class ResponseBuilder:
         self.response_data["errors"] = errors
         return self
 
-    def add_error(
-        self, code: str, message: str, field: str = None
-    ) -> "ResponseBuilder":
+    def add_error(self, code: str, message: str, field: str = None) -> "ResponseBuilder":
         """添加錯誤"""
         if "errors" not in self.response_data:
             self.response_data["errors"] = []
@@ -234,14 +226,10 @@ def validation_error_response(
         for field, msg in field_errors.items()
     ]
 
-    return error_response(
-        message, errors, status.HTTP_422_UNPROCESSABLE_ENTITY, request_id
-    )
+    return error_response(message, errors, status.HTTP_422_UNPROCESSABLE_ENTITY, request_id)
 
 
-def not_found_response(
-    resource: str = "資源", request_id: str = None
-) -> StandardResponse:
+def not_found_response(resource: str = "資源", request_id: str = None) -> StandardResponse:
     """未找到回應"""
     return error_response(
         f"{resource}未找到",
@@ -251,9 +239,7 @@ def not_found_response(
     )
 
 
-def unauthorized_response(
-    message: str = "未授權訪問", request_id: str = None
-) -> StandardResponse:
+def unauthorized_response(message: str = "未授權訪問", request_id: str = None) -> StandardResponse:
     """未授權回應"""
     return error_response(
         message,
@@ -263,9 +249,7 @@ def unauthorized_response(
     )
 
 
-def forbidden_response(
-    message: str = "權限不足", request_id: str = None
-) -> StandardResponse:
+def forbidden_response(message: str = "權限不足", request_id: str = None) -> StandardResponse:
     """禁止訪問回應"""
     return error_response(
         message,
@@ -335,12 +319,8 @@ class StandardListQuery(BaseModel):
     page: int = Field(1, ge=1, description="頁碼")
     size: int = Field(20, ge=1, le=100, description="每頁大小")
     sort: Optional[str] = Field(None, description="排序字段")
-    order: Optional[str] = Field(
-        "asc", regex="^(asc|desc)$", description="排序方向"
-    )
-    search: Optional[str] = Field(
-        None, min_length=1, max_length=100, description="搜索關鍵字"
-    )
+    order: Optional[str] = Field("asc", regex="^(asc|desc)$", description="排序方向")
+    search: Optional[str] = Field(None, min_length=1, max_length=100, description="搜索關鍵字")
     filters: Optional[Dict[str, Any]] = Field(None, description="篩選條件")
 
 
@@ -464,8 +444,7 @@ class APIDocumentationGenerator:
                 "description": endpoint.description,
                 "tags": endpoint.tags,
                 "responses": {
-                    str(code): {"description": desc}
-                    for code, desc in endpoint.status_codes.items()
+                    str(code): {"description": desc} for code, desc in endpoint.status_codes.items()
                 },
             }
 
@@ -520,9 +499,7 @@ if __name__ == "__main__":
     print(success.to_json())
 
     # 錯誤回應
-    error = validation_error_response(
-        {"username": "用戶名不能為空", "email": "郵箱格式錯誤"}
-    )
+    error = validation_error_response({"username": "用戶名不能為空", "email": "郵箱格式錯誤"})
     print("\n驗證錯誤回應:")
     print(error.to_json())
 

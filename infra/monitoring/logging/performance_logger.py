@@ -18,12 +18,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 # 上下文變數
-correlation_id_context: ContextVar[Optional[str]] = ContextVar(
-    "correlation_id", default=None
-)
-request_id_context: ContextVar[Optional[str]] = ContextVar(
-    "request_id", default=None
-)
+correlation_id_context: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
+request_id_context: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
 
 
 class PerformanceLogger:
@@ -48,18 +44,14 @@ class PerformanceLogger:
         # 異步處理
         if enable_async:
             self.log_queue = queue.Queue(maxsize=buffer_size * 2)
-            self.worker_thread = threading.Thread(
-                target=self._worker_loop, daemon=True
-            )
+            self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
             self.worker_thread.start()
 
         # 標準日誌記錄器作為後備
         self.stdlib_logger = logging.getLogger(service_name)
         if not self.stdlib_logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             handler.setFormatter(formatter)
             self.stdlib_logger.addHandler(handler)
             self.stdlib_logger.setLevel(logging.INFO)
@@ -73,9 +65,7 @@ class PerformanceLogger:
             "last_flush_time": time.time(),
         }
 
-    def _create_log_entry(
-        self, level: str, message: str, **kwargs
-    ) -> Dict[str, Any]:
+    def _create_log_entry(self, level: str, message: str, **kwargs) -> Dict[str, Any]:
         """創建高效能日誌條目"""
         timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -123,9 +113,7 @@ class PerformanceLogger:
 
         for entry in entries:
             # 輸出為 JSON 格式
-            json_line = json.dumps(
-                entry, separators=(",", ":"), ensure_ascii=False
-            )
+            json_line = json.dumps(entry, separators=(",", ":"), ensure_ascii=False)
             print(json_line, flush=True)
 
         # 更新統計信息
@@ -183,9 +171,7 @@ class PerformanceLogger:
     def get_stats(self) -> Dict[str, Any]:
         """獲取效能統計"""
         with self.buffer_lock:
-            self.stats["buffer_utilization"] = (
-                len(self.log_buffer) / self.buffer_size
-            )
+            self.stats["buffer_utilization"] = len(self.log_buffer) / self.buffer_size
 
         return self.stats.copy()
 
@@ -209,9 +195,7 @@ class LogContext:
 
 
 # 裝飾器用於函數效能測量
-def measure_performance(
-    logger: PerformanceLogger = None, operation_name: str = None
-):
+def measure_performance(logger: PerformanceLogger = None, operation_name: str = None):
     """函數效能測量裝飾器"""
 
     def decorator(func):
@@ -367,9 +351,7 @@ class BatchLogProcessor:
 
         # 批量輸出
         for entry in self.batch:
-            json_line = json.dumps(
-                entry, separators=(",", ":"), ensure_ascii=False
-            )
+            json_line = json.dumps(entry, separators=(",", ":"), ensure_ascii=False)
             print(json_line, flush=True)
 
         self.batch.clear()
@@ -414,9 +396,7 @@ class PerformanceMonitor:
             stats = {}
             for operation, metric in self.metrics.items():
                 avg_time = metric["total_time"] / metric["count"]
-                recent_avg = sum(metric["recent_times"]) / len(
-                    metric["recent_times"]
-                )
+                recent_avg = sum(metric["recent_times"]) / len(metric["recent_times"])
 
                 stats[operation] = {
                     "count": metric["count"],

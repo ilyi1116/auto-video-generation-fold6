@@ -244,15 +244,9 @@ class AdvancedPerformanceMonitor:
                     container_stats = container.stats(stream=False)
                     stats[container.name] = {
                         "status": container.status,
-                        "cpu_usage": self._calculate_cpu_percent(
-                            container_stats
-                        ),
-                        "memory_usage": container_stats["memory_stats"].get(
-                            "usage", 0
-                        ),
-                        "memory_limit": container_stats["memory_stats"].get(
-                            "limit", 0
-                        ),
+                        "cpu_usage": self._calculate_cpu_percent(container_stats),
+                        "memory_usage": container_stats["memory_stats"].get("usage", 0),
+                        "memory_limit": container_stats["memory_stats"].get("limit", 0),
                         "network_rx": container_stats["networks"]
                         .get("eth0", {})
                         .get("rx_bytes", 0),
@@ -261,9 +255,7 @@ class AdvancedPerformanceMonitor:
                         .get("tx_bytes", 0),
                     }
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to get stats for container {container.name}: {e}"
-                    )
+                    logger.warning(f"Failed to get stats for container {container.name}: {e}")
 
             return stats
 
@@ -279,8 +271,7 @@ class AdvancedPerformanceMonitor:
                 - stats["precpu_stats"]["cpu_usage"]["total_usage"]
             )
             system_cpu_delta = (
-                stats["cpu_stats"]["system_cpu_usage"]
-                - stats["precpu_stats"]["system_cpu_usage"]
+                stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
             )
 
             if system_cpu_delta > 0 and cpu_delta > 0:
@@ -311,9 +302,7 @@ class AdvancedPerformanceMonitor:
                         response_time = (time.time() - start_time) * 1000  # ms
 
                         # Get additional metrics from service
-                        service_data = await self._get_service_stats(
-                            service, session
-                        )
+                        service_data = await self._get_service_stats(service, session)
 
                         metrics = ServiceMetrics(
                             service_name=service["name"],
@@ -323,18 +312,14 @@ class AdvancedPerformanceMonitor:
                             error_rate=service_data.get("error_rate", 0),
                             memory_usage=service_data.get("memory_usage", 0),
                             cpu_usage=service_data.get("cpu_usage", 0),
-                            active_connections=service_data.get(
-                                "active_connections", 0
-                            ),
+                            active_connections=service_data.get("active_connections", 0),
                             status_code=response.status,
                         )
 
                         service_metrics.append(metrics)
 
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to collect metrics for {service['name']}: {e}"
-                    )
+                    logger.warning(f"Failed to collect metrics for {service['name']}: {e}")
                     # Create error metric
                     error_metric = ServiceMetrics(
                         service_name=service["name"],
@@ -351,15 +336,11 @@ class AdvancedPerformanceMonitor:
 
         return service_metrics
 
-    async def _get_service_stats(
-        self, service: Dict, session: aiohttp.ClientSession
-    ) -> Dict:
+    async def _get_service_stats(self, service: Dict, session: aiohttp.ClientSession) -> Dict:
         """Get detailed service statistics"""
         try:
             stats_url = f"http://localhost:{service['port']}/metrics"
-            async with session.get(
-                stats_url, timeout=aiohttp.ClientTimeout(total=5)
-            ) as response:
+            async with session.get(stats_url, timeout=aiohttp.ClientTimeout(total=5)) as response:
                 if response.status == 200:
                     return await response.json()
         except Exception:
@@ -392,9 +373,7 @@ class AdvancedPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     timestamp=datetime.now(),
-                    severity=(
-                        "warning" if metrics.cpu_percent < 90 else "critical"
-                    ),
+                    severity=("warning" if metrics.cpu_percent < 90 else "critical"),
                     service="system",
                     metric="cpu_percent",
                     current_value=metrics.cpu_percent,
@@ -407,11 +386,7 @@ class AdvancedPerformanceMonitor:
             alerts.append(
                 PerformanceAlert(
                     timestamp=datetime.now(),
-                    severity=(
-                        "warning"
-                        if metrics.memory_percent < 95
-                        else "critical"
-                    ),
+                    severity=("warning" if metrics.memory_percent < 95 else "critical"),
                     service="system",
                     metric="memory_percent",
                     current_value=metrics.memory_percent,
@@ -435,9 +410,7 @@ class AdvancedPerformanceMonitor:
 
         # Service alerts
         for service_metric in service_metrics:
-            if service_metric.response_time > self.thresholds.get(
-                "response_time", 1000
-            ):
+            if service_metric.response_time > self.thresholds.get("response_time", 1000):
                 alerts.append(
                     PerformanceAlert(
                         timestamp=datetime.now(),
@@ -450,9 +423,7 @@ class AdvancedPerformanceMonitor:
                     )
                 )
 
-            if service_metric.error_rate > self.thresholds.get(
-                "error_rate", 5
-            ):
+            if service_metric.error_rate > self.thresholds.get("error_rate", 5):
                 alerts.append(
                     PerformanceAlert(
                         timestamp=datetime.now(),
@@ -481,9 +452,7 @@ class AdvancedPerformanceMonitor:
             timestamp = datetime.now().isoformat()
 
             # Store system metrics
-            await self._store_redis_metric(
-                "system", timestamp, asdict(system_metrics)
-            )
+            await self._store_redis_metric("system", timestamp, asdict(system_metrics))
 
             # Store service metrics
             for service_metric in service_metrics:
@@ -495,24 +464,16 @@ class AdvancedPerformanceMonitor:
 
             # Store alerts
             for alert in alerts:
-                await self._store_redis_metric(
-                    "alerts", timestamp, asdict(alert)
-                )
+                await self._store_redis_metric("alerts", timestamp, asdict(alert))
 
             # Store summary metrics
             summary = {
                 "timestamp": timestamp,
-                "system_health": self._calculate_system_health(
-                    system_metrics, service_metrics
-                ),
+                "system_health": self._calculate_system_health(system_metrics, service_metrics),
                 "total_services": len(service_metrics),
-                "healthy_services": len(
-                    [s for s in service_metrics if s.status_code == 200]
-                ),
+                "healthy_services": len([s for s in service_metrics if s.status_code == 200]),
                 "alerts_count": len(alerts),
-                "critical_alerts": len(
-                    [a for a in alerts if a.severity == "critical"]
-                ),
+                "critical_alerts": len([a for a in alerts if a.severity == "critical"]),
             }
 
             await self._store_redis_metric("summary", timestamp, summary)
@@ -537,15 +498,11 @@ class AdvancedPerformanceMonitor:
             list_key = f"metrics:timeseries:{key}"
             await asyncio.get_event_loop().run_in_executor(
                 None,
-                lambda: self.redis_client.lpush(
-                    list_key, json.dumps(data, default=str)
-                ),
+                lambda: self.redis_client.lpush(list_key, json.dumps(data, default=str)),
             )
 
             # Trim list to keep only recent entries
-            max_entries = (
-                self.retention_days * 24 * 60 * 60
-            ) // self.monitoring_interval
+            max_entries = (self.retention_days * 24 * 60 * 60) // self.monitoring_interval
             await asyncio.get_event_loop().run_in_executor(
                 None,
                 lambda: self.redis_client.ltrim(list_key, 0, max_entries - 1),
@@ -573,9 +530,7 @@ class AdvancedPerformanceMonitor:
             health_score -= (system_metrics.disk_usage - 90) * 5
 
         # Service health factors
-        healthy_services = len(
-            [s for s in service_metrics if s.status_code == 200]
-        )
+        healthy_services = len([s for s in service_metrics if s.status_code == 200])
         total_services = len(service_metrics)
 
         if total_services > 0:
@@ -591,9 +546,7 @@ class AdvancedPerformanceMonitor:
 
         try:
             # Get recent metrics
-            system_metrics = await self._get_recent_metrics(
-                "system", 24
-            )  # Last 24 hours
+            system_metrics = await self._get_recent_metrics("system", 24)  # Last 24 hours
             service_metrics = {}
 
             for service in self.services:
@@ -611,13 +564,9 @@ class AdvancedPerformanceMonitor:
                     "monitoring_period_hours": 24,
                     "total_services_monitored": len(self.services),
                     "total_alerts": len(alerts),
-                    "critical_alerts": len(
-                        [a for a in alerts if a.get("severity") == "critical"]
-                    ),
+                    "critical_alerts": len([a for a in alerts if a.get("severity") == "critical"]),
                 },
-                "system_performance": self._analyze_system_trends(
-                    system_metrics
-                ),
+                "system_performance": self._analyze_system_trends(system_metrics),
                 "service_performance": {
                     service: self._analyze_service_trends(metrics)
                     for service, metrics in service_metrics.items()
@@ -649,9 +598,7 @@ class AdvancedPerformanceMonitor:
             for entry in entries:
                 try:
                     data = json.loads(entry)
-                    entry_time = datetime.fromisoformat(
-                        data.get("timestamp", "")
-                    )
+                    entry_time = datetime.fromisoformat(data.get("timestamp", ""))
                     if entry_time >= cutoff_time:
                         recent_metrics.append(data)
                 except Exception:
@@ -668,23 +615,13 @@ class AdvancedPerformanceMonitor:
         if not metrics:
             return {}
 
-        cpu_values = [
-            m.get("cpu_percent", 0) for m in metrics if "cpu_percent" in m
-        ]
-        memory_values = [
-            m.get("memory_percent", 0)
-            for m in metrics
-            if "memory_percent" in m
-        ]
+        cpu_values = [m.get("cpu_percent", 0) for m in metrics if "cpu_percent" in m]
+        memory_values = [m.get("memory_percent", 0) for m in metrics if "memory_percent" in m]
 
         return {
-            "avg_cpu_percent": (
-                statistics.mean(cpu_values) if cpu_values else 0
-            ),
+            "avg_cpu_percent": (statistics.mean(cpu_values) if cpu_values else 0),
             "max_cpu_percent": max(cpu_values) if cpu_values else 0,
-            "avg_memory_percent": (
-                statistics.mean(memory_values) if memory_values else 0
-            ),
+            "avg_memory_percent": (statistics.mean(memory_values) if memory_values else 0),
             "max_memory_percent": max(memory_values) if memory_values else 0,
             "cpu_trend": self._calculate_trend(cpu_values),
             "memory_trend": self._calculate_trend(memory_values),
@@ -696,21 +633,13 @@ class AdvancedPerformanceMonitor:
         if not metrics:
             return {}
 
-        response_times = [
-            m.get("response_time", 0) for m in metrics if "response_time" in m
-        ]
-        error_rates = [
-            m.get("error_rate", 0) for m in metrics if "error_rate" in m
-        ]
+        response_times = [m.get("response_time", 0) for m in metrics if "response_time" in m]
+        error_rates = [m.get("error_rate", 0) for m in metrics if "error_rate" in m]
 
         return {
-            "avg_response_time": (
-                statistics.mean(response_times) if response_times else 0
-            ),
+            "avg_response_time": (statistics.mean(response_times) if response_times else 0),
             "max_response_time": max(response_times) if response_times else 0,
-            "avg_error_rate": (
-                statistics.mean(error_rates) if error_rates else 0
-            ),
+            "avg_error_rate": (statistics.mean(error_rates) if error_rates else 0),
             "max_error_rate": max(error_rates) if error_rates else 0,
             "response_time_trend": self._calculate_trend(response_times),
             "error_rate_trend": self._calculate_trend(error_rates),
@@ -723,19 +652,13 @@ class AdvancedPerformanceMonitor:
             return "stable"
 
         # Simple trend calculation using first and last quartile
-        first_quartile = (
-            values[: len(values) // 4] if len(values) >= 4 else values[:1]
-        )
-        last_quartile = (
-            values[-len(values) // 4 :] if len(values) >= 4 else values[-1:]
-        )
+        first_quartile = values[: len(values) // 4] if len(values) >= 4 else values[:1]
+        last_quartile = values[-len(values) // 4 :] if len(values) >= 4 else values[-1:]
 
         avg_first = statistics.mean(first_quartile)
         avg_last = statistics.mean(last_quartile)
 
-        change_percent = (
-            ((avg_last - avg_first) / avg_first * 100) if avg_first > 0 else 0
-        )
+        change_percent = ((avg_last - avg_first) / avg_first * 100) if avg_first > 0 else 0
 
         if change_percent > 10:
             return "increasing"
@@ -792,12 +715,8 @@ class AdvancedPerformanceMonitor:
 
         # Analyze system metrics
         if system_metrics:
-            cpu_values = [
-                m.get("cpu_percent", 0) for m in system_metrics[-10:]
-            ]  # Last 10 samples
-            memory_values = [
-                m.get("memory_percent", 0) for m in system_metrics[-10:]
-            ]
+            cpu_values = [m.get("cpu_percent", 0) for m in system_metrics[-10:]]  # Last 10 samples
+            memory_values = [m.get("memory_percent", 0) for m in system_metrics[-10:]]
 
             avg_cpu = statistics.mean(cpu_values) if cpu_values else 0
             avg_memory = statistics.mean(memory_values) if memory_values else 0
@@ -820,9 +739,7 @@ class AdvancedPerformanceMonitor:
             response_times = [m.get("response_time", 0) for m in metrics[-10:]]
             error_rates = [m.get("error_rate", 0) for m in metrics[-10:]]
 
-            avg_response_time = (
-                statistics.mean(response_times) if response_times else 0
-            )
+            avg_response_time = statistics.mean(response_times) if response_times else 0
             avg_error_rate = statistics.mean(error_rates) if error_rates else 0
 
             if avg_response_time > 500:
@@ -836,9 +753,7 @@ class AdvancedPerformanceMonitor:
                 )
 
         # Analyze alert patterns
-        critical_alerts = [
-            a for a in alerts if a.get("severity") == "critical"
-        ]
+        critical_alerts = [a for a in alerts if a.get("severity") == "critical"]
         if len(critical_alerts) > 5:
             recommendations.append(
                 f"High number of critical alerts ({len(critical_alerts)}). Immediate attention required for system stability."
@@ -854,7 +769,7 @@ class AdvancedPerformanceMonitor:
             # Collect metrics
             system_metrics = await self.collect_system_metrics()
             service_metrics = await self.collect_service_metrics()
-            database_metrics = await self.collect_database_metrics()
+            await self.collect_database_metrics()
 
             if not system_metrics:
                 logger.error("Failed to collect system metrics")
@@ -867,9 +782,7 @@ class AdvancedPerformanceMonitor:
             await self.store_metrics(system_metrics, service_metrics, alerts)
 
             # Log summary
-            healthy_services = len(
-                [s for s in service_metrics if s.status_code == 200]
-            )
+            healthy_services = len([s for s in service_metrics if s.status_code == 200])
             logger.info(
                 f"Monitoring cycle completed - System Health: {self._calculate_system_health(system_metrics, service_metrics):.1f}%, "
                 f"Services: {healthy_services}/{len(service_metrics)} healthy, "
@@ -878,11 +791,7 @@ class AdvancedPerformanceMonitor:
 
             # Print alerts to console
             for alert in alerts:
-                log_level = (
-                    logging.CRITICAL
-                    if alert.severity == "critical"
-                    else logging.WARNING
-                )
+                log_level = logging.CRITICAL if alert.severity == "critical" else logging.WARNING
                 logger.log(
                     log_level,
                     f"ALERT [{alert.severity.upper()}] {alert.service}: {alert.message}",
@@ -918,20 +827,14 @@ async def main():
     """Main function"""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Advanced Performance Monitor"
-    )
+    parser = argparse.ArgumentParser(description="Advanced Performance Monitor")
     parser.add_argument(
         "--config",
         default="config/monitoring-config.yaml",
         help="Configuration file path",
     )
-    parser.add_argument(
-        "--once", action="store_true", help="Run once and exit"
-    )
-    parser.add_argument(
-        "--report", action="store_true", help="Generate performance report"
-    )
+    parser.add_argument("--once", action="store_true", help="Run once and exit")
+    parser.add_argument("--report", action="store_true", help="Generate performance report")
 
     args = parser.parse_args()
 

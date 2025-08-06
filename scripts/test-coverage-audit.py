@@ -95,9 +95,7 @@ class TestCoverageAuditor:
                                 "name": item.name,
                                 "line": item.lineno,
                                 "is_private": item.name.startswith("_"),
-                                "is_async": isinstance(
-                                    item, ast.AsyncFunctionDef
-                                ),
+                                "is_async": isinstance(item, ast.AsyncFunctionDef),
                                 "args": len(item.args.args),
                             }
                         )
@@ -129,9 +127,7 @@ class TestCoverageAuditor:
             "module_name": module_name,
             "classes": classes,
             "functions": functions,
-            "has_test": any(
-                test in str(file_path) for test in self.existing_tests
-            ),
+            "has_test": any(test in str(file_path) for test in self.existing_tests),
             "complexity": len(classes) + len(functions),
         }
 
@@ -159,9 +155,7 @@ class TestCoverageAuditor:
                 "total_files": total_files,
                 "tested_files": tested_files,
                 "coverage_percentage": (
-                    round((tested_files / total_files) * 100, 2)
-                    if total_files > 0
-                    else 0
+                    round((tested_files / total_files) * 100, 2) if total_files > 0 else 0
                 ),
                 "untested_files": total_files - tested_files,
             },
@@ -179,9 +173,7 @@ class TestCoverageAuditor:
                 "total_files": service_total,
                 "tested_files": service_tested,
                 "coverage_percentage": (
-                    round((service_tested / service_total) * 100, 2)
-                    if service_total > 0
-                    else 0
+                    round((service_tested / service_total) * 100, 2) if service_total > 0 else 0
                 ),
                 "files": files,
             }
@@ -214,18 +206,12 @@ class TestCoverageAuditor:
 
         templates_created = []
 
-        for priority_file in self.coverage_report["priority_files"][
-            :10
-        ]:  # 前10個
+        for priority_file in self.coverage_report["priority_files"][:10]:  # 前10個
             self.project_root / priority_file["file"]
 
             # 找到對應的文件信息
             file_info = next(
-                (
-                    f
-                    for f in self.source_files
-                    if f["relative_path"] == priority_file["file"]
-                ),
+                (f for f in self.source_files if f["relative_path"] == priority_file["file"]),
                 None,
             )
 
@@ -233,9 +219,7 @@ class TestCoverageAuditor:
                 template_content = self.create_test_template(file_info)
 
                 # 確定測試文件路径
-                test_filename = (
-                    f"test_{Path(file_info['relative_path']).stem}.py"
-                )
+                test_filename = f"test_{Path(file_info['relative_path']).stem}.py"
                 test_file_path = output_dir / test_filename
 
                 with open(test_file_path, "w", encoding="utf-8") as f:
@@ -247,7 +231,7 @@ class TestCoverageAuditor:
 
     def create_test_template(self, file_info: Dict) -> str:
         """創建測試模板"""
-        module_path = file_info["module_name"]
+        file_info["module_name"]
 
         template = '''#!/usr/bin/env python3
 """
@@ -310,9 +294,7 @@ class Test{class_info["name"]}:
         """保存覆蓋率報告"""
         if output_file is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = (
-                self.project_root / f"test_coverage_report_{timestamp}.json"
-            )
+            output_file = self.project_root / f"test_coverage_report_{timestamp}.json"
 
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(self.coverage_report, f, indent=2, ensure_ascii=False)
@@ -332,24 +314,16 @@ class Test{class_info["name"]}:
         print(f"📈 覆蓋率: {summary['coverage_percentage']}%")
 
         print("\n🎯 各服務覆蓋率:")
-        for service_name, service_info in self.coverage_report[
-            "services"
-        ].items():
+        for service_name, service_info in self.coverage_report["services"].items():
             coverage = service_info["coverage_percentage"]
-            status = (
-                "🟢" if coverage >= 80 else "🟡" if coverage >= 60 else "🔴"
-            )
+            status = "🟢" if coverage >= 80 else "🟡" if coverage >= 60 else "🔴"
             print(
                 f"  {status} {service_name}: {coverage}% ({service_info['tested_files']}/{service_info['total_files']})"
             )
 
         print("\n🚨 高優先級需要測試的文件 (複雜度 ≥ 3):")
-        for i, priority_file in enumerate(
-            self.coverage_report["priority_files"][:10], 1
-        ):
-            print(
-                f"  {i:2d}. {priority_file['file']} (複雜度: {priority_file['complexity']})"
-            )
+        for i, priority_file in enumerate(self.coverage_report["priority_files"][:10], 1):
+            print(f"  {i:2d}. {priority_file['file']} (複雜度: {priority_file['complexity']})")
 
     def run_audit(self):
         """執行完整審查"""

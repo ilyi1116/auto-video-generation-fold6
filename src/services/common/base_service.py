@@ -106,9 +106,7 @@ class MetricsCollector:
         self.histograms: Dict[str, List[float]] = {}
         self._lock = asyncio.Lock()
 
-    async def increment_counter(
-        self, name: str, labels: Dict[str, str] = None, value: int = 1
-    ):
+    async def increment_counter(self, name: str, labels: Dict[str, str] = None, value: int = 1):
         """計數器遞增"""
         async with self._lock:
             key = self._generate_key(name, labels)
@@ -122,9 +120,7 @@ class MetricsCollector:
             )
             self.metrics.append(metric)
 
-    async def set_gauge(
-        self, name: str, value: float, labels: Dict[str, str] = None
-    ):
+    async def set_gauge(self, name: str, value: float, labels: Dict[str, str] = None):
         """設定量表值"""
         async with self._lock:
             key = self._generate_key(name, labels)
@@ -138,9 +134,7 @@ class MetricsCollector:
             )
             self.metrics.append(metric)
 
-    async def record_histogram(
-        self, name: str, value: float, labels: Dict[str, str] = None
-    ):
+    async def record_histogram(self, name: str, value: float, labels: Dict[str, str] = None):
         """記錄直方圖"""
         async with self._lock:
             key = self._generate_key(name, labels)
@@ -176,9 +170,7 @@ class MetricsCollector:
     async def get_metrics(self, last_n: int = 100) -> List[Dict[str, Any]]:
         """獲取最近的指標"""
         async with self._lock:
-            recent_metrics = (
-                self.metrics[-last_n:] if last_n > 0 else self.metrics
-            )
+            recent_metrics = self.metrics[-last_n:] if last_n > 0 else self.metrics
             return [metric.to_dict() for metric in recent_metrics]
 
     async def clear_metrics(self):
@@ -211,9 +203,7 @@ class StructuredLogger:
             cache_logger_on_first_use=True,
         )
 
-        self.logger = structlog.get_logger(
-            service=service_name, version=service_version
-        )
+        self.logger = structlog.get_logger(service=service_name, version=service_version)
 
     def info(self, message: str, **kwargs):
         self.logger.info(message, **kwargs)
@@ -351,9 +341,7 @@ class BaseService(ABC):
         # 啟動時間
         self._start_time: Optional[float] = None
 
-        self.logger.info(
-            f"Service {service_name} v{service_version} initializing..."
-        )
+        self.logger.info(f"Service {service_name} v{service_version} initializing...")
 
     # === 抽象方法 ===
 
@@ -374,9 +362,7 @@ class BaseService(ABC):
     async def start(self) -> None:
         """啟動服務"""
         if self.state != ServiceState.INITIALIZING:
-            self.logger.warning(
-                f"Service already in {self.state.value} state, cannot start"
-            )
+            self.logger.warning(f"Service already in {self.state.value} state, cannot start")
             return
 
         try:
@@ -400,9 +386,7 @@ class BaseService(ABC):
                     self.logger.error(f"Startup callback failed: {e}")
 
             self.state = ServiceState.HEALTHY
-            await self.metrics.increment_counter(
-                "service_starts", {"service": self.service_name}
-            )
+            await self.metrics.increment_counter("service_starts", {"service": self.service_name})
 
             self.logger.info(
                 f"Service {self.service_name} started successfully",
@@ -415,9 +399,7 @@ class BaseService(ABC):
                 "service_start_failures", {"service": self.service_name}
             )
             self.logger.error(f"Failed to start service: {e}")
-            raise ServiceError(
-                f"Service startup failed: {e}", "SERVICE_START_FAILED", cause=e
-            )
+            raise ServiceError(f"Service startup failed: {e}", "SERVICE_START_FAILED", cause=e)
 
     async def stop(self) -> None:
         """停止服務"""
@@ -442,21 +424,15 @@ class BaseService(ABC):
             await self._shutdown()
 
             self.state = ServiceState.STOPPED
-            await self.metrics.increment_counter(
-                "service_stops", {"service": self.service_name}
-            )
+            await self.metrics.increment_counter("service_stops", {"service": self.service_name})
 
             uptime = time.time() - (self._start_time or time.time())
-            self.logger.info(
-                f"Service {self.service_name} stopped", uptime=uptime
-            )
+            self.logger.info(f"Service {self.service_name} stopped", uptime=uptime)
 
         except Exception as e:
             self.state = ServiceState.UNHEALTHY
             self.logger.error(f"Failed to stop service cleanly: {e}")
-            raise ServiceError(
-                f"Service shutdown failed: {e}", "SERVICE_STOP_FAILED", cause=e
-            )
+            raise ServiceError(f"Service shutdown failed: {e}", "SERVICE_STOP_FAILED", cause=e)
 
     # === 健康檢查 ===
 
@@ -501,9 +477,7 @@ class BaseService(ABC):
             status = self.state
             message = f"Service is {self.state.value}"
 
-        return HealthCheckResult(
-            status=status, message=message, details=details, checks=checks
-        )
+        return HealthCheckResult(status=status, message=message, details=details, checks=checks)
 
     # === 回調管理 ===
 
@@ -527,9 +501,7 @@ class BaseService(ABC):
     # === 工具方法 ===
 
     @asynccontextmanager
-    async def trace_operation(
-        self, operation_name: str, context: TraceContext = None
-    ):
+    async def trace_operation(self, operation_name: str, context: TraceContext = None):
         """追蹤操作"""
         async with trace_span(operation_name, context, self.logger) as span:
             await self.metrics.increment_counter(
@@ -553,11 +525,7 @@ class BaseService(ABC):
             },
             "health": health.to_dict(),
             "metrics": metrics,
-            "config": {
-                k: v
-                for k, v in self.config.items()
-                if not k.startswith("secret")
-            },
+            "config": {k: v for k, v in self.config.items() if not k.startswith("secret")},
         }
 
 
@@ -568,9 +536,7 @@ class ValidationError(ServiceError):
     """驗證錯誤"""
 
     def __init__(self, message: str, field: str = None, details: Dict = None):
-        super().__init__(
-            message, "VALIDATION_ERROR", details or {"field": field}
-        )
+        super().__init__(message, "VALIDATION_ERROR", details or {"field": field})
 
 
 class NotFoundError(ServiceError):
@@ -599,9 +565,7 @@ class RateLimitError(ServiceError):
 
     def __init__(self, limit: int, window: int):
         message = f"Rate limit exceeded: {limit} requests per {window} seconds"
-        super().__init__(
-            message, "RATE_LIMIT_EXCEEDED", {"limit": limit, "window": window}
-        )
+        super().__init__(message, "RATE_LIMIT_EXCEEDED", {"limit": limit, "window": window})
 
 
 # === 錯誤處理裝飾器 ===

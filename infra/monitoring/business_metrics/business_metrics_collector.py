@@ -69,9 +69,7 @@ class BusinessMetricsCollector:
     def __init__(self, metrics_definitions_path: Optional[str] = None):
         self.metrics_definitions: Dict[str, BusinessMetricDefinition] = {}
         self.prometheus_metrics: Dict[str, Any] = {}
-        self.fallback_metrics: Dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=10000)
-        )
+        self.fallback_metrics: Dict[str, deque] = defaultdict(lambda: deque(maxlen=10000))
         self.metrics_lock = threading.Lock()
 
         # 載入指標定義
@@ -96,15 +94,11 @@ class BusinessMetricsCollector:
                     description=definition["description"],
                     labels=definition.get("labels", []),
                     unit=definition.get("unit", ""),
-                    business_impact=definition.get(
-                        "business_impact", "medium"
-                    ),
+                    business_impact=definition.get("business_impact", "medium"),
                     sla_target=definition.get("sla_target", ""),
                 )
 
-            logger.info(
-                f"Loaded {len(self.metrics_definitions)} business metrics definitions"
-            )
+            logger.info(f"Loaded {len(self.metrics_definitions)} business metrics definitions")
 
         except Exception as e:
             logger.error(f"Failed to load metrics definitions: {e}")
@@ -156,9 +150,7 @@ class BusinessMetricsCollector:
     def _initialize_prometheus_metrics(self):
         """初始化 Prometheus 指標"""
         if not PROMETHEUS_AVAILABLE:
-            logger.warning(
-                "Prometheus client not available, using fallback metrics storage"
-            )
+            logger.warning("Prometheus client not available, using fallback metrics storage")
             return
 
         for name, definition in self.metrics_definitions.items():
@@ -191,9 +183,7 @@ class BusinessMetricsCollector:
                 logger.debug(f"Initialized Prometheus metric: {name}")
 
             except Exception as e:
-                logger.error(
-                    f"Failed to initialize Prometheus metric {name}: {e}"
-                )
+                logger.error(f"Failed to initialize Prometheus metric {name}: {e}")
 
     def record_metric(
         self,
@@ -300,9 +290,7 @@ class BusinessMetricsCollector:
 
         with self.metrics_lock:
             records = [
-                record
-                for record in self.fallback_metrics[name]
-                if record.timestamp > cutoff_time
+                record for record in self.fallback_metrics[name] if record.timestamp > cutoff_time
             ]
 
         if not records:
@@ -325,9 +313,7 @@ class BusinessMetricsCollector:
 
         if definition.type == MetricType.COUNTER:
             summary["total"] = sum(values)
-            summary["rate_per_hour"] = sum(values) / (
-                time_window.total_seconds() / 3600
-            )
+            summary["rate_per_hour"] = sum(values) / (time_window.total_seconds() / 3600)
 
         elif definition.type == MetricType.GAUGE:
             summary["current_value"] = values[-1] if values else None
@@ -418,9 +404,7 @@ business_metrics = BusinessMetricsCollector(
 
 
 # 便捷函數
-def record_video_generation(
-    status: str, video_type: str, platform: str, user_tier: str = "free"
-):
+def record_video_generation(status: str, video_type: str, platform: str, user_tier: str = "free"):
     """記錄影片生成指標"""
     business_metrics.increment_counter(
         "video_generation_count",
@@ -462,9 +446,7 @@ def record_content_generation_time(
     )
 
 
-def record_revenue_per_user(
-    revenue: float, user_tier: str, billing_period: str = "monthly"
-):
+def record_revenue_per_user(revenue: float, user_tier: str, billing_period: str = "monthly"):
     """記錄每用戶收入"""
     business_metrics.set_gauge(
         "revenue_per_user",
@@ -508,9 +490,7 @@ class MetricsReporter:
             "report_type": "daily",
             "timestamp": datetime.utcnow().isoformat(),
             "date": datetime.utcnow().date().isoformat(),
-            "summary": self.collector.get_all_metrics_summary(
-                timedelta(days=1)
-            ),
+            "summary": self.collector.get_all_metrics_summary(timedelta(days=1)),
             "critical_status": self.collector.get_critical_metrics_status(),
         }
 
@@ -523,9 +503,7 @@ class MetricsReporter:
             "report_type": "hourly",
             "timestamp": datetime.utcnow().isoformat(),
             "hour": datetime.utcnow().strftime("%Y-%m-%d %H:00"),
-            "summary": self.collector.get_all_metrics_summary(
-                timedelta(hours=1)
-            ),
+            "summary": self.collector.get_all_metrics_summary(timedelta(hours=1)),
             "critical_status": self.collector.get_critical_metrics_status(),
         }
 

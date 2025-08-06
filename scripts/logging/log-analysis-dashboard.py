@@ -13,7 +13,7 @@ import statistics
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 import redis
 
@@ -62,9 +62,7 @@ class LogAnalyticsDashboard:
             )
 
             # Test connection
-            await asyncio.get_event_loop().run_in_executor(
-                None, self.redis_client.ping
-            )
+            await asyncio.get_event_loop().run_in_executor(None, self.redis_client.ping)
 
             print("📊 Log Analytics Dashboard initialized")
 
@@ -87,9 +85,7 @@ class LogAnalyticsDashboard:
 
             # Get error rate
             error_count = sum(batch.get("error_count", 0) for batch in batches)
-            error_rate = (
-                (error_count / total_logs * 100) if total_logs > 0 else 0
-            )
+            error_rate = (error_count / total_logs * 100) if total_logs > 0 else 0
 
             # Get active services
             all_services = set()
@@ -123,9 +119,7 @@ class LogAnalyticsDashboard:
     async def analyze_logs(self, time_range_hours: int = 1) -> LogAnalytics:
         """Comprehensive log analysis"""
         try:
-            print(
-                f"🔍 Analyzing logs for the last {time_range_hours} hour(s)..."
-            )
+            print(f"🔍 Analyzing logs for the last {time_range_hours} hour(s)...")
 
             # Get all log streams
             stream_keys = await self._get_all_log_streams()
@@ -148,9 +142,7 @@ class LogAnalyticsDashboard:
                         log_level = parts[2]
 
                         # Get entries from stream
-                        entries = await self._get_stream_entries(
-                            stream_key, cutoff_time
-                        )
+                        entries = await self._get_stream_entries(stream_key, cutoff_time)
 
                         for entry_id, fields in entries:
                             logs_by_service[service_name] += 1
@@ -159,9 +151,7 @@ class LogAnalyticsDashboard:
                             # Extract response time if available
                             if "duration_ms" in fields:
                                 try:
-                                    response_times.append(
-                                        float(fields["duration_ms"])
-                                    )
+                                    response_times.append(float(fields["duration_ms"]))
                                 except Exception:
                                     pass
 
@@ -171,30 +161,22 @@ class LogAnalyticsDashboard:
                                     "service": service_name,
                                     "message": fields.get("message", ""),
                                     "timestamp": fields.get("timestamp", ""),
-                                    "error_type": fields.get(
-                                        "error_details", {}
-                                    ).get("type", "Unknown"),
+                                    "error_type": fields.get("error_details", {}).get(
+                                        "type", "Unknown"
+                                    ),
                                 }
                                 errors.append(error_data)
 
                             all_logs.append(fields)
 
                 except Exception as e:
-                    print(
-                        f"Warning: Error processing stream {stream_key}: {e}"
-                    )
+                    print(f"Warning: Error processing stream {stream_key}: {e}")
 
             # Calculate analytics
             total_logs = len(all_logs)
-            error_count = logs_by_level.get("error", 0) + logs_by_level.get(
-                "critical", 0
-            )
-            error_rate = (
-                (error_count / total_logs * 100) if total_logs > 0 else 0
-            )
-            avg_response_time = (
-                statistics.mean(response_times) if response_times else 0
-            )
+            error_count = logs_by_level.get("error", 0) + logs_by_level.get("critical", 0)
+            error_rate = (error_count / total_logs * 100) if total_logs > 0 else 0
+            avg_response_time = statistics.mean(response_times) if response_times else 0
 
             # Analyze top errors
             error_counter = Counter()
@@ -203,37 +185,24 @@ class LogAnalyticsDashboard:
                 error_counter[error_key] += 1
 
             top_errors = [
-                {"error": error, "count": count}
-                for error, count in error_counter.most_common(10)
+                {"error": error, "count": count} for error, count in error_counter.most_common(10)
             ]
 
             # Calculate service health scores
             service_health = {}
             for service in logs_by_service:
-                service_errors = len(
-                    [e for e in errors if e["service"] == service]
-                )
+                service_errors = len([e for e in errors if e["service"] == service])
                 service_total = logs_by_service[service]
-                service_error_rate = (
-                    (service_errors / service_total)
-                    if service_total > 0
-                    else 0
-                )
-                service_health[service] = max(
-                    0, 100 - (service_error_rate * 100)
-                )
+                service_error_rate = (service_errors / service_total) if service_total > 0 else 0
+                service_health[service] = max(0, 100 - (service_error_rate * 100))
 
             # Mock performance trends (would be calculated from historical data)
             performance_trends = {
                 "response_time": (
-                    response_times[-20:]
-                    if len(response_times) > 20
-                    else response_times
+                    response_times[-20:] if len(response_times) > 20 else response_times
                 ),
-                "error_rate": [error_rate]
-                * 10,  # Would be historical error rates
-                "throughput": [total_logs / time_range_hours]
-                * 10,  # Logs per hour
+                "error_rate": [error_rate] * 10,  # Would be historical error rates
+                "throughput": [total_logs / time_range_hours] * 10,  # Logs per hour
             }
 
             return LogAnalytics(
@@ -271,18 +240,14 @@ class LogAnalyticsDashboard:
         except Exception:
             return []
 
-    async def _get_stream_entries(
-        self, stream_key: str, cutoff_time: datetime
-    ) -> List:
+    async def _get_stream_entries(self, stream_key: str, cutoff_time: datetime) -> List:
         """Get entries from a Redis stream"""
         try:
             cutoff_timestamp = int(cutoff_time.timestamp() * 1000)
 
             entries = await asyncio.get_event_loop().run_in_executor(
                 None,
-                lambda: self.redis_client.xrange(
-                    stream_key, min=cutoff_timestamp
-                ),
+                lambda: self.redis_client.xrange(stream_key, min=cutoff_timestamp),
             )
 
             return entries
@@ -317,23 +282,17 @@ class LogAnalyticsDashboard:
         except Exception:
             return []
 
-    def print_dashboard(
-        self, analytics: LogAnalytics, real_time_metrics: RealTimeMetrics
-    ):
+    def print_dashboard(self, analytics: LogAnalytics, real_time_metrics: RealTimeMetrics):
         """Print formatted dashboard"""
         print("\n" + "=" * 80)
         print("📊 CENTRALIZED LOGGING DASHBOARD")
         print("=" * 80)
 
         # Real-time metrics
-        print(
-            f"\n🔴 REAL-TIME METRICS ({real_time_metrics.timestamp.strftime('%H:%M:%S')})"
-        )
+        print(f"\n🔴 REAL-TIME METRICS ({real_time_metrics.timestamp.strftime('%H:%M:%S')})")
         print(f"  • Logs/Second: {real_time_metrics.logs_per_second:.1f}")
         print(f"  • Error Rate: {real_time_metrics.error_rate:.1f}%")
-        print(
-            f"  • Avg Response Time: {real_time_metrics.avg_response_time:.1f}ms"
-        )
+        print(f"  • Avg Response Time: {real_time_metrics.avg_response_time:.1f}ms")
         print(f"  • Active Services: {real_time_metrics.active_services}")
         print(f"  • Critical Alerts: {real_time_metrics.critical_alerts}")
 
@@ -349,12 +308,8 @@ class LogAnalyticsDashboard:
             analytics.logs_by_service.items(), key=lambda x: x[1], reverse=True
         ):
             health = analytics.service_health.get(service, 0)
-            health_icon = (
-                "🟢" if health > 90 else "🟡" if health > 70 else "🔴"
-            )
-            print(
-                f"  {health_icon} {service}: {count:,} logs (Health: {health:.1f}%)"
-            )
+            health_icon = "🟢" if health > 90 else "🟡" if health > 70 else "🔴"
+            print(f"  {health_icon} {service}: {count:,} logs (Health: {health:.1f}%)")
 
         # Log levels
         print("\n📊 LOG LEVELS")
@@ -370,32 +325,22 @@ class LogAnalyticsDashboard:
             analytics.logs_by_level.items(), key=lambda x: x[1], reverse=True
         ):
             icon = level_icons.get(level, "⚪")
-            percentage = (
-                (count / analytics.total_logs * 100)
-                if analytics.total_logs > 0
-                else 0
-            )
+            percentage = (count / analytics.total_logs * 100) if analytics.total_logs > 0 else 0
             print(f"  {icon} {level.upper()}: {count:,} ({percentage:.1f}%)")
 
         # Top errors
         if analytics.top_errors:
             print("\n🚨 TOP ERRORS")
             for i, error in enumerate(analytics.top_errors[:5], 1):
-                print(
-                    f"  {i}. {error['error']} ({error['count']} occurrences)"
-                )
+                print(f"  {i}. {error['error']} ({error['count']} occurrences)")
 
         # Performance trends
         if analytics.performance_trends.get("response_time"):
             response_times = analytics.performance_trends["response_time"]
             if len(response_times) >= 2:
-                trend = (
-                    "📈" if response_times[-1] > response_times[-2] else "📉"
-                )
+                trend = "📈" if response_times[-1] > response_times[-2] else "📉"
                 print("\n⚡ PERFORMANCE TRENDS")
-                print(
-                    f"  {trend} Response Time Trend: {response_times[-1]:.1f}ms"
-                )
+                print(f"  {trend} Response Time Trend: {response_times[-1]:.1f}ms")
                 print(
                     f"  📊 Min/Max Response Time: {min(response_times):.1f}ms / {max(response_times):.1f}ms"
                 )
@@ -437,9 +382,7 @@ class LogAnalyticsDashboard:
 
     async def generate_report(self, time_range_hours: int = 24) -> Dict:
         """Generate comprehensive log report"""
-        print(
-            f"📋 Generating log report for the last {time_range_hours} hours..."
-        )
+        print(f"📋 Generating log report for the last {time_range_hours} hours...")
 
         analytics = await self.analyze_logs(time_range_hours)
 
@@ -481,9 +424,7 @@ class LogAnalyticsDashboard:
 
         # Service health recommendations
         unhealthy_services = [
-            service
-            for service, health in analytics.service_health.items()
-            if health < 80
+            service for service, health in analytics.service_health.items() if health < 80
         ]
 
         if unhealthy_services:
@@ -499,9 +440,7 @@ class LogAnalyticsDashboard:
             )
 
         if not recommendations:
-            recommendations.append(
-                "System is operating within normal parameters."
-            )
+            recommendations.append("System is operating within normal parameters.")
 
         return recommendations
 
@@ -523,9 +462,7 @@ async def main():
         default=10,
         help="Dashboard refresh interval in seconds",
     )
-    parser.add_argument(
-        "--hours", type=int, default=1, help="Time range in hours for analysis"
-    )
+    parser.add_argument("--hours", type=int, default=1, help="Time range in hours for analysis")
 
     args = parser.parse_args()
 

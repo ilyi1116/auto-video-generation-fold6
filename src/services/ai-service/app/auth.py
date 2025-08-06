@@ -12,9 +12,7 @@ security_scheme = HTTPBearer()
 def verify_token_locally(token: str) -> dict:
     """Verify JWT token locally"""
     try:
-        payload = jwt.decode(
-            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
-        )
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         email: str = payload.get("sub")
         if email is None:
             return None

@@ -31,9 +31,7 @@ class TestLocalStorageBackend:
         object_key = "test/file.txt"
         content_type = "text/plain"
 
-        result = await self.backend.upload_file(
-            file_data, object_key, content_type
-        )
+        result = await self.backend.upload_file(file_data, object_key, content_type)
 
         assert result == object_key
 
@@ -110,9 +108,7 @@ class TestS3StorageBackend:
         object_key = "test/file.txt"
         content_type = "text/plain"
 
-        result = await self.backend.upload_file(
-            file_data, object_key, content_type
-        )
+        result = await self.backend.upload_file(file_data, object_key, content_type)
 
         assert result == object_key
         mock_s3.upload_fileobj.assert_called_once()
@@ -131,9 +127,7 @@ class TestS3StorageBackend:
         result = await self.backend.download_file(object_key)
 
         assert result == b"test content"
-        mock_s3.get_object.assert_called_once_with(
-            Bucket="test-bucket", Key=object_key
-        )
+        mock_s3.get_object.assert_called_once_with(Bucket="test-bucket", Key=object_key)
 
     @pytest.mark.asyncio
     @patch("app.storage.boto3.client")
@@ -145,9 +139,7 @@ class TestS3StorageBackend:
 
         await self.backend.delete_file(object_key)
 
-        mock_s3.delete_object.assert_called_once_with(
-            Bucket="test-bucket", Key=object_key
-        )
+        mock_s3.delete_object.assert_called_once_with(Bucket="test-bucket", Key=object_key)
 
     @patch("app.storage.boto3.client")
     def test_get_file_url(self, mock_boto_client):
@@ -168,9 +160,7 @@ class TestStorageManager:
 
     def setup_method(self):
         self.temp_dir = tempfile.mkdtemp()
-        self.manager = StorageManager(
-            storage_type="local", base_path=self.temp_dir
-        )
+        self.manager = StorageManager(storage_type="local", base_path=self.temp_dir)
 
     def teardown_method(self):
         import shutil
@@ -223,9 +213,7 @@ class TestStorageManager:
 
     def test_generate_object_key(self):
         """Test object key generation"""
-        key = self.manager._generate_object_key(
-            "user123", "test.txt", "document", "uploaded"
-        )
+        key = self.manager._generate_object_key("user123", "test.txt", "document", "uploaded")
 
         assert "user123" in key
         assert "test.txt" in key
@@ -239,7 +227,5 @@ class TestStorageManager:
         hash_value = self.manager._calculate_file_hash(file_data)
 
         # SHA-256 hash of "test content"
-        expected_hash = (
-            "1eebdf4fdc9fc7bf283031b93f9aef3338de9052f68b773bc27161c0966e7dc6"
-        )
+        expected_hash = "1eebdf4fdc9fc7bf283031b93f9aef3338de9052f68b773bc27161c0966e7dc6"
         assert hash_value == expected_hash

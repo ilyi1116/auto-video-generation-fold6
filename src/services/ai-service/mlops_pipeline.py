@@ -101,14 +101,10 @@ class ModelRegistry:
         # 記錄實驗
         await self.experiment_tracker.log_experiment(model_version)
 
-        logger.info(
-            f"註冊模型 {model_id}:{version}，效能得分: {metrics.accuracy}"
-        )
+        logger.info(f"註冊模型 {model_id}:{version}，效能得分: {metrics.accuracy}")
         return model_version
 
-    async def _benchmark_model(
-        self, model_artifact: bytes, model_type: ModelType
-    ) -> ModelMetrics:
+    async def _benchmark_model(self, model_artifact: bytes, model_type: ModelType) -> ModelMetrics:
         """模型效能基準測試"""
         # 模擬基準測試 - 實際實現會載入模型並進行測試
         datetime.utcnow()
@@ -121,9 +117,7 @@ class ModelRegistry:
             request_start = datetime.utcnow()
             # 模擬推理時間
             await asyncio.sleep(0.01)  # 10ms 模擬推理
-            latency = (
-                datetime.utcnow() - request_start
-            ).total_seconds() * 1000
+            latency = (datetime.utcnow() - request_start).total_seconds() * 1000
             latencies.append(latency)
 
         latency_p95 = np.percentile(latencies, 95)
@@ -166,9 +160,7 @@ class ModelRouter:
         if not available_models:
             raise ValueError(f"沒有可用的 {model_type} 模型")
 
-        selected_model = await self.routing_strategies[strategy](
-            available_models, request_context
-        )
+        selected_model = await self.routing_strategies[strategy](available_models, request_context)
 
         # 記錄路由決策
         self.request_history.append(
@@ -183,9 +175,7 @@ class ModelRouter:
 
         return selected_model
 
-    def _determine_strategy(
-        self, user_tier: str, context: Dict[str, Any]
-    ) -> str:
+    def _determine_strategy(self, user_tier: str, context: Dict[str, Any]) -> str:
         """根據用戶層級和上下文確定路由策略"""
         if user_tier == "enterprise":
             return "performance"
@@ -194,17 +184,12 @@ class ModelRouter:
         else:
             return "cost"
 
-    def _get_available_models(
-        self, model_type: ModelType
-    ) -> List[ModelVersion]:
+    def _get_available_models(self, model_type: ModelType) -> List[ModelVersion]:
         """獲取可用模型列表"""
         available = []
         for model_id, versions in self.registry.models.items():
             for version in versions:
-                if (
-                    version.model_type == model_type
-                    and version.deployment_status == "active"
-                ):
+                if version.model_type == model_type and version.deployment_status == "active":
                     available.append(version)
         return available
 
@@ -218,9 +203,7 @@ class ModelRouter:
         self, models: List[ModelVersion], context: Dict[str, Any]
     ) -> ModelVersion:
         """基於成本的路由"""
-        return min(
-            models, key=lambda m: m.performance_metrics.cost_per_request
-        )
+        return min(models, key=lambda m: m.performance_metrics.cost_per_request)
 
     async def _route_by_latency(
         self, models: List[ModelVersion], context: Dict[str, Any]
@@ -243,12 +226,7 @@ class ModelRouter:
             cost_score = (1.0 / max(metrics.cost_per_request, 0.001)) * 0.2
             satisfaction_score = (metrics.user_satisfaction / 5.0) * 0.2
 
-            total_score = (
-                performance_score
-                + latency_score
-                + cost_score
-                + satisfaction_score
-            )
+            total_score = performance_score + latency_score + cost_score + satisfaction_score
             scores[model] = total_score
 
         return max(scores.keys(), key=lambda m: scores[m])
@@ -288,9 +266,7 @@ class AutoScaler:
             return {"action": "none", "reason": "無擴展策略"}
 
         policy = self.scaling_policies[service_name]
-        current_metrics = await self.metrics_collector.get_current_metrics(
-            service_name
-        )
+        current_metrics = await self.metrics_collector.get_current_metrics(service_name)
 
         # CPU 基礎擴展邏輯
         if current_metrics["cpu_usage"] > policy["target_cpu"]:
@@ -419,9 +395,7 @@ class MLOpsPipeline:
                 return False
 
             # 3. 執行部署策略
-            deployment_success = await self._execute_deployment(
-                model_version, deployment_strategy
-            )
+            deployment_success = await self._execute_deployment(model_version, deployment_strategy)
 
             if deployment_success:
                 model_version.deployment_status = "active"
@@ -435,20 +409,14 @@ class MLOpsPipeline:
             logger.error(f"模型部署過程發生錯誤: {e}")
             return False
 
-    async def _safety_check(
-        self, model_version: ModelVersion
-    ) -> Dict[str, Any]:
+    async def _safety_check(self, model_version: ModelVersion) -> Dict[str, Any]:
         """模型安全檢查"""
         # 模擬安全檢查邏輯
         checks = {
-            "performance_regression": model_version.performance_metrics.accuracy
-            > 0.9,
-            "latency_acceptable": model_version.performance_metrics.latency_p95
-            < 200,
-            "cost_reasonable": model_version.performance_metrics.cost_per_request
-            < 0.01,
-            "error_rate_low": model_version.performance_metrics.error_rate
-            < 0.05,
+            "performance_regression": model_version.performance_metrics.accuracy > 0.9,
+            "latency_acceptable": model_version.performance_metrics.latency_p95 < 200,
+            "cost_reasonable": model_version.performance_metrics.cost_per_request < 0.01,
+            "error_rate_low": model_version.performance_metrics.error_rate < 0.05,
         }
 
         passed = all(checks.values())
@@ -457,11 +425,7 @@ class MLOpsPipeline:
         return {
             "passed": passed,
             "checks": checks,
-            "reason": (
-                f"失敗檢查: {failed_checks}"
-                if failed_checks
-                else "通過所有檢查"
-            ),
+            "reason": (f"失敗檢查: {failed_checks}" if failed_checks else "通過所有檢查"),
         }
 
     async def _execute_deployment(
@@ -480,9 +444,7 @@ class MLOpsPipeline:
 
     async def _canary_deployment(self, model_version: ModelVersion) -> bool:
         """金絲雀部署"""
-        logger.info(
-            f"開始金絲雀部署 {model_version.model_id}:{model_version.version}"
-        )
+        logger.info(f"開始金絲雀部署 {model_version.model_id}:{model_version.version}")
 
         # 階段 1: 5% 流量
         await self._route_traffic_percentage(model_version, 5)
@@ -504,18 +466,12 @@ class MLOpsPipeline:
         # 階段 3: 100% 流量
         await self._route_traffic_percentage(model_version, 100)
 
-        logger.info(
-            f"金絲雀部署完成 {model_version.model_id}:{model_version.version}"
-        )
+        logger.info(f"金絲雀部署完成 {model_version.model_id}:{model_version.version}")
         return True
 
-    async def _route_traffic_percentage(
-        self, model_version: ModelVersion, percentage: int
-    ):
+    async def _route_traffic_percentage(self, model_version: ModelVersion, percentage: int):
         """路由指定百分比的流量到新模型"""
-        logger.info(
-            f"路由 {percentage}% 流量到 {model_version.model_id}:{model_version.version}"
-        )
+        logger.info(f"路由 {percentage}% 流量到 {model_version.model_id}:{model_version.version}")
         # 實際實現會更新 Istio VirtualService 配置
 
     async def _check_canary_health(self, model_version: ModelVersion) -> bool:
@@ -532,34 +488,24 @@ class MLOpsPipeline:
 
     async def _rollback_deployment(self, model_version: ModelVersion):
         """回滾部署"""
-        logger.warning(
-            f"回滾部署 {model_version.model_id}:{model_version.version}"
-        )
+        logger.warning(f"回滾部署 {model_version.model_id}:{model_version.version}")
         model_version.deployment_status = "rollback"
 
-    async def _blue_green_deployment(
-        self, model_version: ModelVersion
-    ) -> bool:
+    async def _blue_green_deployment(self, model_version: ModelVersion) -> bool:
         """藍綠部署"""
-        logger.info(
-            f"執行藍綠部署 {model_version.model_id}:{model_version.version}"
-        )
+        logger.info(f"執行藍綠部署 {model_version.model_id}:{model_version.version}")
         # 實際實現會創建新的服務實例，然後切換流量
         return True
 
     async def _ab_test_deployment(self, model_version: ModelVersion) -> bool:
         """A/B 測試部署"""
-        logger.info(
-            f"執行 A/B 測試部署 {model_version.model_id}:{model_version.version}"
-        )
+        logger.info(f"執行 A/B 測試部署 {model_version.model_id}:{model_version.version}")
         # 實際實現會與現有模型進行 A/B 對比
         return True
 
     async def _rolling_deployment(self, model_version: ModelVersion) -> bool:
         """滾動部署"""
-        logger.info(
-            f"執行滾動部署 {model_version.model_id}:{model_version.version}"
-        )
+        logger.info(f"執行滾動部署 {model_version.model_id}:{model_version.version}")
         # 實際實現會逐漸替換舊實例
         return True
 

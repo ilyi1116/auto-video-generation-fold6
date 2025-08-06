@@ -5,10 +5,10 @@ Mock backend service for frontend testing
 """
 
 import time
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from datetime import datetime
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -247,9 +247,7 @@ async def list_videos():
 @app.get("/api/v1/analytics/dashboard")
 async def get_dashboard_analytics():
     """模擬儀表板分析數據端點"""
-    return JSONResponse(
-        status_code=200, content={"success": True, "data": mock_analytics}
-    )
+    return JSONResponse(status_code=200, content={"success": True, "data": mock_analytics})
 
 
 # AI服務端點
@@ -257,7 +255,7 @@ async def get_dashboard_analytics():
 async def generate_script(request: Request):
     """模擬AI腳本生成端點"""
     body = await request.json()
-    topic = body.get("topic", "未指定主題")
+    body.get("topic", "未指定主題")
 
     # 模擬AI生成的腳本
     mock_script = """
@@ -348,9 +346,7 @@ if __name__ == "__main__":
     print("   - Login: POST http://localhost:8000/api/v1/auth/login")
     print("   - Register: POST http://localhost:8000/api/v1/auth/register")
     print("   - Videos: GET http://localhost:8000/api/v1/videos")
-    print(
-        "   - Analytics: GET http://localhost:8000/api/v1/analytics/dashboard"
-    )
+    print("   - Analytics: GET http://localhost:8000/api/v1/analytics/dashboard")
     print("\n🌐 CORS enabled for:")
     print("   - http://localhost:3000 (SvelteKit dev)")
     print("   - http://localhost:5173 (Vite dev)")

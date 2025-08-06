@@ -5,9 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = (
-        "postgresql://voiceclone:voiceclone@postgres:5432/voiceclone"
-    )
+    database_url: str = "postgresql://voiceclone:voiceclone@postgres:5432/voiceclone"
 
     # Redis
     redis_url: str = "redis://redis:6379/0"

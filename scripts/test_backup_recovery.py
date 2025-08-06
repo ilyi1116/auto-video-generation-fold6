@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from typing import Any
+
 """
 備份和恢復流程測試腳本
 驗證災難恢復的完整性和可靠性
@@ -66,9 +67,7 @@ class BackupRecoveryTester:
                 "password": os.getenv("REDIS_PASSWORD", ""),
             },
             "s3": {
-                "endpoint_url": os.getenv(
-                    "S3_ENDPOINT_URL", "http://localhost:9000"
-                ),
+                "endpoint_url": os.getenv("S3_ENDPOINT_URL", "http://localhost:9000"),
                 "access_key": os.getenv("S3_ACCESS_KEY_ID", "minioadmin"),
                 "secret_key": os.getenv("S3_SECRET_ACCESS_KEY", "minioadmin"),
                 "bucket": os.getenv("S3_BUCKET_NAME", "auto-video-backups"),
@@ -135,11 +134,7 @@ class BackupRecoveryTester:
                 duration=duration,
                 message=f"成功備份和恢復 {len(test_data)} 筆資料",
                 details={
-                    "backup_file_size": (
-                        backup_file.stat().st_size
-                        if backup_file.exists()
-                        else 0
-                    ),
+                    "backup_file_size": (backup_file.stat().st_size if backup_file.exists() else 0),
                     "restored_records": len(restored_data),
                 },
             )
@@ -161,9 +156,7 @@ class BackupRecoveryTester:
 
         try:
             # 1. 創建測試資料
-            test_keys = {
-                f"test:backup:{i}": f"test_value_{i}" for i in range(100)
-            }
+            test_keys = {f"test:backup:{i}": f"test_value_{i}" for i in range(100)}
 
             logger.info(f"在 Redis 中創建 {len(test_keys)} 個測試鍵")
             redis_client = redis.Redis(
@@ -205,9 +198,7 @@ class BackupRecoveryTester:
             # 4. 驗證資料已清除
             remaining_keys = redis_client.keys("test:backup:*")
             if remaining_keys:
-                raise Exception(
-                    f"測試資料清除失敗，仍有 {len(remaining_keys)} 個鍵"
-                )
+                raise Exception(f"測試資料清除失敗，仍有 {len(remaining_keys)} 個鍵")
 
             # 5. 模擬恢復 (重新插入資料)
             logger.info("模擬 Redis 資料恢復")
@@ -222,9 +213,7 @@ class BackupRecoveryTester:
                     restored_count += 1
 
             if restored_count != len(test_keys):
-                raise Exception(
-                    f"恢復的資料不完整: 期望 {len(test_keys)}, 實際 {restored_count}"
-                )
+                raise Exception(f"恢復的資料不完整: 期望 {len(test_keys)}, 實際 {restored_count}")
 
             # 7. 清理測試資料
             for key in test_keys.keys():
@@ -237,11 +226,7 @@ class BackupRecoveryTester:
                 duration=duration,
                 message=f"成功備份和恢復 {len(test_keys)} 個 Redis 鍵",
                 details={
-                    "backup_file_size": (
-                        backup_file.stat().st_size
-                        if backup_file.exists()
-                        else 0
-                    ),
+                    "backup_file_size": (backup_file.stat().st_size if backup_file.exists() else 0),
                     "restored_keys": restored_count,
                 },
             )
@@ -269,10 +254,7 @@ class BackupRecoveryTester:
             test_files = {}
             for i in range(10):
                 file_path = test_files_dir / f"test_file_{i}.txt"
-                content = (
-                    f"Test file {i} content\nCreated at {datetime.now()}\n"
-                    * 100
-                )
+                content = f"Test file {i} content\nCreated at {datetime.now()}\n" * 100
                 file_path.write_text(content, encoding="utf-8")
                 test_files[file_path.name] = len(content)
 
@@ -329,9 +311,7 @@ class BackupRecoveryTester:
                 message=f"成功備份和恢復 {len(test_files)} 個檔案",
                 details={
                     "backup_archive_size": (
-                        backup_archive.stat().st_size
-                        if backup_archive.exists()
-                        else 0
+                        backup_archive.stat().st_size if backup_archive.exists() else 0
                     ),
                     "restored_files": len(restored_files),
                 },
@@ -371,9 +351,7 @@ class BackupRecoveryTester:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            test_file.write_text(
-                json.dumps(test_data, indent=2), encoding="utf-8"
-            )
+            test_file.write_text(json.dumps(test_data, indent=2), encoding="utf-8")
             logger.info(f"創建測試檔案: {test_file}")
 
             # 3. 上傳到 S3
@@ -396,9 +374,7 @@ class BackupRecoveryTester:
             if not restored_file.exists():
                 raise Exception("檔案從 S3 恢復失敗")
 
-            restored_data = json.loads(
-                restored_file.read_text(encoding="utf-8")
-            )
+            restored_data = json.loads(restored_file.read_text(encoding="utf-8"))
 
             if restored_data["test_id"] != test_data["test_id"]:
                 raise Exception("恢復的檔案內容不正確")
@@ -434,9 +410,7 @@ class BackupRecoveryTester:
                 message=str(e),
             )
 
-    async def _create_test_data(
-        self, table_name: str, data: List[Tuple]
-    ) -> None:
+    async def _create_test_data(self, table_name: str, data: List[Tuple]) -> None:
         """創建測試資料"""
         conn = psycopg2.connect(**self.config["postgres"])
         try:
@@ -491,9 +465,7 @@ class BackupRecoveryTester:
         conn = psycopg2.connect(**self.config["postgres"])
         try:
             with conn.cursor() as cur:
-                cur.execute(
-                    f"SELECT name, email, created_date FROM {table_name}"
-                )
+                cur.execute(f"SELECT name, email, created_date FROM {table_name}")
                 return cur.fetchall()
         except psycopg2.Error:
             return []
@@ -563,9 +535,7 @@ class BackupRecoveryTester:
             logger.error(f"資料庫恢復失敗: {e.stderr}")
             return False
 
-    async def _manual_redis_backup(
-        self, redis_client, backup_file: Path
-    ) -> None:
+    async def _manual_redis_backup(self, redis_client, backup_file: Path) -> None:
         """手動 Redis 備份"""
         backup_data = {}
         for key in redis_client.scan_iter("test:backup:*"):
@@ -573,9 +543,7 @@ class BackupRecoveryTester:
 
         backup_file.write_text(json.dumps(backup_data), encoding="utf-8")
 
-    async def _restore_redis_data(
-        self, redis_client, test_keys: Dict[str, str]
-    ) -> None:
+    async def _restore_redis_data(self, redis_client, test_keys: Dict[str, str]) -> None:
         """恢復 Redis 資料"""
         for key, value in test_keys.items():
             redis_client.set(key, value)
@@ -594,9 +562,7 @@ class BackupRecoveryTester:
                 self.test_s3_backup_restore(),
             ]
 
-            self.test_results = await asyncio.gather(
-                *tests, return_exceptions=True
-            )
+            self.test_results = await asyncio.gather(*tests, return_exceptions=True)
 
             # 處理異常結果
             for i, result in enumerate(self.test_results):
@@ -619,11 +585,7 @@ class BackupRecoveryTester:
                     "total_tests": total_tests,
                     "passed": passed_tests,
                     "failed": failed_tests,
-                    "success_rate": (
-                        (passed_tests / total_tests) * 100
-                        if total_tests > 0
-                        else 0
-                    ),
+                    "success_rate": ((passed_tests / total_tests) * 100 if total_tests > 0 else 0),
                     "total_duration": total_duration,
                     "timestamp": datetime.now().isoformat(),
                 },
@@ -650,7 +612,7 @@ class BackupRecoveryTester:
 
     def generate_report(self, report: Dict[str, Any]) -> str:
         """生成人類可讀的測試報告"""
-        summary = report["summary"]
+        report["summary"]
 
         report_text = """
 =================================================
@@ -668,7 +630,7 @@ class BackupRecoveryTester:
 """
 
         for result in report["results"]:
-            status = "✅ 通過" if result["success"] else "❌ 失敗"
+            "✅ 通過" if result["success"] else "❌ 失敗"
             report_text += """
 {status} {result["test_name"]}
    耗時: {result["duration"]:.2f} 秒
@@ -695,9 +657,7 @@ async def main():
 
         # 保存 JSON 報告
         report_file = Path("backup_recovery_test_report.json")
-        report_file.write_text(
-            json.dumps(report, indent=2, ensure_ascii=False)
-        )
+        report_file.write_text(json.dumps(report, indent=2, ensure_ascii=False))
         logger.info(f"詳細報告已保存到: {report_file}")
 
         # 返回適當的退出碼

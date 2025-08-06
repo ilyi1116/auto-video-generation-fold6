@@ -22,9 +22,7 @@ class DatabaseMigrationManager:
     def __init__(self, project_root: Path):
         self.project_root = project_root
         self.alembic_dir = project_root / "alembic"
-        self.services_dir = (
-            project_root / "auto_generate_video_fold6" / "services"
-        )
+        self.services_dir = project_root / "auto_generate_video_fold6" / "services"
 
         # 服務配置
         self.services = {
@@ -120,9 +118,7 @@ class DatabaseMigrationManager:
             if config.get("separate_db", False):
                 try:
                     cursor.execute(
-                        sql.SQL("CREATE DATABASE {}").format(
-                            sql.Identifier(config["database"])
-                        )
+                        sql.SQL("CREATE DATABASE {}").format(sql.Identifier(config["database"]))
                     )
                     print(f"✅ 建立服務資料庫: {config['database']}")
                 except psycopg2.errors.DuplicateDatabase:
@@ -306,10 +302,7 @@ class DatabaseMigrationManager:
     def backup_database(self, backup_path: Optional[Path] = None) -> None:
         """備份資料庫"""
         if backup_path is None:
-            backup_path = (
-                self.project_root
-                / f"backup_{self.db_config['main_database']}.sql"
-            )
+            backup_path = self.project_root / f"backup_{self.db_config['main_database']}.sql"
 
         print(f"💾 備份資料庫到: {backup_path}")
 

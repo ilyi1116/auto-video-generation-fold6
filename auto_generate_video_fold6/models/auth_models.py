@@ -10,7 +10,7 @@ from .base import Base
 
 class User(Base):
     """使用者模型"""
-    
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -32,7 +32,4 @@ class User(Base):
     last_login = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
-        return (
-            f"<User(id={self.id}, email='{self.email}', "
-            f"username='{self.username}')>"
-        )
+        return f"<User(id={self.id}, email='{self.email}', " f"username='{self.username}')>"

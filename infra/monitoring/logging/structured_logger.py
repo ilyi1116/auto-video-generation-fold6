@@ -17,18 +17,10 @@ import structlog
 from pythonjsonlogger import jsonlogger
 
 # 上下文變數，用於追蹤請求
-request_id_context: ContextVar[Optional[str]] = ContextVar(
-    "request_id", default=None
-)
-user_id_context: ContextVar[Optional[str]] = ContextVar(
-    "user_id", default=None
-)
-trace_id_context: ContextVar[Optional[str]] = ContextVar(
-    "trace_id", default=None
-)
-correlation_id_context: ContextVar[Optional[str]] = ContextVar(
-    "correlation_id", default=None
-)
+request_id_context: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+user_id_context: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
+trace_id_context: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
+correlation_id_context: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
 
 
 class LogLevel(Enum):
@@ -280,49 +272,29 @@ class StructuredLogger:
             **kwargs,
         )
 
-    def debug(
-        self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs
-    ):
+    def debug(self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs):
         """記錄 DEBUG 級別日誌"""
-        event = self._create_log_event(
-            LogLevel.DEBUG, event_type, message, **kwargs
-        )
+        event = self._create_log_event(LogLevel.DEBUG, event_type, message, **kwargs)
         self.struct_logger.debug(message, **event.to_dict())
 
-    def info(
-        self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs
-    ):
+    def info(self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs):
         """記錄 INFO 級別日誌"""
-        event = self._create_log_event(
-            LogLevel.INFO, event_type, message, **kwargs
-        )
+        event = self._create_log_event(LogLevel.INFO, event_type, message, **kwargs)
         self.struct_logger.info(message, **event.to_dict())
 
-    def warning(
-        self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs
-    ):
+    def warning(self, message: str, event_type: EventType = EventType.SYSTEM, **kwargs):
         """記錄 WARNING 級別日誌"""
-        event = self._create_log_event(
-            LogLevel.WARNING, event_type, message, **kwargs
-        )
+        event = self._create_log_event(LogLevel.WARNING, event_type, message, **kwargs)
         self.struct_logger.warning(message, **event.to_dict())
 
-    def error(
-        self, message: str, event_type: EventType = EventType.ERROR, **kwargs
-    ):
+    def error(self, message: str, event_type: EventType = EventType.ERROR, **kwargs):
         """記錄 ERROR 級別日誌"""
-        event = self._create_log_event(
-            LogLevel.ERROR, event_type, message, **kwargs
-        )
+        event = self._create_log_event(LogLevel.ERROR, event_type, message, **kwargs)
         self.struct_logger.error(message, **event.to_dict())
 
-    def critical(
-        self, message: str, event_type: EventType = EventType.ERROR, **kwargs
-    ):
+    def critical(self, message: str, event_type: EventType = EventType.ERROR, **kwargs):
         """記錄 CRITICAL 級別日誌"""
-        event = self._create_log_event(
-            LogLevel.CRITICAL, event_type, message, **kwargs
-        )
+        event = self._create_log_event(LogLevel.CRITICAL, event_type, message, **kwargs)
         self.struct_logger.critical(message, **event.to_dict())
 
     def log_request(
@@ -348,9 +320,7 @@ class StructuredLogger:
             **kwargs,
         )
 
-    def log_error(
-        self, error: Exception, context: Dict[str, Any] = None, **kwargs
-    ):
+    def log_error(self, error: Exception, context: Dict[str, Any] = None, **kwargs):
         """記錄錯誤"""
         error_details = {
             "type": type(error).__name__,
@@ -385,11 +355,7 @@ class StructuredLogger:
             "resource": resource,
         }
 
-        level = (
-            LogLevel.WARNING
-            if severity in ["low", "medium"]
-            else LogLevel.ERROR
-        )
+        level = LogLevel.WARNING if severity in ["low", "medium"] else LogLevel.ERROR
 
         if level == LogLevel.ERROR:
             self.error(
@@ -440,9 +406,7 @@ class StructuredLogger:
                 **kwargs,
             )
 
-    def log_business_event(
-        self, event_name: str, metrics: Dict[str, Any], **kwargs
-    ):
+    def log_business_event(self, event_name: str, metrics: Dict[str, Any], **kwargs):
         """記錄業務事件"""
         self.info(
             f"Business event: {event_name}",
@@ -568,9 +532,7 @@ def log_function_call(
                 if include_result:
                     log_data["result"] = str(result)
 
-                logger.debug(
-                    f"Function completed: {func_name}", extra=log_data
-                )
+                logger.debug(f"Function completed: {func_name}", extra=log_data)
                 return result
 
             except Exception as e:
@@ -606,9 +568,7 @@ def log_function_call(
                 if include_result:
                     log_data["result"] = str(result)
 
-                logger.debug(
-                    f"Function completed: {func_name}", extra=log_data
-                )
+                logger.debug(f"Function completed: {func_name}", extra=log_data)
                 return result
 
             except Exception as e:

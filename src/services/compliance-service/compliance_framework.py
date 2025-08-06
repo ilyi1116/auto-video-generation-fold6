@@ -173,9 +173,7 @@ class GDPRCompliance:
 
         return is_valid
 
-    async def process_subject_access_request(
-        self, subject_id: str
-    ) -> Dict[str, Any]:
+    async def process_subject_access_request(self, subject_id: str) -> Dict[str, Any]:
         """處理資料主體存取請求 - GDPR 第15條"""
 
         try:
@@ -186,21 +184,13 @@ class GDPRCompliance:
             access_response = {
                 "subject_id": subject_id,
                 "data_collected": personal_data,
-                "processing_purposes": await self._get_processing_purposes(
-                    subject_id
-                ),
+                "processing_purposes": await self._get_processing_purposes(subject_id),
                 "lawful_basis": await self._get_lawful_basis(subject_id),
-                "retention_periods": await self._get_retention_periods(
-                    subject_id
-                ),
+                "retention_periods": await self._get_retention_periods(subject_id),
                 "recipients": await self._get_data_recipients(subject_id),
-                "third_country_transfers": await self._get_third_country_transfers(
-                    subject_id
-                ),
+                "third_country_transfers": await self._get_third_country_transfers(subject_id),
                 "data_source": await self._get_data_source(subject_id),
-                "automated_decision_making": await self._get_automated_decisions(
-                    subject_id
-                ),
+                "automated_decision_making": await self._get_automated_decisions(subject_id),
                 "generated_at": datetime.utcnow().isoformat(),
             }
 
@@ -220,28 +210,20 @@ class GDPRCompliance:
             # 檢查是否有法律義務保留資料
             legal_holds = await self._check_legal_holds(subject_id)
             if legal_holds:
-                logger.warning(
-                    f"由於法律義務無法刪除資料: {subject_id}, 保留原因: {legal_holds}"
-                )
+                logger.warning(f"由於法律義務無法刪除資料: {subject_id}, 保留原因: {legal_holds}")
                 return False
 
             # 執行資料刪除
             deletion_results = {
                 "user_profiles": await self._delete_user_profiles(subject_id),
                 "activity_logs": await self._delete_activity_logs(subject_id),
-                "generated_content": await self._delete_generated_content(
-                    subject_id
-                ),
+                "generated_content": await self._delete_generated_content(subject_id),
                 "cached_data": await self._delete_cached_data(subject_id),
-                "backup_data": await self._schedule_backup_deletion(
-                    subject_id
-                ),
+                "backup_data": await self._schedule_backup_deletion(subject_id),
             }
 
             # 記錄刪除活動
-            await self._log_erasure_activity(
-                subject_id, deletion_results, reason
-            )
+            await self._log_erasure_activity(subject_id, deletion_results, reason)
 
             all_deleted = all(deletion_results.values())
             logger.info(f"資料刪除請求處理: {subject_id}, 成功: {all_deleted}")
@@ -294,13 +276,9 @@ class GDPRCompliance:
         """安排備份資料刪除"""
         return True
 
-    async def _log_erasure_activity(
-        self, subject_id: str, results: Dict[str, bool], reason: str
-    ):
+    async def _log_erasure_activity(self, subject_id: str, results: Dict[str, bool], reason: str):
         """記錄刪除活動"""
-        logger.info(
-            f"記錄刪除活動: {subject_id}, 原因: {reason}, 結果: {results}"
-        )
+        logger.info(f"記錄刪除活動: {subject_id}, 原因: {reason}, 結果: {results}")
 
 
 class CCPACompliance:
@@ -358,15 +336,11 @@ class DataRetentionManager:
 
         for policy_name, policy_config in self.retention_policies.items():
             try:
-                await self._process_retention_policy(
-                    policy_name, policy_config
-                )
+                await self._process_retention_policy(policy_name, policy_config)
             except Exception as e:
                 logger.error(f"執行保留政策失敗 {policy_name}: {e}")
 
-    async def _process_retention_policy(
-        self, policy_name: str, policy_config: Dict[str, Any]
-    ):
+    async def _process_retention_policy(self, policy_name: str, policy_config: Dict[str, Any]):
         """處理單個保留政策"""
 
         data_type = policy_config.get("data_type")
@@ -386,13 +360,9 @@ class DataRetentionManager:
             elif action == RetentionAction.REVIEW:
                 await self._flag_for_review(data_item)
 
-        logger.info(
-            f"保留政策執行完成: {policy_name}, 處理項目: {len(expired_data)}"
-        )
+        logger.info(f"保留政策執行完成: {policy_name}, 處理項目: {len(expired_data)}")
 
-    async def _find_expired_data(
-        self, data_type: str, retention_days: int
-    ) -> List[Dict[str, Any]]:
+    async def _find_expired_data(self, data_type: str, retention_days: int) -> List[Dict[str, Any]]:
         """查找過期資料"""
         # 實現查找邏輯
         return []
@@ -444,9 +414,7 @@ class AuditLogger:
             ip_address=metadata.get("ip_address", "") if metadata else "",
             user_agent=metadata.get("user_agent", "") if metadata else "",
             success=metadata.get("success", True) if metadata else True,
-            risk_level=(
-                metadata.get("risk_level", "low") if metadata else "low"
-            ),
+            risk_level=(metadata.get("risk_level", "low") if metadata else "low"),
             compliance_tags=[std.value for std in compliance_standards],
             metadata=metadata or {},
         )
@@ -535,9 +503,7 @@ class AuditLogger:
         except Exception as e:
             logger.error(f"發送風險警報失敗: {e}")
 
-    async def _send_email_alert(
-        self, message: str, alert_config: Dict[str, Any]
-    ):
+    async def _send_email_alert(self, message: str, alert_config: Dict[str, Any]):
         """發送電子郵件警報"""
         try:
             smtp_server = alert_config.get("smtp_server", "localhost")
@@ -579,14 +545,10 @@ class ComplianceReportGenerator:
 
         try:
             # 資料處理活動統計
-            processing_stats = await self._get_processing_activity_stats(
-                start_date, end_date
-            )
+            processing_stats = await self._get_processing_activity_stats(start_date, end_date)
 
             # 資料主體權利請求統計
-            subject_rights_stats = await self._get_subject_rights_stats(
-                start_date, end_date
-            )
+            subject_rights_stats = await self._get_subject_rights_stats(start_date, end_date)
 
             # 同意管理統計
             consent_stats = await self._get_consent_stats(start_date, end_date)
@@ -641,9 +603,7 @@ class ComplianceReportGenerator:
             "completion_rate": 1.0,
         }
 
-    async def _get_consent_stats(
-        self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    async def _get_consent_stats(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """獲取同意統計"""
         return {
             "total_consents_given": 0,
@@ -687,9 +647,7 @@ class ComplianceFramework:
         self.ccpa_compliance = CCPACompliance(self.config.get("ccpa", {}))
 
         # 資料保留管理器
-        self.retention_manager = DataRetentionManager(
-            self.config.get("retention", {})
-        )
+        self.retention_manager = DataRetentionManager(self.config.get("retention", {}))
 
         # 審計日誌記錄器
         self.audit_logger = AuditLogger(self.config.get("audit", {}))
@@ -699,8 +657,7 @@ class ComplianceFramework:
 
         # 啟用的合規標準
         self.enabled_standards = [
-            ComplianceStandard(std)
-            for std in self.config.get("enabled_standards", ["gdpr"])
+            ComplianceStandard(std) for std in self.config.get("enabled_standards", ["gdpr"])
         ]
 
     def _load_config(self, config_file: str) -> Dict[str, Any]:
@@ -776,24 +733,16 @@ class ComplianceFramework:
         try:
             if request_type == "access":
                 # GDPR 第15條 - 存取權
-                result = (
-                    await self.gdpr_compliance.process_subject_access_request(
-                        subject_id
-                    )
-                )
+                result = await self.gdpr_compliance.process_subject_access_request(subject_id)
 
             elif request_type == "erasure":
                 # GDPR 第17條 - 被遺忘權
-                success = await self.gdpr_compliance.process_erasure_request(
-                    subject_id
-                )
+                success = await self.gdpr_compliance.process_erasure_request(subject_id)
                 result = {"deleted": success}
 
             elif request_type == "opt_out":
                 # CCPA 退出銷售
-                success = await self.ccpa_compliance.process_opt_out_request(
-                    subject_id
-                )
+                success = await self.ccpa_compliance.process_opt_out_request(subject_id)
                 result = {"opted_out": success}
 
             else:
@@ -824,9 +773,7 @@ class ComplianceFramework:
 
             return {"success": False, "error": str(e)}
 
-    async def validate_data_processing(
-        self, activity: DataProcessingActivity
-    ) -> Dict[str, Any]:
+    async def validate_data_processing(self, activity: DataProcessingActivity) -> Dict[str, Any]:
         """驗證資料處理活動的合規性"""
 
         validation_results = {
@@ -840,12 +787,8 @@ class ComplianceFramework:
             gdpr_validation = await self._validate_gdpr_processing(activity)
             if not gdpr_validation["compliant"]:
                 validation_results["compliant"] = False
-                validation_results["violations"].extend(
-                    gdpr_validation["violations"]
-                )
-            validation_results["recommendations"].extend(
-                gdpr_validation["recommendations"]
-            )
+                validation_results["violations"].extend(gdpr_validation["violations"])
+            validation_results["recommendations"].extend(gdpr_validation["recommendations"])
 
         # 記錄驗證事件
         await self.audit_logger.log_compliance_event(
@@ -862,9 +805,7 @@ class ComplianceFramework:
 
         return validation_results
 
-    async def _validate_gdpr_processing(
-        self, activity: DataProcessingActivity
-    ) -> Dict[str, Any]:
+    async def _validate_gdpr_processing(self, activity: DataProcessingActivity) -> Dict[str, Any]:
         """驗證 GDPR 處理合規性"""
 
         violations = []
@@ -942,9 +883,7 @@ class ComplianceFramework:
         """生成合規報告"""
 
         if standard == ComplianceStandard.GDPR:
-            return await self.report_generator.generate_gdpr_report(
-                start_date, end_date
-            )
+            return await self.report_generator.generate_gdpr_report(start_date, end_date)
         else:
             raise ValueError(f"不支持的合規標準報告: {standard}")
 

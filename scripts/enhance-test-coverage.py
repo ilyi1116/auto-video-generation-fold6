@@ -7,7 +7,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict
 
 
 class TestCoverageEnhancer:
@@ -84,20 +84,14 @@ class TestCoverageEnhancer:
                     {
                         "component": component,
                         "test_name": expected_test_name,
-                        "type": self.determine_component_type(
-                            component, structure
-                        ),
+                        "type": self.determine_component_type(component, structure),
                     }
                 )
 
         # 計算覆蓋率分數
         if all_components:
-            covered_components = len(all_components) - len(
-                structure["missing_tests"]
-            )
-            structure["coverage_score"] = (
-                covered_components / len(all_components)
-            ) * 100
+            covered_components = len(all_components) - len(structure["missing_tests"])
+            structure["coverage_score"] = (covered_components / len(all_components)) * 100
 
         return structure
 
@@ -112,9 +106,7 @@ class TestCoverageEnhancer:
         else:
             return "module"
 
-    def generate_test_template(
-        self, component: str, component_type: str, service_name: str
-    ) -> str:
+    def generate_test_template(self, component: str, component_type: str, service_name: str) -> str:
         """生成測試模板"""
         templates = {
             "router": self.generate_router_test_template,
@@ -123,14 +115,10 @@ class TestCoverageEnhancer:
             "module": self.generate_module_test_template,
         }
 
-        template_func = templates.get(
-            component_type, self.generate_module_test_template
-        )
+        template_func = templates.get(component_type, self.generate_module_test_template)
         return template_func(component, service_name)
 
-    def generate_router_test_template(
-        self, component: str, service_name: str
-    ) -> str:
+    def generate_router_test_template(self, component: str, service_name: str) -> str:
         """生成路由器測試模板"""
         return '''"""
 測試 {component} 路由器
@@ -205,9 +193,7 @@ class Test{component.replace("_", "").title()}Router:
 # TODO: 添加性能測試（如需要）
 '''
 
-    def generate_service_test_template(
-        self, component: str, service_name: str
-    ) -> str:
+    def generate_service_test_template(self, component: str, service_name: str) -> str:
         """生成服務層測試模板"""
         return '''"""
 測試 {component} 服務
@@ -285,9 +271,7 @@ class Test{component.replace("_", "").title()}Service:
 # TODO: 添加性能測試（如需要）
 '''
 
-    def generate_model_test_template(
-        self, component: str, service_name: str
-    ) -> str:
+    def generate_model_test_template(self, component: str, service_name: str) -> str:
         """生成模型測試模板"""
         return '''"""
 測試 {component} 模型
@@ -376,9 +360,7 @@ class Test{component.replace("_", "").title()}Model:
 # TODO: 添加性能測試（如需要）
 '''
 
-    def generate_module_test_template(
-        self, component: str, service_name: str
-    ) -> str:
+    def generate_module_test_template(self, component: str, service_name: str) -> str:
         """生成模組測試模板"""
         return '''"""
 測試 {component} 模組
@@ -602,9 +584,7 @@ def setup_test_environment():
         if not self.analysis_results:
             self.analyze_all_services()
 
-        services_to_process = (
-            [service_name] if service_name else self.analysis_results.keys()
-        )
+        services_to_process = [service_name] if service_name else self.analysis_results.keys()
 
         generated_tests = 0
 
@@ -626,9 +606,7 @@ def setup_test_environment():
                 conftest_content = self.generate_conftest_template(service)
                 with open(conftest_path, "w", encoding="utf-8") as f:
                     f.write(conftest_content)
-                print(
-                    f"   ✅ 生成: {conftest_path.relative_to(self.project_root)}"
-                )
+                print(f"   ✅ 生成: {conftest_path.relative_to(self.project_root)}")
 
             # 生成 __init__.py（如果不存在）
             init_path = tests_dir / "__init__.py"
@@ -650,14 +628,10 @@ def setup_test_environment():
                     with open(test_path, "w", encoding="utf-8") as f:
                         f.write(test_content)
 
-                    print(
-                        f"   ✅ 生成: {test_path.relative_to(self.project_root)}"
-                    )
+                    print(f"   ✅ 生成: {test_path.relative_to(self.project_root)}")
                     generated_tests += 1
                 else:
-                    print(
-                        f"   ⏭️  跳過: {test_path.relative_to(self.project_root)} (已存在)"
-                    )
+                    print(f"   ⏭️  跳過: {test_path.relative_to(self.project_root)} (已存在)")
 
         return generated_tests
 
@@ -777,9 +751,7 @@ fi
 
         # 設置執行權限
         os.chmod(script_path, 0o755)
-        print(
-            f"✅ 測試運行腳本已創建: {script_path.relative_to(self.project_root)}"
-        )
+        print(f"✅ 測試運行腳本已創建: {script_path.relative_to(self.project_root)}")
 
     def generate_coverage_report(self):
         """生成覆蓋率報告"""
@@ -815,17 +787,12 @@ fi
             }
 
             report["summary"]["total_components"] += total_components
-            report["summary"]["total_existing_tests"] += len(
-                analysis["existing_tests"]
-            )
-            report["summary"]["total_missing_tests"] += len(
-                analysis["missing_tests"]
-            )
+            report["summary"]["total_existing_tests"] += len(analysis["existing_tests"])
+            report["summary"]["total_missing_tests"] += len(analysis["missing_tests"])
 
         if report["summary"]["total_components"] > 0:
             covered = (
-                report["summary"]["total_components"]
-                - report["summary"]["total_missing_tests"]
+                report["summary"]["total_components"] - report["summary"]["total_missing_tests"]
             )
             report["summary"]["overall_coverage"] = (
                 covered / report["summary"]["total_components"]
@@ -836,9 +803,7 @@ fi
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
-        print(
-            f"📊 覆蓋率報告已保存: {report_path.relative_to(self.project_root)}"
-        )
+        print(f"📊 覆蓋率報告已保存: {report_path.relative_to(self.project_root)}")
         return report
 
 

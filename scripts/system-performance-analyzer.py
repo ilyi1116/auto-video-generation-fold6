@@ -31,9 +31,7 @@ class SystemPerformanceAnalyzer:
                 "usage_percent": psutil.cpu_percent(interval=1),
                 "count": psutil.cpu_count(),
                 "count_logical": psutil.cpu_count(logical=True),
-                "freq": (
-                    psutil.cpu_freq()._asdict() if psutil.cpu_freq() else None
-                ),
+                "freq": (psutil.cpu_freq()._asdict() if psutil.cpu_freq() else None),
             },
             "memory": {
                 "total": psutil.virtual_memory().total,
@@ -90,11 +88,7 @@ class SystemPerformanceAnalyzer:
                             "name": pinfo["name"],
                             "cpu_percent": pinfo["cpu_percent"],
                             "memory_percent": pinfo["memory_percent"],
-                            "cmdline": (
-                                " ".join(pinfo["cmdline"][:3])
-                                if pinfo["cmdline"]
-                                else ""
-                            ),
+                            "cmdline": (" ".join(pinfo["cmdline"][:3]) if pinfo["cmdline"] else ""),
                         }
                     )
 
@@ -214,9 +208,7 @@ class SystemPerformanceAnalyzer:
                     "available": True,
                     "ping_response": result.stdout.strip(),
                     "memory_info": (
-                        info_result.stdout.strip()
-                        if info_result.returncode == 0
-                        else None
+                        info_result.stdout.strip() if info_result.returncode == 0 else None
                     ),
                 }
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
@@ -239,13 +231,9 @@ class SystemPerformanceAnalyzer:
         for disk_info in metrics["disk"].values():
             total_disk_gb += disk_info["used"] / (1024**3)
 
-        hourly_cost = (
-            cpu_cores * cpu_cost_per_hour + memory_gb * memory_cost_per_gb_hour
-        )
+        hourly_cost = cpu_cores * cpu_cost_per_hour + memory_gb * memory_cost_per_gb_hour
 
-        monthly_cost = (
-            hourly_cost * 24 * 30 + total_disk_gb * storage_cost_per_gb_month
-        )
+        monthly_cost = hourly_cost * 24 * 30 + total_disk_gb * storage_cost_per_gb_month
 
         return {
             "hourly_cost_usd": round(hourly_cost, 4),
@@ -258,33 +246,23 @@ class SystemPerformanceAnalyzer:
             },
         }
 
-    def generate_optimization_recommendations(
-        self, metrics: Dict
-    ) -> List[str]:
+    def generate_optimization_recommendations(self, metrics: Dict) -> List[str]:
         """生成優化建議"""
         recommendations = []
 
         # CPU 優化建議
         cpu_usage = metrics["cpu"]["usage_percent"]
         if cpu_usage > 80:
-            recommendations.append(
-                "🔥 CPU 使用率過高 (>80%)，考慮垂直擴展或優化應用程式"
-            )
+            recommendations.append("🔥 CPU 使用率過高 (>80%)，考慮垂直擴展或優化應用程式")
         elif cpu_usage < 20:
-            recommendations.append(
-                "💡 CPU 使用率較低 (<20%)，可能可以減少資源配置"
-            )
+            recommendations.append("💡 CPU 使用率較低 (<20%)，可能可以減少資源配置")
 
         # 記憶體優化建議
         memory_usage = metrics["memory"]["usage_percent"]
         if memory_usage > 85:
-            recommendations.append(
-                "🔥 記憶體使用率過高 (>85%)，考慮增加記憶體或優化記憶體使用"
-            )
+            recommendations.append("🔥 記憶體使用率過高 (>85%)，考慮增加記憶體或優化記憶體使用")
         elif memory_usage < 30:
-            recommendations.append(
-                "💡 記憶體使用率較低 (<30%)，可以考慮減少記憶體配置"
-            )
+            recommendations.append("💡 記憶體使用率較低 (<30%)，可以考慮減少記憶體配置")
 
         # 磁碟優化建議
         for path, disk_info in metrics["disk"].items():
@@ -299,15 +277,11 @@ class SystemPerformanceAnalyzer:
 
         # 進程優化建議
         top_processes = metrics["processes"]["top_cpu_processes"][:5]
-        high_cpu_processes = [
-            p for p in top_processes if p["cpu_percent"] > 50
-        ]
+        high_cpu_processes = [p for p in top_processes if p["cpu_percent"] > 50]
 
         if high_cpu_processes:
             process_names = [p["name"] for p in high_cpu_processes]
-            recommendations.append(
-                f"🔍 發現高 CPU 使用進程: {', '.join(process_names)}，建議檢查"
-            )
+            recommendations.append(f"🔍 發現高 CPU 使用進程: {', '.join(process_names)}，建議檢查")
 
         # 通用建議
         recommendations.extend(
@@ -478,15 +452,9 @@ class SystemPerformanceAnalyzer:
 
 def main():
     parser = argparse.ArgumentParser(description="系統性能分析工具")
-    parser.add_argument(
-        "--output", help="輸出報告文件路徑", default="performance-report.md"
-    )
-    parser.add_argument(
-        "--test", help="執行性能測試 (秒)", type=int, default=0
-    )
-    parser.add_argument(
-        "--json", help="同時輸出 JSON 格式", action="store_true"
-    )
+    parser.add_argument("--output", help="輸出報告文件路徑", default="performance-report.md")
+    parser.add_argument("--test", help="執行性能測試 (秒)", type=int, default=0)
+    parser.add_argument("--json", help="同時輸出 JSON 格式", action="store_true")
 
     args = parser.parse_args()
 

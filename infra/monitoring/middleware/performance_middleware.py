@@ -142,9 +142,7 @@ class PerformanceMetrics:
         )
 
         self.queue_size = (
-            Gauge(
-                "queue_size", "Current queue size", ["queue_name", "service"]
-            )
+            Gauge("queue_size", "Current queue size", ["queue_name", "service"])
             if PROMETHEUS_AVAILABLE
             else None
         )
@@ -214,14 +212,14 @@ class PerformanceMetrics:
                 service=service,
             ).inc()
 
-            self.request_duration.labels(
-                method=method, endpoint=endpoint, service=service
-            ).observe(duration)
+            self.request_duration.labels(method=method, endpoint=endpoint, service=service).observe(
+                duration
+            )
 
             if request_size > 0:
-                self.request_size.labels(
-                    method=method, endpoint=endpoint, service=service
-                ).observe(request_size)
+                self.request_size.labels(method=method, endpoint=endpoint, service=service).observe(
+                    request_size
+                )
 
             if response_size > 0:
                 self.response_size.labels(
@@ -261,9 +259,9 @@ class PerformanceMetrics:
     ):
         """記錄影片生成指標"""
         if PROMETHEUS_AVAILABLE and self.video_generation_duration:
-            self.video_generation_duration.labels(
-                status=status, video_type=video_type
-            ).observe(duration)
+            self.video_generation_duration.labels(status=status, video_type=video_type).observe(
+                duration
+            )
 
             self.video_generation_total.labels(
                 status=status, video_type=video_type, platform=platform
@@ -289,13 +287,9 @@ class PerformanceMetrics:
     ):
         """記錄趨勢分析指標"""
         if PROMETHEUS_AVAILABLE and self.trend_analysis_duration:
-            self.trend_analysis_duration.labels(
-                source=source, accuracy=accuracy
-            ).observe(duration)
+            self.trend_analysis_duration.labels(source=source, accuracy=accuracy).observe(duration)
 
-            self.trend_analysis_total.labels(
-                source=source, status=status, accuracy=accuracy
-            ).inc()
+            self.trend_analysis_total.labels(source=source, status=status, accuracy=accuracy).inc()
 
         with self._metrics_lock:
             self._fallback_metrics["trend_analysis"].append(
@@ -308,9 +302,7 @@ class PerformanceMetrics:
                 }
             )
 
-    def record_social_publish(
-        self, platform: str, status: str, content_type: str = "video"
-    ):
+    def record_social_publish(self, platform: str, status: str, content_type: str = "video"):
         """記錄社交媒體發布指標"""
         if PROMETHEUS_AVAILABLE and self.social_publish_total:
             self.social_publish_total.labels(
@@ -348,20 +340,14 @@ class PerformanceMetrics:
         """記錄快取事件"""
         if PROMETHEUS_AVAILABLE:
             if hit and self.cache_hits:
-                self.cache_hits.labels(
-                    cache_type=cache_type, service=service
-                ).inc()
+                self.cache_hits.labels(cache_type=cache_type, service=service).inc()
             elif not hit and self.cache_misses:
-                self.cache_misses.labels(
-                    cache_type=cache_type, service=service
-                ).inc()
+                self.cache_misses.labels(cache_type=cache_type, service=service).inc()
 
     def update_queue_size(self, queue_name: str, service: str, size: int):
         """更新隊列大小"""
         if PROMETHEUS_AVAILABLE and self.queue_size:
-            self.queue_size.labels(queue_name=queue_name, service=service).set(
-                size
-            )
+            self.queue_size.labels(queue_name=queue_name, service=service).set(size)
 
     def update_active_connections(self, service: str, count: int):
         """更新活躍連接數"""
@@ -380,24 +366,16 @@ class PerformanceMetrics:
 
         if recent_requests:
             # Average response time
-            avg_duration = sum(r["duration"] for r in recent_requests) / len(
-                recent_requests
-            )
+            avg_duration = sum(r["duration"] for r in recent_requests) / len(recent_requests)
             self._performance_stats["avg_response_time"] = avg_duration
 
             # Request rate (requests per second)
             time_span = max(now - recent_requests[0]["timestamp"], 1)
-            self._performance_stats["request_rate"] = (
-                len(recent_requests) / time_span
-            )
+            self._performance_stats["request_rate"] = len(recent_requests) / time_span
 
             # Error rate
-            error_count = sum(
-                1 for r in recent_requests if r["status_code"] >= 400
-            )
-            self._performance_stats["error_rate"] = (
-                error_count / len(recent_requests) * 100
-            )
+            error_count = sum(1 for r in recent_requests if r["status_code"] >= 400)
+            self._performance_stats["error_rate"] = error_count / len(recent_requests) * 100
 
             self._performance_stats["last_updated"] = datetime.utcnow()
 
@@ -415,9 +393,7 @@ class PerformanceMetrics:
             filtered_metrics = {}
             for metric_type, metrics in self._fallback_metrics.items():
                 filtered_metrics[metric_type] = [
-                    m
-                    for m in metrics
-                    if datetime.fromisoformat(m["timestamp"]) > cutoff_time
+                    m for m in metrics if datetime.fromisoformat(m["timestamp"]) > cutoff_time
                 ]
 
             return filtered_metrics
@@ -477,9 +453,7 @@ class PerformanceMiddleware:
                 response_headers = dict(message.get("headers", []))
                 if b"content-length" in response_headers:
                     try:
-                        response_size = int(
-                            response_headers[b"content-length"].decode()
-                        )
+                        response_size = int(response_headers[b"content-length"].decode())
                     except (ValueError, AttributeError):
                         pass
 
@@ -628,21 +602,15 @@ def record_video_generation(
     duration: float, status: str, video_type: str, platform: str = "unknown"
 ):
     """記錄影片生成指標的便捷函數"""
-    return metrics.record_video_generation(
-        duration, status, video_type, platform
-    )
+    return metrics.record_video_generation(duration, status, video_type, platform)
 
 
-def record_trend_analysis(
-    duration: float, source: str, status: str, accuracy: str = "unknown"
-):
+def record_trend_analysis(duration: float, source: str, status: str, accuracy: str = "unknown"):
     """記錄趨勢分析指標的便捷函數"""
     return metrics.record_trend_analysis(duration, source, status, accuracy)
 
 
-def record_social_publish(
-    platform: str, status: str, content_type: str = "video"
-):
+def record_social_publish(platform: str, status: str, content_type: str = "video"):
     """記錄社交媒體發布指標的便捷函數"""
     return metrics.record_social_publish(platform, status, content_type)
 

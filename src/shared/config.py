@@ -76,17 +76,11 @@ class BaseServiceSettings(BaseSettings):
 
     # CORS 配置
     cors_origins: list[str] = []
-    cors_credentials: bool = (
-        os.getenv("CORS_CREDENTIALS", "false").lower() == "true"
-    )
+    cors_credentials: bool = os.getenv("CORS_CREDENTIALS", "false").lower() == "true"
 
     # 監控配置
-    prometheus_enabled: bool = (
-        os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
-    )
-    jaeger_enabled: bool = (
-        os.getenv("JAEGER_ENABLED", "false").lower() == "true"
-    )
+    prometheus_enabled: bool = os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
+    jaeger_enabled: bool = os.getenv("JAEGER_ENABLED", "false").lower() == "true"
 
     class Config:
         """Pydantic 配置"""
@@ -98,9 +92,7 @@ class BaseServiceSettings(BaseSettings):
         # 處理 CORS_ORIGINS 字符串轉換為列表
         cors_origins_str = os.getenv("CORS_ORIGINS", "")
         if cors_origins_str:
-            self.cors_origins = [
-                origin.strip() for origin in cors_origins_str.split(",")
-            ]
+            self.cors_origins = [origin.strip() for origin in cors_origins_str.split(",")]
 
         super().__init__(**kwargs)
 
@@ -140,12 +132,8 @@ class AuthServiceSettings(BaseServiceSettings):
     # JWT 配置
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "your-secret-key")
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
-    jwt_access_token_expire_minutes: int = int(
-        os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15")
-    )
-    jwt_refresh_token_expire_days: int = int(
-        os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "30")
-    )
+    jwt_access_token_expire_minutes: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
+    jwt_refresh_token_expire_days: int = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "30"))
 
 
 class VideoServiceSettings(BaseServiceSettings):
@@ -167,9 +155,7 @@ class AIServiceSettings(BaseServiceSettings):
 
     # AI 配置
     model_cache_dir: str = os.getenv("MODEL_CACHE_DIR", "./models")
-    max_concurrent_requests: int = int(
-        os.getenv("MAX_CONCURRENT_REQUESTS", "10")
-    )
+    max_concurrent_requests: int = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
 
 
 class StorageServiceSettings(BaseServiceSettings):

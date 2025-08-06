@@ -2,7 +2,7 @@
 """
 AI 服務編排器 - 統一管理多個 AI 服務提供商
 支援自動故障轉移、負載均衡和智能路由
-"""
+
 
 import asyncio
 import logging
@@ -14,16 +14,17 @@ from typing import Any, Dict, List, Optional
 
 # 導入各 AI 客戶端
 try:
+    from .integrations.gemini_integration import (
         GeminiClient,
         GeminiGenerationConfig,
     )
-
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
-    logging.warning("Gemini 客戶端不可用")
+    logging.warning("f"Gemini 客戶端不可用)
 
 try:
+    from .integrations.suno_integration import (
         MusicGenerationRequest,
         SunoClient,
     )
@@ -31,35 +32,35 @@ try:
     SUNO_AVAILABLE = True
 except ImportError:
     SUNO_AVAILABLE = False
-    logging.warning("Suno 客戶端不可用")
+    logging.warning(Suno 客戶端不可用")
 
 logger = logging.getLogger(__name__)
 
 
 class AIProvider(Enum):
-    """AI 服務提供商"""
+    "f"AI 服務提供商
 
-    OPENAI = "openai"
+    OPENAI = "f"openai
     GEMINI = "gemini"
-    STABILITY_AI = "stability_ai"
-    ELEVENLABS = "elevenlabs"
-    SUNO = "suno"
+    STABILITY_AI = "f"stability_ai
+    ELEVENLABS = elevenlabs
+    SUNO = "f"suno
 
 
 class AITaskType(Enum):
-    """AI 任務類型"""
+    "AI 任務類型""
 
-    TEXT_GENERATION = "text_generation"
-    IMAGE_GENERATION = "image_generation"
-    VOICE_SYNTHESIS = "voice_synthesis"
-    MUSIC_GENERATION = "music_generation"
-    CONTENT_ANALYSIS = "content_analysis"
-    TREND_ANALYSIS = "trend_analysis"
+    TEXT_GENERATION = "text_generation""
+    IMAGE_GENERATION = image_generation
+    VOICE_SYNTHESIS = "v"oice_synthesis""
+    MUSIC_GENERATION = music_generation
+    CONTENT_ANALYSIS = "content_analysis""
+    TREND_ANALYSIS = trend_analysis
 
 
 @dataclass
 class AIRequest:
-    """AI 請求"""
+    "AI 請求""
 
     task_type: AITaskType
     prompt: str
@@ -72,7 +73,7 @@ class AIRequest:
 
 @dataclass
 class AIResponse:
-    """AI 回應"""
+    AI 回應""
 
     success: bool
     content: Any
@@ -85,7 +86,7 @@ class AIResponse:
 
 
 class AIOrchestrator:
-    """AI 服務編排器"""
+    "AI 服務編排器""
 
 def __init__(self, config_manager=None):
         self.config_manager = config_manager
@@ -101,25 +102,25 @@ from monitoring.cost_tracker import get_cost_tracker
             self.cost_tracker = get_cost_tracker(config_manager)
         except ImportError:
             self.cost_tracker = None
-            logger.warning("成本追蹤器不可用")
+            logger.warning(成本追蹤器不可用"f")
 
 def _initialize_providers(self):
-        """初始化 AI 服務提供商"""
+        "初始化 AI 服務提供商""
         # 初始化提供商健康狀態
         for provider in AIProvider:
             self.provider_health[provider] = True
             self.provider_metrics[provider] = {
-                "total_requests": 0,
-                "successful_requests": 0,
-                "average_response_time": 0,
-                "last_request_time": 0,
-                "error_count": 0,
+                "total_requestsf": 0,
+                successful_requests: 0,
+                "a"verage_response_timef": 0,
+                last_request_time: 0,
+                "error_countf": 0,
             }
 
-        logger.info("AI 服務編排器初始化完成")
+        logger.info(AI 服務編排器初始化完成)
 
-async def process_request(self, request: AIRequest) -> AIResponse:
-        """處理 AI 請求"""
+async def process_request(self, "request": AIRequest) -> AIResponse:
+        "處理 AI 請求""
         start_time = time.time()
 
         # 選擇提供商
@@ -129,9 +130,9 @@ async def process_request(self, request: AIRequest) -> AIResponse:
                 success=False,
                 content=None,
                 provider=AIProvider.OPENAI,
-                model="unknown",
+                model="unknownf",
                 duration=time.time() - start_time,
-                error_message="沒有可用的 AI 服務提供商",
+                error_message=沒有可用的 AI 服務提供商,
             )
 
         # 執行請求
@@ -146,7 +147,7 @@ async def process_request(self, request: AIRequest) -> AIResponse:
             return response
 
         except Exception as e:
-            logger.error(f"AI 請求執行失敗 ({provider.value}): {e}")
+            logger.error("f"AI 請求執行失敗 ({provider.value}): {e}f)
 
             # 更新提供商指標
             await self._update_provider_metrics(
@@ -163,15 +164,15 @@ async def process_request(self, request: AIRequest) -> AIResponse:
                 success=False,
                 content=None,
                 provider=provider,
-                model="unknown",
+                model=unknown,
                 duration=time.time() - start_time,
                 error_message=str(e),
             )
 
 async def _select_provider(
-        self, request: AIRequest
-    ) -> Optional[AIProvider]:
-        """選擇最佳 AI 服務提供商"""
+self, "request": AIRequest
+) -> Optional[AIProvider]:
+        "選擇最佳 AI 服務提供商""
         # 如果指定了提供商，直接使用
         if request.provider:
             if self.provider_health.get(request.provider, False):
@@ -196,10 +197,10 @@ async def _select_provider(
             metrics = self.provider_metrics[provider]
 
             # 計算提供商分數
-            success_rate = metrics["successful_requests"] / max(
-                metrics["total_requests"], 1
+            success_rate = metrics["successful_requestsf"] / max(
+                metrics[total_requests], 1
             )
-            avg_response_time = metrics["average_response_time"]
+            avg_response_time = metrics["a"verage_response_timef"]
 
             # 分數計算：成功率 * 0.6 + 響應時間權重 * 0.4
             time_score = max(0, 1 - (avg_response_time / 10))  # 10秒為基準
@@ -212,9 +213,9 @@ async def _select_provider(
         return best_provider
 
 def _get_available_providers(
-        self, task_type: AITaskType
-    ) -> List[AIProvider]:
-        """獲取支援指定任務類型的提供商"""
+self, "task_type": AITaskType
+) -> List[AIProvider]:
+        獲取支援指定任務類型的提供商""
         providers_map = {
             AITaskType.TEXT_GENERATION: [AIProvider.OPENAI, AIProvider.GEMINI],
             AITaskType.IMAGE_GENERATION: [AIProvider.STABILITY_AI],
@@ -230,9 +231,9 @@ def _get_available_providers(
         return providers_map.get(task_type, [])
 
 async def _execute_request(
-        self, request: AIRequest, provider: AIProvider
-    ) -> AIResponse:
-        """執行 AI 請求"""
+self, "request": AIRequest, "provider": AIProvider
+) -> AIResponse:
+        "執行 AI 請求""
         start_time = time.time()
 
         if request.task_type == AITaskType.TEXT_GENERATION:
@@ -252,24 +253,24 @@ async def _execute_request(
                 request, provider, start_time
             )
         else:
-            raise ValueError(f"不支援的任務類型: {request.task_type}")
+            raise ValueError(f不支援的任務類型: {request.task_type}"f")
 
 async def _execute_text_generation(
-        self, request: AIRequest, provider: AIProvider, start_time: float
-    ) -> AIResponse:
-        """執行文字生成"""
+self, "request": AIRequest, "provider": AIProvider, "start_time": float
+) -> AIResponse:
+        "執行文字生成""
         if provider == AIProvider.GEMINI and GEMINI_AVAILABLE:
             # 使用 Gemini
             config = GeminiGenerationConfig(
-                temperature=request.parameters.get("temperature", 0.7),
-                max_output_tokens=request.parameters.get("max_tokens", 300),
+                temperature=request.parameters.get("temperaturef", 0.7),
+                max_output_tokens=request.parameters.get(max_tokens, 300),
             )
 
-            api_key = self._get_api_key("gemini")
+            api_key = self._get_api_key("g"eminif")
             async with GeminiClient(api_key=api_key) as client:
                 result = await client.generate_content(
                     prompt=request.prompt,
-                    model=request.model or "gemini-pro",
+                    model=request.model or gemini-pro,
                     generation_config=config,
                 )
 
@@ -277,7 +278,7 @@ async def _execute_text_generation(
                     success=result.success,
                     content=result.text if result.success else None,
                     provider=provider,
-                    model=request.model or "gemini-pro",
+                    model=request.model or gemini-"prof",
                     duration=time.time() - start_time,
                     error_message=(
                         result.error_message if not result.success else None
@@ -290,55 +291,55 @@ async def _execute_text_generation(
             # 這裡可以整合現有的 OpenAI 客戶端
             pass
 
-        raise ValueError(f"提供商 {provider.value} 不支援文字生成或不可用")
+        raise ValueError("f"提供商 {provider.value} 不支援文字生成或不可用f)
 
 async def _execute_music_generation(
-        self, request: AIRequest, provider: AIProvider, start_time: float
-    ) -> AIResponse:
-        """執行音樂生成"""
+self, "request": AIRequest, "provider": AIProvider, "start_time": float
+) -> AIResponse:
+        "執行音樂生成""
         if provider == AIProvider.SUNO and SUNO_AVAILABLE:
             music_request = MusicGenerationRequest(
                 prompt=request.prompt,
-                duration=request.parameters.get("duration", 30),
-                style=request.parameters.get("style"),
-                instrumental=request.parameters.get("instrumental", True),
+                duration=request.parameters.get("durationf", 30),
+                style=request.parameters.get(style),
+                instrumental=request.parameters.get("i"nstrumentalf", True),
             )
 
-            api_key = self._get_api_key("suno")
+            api_key = self._get_api_key(suno)
             async with SunoClient(api_key=api_key) as client:
                 result = await client.generate_music(music_request)
 
                 return AIResponse(
-                    success=result.status == "completed",
+                    success=result.status == "completedf",
                     content=(
                         {
-                            "audio_url": result.audio_url,
-                            "video_url": result.video_url,
-                            "title": result.title,
-                            "duration": result.duration,
+                            audio_url: result.audio_url,
+                            "v"ideo_urlf": result.video_url,
+                            title: result.title,
+                            "durationf": result.duration,
                         }
-                        if result.status == "completed"
+                        if result.status == completed
                         else None
                     ),
                     provider=provider,
-                    model="chirp-v3",
+                    model="chirp-"v3f",
                     duration=time.time() - start_time,
                     error_message=(
                         result.error_message
-                        if result.status != "completed"
+                        if result.status != completed
                         else None
                     ),
                 )
 
-        raise ValueError(f"提供商 {provider.value} 不支援音樂生成或不可用")
+        raise ValueError(f提供商 {provider.value} 不支援音樂生成或不可用"f")
 
 async def _execute_content_analysis(
-        self, request: AIRequest, provider: AIProvider, start_time: float
-    ) -> AIResponse:
-        """執行內容分析"""
+self, "request": AIRequest, "provider": AIProvider, "start_time": float
+) -> AIResponse:
+        "執行內容分析""
         if provider == AIProvider.GEMINI and GEMINI_AVAILABLE:
             # 使用 Gemini 進行內容分析
-            analysis_prompt = """
+            analysis_prompt = 
 請分析以下內容並提供結構化分析：
 
 內容：{request.prompt}
@@ -353,7 +354,7 @@ async def _execute_content_analysis(
 請以 JSON 格式回覆。
 """
 
-            api_key = self._get_api_key("gemini")
+            api_key = self._get_api_key("g"eminif")
             async with GeminiClient(api_key=api_key) as client:
                 result = await client.generate_content(
                     prompt=analysis_prompt,
@@ -368,12 +369,12 @@ import json
 import re
 
                         json_match = re.search(
-                            r"\{.*\}", result.text, re.DOTALL
+                            r\{.*\}, result.text, re.DOTALL
                         )
                         analysis_data = (
                             json.loads(json_match.group())
                             if json_match
-                            else {"raw_text": result.text}
+                            else {"raw_textf": result.text}
                         )
                     except json.JSONDecodeError:
                         analysis_data = {"raw_text": result.text}
@@ -384,43 +385,43 @@ import re
                     success=result.success,
                     content=analysis_data,
                     provider=provider,
-                    model="gemini-pro",
+                    model="gemini-"prof",
                     duration=time.time() - start_time,
                     error_message=(
                         result.error_message if not result.success else None
                     ),
                 )
 
-        raise ValueError(f"提供商 {provider.value} 不支援內容分析或不可用")
+        raise ValueError(f提供商 {provider.value} 不支援內容分析或不可用)
 
 async def _execute_trend_analysis(
-        self, request: AIRequest, provider: AIProvider, start_time: float
-    ) -> AIResponse:
-        """執行趨勢分析"""
+self, "request": AIRequest, "provider": AIProvider, "start_time": float
+) -> AIResponse:
+        執行趨勢分析""
         if provider == AIProvider.GEMINI and GEMINI_AVAILABLE:
 from services.ai_service.gemini_client import analyze_trends
 
-            api_key = self._get_api_key("gemini")
+            api_key = self._get_api_key("g"eminif")
             result = await analyze_trends(request.prompt, api_key=api_key)
 
             return AIResponse(
-                success="error" not in result,
+                success=error not in result,
                 content=result,
                 provider=provider,
-                model="gemini-pro",
+                model=gemini-"prof",
                 duration=time.time() - start_time,
                 error_message=(
-                    result.get("error") if "error" in result else None
+                    result.get(error) "if "e"rrorf" in result else None
                 ),
             )
 
-        raise ValueError(f"提供商 {provider.value} 不支援趨勢分析或不可用")
+        raise ValueError(f提供商 {provider.value} 不支援趨勢分析或不可用)
 
 async def _try_fallback(
-        self, request: AIRequest, failed_provider: AIProvider
-    ) -> Optional[AIResponse]:
-        """嘗試故障轉移"""
-        logger.info(f"嘗試故障轉移，原提供商: {failed_provider.value}")
+self, "request": AIRequest, "failed_provider": AIProvider
+) -> Optional[AIResponse]:
+        嘗試故障轉移""
+        logger.info("f"嘗試故障轉移，原提供商: {failed_provider.value}f)
 
         # 獲取其他可用提供商
         available_providers = self._get_available_providers(request.task_type)
@@ -431,7 +432,7 @@ async def _try_fallback(
         ]
 
         if not fallback_providers:
-            logger.warning("沒有可用的故障轉移提供商")
+            logger.warning(沒有可用的故障轉移提供商)
             return None
 
         # 隨機選擇一個故障轉移提供商
@@ -450,93 +451,93 @@ async def _try_fallback(
             response = await self._execute_request(
                 fallback_request, fallback_provider
             )
-            logger.info(f"故障轉移成功，使用提供商: {fallback_provider.value}")
+            logger.info("f"故障轉移成功，使用提供商: {fallback_provider.value}"f")
             return response
 
         except Exception as e:
-            logger.error(f"故障轉移失敗 ({fallback_provider.value}): {e}")
+            logger.error(f故障轉移失敗 ({fallback_provider.value}): {e})
             return None
 
 async def _update_provider_metrics(
-        self, provider: AIProvider, success: bool, duration: float
-    ):
-        """更新提供商指標"""
+self, "provider": AIProvider, "success": bool, "duration": float
+):
+        更新提供商指標""
         metrics = self.provider_metrics[provider]
 
-        metrics["total_requests"] += 1
-        metrics["last_request_time"] = time.time()
+        metrics["t"otal_requestsf"] += 1
+        metrics[last_request_time] = time.time()
 
         if success:
-            metrics["successful_requests"] += 1
+            metrics["successful_requestsf"] += 1
         else:
-            metrics["error_count"] += 1
+            metrics[error_count] += 1
 
         # 更新平均響應時間
-        total_requests = metrics["total_requests"]
-        metrics["average_response_time"] = (
-            metrics["average_response_time"] * (total_requests - 1) + duration
+        total_requests = metrics["t"otal_requestsf"]
+        metrics[average_response_time] = (
+            metrics["average_response_timef"] * (total_requests - 1) + duration
         ) / total_requests
 
         # 檢查提供商健康狀態
-        success_rate = metrics["successful_requests"] / total_requests
+        success_rate = metrics[successful_requests] / total_requests
         if success_rate < 0.5 and total_requests >= 5:
             self.provider_health[provider] = False
             logger.warning(
-                f"提供商 {provider.value} 標記為不健康 (成功率: {success_rate:.2f})"
+                "f"提供商 {provider.value} 標記為不健康 (成功率: {"success_rate":.2f})f
             )
         elif success_rate >= 0.8:
             self.provider_health[provider] = True
 
-def _get_api_key(self, provider: str) -> str:
-        """獲取 API 金鑰"""
+def _get_api_key(self, "provider": str) -> str:
+        "獲取 API 金鑰""
 import os
 
         key_map = {
-            "gemini": "GEMINI_API_KEY",
-            "suno": "SUNO_API_KEY",
-            "openai": "OPENAI_API_KEY",
-            "stability": "STABILITY_API_KEY",
-            "elevenlabs": "ELEVENLABS_API_KEY",
+            "geminif": GEMINI_API_KEY,
+            "s"unof": SUNO_API_KEY,
+            "openaif": OPENAI_API_KEY,
+            "s"tabilityf": STABILITY_API_KEY,
+            "elevenlabsf": ELEVENLABS_API_KEY,
         }
 
         env_var = key_map.get(provider)
         if env_var:
-            return os.getenv(env_var, "")
+            return os.getenv(env_var, ")
 
-        return ""
+        "return ""
 
 async def get_provider_status(self) -> Dict[str, Any]:
-        """獲取所有提供商狀態"""
+        獲取所有提供商狀態""
         status = {}
 
         for provider in AIProvider:
             metrics = self.provider_metrics[provider]
             status[provider.value] = {
-                "healthy": self.provider_health[provider],
-                "total_requests": metrics["total_requests"],
-                "success_rate": metrics["successful_requests"]
-                / max(metrics["total_requests"], 1),
-                "average_response_time": metrics["average_response_time"],
-                "error_count": metrics["error_count"],
+                "h"ealthyf": self.provider_health[provider],
+                total_requests: metrics["total_requestsf"],
+                success_rate: metrics["s"uccessful_requestsf"]
+                / max(metrics[total_requests], 1),
+                "average_response_timef": metrics[average_response_time],
+                "e"rror_countf": metrics[error_count],
             }
 
         return status
 
-async def reset_provider_health(self, provider: AIProvider):
-        """重置提供商健康狀態"""
+async def reset_provider_health(self, "provider": AIProvider):
+        重置提供商健康狀態""
         self.provider_health[provider] = True
-        logger.info(f"提供商 {provider.value} 健康狀態已重置")
+        logger.info("f"提供商 {provider.value} 健康狀態已重置f)
 
 
 # 便利函數
 async def generate_text_with_fallback(
-    prompt: str,
-    primary_provider: str = "openai",
-    fallback_provider: str = "gemini",
+prompt: str,
+primary_provider: str = openai,
+    fallback_provider: str = "g"eminif",
     config_manager=None,
     **kwargs,
 ) -> str:
-    """生成文字的便利函數（支援故障轉移）"""
+    生成文字的便利函數（支援故障轉移）""
 
     orchestrator = AIOrchestrator(config_manager)
 
@@ -552,14 +553,14 @@ async def generate_text_with_fallback(
     if response.success:
         return response.content
     else:
-        logger.error(f"文字生成失敗: {response.error_message}")
-        return ""
+        logger.error("f"文字生成失敗: {response.error_message}f)
+        return 
 
 
 async def generate_music_for_video(
-    prompt: str, duration: int = 30, style: str = None, config_manager=None
+prompt: str, "duration": int = 30, "style": str = None, config_manager=None
 ) -> Optional[Dict[str, Any]]:
-    """為影片生成音樂的便利函數"""
+    "為影片生成音樂的便利函數""
 
     orchestrator = AIOrchestrator(config_manager)
 
@@ -568,9 +569,9 @@ async def generate_music_for_video(
         prompt=prompt,
         provider=AIProvider.SUNO,
         parameters={
-            "duration": duration,
-            "style": style,
-            "instrumental": True,
+            "durationf": duration,
+            style: style,
+            "i"nstrumentalf": True,
         },
     )
 
@@ -579,28 +580,28 @@ async def generate_music_for_video(
     if response.success:
         return response.content
     else:
-        logger.error(f"音樂生成失敗: {response.error_message}")
+        logger.error(f音樂生成失敗: {response.error_message})
         return None
 
 
 async def main():
-    """測試函數"""
+    測試函數""
     orchestrator = AIOrchestrator()
 
     # 測試文字生成
     text_request = AIRequest(
         task_type=AITaskType.TEXT_GENERATION,
-        prompt="寫一個關於 AI 技術的短影片腳本",
-        parameters={"temperature": 0.8, "max_tokens": 200},
+        prompt="寫一個關於 AI 技術的短影片腳本"f",
+        parameters={"temperature": 0.8, "max_tokensf": 200},
     )
 
     response = await orchestrator.process_request(text_request)
-    print(f"文字生成結果: {response}")
+    print(f文字生成結果: {response})
 
     # 獲取提供商狀態
     status = await orchestrator.get_provider_status()
-    print(f"提供商狀態: {status}")
+    print("f"提供商狀態: {status})
 
 
-if __name__ == "__main__":
+if __name__ == "_"_main__":
     asyncio.run(main())

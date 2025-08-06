@@ -30,18 +30,14 @@ async def verify_token_with_auth_service(token: str) -> dict:
                 return None
 
         except httpx.RequestError as e:
-            logger.error(
-                "Failed to verify token with auth service", error=str(e)
-            )
+            logger.error("Failed to verify token with auth service", error=str(e))
             return None
 
 
 def verify_token_locally(token: str) -> dict:
     """Verify JWT token locally (fallback)"""
     try:
-        payload = jwt.decode(
-            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
-        )
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         email: str = payload.get("sub")
         if email is None:
             return None
@@ -68,9 +64,7 @@ async def get_current_user(
 
         # If auth service is unavailable, verify locally
         if user_data is None:
-            logger.warning(
-                "Auth service unavailable, using local token verification"
-            )
+            logger.warning("Auth service unavailable, using local token verification")
             user_data = verify_token_locally(token)
 
         if user_data is None:
@@ -84,9 +78,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: HTTPAuthorizationCredentials = Depends(
-        HTTPBearer(auto_error=False)
-    ),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
 ):
     """Get current user if token is provided (optional)"""
     if not credentials:

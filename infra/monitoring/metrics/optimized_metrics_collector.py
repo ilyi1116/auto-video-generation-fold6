@@ -68,9 +68,7 @@ class OptimizedMetricsCollector:
         }
 
         # 異步處理器
-        self.executor = ThreadPoolExecutor(
-            max_workers=2, thread_name_prefix="metrics"
-        )
+        self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="metrics")
 
         # 開始後台處理
         self._start_background_processing()
@@ -174,16 +172,12 @@ class OptimizedMetricsCollector:
         if first_metric.metric_type == MetricType.COUNTER:
             # 計數器：累加值
             total_value = sum(m.value for m in metrics)
-            self._emit_metric(
-                name, total_value, first_metric.labels, "counter"
-            )
+            self._emit_metric(name, total_value, first_metric.labels, "counter")
 
         elif first_metric.metric_type == MetricType.GAUGE:
             # 測量器：使用最新值
             latest_metric = max(metrics, key=lambda m: m.timestamp)
-            self._emit_metric(
-                name, latest_metric.value, latest_metric.labels, "gauge"
-            )
+            self._emit_metric(name, latest_metric.value, latest_metric.labels, "gauge")
 
         elif first_metric.metric_type == MetricType.HISTOGRAM:
             # 直方圖：統計分佈
@@ -246,11 +240,7 @@ class OptimizedMetricsCollector:
                 "0.5": sorted_values[int(count * 0.5)],
                 "0.9": sorted_values[int(count * 0.9)],
                 "0.95": sorted_values[int(count * 0.95)],
-                "0.99": (
-                    sorted_values[int(count * 0.99)]
-                    if count > 1
-                    else sorted_values[0]
-                ),
+                "0.99": (sorted_values[int(count * 0.99)] if count > 1 else sorted_values[0]),
             },
         }
 
@@ -262,26 +252,16 @@ class OptimizedMetricsCollector:
         metric_type: str,
     ):
         """輸出 Prometheus 格式指標"""
-        labels_str = (
-            ",".join([f'{k}="{v}"' for k, v in labels.items()])
-            if labels
-            else ""
-        )
+        labels_str = ",".join([f'{k}="{v}"' for k, v in labels.items()]) if labels else ""
         labels_part = f"{{{labels_str}}}" if labels_str else ""
 
         # 輸出 Prometheus 格式
         print(f"# TYPE {name} {metric_type}")
         print(f"{name}{labels_part} {value} {int(time.time() * 1000)}")
 
-    def _emit_histogram(
-        self, name: str, histogram_data: Dict[str, Any], labels: Dict[str, str]
-    ):
+    def _emit_histogram(self, name: str, histogram_data: Dict[str, Any], labels: Dict[str, str]):
         """輸出直方圖指標"""
-        labels_str = (
-            ",".join([f'{k}="{v}"' for k, v in labels.items()])
-            if labels
-            else ""
-        )
+        labels_str = ",".join([f'{k}="{v}"' for k, v in labels.items()]) if labels else ""
         base_labels = f"{{{labels_str}}}" if labels_str else ""
 
         print(f"# TYPE {name} histogram")
@@ -289,9 +269,7 @@ class OptimizedMetricsCollector:
         # 輸出桶計數
         for bucket, count in histogram_data["buckets"].items():
             bucket_labels = (
-                f'{{{labels_str},le="{bucket}"}}'
-                if labels_str
-                else f'{{le="{bucket}"}}'
+                f'{{{labels_str},le="{bucket}"}}' if labels_str else f'{{le="{bucket}"}}'
             )
             print(f"{name}_bucket{bucket_labels} {count}")
 
@@ -299,15 +277,9 @@ class OptimizedMetricsCollector:
         print(f"{name}_count{base_labels} {histogram_data['count']}")
         print(f"{name}_sum{base_labels} {histogram_data['sum']}")
 
-    def _emit_summary(
-        self, name: str, summary_data: Dict[str, Any], labels: Dict[str, str]
-    ):
+    def _emit_summary(self, name: str, summary_data: Dict[str, Any], labels: Dict[str, str]):
         """輸出摘要指標"""
-        labels_str = (
-            ",".join([f'{k}="{v}"' for k, v in labels.items()])
-            if labels
-            else ""
-        )
+        labels_str = ",".join([f'{k}="{v}"' for k, v in labels.items()]) if labels else ""
         base_labels = f"{{{labels_str}}}" if labels_str else ""
 
         print(f"# TYPE {name} summary")
@@ -436,9 +408,7 @@ class BusinessMetricsManager:
             },
         }
 
-    def record_video_generation(
-        self, status: str, platform: str, user_tier: str = "free"
-    ):
+    def record_video_generation(self, status: str, platform: str, user_tier: str = "free"):
         """記錄影片生成指標"""
         return self.collector.increment_counter(
             "video_generation_count",
@@ -462,9 +432,7 @@ class BusinessMetricsManager:
             labels={"platform": platform, "content_type": content_type},
         )
 
-    def record_processing_time(
-        self, operation: str, service: str, duration_ms: float
-    ):
+    def record_processing_time(self, operation: str, service: str, duration_ms: float):
         """記錄處理時間"""
         return self.collector.observe_histogram(
             "processing_duration",
@@ -501,9 +469,7 @@ business_metrics_manager = BusinessMetricsManager()
 
 
 # 效能測量裝飾器
-def measure_execution_time(
-    metric_name: str = None, labels: Dict[str, str] = None
-):
+def measure_execution_time(metric_name: str = None, labels: Dict[str, str] = None):
     """測量函數執行時間的裝飾器"""
 
     def decorator(func):

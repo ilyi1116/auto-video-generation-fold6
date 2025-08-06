@@ -124,9 +124,7 @@ async def optimize_script(
 
     except Exception as e:
         logger.error("Script optimization failed", error=str(e))
-        raise HTTPException(
-            status_code=500, detail="Script optimization failed"
-        )
+        raise HTTPException(status_code=500, detail="Script optimization failed")
 
 
 @router.get("/supported-styles")

@@ -8,23 +8,27 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://your-domain.com",
-        "https://app.autovideo.com", 
+        "https://app.autovideo.com",
         "http://localhost:3000",
-        "http://localhost:8000"
+        "http://localhost:8000",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 
+
 @app.get("/")
 async def root():
     return {"message": "Auto Video Generation System API"}
+
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
 
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

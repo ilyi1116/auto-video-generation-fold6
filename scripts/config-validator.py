@@ -21,16 +21,14 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import toml
 import yaml
 from pydantic import BaseModel, Field
 
 # 设置日志
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -155,9 +153,7 @@ class ConfigurationValidator:
         )
         result.issues.append(issue)
 
-    def _read_file_safely(
-        self, file_path: Path
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def _read_file_safely(self, file_path: Path) -> Tuple[bool, Optional[str], Optional[str]]:
         """安全读取文件"""
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -172,9 +168,7 @@ class ConfigurationValidator:
         except Exception as e:
             return False, None, f"读取文件异常: {str(e)}"
 
-    def _check_sensitive_content(
-        self, result: ConfigValidationResult, content: str
-    ):
+    def _check_sensitive_content(self, result: ConfigValidationResult, content: str):
         """检查敏感信息"""
         lines = content.split("\\n")
 
@@ -194,13 +188,9 @@ class ConfigurationValidator:
                         },
                     )
 
-    def _validate_pyproject_toml(
-        self, file_path: Path, content: str
-    ) -> ConfigValidationResult:
+    def _validate_pyproject_toml(self, file_path: Path, content: str) -> ConfigValidationResult:
         """验证 pyproject.toml 文件"""
-        result = ConfigValidationResult(
-            file_path=str(file_path), file_type="toml", status="valid"
-        )
+        result = ConfigValidationResult(file_path=str(file_path), file_type="toml", status="valid")
 
         try:
             # 解析 TOML 文件
@@ -243,12 +233,7 @@ class ConfigurationValidator:
                     problematic_deps = []
                     for dep in deps:
                         if isinstance(dep, str):
-                            dep_name = (
-                                dep.split("==")[0]
-                                .split(">=")[0]
-                                .split("<=")[0]
-                                .strip()
-                            )
+                            dep_name = dep.split("==")[0].split(">=")[0].split("<=")[0].strip()
                             # 这里可以添加已知的问题依赖检查
                             if "insecure" in dep_name.lower():
                                 problematic_deps.append(dep_name)
@@ -283,22 +268,16 @@ class ConfigurationValidator:
             )
         except Exception as e:
             result.status = "invalid"
-            self._add_issue(
-                result, "critical", "syntax", f"解析文件失败: {str(e)}"
-            )
+            self._add_issue(result, "critical", "syntax", f"解析文件失败: {str(e)}")
 
         # 检查敏感信息
         self._check_sensitive_content(result, content)
 
         return result
 
-    def _validate_alembic_ini(
-        self, file_path: Path, content: str
-    ) -> ConfigValidationResult:
+    def _validate_alembic_ini(self, file_path: Path, content: str) -> ConfigValidationResult:
         """验证 alembic.ini 文件"""
-        result = ConfigValidationResult(
-            file_path=str(file_path), file_type="ini", status="valid"
-        )
+        result = ConfigValidationResult(file_path=str(file_path), file_type="ini", status="valid")
 
         try:
             import configparser
@@ -337,9 +316,7 @@ class ConfigurationValidator:
                 # 检查数据库 URL 格式
                 if "sqlalchemy.url" in alembic_section:
                     db_url = alembic_section["sqlalchemy.url"]
-                    if not db_url.startswith(
-                        ("postgresql", "sqlite", "mysql")
-                    ):
+                    if not db_url.startswith(("postgresql", "sqlite", "mysql")):
                         self._add_issue(
                             result,
                             "warning",
@@ -359,27 +336,19 @@ class ConfigurationValidator:
 
         except configparser.Error as e:
             result.status = "invalid"
-            self._add_issue(
-                result, "critical", "syntax", f"INI 文件格式错误: {str(e)}"
-            )
+            self._add_issue(result, "critical", "syntax", f"INI 文件格式错误: {str(e)}")
         except Exception as e:
             result.status = "invalid"
-            self._add_issue(
-                result, "critical", "syntax", f"解析文件失败: {str(e)}"
-            )
+            self._add_issue(result, "critical", "syntax", f"解析文件失败: {str(e)}")
 
         # 检查敏感信息
         self._check_sensitive_content(result, content)
 
         return result
 
-    def _validate_docker_compose(
-        self, file_path: Path, content: str
-    ) -> ConfigValidationResult:
+    def _validate_docker_compose(self, file_path: Path, content: str) -> ConfigValidationResult:
         """验证 Docker Compose 文件"""
-        result = ConfigValidationResult(
-            file_path=str(file_path), file_type="yaml", status="valid"
-        )
+        result = ConfigValidationResult(file_path=str(file_path), file_type="yaml", status="valid")
 
         try:
             # 解析 YAML 文件
@@ -432,10 +401,7 @@ class ConfigurationValidator:
                         continue
 
                     # 检查是否有镜像或构建配置
-                    if (
-                        "image" not in service_config
-                        and "build" not in service_config
-                    ):
+                    if "image" not in service_config and "build" not in service_config:
                         self._add_issue(
                             result,
                             "critical",
@@ -451,10 +417,7 @@ class ConfigurationValidator:
                                 host_port, container_port = port.split(":", 1)
                                 try:
                                     host_port_num = int(host_port)
-                                    if (
-                                        host_port_num < 1024
-                                        and not self.is_termux
-                                    ):
+                                    if host_port_num < 1024 and not self.is_termux:
                                         self._add_issue(
                                             result,
                                             "warning",
@@ -512,22 +475,16 @@ class ConfigurationValidator:
             )
         except Exception as e:
             result.status = "invalid"
-            self._add_issue(
-                result, "critical", "syntax", f"解析文件失败: {str(e)}"
-            )
+            self._add_issue(result, "critical", "syntax", f"解析文件失败: {str(e)}")
 
         # 检查敏感信息
         self._check_sensitive_content(result, content)
 
         return result
 
-    def _validate_env_file(
-        self, file_path: Path, content: str
-    ) -> ConfigValidationResult:
+    def _validate_env_file(self, file_path: Path, content: str) -> ConfigValidationResult:
         """验证环境变量文件"""
-        result = ConfigValidationResult(
-            file_path=str(file_path), file_type="env", status="valid"
-        )
+        result = ConfigValidationResult(file_path=str(file_path), file_type="env", status="valid")
 
         lines = content.strip().split("\\n")
         result.metadata["line_count"] = len(lines)
@@ -595,8 +552,7 @@ class ConfigurationValidator:
 
             # 检查敏感信息
             if any(
-                sensitive in key.lower()
-                for sensitive in ["password", "secret", "key", "token"]
+                sensitive in key.lower() for sensitive in ["password", "secret", "key", "token"]
             ):
                 if len(value) < 8:
                     self._add_issue(
@@ -670,9 +626,7 @@ class ConfigurationValidator:
                     "missing",
                     f"{file_config['description']}文件问题: {error}",
                     suggestion=(
-                        f"创建 {file_name} 文件"
-                        if "not exist" in error
-                        else "检查文件权限和格式"
+                        f"创建 {file_name} 文件" if "not exist" in error else "检查文件权限和格式"
                     ),
                 )
 
@@ -686,15 +640,9 @@ class ConfigurationValidator:
                 results.append(result)
 
                 # 统计问题严重程度
-                critical_issues = len(
-                    [i for i in result.issues if i.severity == "critical"]
-                )
-                warning_issues = len(
-                    [i for i in result.issues if i.severity == "warning"]
-                )
-                info_issues = len(
-                    [i for i in result.issues if i.severity == "info"]
-                )
+                critical_issues = len([i for i in result.issues if i.severity == "critical"])
+                warning_issues = len([i for i in result.issues if i.severity == "warning"])
+                info_issues = len([i for i in result.issues if i.severity == "info"])
 
                 status_icon = "✅" if result.status == "valid" else "❌"
                 logger.info(
@@ -709,9 +657,7 @@ class ConfigurationValidator:
                     status="invalid",
                 )
 
-                self._add_issue(
-                    result, "critical", "syntax", f"验证器异常: {str(e)}"
-                )
+                self._add_issue(result, "critical", "syntax", f"验证器异常: {str(e)}")
 
                 results.append(result)
                 logger.error(f"❌ {file_name}: 验证器异常 - {str(e)}")
@@ -732,37 +678,27 @@ class ConfigurationValidator:
             if not service_path.is_dir():
                 continue
 
-            service_name = service_path.name
+            service_path.name
 
             # 检查 Dockerfile
             dockerfile_path = service_path / "Dockerfile"
             if dockerfile_path.exists():
-                success, content, error = self._read_file_safely(
-                    dockerfile_path
-                )
+                success, content, error = self._read_file_safely(dockerfile_path)
                 if success:
-                    result = self._validate_dockerfile(
-                        dockerfile_path, content
-                    )
+                    result = self._validate_dockerfile(dockerfile_path, content)
                     service_results.append(result)
 
             # 检查 requirements.txt
             requirements_path = service_path / "requirements.txt"
             if requirements_path.exists():
-                success, content, error = self._read_file_safely(
-                    requirements_path
-                )
+                success, content, error = self._read_file_safely(requirements_path)
                 if success:
-                    result = self._validate_requirements_txt(
-                        requirements_path, content
-                    )
+                    result = self._validate_requirements_txt(requirements_path, content)
                     service_results.append(result)
 
         return service_results
 
-    def _validate_dockerfile(
-        self, file_path: Path, content: str
-    ) -> ConfigValidationResult:
+    def _validate_dockerfile(self, file_path: Path, content: str) -> ConfigValidationResult:
         """验证 Dockerfile"""
         result = ConfigValidationResult(
             file_path=str(file_path), file_type="dockerfile", status="valid"
@@ -784,9 +720,7 @@ class ConfigurationValidator:
             if line.upper().startswith("FROM"):
                 has_from = True
                 # 检查是否使用了 latest 标签
-                if ":latest" in line or (
-                    ":" not in line and "FROM" in line.upper()
-                ):
+                if ":latest" in line or (":" not in line and "FROM" in line.upper()):
                     self._add_issue(
                         result,
                         "warning",
@@ -829,9 +763,7 @@ class ConfigurationValidator:
 
         # 检查必要的指令
         if not has_from:
-            self._add_issue(
-                result, "critical", "missing", "Dockerfile 中缺少 FROM 指令"
-            )
+            self._add_issue(result, "critical", "missing", "Dockerfile 中缺少 FROM 指令")
 
         if not has_workdir:
             self._add_issue(
@@ -852,9 +784,7 @@ class ConfigurationValidator:
 
         return result
 
-    def _validate_requirements_txt(
-        self, file_path: Path, content: str
-    ) -> ConfigValidationResult:
+    def _validate_requirements_txt(self, file_path: Path, content: str) -> ConfigValidationResult:
         """验证 requirements.txt 文件"""
         result = ConfigValidationResult(
             file_path=str(file_path), file_type="requirements", status="valid"
@@ -883,9 +813,7 @@ class ConfigurationValidator:
                 )
 
             # 检查常见的不安全依赖
-            package_name = (
-                line.split("==")[0].split(">=")[0].split("<=")[0].strip()
-            )
+            package_name = line.split("==")[0].split(">=")[0].split("<=")[0].strip()
             if package_name.lower() in ["pillow", "requests", "urllib3"]:
                 # 这里可以添加更详细的版本检查
                 pass
@@ -894,9 +822,7 @@ class ConfigurationValidator:
 
         return result
 
-    def generate_validation_report(
-        self, results: List[ConfigValidationResult]
-    ) -> Dict:
+    def generate_validation_report(self, results: List[ConfigValidationResult]) -> Dict:
         """生成验证报告"""
         # 统计问题
         total_files = len(results)
@@ -954,20 +880,14 @@ class ConfigurationValidator:
                 "warning_issues": len(warning_issues),
                 "info_issues": len(info_issues),
                 "validation_success_rate": round(
-                    (
-                        (valid_files / total_files * 100)
-                        if total_files > 0
-                        else 0
-                    ),
+                    ((valid_files / total_files * 100) if total_files > 0 else 0),
                     1,
                 ),
             },
             "category_statistics": category_stats,
             "file_type_statistics": file_type_stats,
             "detailed_results": [result.model_dump() for result in results],
-            "recommendations": self._generate_validation_recommendations(
-                results
-            ),
+            "recommendations": self._generate_validation_recommendations(results),
         }
 
         return report
@@ -1003,20 +923,14 @@ class ConfigurationValidator:
 
         if missing_files:
             missing_names = [Path(r.file_path).name for r in missing_files]
-            recommendations.append(
-                f"📁 创建缺失的配置文件: {', '.join(missing_names)}"
-            )
+            recommendations.append(f"📁 创建缺失的配置文件: {', '.join(missing_names)}")
 
         # 按类别统计建议
         syntax_issues = [i for i in all_issues if i.category == "syntax"]
         if syntax_issues:
-            recommendations.append(
-                f"🔧 修复 {len(syntax_issues)} 个语法错误，检查文件格式和缩进"
-            )
+            recommendations.append(f"🔧 修复 {len(syntax_issues)} 个语法错误，检查文件格式和缩进")
 
-        compatibility_issues = [
-            i for i in all_issues if i.category == "compatibility"
-        ]
+        compatibility_issues = [i for i in all_issues if i.category == "compatibility"]
         if compatibility_issues:
             recommendations.append(
                 f"🔄 解决 {len(compatibility_issues)} 个兼容性问题，升级过时的版本和配置"
@@ -1031,9 +945,7 @@ class ConfigurationValidator:
 
         return recommendations
 
-    def save_report(
-        self, report: Dict, output_path: str = "config-validation-report.json"
-    ):
+    def save_report(self, report: Dict, output_path: str = "config-validation-report.json"):
         """保存验证报告"""
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
@@ -1095,14 +1007,10 @@ class ConfigurationValidator:
 
             # 显示前3个重要问题
             important_issues = [
-                i
-                for i in result["issues"]
-                if i["severity"] in ["critical", "warning"]
+                i for i in result["issues"] if i["severity"] in ["critical", "warning"]
             ][:3]
             for issue in important_issues:
-                lines.append(
-                    f"     {issue['severity'].upper()}: {issue['message']}"
-                )
+                lines.append(f"     {issue['severity'].upper()}: {issue['message']}")
 
         lines.extend(["", "建议:"])
 
@@ -1132,9 +1040,7 @@ def main():
         default="config-validation-report",
         help="报告文件名（不含扩展名）",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="详细输出"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="详细输出")
 
     args = parser.parse_args()
 

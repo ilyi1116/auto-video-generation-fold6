@@ -21,15 +21,13 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 import httpx
 from pydantic import BaseModel, Field
 
 # 设置日志
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -127,9 +125,7 @@ class ServiceHealthChecker:
             or Path("/data/data/com.termux").exists()
         )
 
-    async def _check_port_open(
-        self, host: str, port: int, timeout: int = 5
-    ) -> bool:
+    async def _check_port_open(self, host: str, port: int, timeout: int = 5) -> bool:
         """检查端口是否开放"""
         try:
             # 使用 asyncio 进行非阻塞的端口检查
@@ -232,9 +228,7 @@ class ServiceHealthChecker:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(), timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             is_healthy = process.returncode == 0
             status = "healthy" if is_healthy else "unhealthy"
@@ -302,9 +296,7 @@ class ServiceHealthChecker:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(), timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             output = stdout.decode().strip()
             is_healthy = process.returncode == 0 and output == "PONG"
@@ -339,9 +331,7 @@ class ServiceHealthChecker:
                 },
             )
 
-    async def _check_service_with_retry(
-        self, service_name: str, config: Dict
-    ) -> HealthCheckResult:
+    async def _check_service_with_retry(self, service_name: str, config: Dict) -> HealthCheckResult:
         """带重试机制的服务检查"""
         config["name"] = service_name
 
@@ -411,9 +401,7 @@ class ServiceHealthChecker:
         tasks = []
         for service_name in services:
             if service_name in self.services:
-                task = self._check_service_with_retry(
-                    service_name, self.services[service_name]
-                )
+                task = self._check_service_with_retry(service_name, self.services[service_name])
                 tasks.append(task)
             else:
                 logger.warning(f"未知服务: {service_name}")
@@ -448,9 +436,7 @@ class ServiceHealthChecker:
 
         total_services = len(results)
         health_percentage = (
-            (len(healthy_services) / total_services * 100)
-            if total_services > 0
-            else 0
+            (len(healthy_services) / total_services * 100) if total_services > 0 else 0
         )
 
         # 按服务类型分组统计
@@ -469,12 +455,8 @@ class ServiceHealthChecker:
             service_types[service_type][result.status] += 1
 
         # 性能统计
-        response_times = [
-            r.response_time_ms for r in results if r.response_time_ms > 0
-        ]
-        avg_response_time = (
-            sum(response_times) / len(response_times) if response_times else 0
-        )
+        response_times = [r.response_time_ms for r in results if r.response_time_ms > 0]
+        avg_response_time = sum(response_times) / len(response_times) if response_times else 0
 
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -498,9 +480,7 @@ class ServiceHealthChecker:
 
         return report
 
-    def _generate_recommendations(
-        self, results: List[HealthCheckResult]
-    ) -> List[str]:
+    def _generate_recommendations(self, results: List[HealthCheckResult]) -> List[str]:
         """基于检查结果生成建议"""
         recommendations = []
 
@@ -511,15 +491,9 @@ class ServiceHealthChecker:
             return recommendations
 
         # 按服务类型分析问题
-        postgres_issues = [
-            r for r in unhealthy_services if r.service_type == "postgres"
-        ]
-        redis_issues = [
-            r for r in unhealthy_services if r.service_type == "redis"
-        ]
-        http_issues = [
-            r for r in unhealthy_services if r.service_type == "http"
-        ]
+        postgres_issues = [r for r in unhealthy_services if r.service_type == "postgres"]
+        redis_issues = [r for r in unhealthy_services if r.service_type == "redis"]
+        http_issues = [r for r in unhealthy_services if r.service_type == "http"]
 
         if postgres_issues:
             recommendations.append(
@@ -534,18 +508,14 @@ class ServiceHealthChecker:
             )
 
         if http_issues:
-            timeout_issues = [
-                r for r in http_issues if "超时" in (r.error_message or "")
-            ]
+            timeout_issues = [r for r in http_issues if "超时" in (r.error_message or "")]
             if timeout_issues:
                 recommendations.append(
                     f"⏱️ HTTP 服务超时 ({len(timeout_issues)} 个): "
                     "可能需要增加超时时间或检查服务启动状态"
                 )
 
-            connection_issues = [
-                r for r in http_issues if "连接" in (r.error_message or "")
-            ]
+            connection_issues = [r for r in http_issues if "连接" in (r.error_message or "")]
             if connection_issues:
                 recommendations.append(
                     f"🔌 HTTP 服务连接失败 ({len(connection_issues)} 个): "
@@ -561,9 +531,7 @@ class ServiceHealthChecker:
 
         return recommendations
 
-    def save_report(
-        self, report: Dict, output_path: str = "health-check-report.json"
-    ):
+    def save_report(self, report: Dict, output_path: str = "health-check-report.json"):
         """保存健康检查报告"""
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
@@ -628,24 +596,16 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="微服务健康检查工具")
-    parser.add_argument(
-        "--services", "-s", nargs="*", help="指定要检查的服务名称"
-    )
-    parser.add_argument(
-        "--timeout", "-t", type=int, default=30, help="超时时间（秒）"
-    )
-    parser.add_argument(
-        "--retries", "-r", type=int, default=3, help="最大重试次数"
-    )
+    parser.add_argument("--services", "-s", nargs="*", help="指定要检查的服务名称")
+    parser.add_argument("--timeout", "-t", type=int, default=30, help="超时时间（秒）")
+    parser.add_argument("--retries", "-r", type=int, default=3, help="最大重试次数")
     parser.add_argument(
         "--output",
         "-o",
         default="health-check-report",
         help="报告文件名（不含扩展名）",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="详细输出"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="详细输出")
 
     args = parser.parse_args()
 
@@ -653,9 +613,7 @@ async def main():
         logging.getLogger().setLevel(logging.DEBUG)
 
     # 创建健康检查器
-    checker = ServiceHealthChecker(
-        timeout=args.timeout, max_retries=args.retries
-    )
+    checker = ServiceHealthChecker(timeout=args.timeout, max_retries=args.retries)
 
     # 执行健康检查
     results = await checker.check_all_services(args.services)

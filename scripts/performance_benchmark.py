@@ -160,9 +160,7 @@ class PerformanceBenchmark:
                 "total_duration_seconds": time.time() - start_time,
                 "overall_grade": overall_grade,
                 "recommendations": recommendations,
-                "industry_comparison": self._generate_industry_comparison(
-                    benchmark_results
-                ),
+                "industry_comparison": self._generate_industry_comparison(benchmark_results),
             }
         )
 
@@ -182,22 +180,14 @@ class PerformanceBenchmark:
             results = {}
 
             for endpoint in endpoints:
-                endpoint_results = await self._test_endpoint_performance(
-                    endpoint
-                )
+                endpoint_results = await self._test_endpoint_performance(endpoint)
                 results[endpoint] = endpoint_results
 
             # 計算平均性能指標
-            avg_response_time = np.mean(
-                [r["avg_response_time_ms"] for r in results.values()]
-            )
-            avg_throughput = np.mean(
-                [r["throughput_rps"] for r in results.values()]
-            )
+            avg_response_time = np.mean([r["avg_response_time_ms"] for r in results.values()])
+            avg_throughput = np.mean([r["throughput_rps"] for r in results.values()])
 
-            grade = self._grade_metric(
-                "api_response_time_ms", avg_response_time
-            )
+            grade = self._grade_metric("api_response_time_ms", avg_response_time)
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -205,11 +195,7 @@ class PerformanceBenchmark:
                 "avg_response_time_ms": avg_response_time,
                 "avg_throughput_rps": avg_throughput,
                 "grade": grade,
-                "status": (
-                    "PASS"
-                    if grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
-                ),
+                "status": ("PASS" if grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"),
             }
 
         except Exception as e:
@@ -244,27 +230,19 @@ class PerformanceBenchmark:
             best_throughput = max([r.throughput_rps for r in results.values()])
             avg_error_rate = np.mean([r.error_rate for r in results.values()])
 
-            throughput_grade = self._grade_metric(
-                "throughput_rps", best_throughput
-            )
+            throughput_grade = self._grade_metric("throughput_rps", best_throughput)
             error_rate_grade = self._grade_metric("error_rate", avg_error_rate)
 
-            overall_grade = self._combine_grades(
-                [throughput_grade, error_rate_grade]
-            )
+            overall_grade = self._combine_grades([throughput_grade, error_rate_grade])
 
             return {
                 "duration_seconds": time.time() - start_time,
-                "load_test_results": {
-                    k: asdict(v) for k, v in results.items()
-                },
+                "load_test_results": {k: asdict(v) for k, v in results.items()},
                 "best_throughput_rps": best_throughput,
                 "avg_error_rate": avg_error_rate,
                 "grade": overall_grade,
                 "status": (
-                    "PASS"
-                    if overall_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
+                    "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
                 ),
             }
 
@@ -305,9 +283,7 @@ class PerformanceBenchmark:
                 "redis": redis_results,
                 "grade": overall_grade,
                 "status": (
-                    "PASS"
-                    if overall_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
+                    "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
                 ),
             }
 
@@ -352,9 +328,7 @@ class PerformanceBenchmark:
                 "consistency": consistency_results,
                 "grade": overall_grade,
                 "status": (
-                    "PASS"
-                    if overall_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
+                    "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
                 ),
             }
 
@@ -391,13 +365,9 @@ class PerformanceBenchmark:
                 memory_samples.append(memory_info.used / (1024**3))  # GB
 
                 if disk_io:
-                    disk_io_samples.append(
-                        disk_io.read_bytes + disk_io.write_bytes
-                    )
+                    disk_io_samples.append(disk_io.read_bytes + disk_io.write_bytes)
                 if network_io:
-                    network_io_samples.append(
-                        network_io.bytes_sent + network_io.bytes_recv
-                    )
+                    network_io_samples.append(network_io.bytes_sent + network_io.bytes_recv)
 
                 await asyncio.sleep(sample_interval)
 
@@ -409,9 +379,7 @@ class PerformanceBenchmark:
 
             # 評級
             cpu_grade = self._grade_metric("cpu_usage", avg_cpu / 100)
-            memory_grade = self._grade_metric(
-                "memory_usage_mb", avg_memory_gb * 1024
-            )
+            memory_grade = self._grade_metric("memory_usage_mb", avg_memory_gb * 1024)
 
             overall_grade = self._combine_grades([cpu_grade, memory_grade])
 
@@ -429,9 +397,7 @@ class PerformanceBenchmark:
                 },
                 "grade": overall_grade,
                 "status": (
-                    "PASS"
-                    if overall_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
+                    "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
                 ),
             }
 
@@ -457,16 +423,10 @@ class PerformanceBenchmark:
                 results[f"concurrency_{level}"] = level_results
 
             # 找出最佳性能點
-            best_throughput = max(
-                [r["throughput_rps"] for r in results.values()]
-            )
-            optimal_concurrency = max(
-                results.keys(), key=lambda k: results[k]["throughput_rps"]
-            )
+            best_throughput = max([r["throughput_rps"] for r in results.values()])
+            optimal_concurrency = max(results.keys(), key=lambda k: results[k]["throughput_rps"])
 
-            throughput_grade = self._grade_metric(
-                "throughput_rps", best_throughput
-            )
+            throughput_grade = self._grade_metric("throughput_rps", best_throughput)
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -475,9 +435,7 @@ class PerformanceBenchmark:
                 "optimal_concurrency": optimal_concurrency,
                 "grade": throughput_grade,
                 "status": (
-                    "PASS"
-                    if throughput_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
+                    "PASS" if throughput_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
                 ),
             }
 
@@ -504,15 +462,11 @@ class PerformanceBenchmark:
 
             results = {}
             for service in ai_services:
-                service_results = await self._test_ai_service_performance(
-                    service
-                )
+                service_results = await self._test_ai_service_performance(service)
                 results[service] = service_results
 
             # 計算平均處理時間
-            avg_processing_time = np.mean(
-                [r["avg_processing_time_ms"] for r in results.values()]
-            )
+            avg_processing_time = np.mean([r["avg_processing_time_ms"] for r in results.values()])
 
             # AI 服務有特殊的性能標準
             ai_grade = self._grade_ai_service_performance(avg_processing_time)
@@ -522,11 +476,7 @@ class PerformanceBenchmark:
                 "ai_service_results": results,
                 "avg_processing_time_ms": avg_processing_time,
                 "grade": ai_grade,
-                "status": (
-                    "PASS"
-                    if ai_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
-                ),
+                "status": ("PASS" if ai_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"),
             }
 
         except Exception as e:
@@ -551,17 +501,11 @@ class PerformanceBenchmark:
                 results[f"{size_mb}MB"] = size_results
 
             # 計算平均吞吐量
-            avg_read_throughput = np.mean(
-                [r["read_throughput_mbps"] for r in results.values()]
-            )
-            avg_write_throughput = np.mean(
-                [r["write_throughput_mbps"] for r in results.values()]
-            )
+            avg_read_throughput = np.mean([r["read_throughput_mbps"] for r in results.values()])
+            avg_write_throughput = np.mean([r["write_throughput_mbps"] for r in results.values()])
 
             # 檔案 I/O 評級
-            io_grade = self._grade_file_io_performance(
-                avg_read_throughput, avg_write_throughput
-            )
+            io_grade = self._grade_file_io_performance(avg_read_throughput, avg_write_throughput)
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -569,11 +513,7 @@ class PerformanceBenchmark:
                 "avg_read_throughput_mbps": avg_read_throughput,
                 "avg_write_throughput_mbps": avg_write_throughput,
                 "grade": io_grade,
-                "status": (
-                    "PASS"
-                    if io_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
-                ),
+                "status": ("PASS" if io_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"),
             }
 
         except Exception as e:
@@ -597,13 +537,9 @@ class PerformanceBenchmark:
             latency_grade = self._grade_metric(
                 "api_response_time_ms", latency_results["avg_latency_ms"]
             )
-            bandwidth_grade = self._grade_network_bandwidth(
-                bandwidth_results["throughput_mbps"]
-            )
+            bandwidth_grade = self._grade_network_bandwidth(bandwidth_results["throughput_mbps"])
 
-            overall_grade = self._combine_grades(
-                [latency_grade, bandwidth_grade]
-            )
+            overall_grade = self._combine_grades([latency_grade, bandwidth_grade])
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -611,9 +547,7 @@ class PerformanceBenchmark:
                 "bandwidth": bandwidth_results,
                 "grade": overall_grade,
                 "status": (
-                    "PASS"
-                    if overall_grade in ["excellent", "good"]
-                    else "NEEDS_IMPROVEMENT"
+                    "PASS" if overall_grade in ["excellent", "good"] else "NEEDS_IMPROVEMENT"
                 ),
             }
 
@@ -647,9 +581,7 @@ class PerformanceBenchmark:
                 )
 
             # 分析可擴展性特徵
-            scalability_analysis = self._analyze_scalability_curve(
-                scalability_data
-            )
+            scalability_analysis = self._analyze_scalability_curve(scalability_data)
 
             return {
                 "duration_seconds": time.time() - start_time,
@@ -671,9 +603,7 @@ class PerformanceBenchmark:
             }
 
     # 輔助測試方法（簡化實現）
-    async def _test_endpoint_performance(
-        self, endpoint: str
-    ) -> Dict[str, Any]:
+    async def _test_endpoint_performance(self, endpoint: str) -> Dict[str, Any]:
         """測試單個端點性能"""
         # 模擬實現
         return {
@@ -760,9 +690,7 @@ class PerformanceBenchmark:
             "error_rate": 0.005 * (level / 100),  # 隨併發增加錯誤率略增
         }
 
-    async def _test_ai_service_performance(
-        self, service: str
-    ) -> Dict[str, Any]:
+    async def _test_ai_service_performance(self, service: str) -> Dict[str, Any]:
         """測試 AI 服務性能"""
         # 不同 AI 服務有不同的基準處理時間
         base_times = {
@@ -775,9 +703,7 @@ class PerformanceBenchmark:
         base_time = base_times.get(service, 5000)
 
         return {
-            "avg_processing_time_ms": np.random.normal(
-                base_time, base_time * 0.2
-            ),
+            "avg_processing_time_ms": np.random.normal(base_time, base_time * 0.2),
             "success_rate": 0.95,
             "queue_length": np.random.randint(0, 10),
             "cost_per_request": np.random.uniform(0.01, 0.1),
@@ -790,9 +716,7 @@ class PerformanceBenchmark:
 
         return {
             "read_throughput_mbps": np.random.normal(base_throughput, 20),
-            "write_throughput_mbps": np.random.normal(
-                base_throughput * 0.8, 15
-            ),
+            "write_throughput_mbps": np.random.normal(base_throughput * 0.8, 15),
             "read_latency_ms": np.random.normal(10, 3),
             "write_latency_ms": np.random.normal(15, 5),
         }
@@ -817,9 +741,7 @@ class PerformanceBenchmark:
     async def _test_scalability_point(self, load: int) -> Dict[str, Any]:
         """測試特定負載點的性能"""
         # 模擬系統在不同負載下的性能
-        throughput_degradation = max(
-            0, 1 - (load / 1000)
-        )  # 負載增加時吞吐量衰減
+        throughput_degradation = max(0, 1 - (load / 1000))  # 負載增加時吞吐量衰減
         response_time_increase = 1 + (load / 200)  # 負載增加時響應時間增加
 
         return {
@@ -922,9 +844,7 @@ class PerformanceBenchmark:
         else:
             return "poor"
 
-    def _grade_file_io_performance(
-        self, read_mbps: float, write_mbps: float
-    ) -> str:
+    def _grade_file_io_performance(self, read_mbps: float, write_mbps: float) -> str:
         """檔案 I/O 性能評級"""
         avg_throughput = (read_mbps + write_mbps) / 2
 
@@ -1005,9 +925,7 @@ class PerformanceBenchmark:
 
         return recommendations
 
-    def _generate_industry_comparison(
-        self, results: Dict[str, Any]
-    ) -> Dict[str, str]:
+    def _generate_industry_comparison(self, results: Dict[str, Any]) -> Dict[str, str]:
         """生成業界比較"""
         overall_grade = results.get("overall_grade", "unknown")
 
@@ -1037,8 +955,7 @@ class PerformanceBenchmark:
 
         # 生成 JSON 報告
         json_report_path = (
-            report_dir
-            / f"performance_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            report_dir / f"performance_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         with open(json_report_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False, default=str)
@@ -1052,12 +969,8 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="性能基準測試")
-    parser.add_argument(
-        "--config", default="config/benchmark-config.json", help="配置檔案路徑"
-    )
-    parser.add_argument(
-        "--output", default="benchmark-results.json", help="結果輸出檔案"
-    )
+    parser.add_argument("--config", default="config/benchmark-config.json", help="配置檔案路徑")
+    parser.add_argument("--output", default="benchmark-results.json", help="結果輸出檔案")
     parser.add_argument("--verbose", action="store_true", help="詳細輸出")
 
     args = parser.parse_args()

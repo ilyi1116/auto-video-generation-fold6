@@ -13,9 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 # 設置日誌
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -121,8 +119,7 @@ class BackupConfigValidator:
                     message=f"缺少必要工具: {', '.join([cmd for cmd, _ in missing_deps])}",
                     details={
                         "missing": [
-                            {"command": cmd, "description": desc}
-                            for cmd, desc in missing_deps
+                            {"command": cmd, "description": desc} for cmd, desc in missing_deps
                         ]
                     },
                 )
@@ -133,8 +130,7 @@ class BackupConfigValidator:
                 message="所有必要的系統工具都可用",
                 details={
                     "available": [
-                        {"command": cmd, "description": desc}
-                        for cmd, desc in available_deps
+                        {"command": cmd, "description": desc} for cmd, desc in available_deps
                     ]
                 },
             )
@@ -168,28 +164,20 @@ class BackupConfigValidator:
                     if config_path.endswith(".json"):
                         with open(full_path, "r", encoding="utf-8") as f:
                             json.load(f)
-                    elif config_path.endswith(".yaml") or config_path.endswith(
-                        ".yml"
-                    ):
+                    elif config_path.endswith(".yaml") or config_path.endswith(".yml"):
                         # 簡單驗證 YAML 文件格式
                         with open(full_path, "r", encoding="utf-8") as f:
                             content = f.read()
                             if not content.strip():
-                                validation_issues.append(
-                                    f"配置文件為空: {config_path}"
-                                )
+                                validation_issues.append(f"配置文件為空: {config_path}")
                                 continue
 
                     valid_configs.append(config_path)
 
                 except json.JSONDecodeError as e:
-                    validation_issues.append(
-                        f"JSON 格式錯誤 {config_path}: {str(e)}"
-                    )
+                    validation_issues.append(f"JSON 格式錯誤 {config_path}: {str(e)}")
                 except Exception as e:
-                    validation_issues.append(
-                        f"配置文件讀取失敗 {config_path}: {str(e)}"
-                    )
+                    validation_issues.append(f"配置文件讀取失敗 {config_path}: {str(e)}")
 
             if validation_issues:
                 return ValidationResult(
@@ -303,9 +291,7 @@ class BackupConfigValidator:
                         found_configs.append(indicator)
 
                 if found_configs:
-                    backup_volume_configs.append(
-                        {"file": compose_file, "configs": found_configs}
-                    )
+                    backup_volume_configs.append({"file": compose_file, "configs": found_configs})
                 else:
                     missing_configs.append(compose_file)
 
@@ -372,13 +358,9 @@ class BackupConfigValidator:
                         if var_name in content:
                             documented_vars.append(var_name)
 
-            undocumented_vars = [
-                var for var in backup_env_vars if var not in documented_vars
-            ]
+            undocumented_vars = [var for var in backup_env_vars if var not in documented_vars]
 
-            success = (
-                len(missing_vars) <= len(backup_env_vars) * 0.5
-            )  # 允許最多 50% 的變數未設置
+            success = len(missing_vars) <= len(backup_env_vars) * 0.5  # 允許最多 50% 的變數未設置
 
             return ValidationResult(
                 component="環境變數",
@@ -428,9 +410,7 @@ class BackupConfigValidator:
                     message=f"驗證器執行失敗: {str(e)}",
                 )
                 self.results.append(error_result)
-                logger.error(
-                    f"❌ {error_result.component}: {error_result.message}"
-                )
+                logger.error(f"❌ {error_result.component}: {error_result.message}")
 
         # 生成總結報告
         total_tests = len(self.results)
@@ -442,11 +422,7 @@ class BackupConfigValidator:
                 "total_validations": total_tests,
                 "passed": passed_tests,
                 "failed": failed_tests,
-                "success_rate": (
-                    (passed_tests / total_tests) * 100
-                    if total_tests > 0
-                    else 0
-                ),
+                "success_rate": ((passed_tests / total_tests) * 100 if total_tests > 0 else 0),
             },
             "results": [
                 {
@@ -466,7 +442,7 @@ class BackupConfigValidator:
 
     def generate_report(self, report: Dict) -> str:
         """生成人類可讀的驗證報告"""
-        summary = report["summary"]
+        report["summary"]
 
         report_text = """
 =================================================
@@ -482,7 +458,7 @@ class BackupConfigValidator:
 """
 
         for result in report["results"]:
-            status = "✅ 通過" if result["success"] else "❌ 失敗"
+            "✅ 通過" if result["success"] else "❌ 失敗"
             report_text += """
 {status} {result["component"]}
    訊息: {result["message"]}
@@ -510,9 +486,7 @@ def main():
 
         # 保存 JSON 報告
         report_file = Path("backup_config_validation_report.json")
-        report_file.write_text(
-            json.dumps(report, indent=2, ensure_ascii=False)
-        )
+        report_file.write_text(json.dumps(report, indent=2, ensure_ascii=False))
         logger.info(f"詳細報告已保存到: {report_file}")
 
         # 返回適當的退出碼

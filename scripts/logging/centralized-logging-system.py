@@ -25,7 +25,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from queue import Empty, Queue
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import psutil
 import redis
@@ -147,24 +147,16 @@ class LogProcessor:
         """Setup M4 Max specific optimizations"""
         try:
             # Use efficiency cores for log processing
-            cpu_affinity = self.m4_optimizations.get(
-                "cpu_affinity", [4, 5, 6, 7]
-            )
+            cpu_affinity = self.m4_optimizations.get("cpu_affinity", [4, 5, 6, 7])
             current_process = psutil.Process()
             current_process.cpu_affinity(cpu_affinity)
             logger.info(f"Set CPU affinity to E-cores: {cpu_affinity}")
 
             # Optimize batch sizes for unified memory architecture
-            unified_memory = self.m4_optimizations.get(
-                "unified_memory_optimization", {}
-            )
+            unified_memory = self.m4_optimizations.get("unified_memory_optimization", {})
             if unified_memory.get("enabled", False):
-                self.batch_size = min(
-                    self.batch_size, unified_memory.get("max_batch_size", 50)
-                )
-                logger.info(
-                    f"Optimized batch size for unified memory: {self.batch_size}"
-                )
+                self.batch_size = min(self.batch_size, unified_memory.get("max_batch_size", 50))
+                logger.info(f"Optimized batch size for unified memory: {self.batch_size}")
 
         except Exception as e:
             logger.warning(f"Failed to apply M4 optimizations: {e}")
@@ -184,9 +176,7 @@ class LogProcessor:
             )
 
             # Test Redis connection
-            await asyncio.get_event_loop().run_in_executor(
-                None, self.redis_client.ping
-            )
+            await asyncio.get_event_loop().run_in_executor(None, self.redis_client.ping)
 
             logger.info("Log processor initialized successfully")
 
@@ -219,9 +209,7 @@ class LogProcessor:
         batch_thread.start()
         self.processing_threads.append(batch_thread)
 
-        logger.info(
-            f"Started {len(self.processing_threads)} log processing threads"
-        )
+        logger.info(f"Started {len(self.processing_threads)} log processing threads")
 
     def stop_processing(self):
         """Stop log processing"""
@@ -267,8 +255,7 @@ class LogProcessor:
                 processing_time = (time.time() - start_time) * 1000
                 self.metrics["logs_processed"] += 1
                 self.metrics["avg_processing_time"] = (
-                    self.metrics["avg_processing_time"]
-                    * (self.metrics["logs_processed"] - 1)
+                    self.metrics["avg_processing_time"] * (self.metrics["logs_processed"] - 1)
                     + processing_time
                 ) / self.metrics["logs_processed"]
 
@@ -294,9 +281,7 @@ class LogProcessor:
 
             # Extract additional context from error details
             if log_entry.error_details:
-                processed["error_category"] = self._categorize_error(
-                    log_entry.error_details
-                )
+                processed["error_category"] = self._categorize_error(log_entry.error_details)
 
             # Add performance context
             if log_entry.duration_ms is not None:
@@ -364,10 +349,7 @@ class LogProcessor:
 
                 except Empty:
                     # Timeout - flush if we have entries
-                    if (
-                        batch
-                        and time.time() - last_flush >= self.batch_timeout
-                    ):
+                    if batch and time.time() - last_flush >= self.batch_timeout:
                         self._flush_batch(batch)
                         batch = []
                         last_flush = time.time()
@@ -398,19 +380,13 @@ class LogProcessor:
             batch_summary = {
                 "timestamp": timestamp,
                 "batch_size": len(batch),
-                "services": list(
-                    set(entry["service_name"] for entry in batch)
-                ),
+                "services": list(set(entry["service_name"] for entry in batch)),
                 "log_levels": list(set(entry["level"] for entry in batch)),
-                "error_count": len(
-                    [e for e in batch if e["level"] in ["error", "critical"]]
-                ),
+                "error_count": len([e for e in batch if e["level"] in ["error", "critical"]]),
             }
 
             self.redis_client.lpush("log_batches", json.dumps(batch_summary))
-            self.redis_client.ltrim(
-                "log_batches", 0, 1000
-            )  # Keep last 1000 batches
+            self.redis_client.ltrim("log_batches", 0, 1000)  # Keep last 1000 batches
 
         except Exception as e:
             logger.error(f"Error flushing log batch: {e}")
@@ -436,17 +412,13 @@ class LogAnalyzer:
         """Add log alert rule"""
         self.alert_rules.append(rule)
 
-    async def analyze_logs(
-        self, time_window_minutes: int = 5
-    ) -> List[LogAlert]:
+    async def analyze_logs(self, time_window_minutes: int = 5) -> List[LogAlert]:
         """Analyze logs for patterns and alerts"""
         alerts = []
 
         try:
             # Get recent logs from all streams
-            cutoff_time = datetime.now() - timedelta(
-                minutes=time_window_minutes
-            )
+            cutoff_time = datetime.now() - timedelta(minutes=time_window_minutes)
 
             # Check each alert rule
             for rule in self.alert_rules:
@@ -459,9 +431,7 @@ class LogAnalyzer:
             logger.error(f"Error analyzing logs: {e}")
             return []
 
-    async def _check_alert_rule(
-        self, rule: Dict, cutoff_time: datetime
-    ) -> List[LogAlert]:
+    async def _check_alert_rule(self, rule: Dict, cutoff_time: datetime) -> List[LogAlert]:
         """Check specific alert rule"""
         alerts = []
 
@@ -469,55 +439,37 @@ class LogAnalyzer:
             rule_type = rule.get("type")
 
             if rule_type == "error_rate":
-                alerts.extend(
-                    await self._check_error_rate_rule(rule, cutoff_time)
-                )
+                alerts.extend(await self._check_error_rate_rule(rule, cutoff_time))
             elif rule_type == "response_time":
-                alerts.extend(
-                    await self._check_response_time_rule(rule, cutoff_time)
-                )
+                alerts.extend(await self._check_response_time_rule(rule, cutoff_time))
             elif rule_type == "log_volume":
-                alerts.extend(
-                    await self._check_log_volume_rule(rule, cutoff_time)
-                )
+                alerts.extend(await self._check_log_volume_rule(rule, cutoff_time))
             elif rule_type == "correlation":
-                alerts.extend(
-                    await self._check_correlation_rule(rule, cutoff_time)
-                )
+                alerts.extend(await self._check_correlation_rule(rule, cutoff_time))
 
         except Exception as e:
             logger.error(f"Error checking alert rule {rule.get('name')}: {e}")
 
         return alerts
 
-    async def _check_error_rate_rule(
-        self, rule: Dict, cutoff_time: datetime
-    ) -> List[LogAlert]:
+    async def _check_error_rate_rule(self, rule: Dict, cutoff_time: datetime) -> List[LogAlert]:
         """Check error rate alert rule"""
         try:
             service_name = rule.get("service_name", "*")
             threshold = rule.get("threshold", 0.1)  # 10% error rate
 
             # Get error and total log counts
-            error_streams = await self._get_matching_streams(
-                f"logs:{service_name}:error"
-            )
-            total_streams = await self._get_matching_streams(
-                f"logs:{service_name}:*"
-            )
+            error_streams = await self._get_matching_streams(f"logs:{service_name}:error")
+            total_streams = await self._get_matching_streams(f"logs:{service_name}:*")
 
             error_count = 0
             total_count = 0
 
             for stream in error_streams:
-                error_count += await self._count_recent_entries(
-                    stream, cutoff_time
-                )
+                error_count += await self._count_recent_entries(stream, cutoff_time)
 
             for stream in total_streams:
-                total_count += await self._count_recent_entries(
-                    stream, cutoff_time
-                )
+                total_count += await self._count_recent_entries(stream, cutoff_time)
 
             if total_count > 0:
                 error_rate = error_count / total_count
@@ -526,11 +478,7 @@ class LogAnalyzer:
                     alert = LogAlert(
                         id=str(uuid.uuid4()),
                         timestamp=datetime.now(),
-                        severity=(
-                            "warning"
-                            if error_rate < threshold * 2
-                            else "critical"
-                        ),
+                        severity=("warning" if error_rate < threshold * 2 else "critical"),
                         alert_type="error_rate",
                         service_name=service_name,
                         description=f"High error rate detected: {error_rate:.2%} (threshold: {threshold:.2%})",
@@ -548,23 +496,17 @@ class LogAnalyzer:
 
         return []
 
-    async def _check_response_time_rule(
-        self, rule: Dict, cutoff_time: datetime
-    ) -> List[LogAlert]:
+    async def _check_response_time_rule(self, rule: Dict, cutoff_time: datetime) -> List[LogAlert]:
         """Check response time alert rule"""
         # Implementation for response time analysis
         return []
 
-    async def _check_log_volume_rule(
-        self, rule: Dict, cutoff_time: datetime
-    ) -> List[LogAlert]:
+    async def _check_log_volume_rule(self, rule: Dict, cutoff_time: datetime) -> List[LogAlert]:
         """Check log volume alert rule"""
         # Implementation for log volume analysis
         return []
 
-    async def _check_correlation_rule(
-        self, rule: Dict, cutoff_time: datetime
-    ) -> List[LogAlert]:
+    async def _check_correlation_rule(self, rule: Dict, cutoff_time: datetime) -> List[LogAlert]:
         """Check correlation alert rule"""
         # Implementation for log correlation analysis
         return []
@@ -578,9 +520,7 @@ class LogAnalyzer:
         except Exception:
             return []
 
-    async def _count_recent_entries(
-        self, stream: str, cutoff_time: datetime
-    ) -> int:
+    async def _count_recent_entries(self, stream: str, cutoff_time: datetime) -> int:
         """Count recent entries in stream"""
         try:
             # Convert cutoff time to Redis stream timestamp
@@ -665,9 +605,7 @@ class CentralizedLoggingSystem:
             logger.info("Centralized logging system initialized successfully")
 
         except Exception as e:
-            logger.error(
-                f"Failed to initialize centralized logging system: {e}"
-            )
+            logger.error(f"Failed to initialize centralized logging system: {e}")
             raise
 
     def get_service_logger(self, service_name: str) -> "ServiceLogger":
@@ -747,9 +685,7 @@ class CentralizedLoggingSystem:
 class ServiceLogger:
     """Service-specific logger wrapper"""
 
-    def __init__(
-        self, service_name: str, logging_system: CentralizedLoggingSystem
-    ):
+    def __init__(self, service_name: str, logging_system: CentralizedLoggingSystem):
         self.service_name = service_name
         self.logging_system = logging_system
         self.correlation_id = None
@@ -918,9 +854,7 @@ async def main():
 
         # Test logging
         api_logger.info("API Gateway started", LogEventType.BUSINESS_EVENT)
-        api_logger.api_request(
-            "GET", "/api/v1/health", duration_ms=45.2, status_code=200
-        )
+        api_logger.api_request("GET", "/api/v1/health", duration_ms=45.2, status_code=200)
         api_logger.performance_metric("response_time", 45.2, "ms")
 
         # Simulate error

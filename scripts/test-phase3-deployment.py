@@ -140,9 +140,7 @@ def test_kubernetes_config():
         for resource, min_count in required_resources.items():
             actual_count = resource_types.get(resource, 0)
             if actual_count < min_count:
-                print(
-                    f"❌ {resource} 資源不足: 需要 {min_count}, 實際 {actual_count}"
-                )
+                print(f"❌ {resource} 資源不足: 需要 {min_count}, 實際 {actual_count}")
                 return False
 
         # 檢查 HPA 配置
@@ -226,9 +224,7 @@ def test_environment_template():
 
         print("✅ 環境配置範本檢查通過")
         config_lines = [
-            line
-            for line in content.split("\n")
-            if "=" in line and not line.startswith("#")
+            line for line in content.split("\n") if "=" in line and not line.startswith("#")
         ]
         print(f"   - 包含 {len(config_lines)} 個配置項")
 
@@ -361,9 +357,7 @@ def test_phase2_integration():
         return False
 
     # 檢查統一模型
-    models_init = (
-        project_root / "auto_generate_video_fold6" / "models" / "__init__.py"
-    )
+    models_init = project_root / "auto_generate_video_fold6" / "models" / "__init__.py"
     if not models_init.exists():
         print("❌ 統一模型定義不存在")
         return False
@@ -375,12 +369,7 @@ def test_phase2_integration():
         return False
 
     # 檢查同步管理器
-    sync_manager = (
-        project_root
-        / "auto_generate_video_fold6"
-        / "database"
-        / "sync_manager.py"
-    )
+    sync_manager = project_root / "auto_generate_video_fold6" / "database" / "sync_manager.py"
     if not sync_manager.exists():
         print("❌ 資料庫同步管理器不存在")
         return False

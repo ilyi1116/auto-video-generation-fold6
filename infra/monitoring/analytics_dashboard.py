@@ -58,9 +58,7 @@ class AnalyticsDashboard:
                         ),
                         html.Div(
                             [
-                                html.Span(
-                                    "最後更新: ", className="update-label"
-                                ),
+                                html.Span("最後更新: ", className="update-label"),
                                 html.Span(
                                     id="last-update-time",
                                     className="update-time",
@@ -76,9 +74,7 @@ class AnalyticsDashboard:
                     [
                         html.Div(
                             [
-                                html.Label(
-                                    "時間範圍:", className="control-label"
-                                ),
+                                html.Label("時間範圍:", className="control-label"),
                                 dcc.Dropdown(
                                     id="time-range-dropdown",
                                     options=[
@@ -109,9 +105,7 @@ class AnalyticsDashboard:
                         ),
                         html.Div(
                             [
-                                html.Label(
-                                    "數據類型:", className="control-label"
-                                ),
+                                html.Label("數據類型:", className="control-label"),
                                 dcc.Dropdown(
                                     id="data-type-dropdown",
                                     options=[
@@ -332,9 +326,7 @@ class AnalyticsDashboard:
                 logger.error(f"更新次圖表失敗: {e}")
                 return go.Figure()
 
-        @self.app.callback(
-            Output("data-table", "children"), [Input("data-store", "children")]
-        )
+        @self.app.callback(Output("data-table", "children"), [Input("data-store", "children")])
         def update_data_table(data_json):
             """更新數據表格"""
             try:
@@ -344,9 +336,7 @@ class AnalyticsDashboard:
                 logger.error(f"更新數據表格失敗: {e}")
                 return html.P("數據載入失敗")
 
-    async def _fetch_data(
-        self, time_range: str, data_type: str
-    ) -> Dict[str, Any]:
+    async def _fetch_data(self, time_range: str, data_type: str) -> Dict[str, Any]:
         """獲取數據"""
         end_date = date.today()
 
@@ -368,9 +358,7 @@ class AnalyticsDashboard:
                 end_date = date(end_date.year, 1, 1) - timedelta(days=1)
             else:
                 start_date = date(end_date.year, end_date.month - 1, 1)
-                end_date = date(end_date.year, end_date.month, 1) - timedelta(
-                    days=1
-                )
+                end_date = date(end_date.year, end_date.month, 1) - timedelta(days=1)
         else:
             start_date = end_date - timedelta(days=7)
 
@@ -386,9 +374,7 @@ class AnalyticsDashboard:
         else:
             return {}
 
-    async def _fetch_cost_data(
-        self, start_date: date, end_date: date
-    ) -> Dict[str, Any]:
+    async def _fetch_cost_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
         """獲取成本數據"""
         if not self.cost_tracker:
             return self._get_mock_cost_data(start_date, end_date)
@@ -433,18 +419,14 @@ class AnalyticsDashboard:
                             "cost": stats["cost"],
                             "calls": stats["calls"],
                         }
-                        for date_str, stats in weekly_report[
-                            "daily_stats"
-                        ].items()
+                        for date_str, stats in weekly_report["daily_stats"].items()
                     ],
                 }
         except Exception as e:
             logger.error(f"獲取成本數據失敗: {e}")
             return self._get_mock_cost_data(start_date, end_date)
 
-    def _get_mock_cost_data(
-        self, start_date: date, end_date: date
-    ) -> Dict[str, Any]:
+    def _get_mock_cost_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
         """獲取模擬成本數據"""
         import random
 
@@ -490,9 +472,7 @@ class AnalyticsDashboard:
             "daily_data": daily_data,
         }
 
-    async def _fetch_generation_data(
-        self, start_date: date, end_date: date
-    ) -> Dict[str, Any]:
+    async def _fetch_generation_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
         """獲取生成數據（模擬）"""
         import random
 
@@ -510,9 +490,7 @@ class AnalyticsDashboard:
                     "date": current_date.isoformat(),
                     "videos": videos,
                     "success": success,
-                    "success_rate": (
-                        (success / videos) * 100 if videos > 0 else 0
-                    ),
+                    "success_rate": ((success / videos) * 100 if videos > 0 else 0),
                 }
             )
 
@@ -528,9 +506,7 @@ class AnalyticsDashboard:
             },
             "total_videos": total_videos,
             "total_success": total_success,
-            "success_rate": (
-                (total_success / total_videos) * 100 if total_videos > 0 else 0
-            ),
+            "success_rate": ((total_success / total_videos) * 100 if total_videos > 0 else 0),
             "platforms": {
                 "TikTok": int(total_videos * 0.45),
                 "Instagram": int(total_videos * 0.35),
@@ -539,9 +515,7 @@ class AnalyticsDashboard:
             "daily_data": daily_data,
         }
 
-    async def _fetch_performance_data(
-        self, start_date: date, end_date: date
-    ) -> Dict[str, Any]:
+    async def _fetch_performance_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
         """獲取效能數據（模擬）"""
         import random
 
@@ -569,16 +543,12 @@ class AnalyticsDashboard:
             "daily_data": daily_data,
         }
 
-    async def _fetch_error_data(
-        self, start_date: date, end_date: date
-    ) -> Dict[str, Any]:
+    async def _fetch_error_data(self, start_date: date, end_date: date) -> Dict[str, Any]:
         """獲取錯誤數據（模擬）"""
         import random
 
         error_types = ["API錯誤", "網路超時", "資源不足", "配置錯誤", "其他"]
-        error_data = {
-            error_type: random.randint(0, 10) for error_type in error_types
-        }
+        error_data = {error_type: random.randint(0, 10) for error_type in error_types}
 
         return {
             "type": "errors",
@@ -668,14 +638,10 @@ class AnalyticsDashboard:
 
         return cards
 
-    def _create_main_chart(
-        self, data: Dict[str, Any], data_type: str
-    ) -> go.Figure:
+    def _create_main_chart(self, data: Dict[str, Any], data_type: str) -> go.Figure:
         """創建主圖表"""
         if not data:
-            return go.Figure().add_annotation(
-                text="無數據", x=0.5, y=0.5, showarrow=False
-            )
+            return go.Figure().add_annotation(text="無數據", x=0.5, y=0.5, showarrow=False)
 
         if data_type == "cost":
             # 成本趨勢圖
@@ -722,14 +688,10 @@ class AnalyticsDashboard:
 
         return go.Figure()
 
-    def _create_secondary_chart(
-        self, data: Dict[str, Any], data_type: str
-    ) -> go.Figure:
+    def _create_secondary_chart(self, data: Dict[str, Any], data_type: str) -> go.Figure:
         """創建次圖表"""
         if not data:
-            return go.Figure().add_annotation(
-                text="無數據", x=0.5, y=0.5, showarrow=False
-            )
+            return go.Figure().add_annotation(text="無數據", x=0.5, y=0.5, showarrow=False)
 
         if data_type == "cost":
             # 供應商分布圖
@@ -781,19 +743,12 @@ class AnalyticsDashboard:
         # 創建表格
         table_header = [html.Thead([html.Tr([html.Th(h) for h in headers])])]
         table_body = [
-            html.Tbody(
-                [
-                    html.Tr([html.Td(row.get(h, "")) for h in headers])
-                    for row in daily_data
-                ]
-            )
+            html.Tbody([html.Tr([html.Td(row.get(h, "")) for h in headers]) for row in daily_data])
         ]
 
         return html.Table(table_header + table_body, className="table")
 
-    def run(
-        self, host: str = "127.0.0.1", port: int = 8050, debug: bool = False
-    ):
+    def run(self, host: str = "127.0.0.1", port: int = 8050, debug: bool = False):
         """運行儀表板"""
         logger.info(f"啟動分析儀表板: http://{host}:{port}")
         self.app.run_server(host=host, port=port, debug=debug)

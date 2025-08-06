@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import aiohttp
+import docker
 import psutil
 import redis
 import sqlalchemy as sa
@@ -24,8 +25,6 @@ from prometheus_client import (
     start_http_server,
 )
 from sqlalchemy import create_engine
-
-import docker
 
 
 @dataclass
@@ -56,9 +55,7 @@ class SystemMetrics:
 class HealthMonitor:
     """健康檢查監控器"""
 
-    def __init__(
-        self, config_path: str = "./monitoring/health-check/config.yaml"
-    ):
+    def __init__(self, config_path: str = "./monitoring/health-check/config.yaml"):
         self.config_path = Path(config_path)
         self.config = self._load_config()
         self.logger = self._setup_logging()
@@ -230,11 +227,7 @@ class HealthMonitor:
 
             # 資料庫連接
             db_config = next(
-                (
-                    s
-                    for s in self.config["services"]
-                    if s["name"] == "postgresql"
-                ),
+                (s for s in self.config["services"] if s["name"] == "postgresql"),
                 None,
             )
             if db_config:
@@ -248,9 +241,7 @@ class HealthMonitor:
         check_tasks = []
 
         for service_config in self.config["services"]:
-            task = asyncio.create_task(
-                self._check_service_health(service_config)
-            )
+            task = asyncio.create_task(self._check_service_health(service_config))
             check_tasks.append(task)
 
         # 系統指標檢查
@@ -279,9 +270,7 @@ class HealthMonitor:
         # 評估整體系統健康
         await self._evaluate_system_health(health_statuses)
 
-    async def _check_service_health(
-        self, service_config: Dict[str, Any]
-    ) -> HealthStatus:
+    async def _check_service_health(self, service_config: Dict[str, Any]) -> HealthStatus:
         """檢查單個服務健康狀態"""
         service_name = service_config["name"]
         service_type = service_config["type"]
@@ -313,9 +302,7 @@ class HealthMonitor:
             self.health_gauge.labels(service_name=service_name).set(
                 1 if status.status == "healthy" else 0
             )
-            self.response_time_gauge.labels(service_name=service_name).set(
-                response_time
-            )
+            self.response_time_gauge.labels(service_name=service_name).set(response_time)
 
             return status
 
@@ -331,9 +318,7 @@ class HealthMonitor:
                 error_message=str(e),
             )
 
-    async def _check_http_service(
-        self, service_config: Dict[str, Any]
-    ) -> HealthStatus:
+    async def _check_http_service(self, service_config: Dict[str, Any]) -> HealthStatus:
         """檢查 HTTP 服務"""
         url = service_config["url"]
         timeout = self.config["monitoring"]["timeout"]
@@ -349,9 +334,7 @@ class HealthMonitor:
                             response_time=0,  # 將在上層設定
                             timestamp=datetime.now(),
                             details=response_data,
-                            dependencies=service_config.get(
-                                "dependencies", []
-                            ),
+                            dependencies=service_config.get("dependencies", []),
                         )
                     else:
                         return HealthStatus(
@@ -360,9 +343,7 @@ class HealthMonitor:
                             response_time=0,
                             timestamp=datetime.now(),
                             details={"http_status": response.status},
-                            dependencies=service_config.get(
-                                "dependencies", []
-                            ),
+                            dependencies=service_config.get("dependencies", []),
                             error_message=f"HTTP {response.status}",
                         )
             except asyncio.TimeoutError:
@@ -376,9 +357,7 @@ class HealthMonitor:
                     error_message="Request timeout",
                 )
 
-    async def _check_database_service(
-        self, service_config: Dict[str, Any]
-    ) -> HealthStatus:
+    async def _check_database_service(self, service_config: Dict[str, Any]) -> HealthStatus:
         """檢查資料庫服務"""
         try:
             if self.db_engine:
@@ -408,15 +387,11 @@ class HealthMonitor:
                 error_message=str(e),
             )
 
-    async def _check_redis_service(
-        self, service_config: Dict[str, Any]
-    ) -> HealthStatus:
+    async def _check_redis_service(self, service_config: Dict[str, Any]) -> HealthStatus:
         """檢查 Redis 服務"""
         try:
             if self.redis_client:
-                await asyncio.get_event_loop().run_in_executor(
-                    None, self.redis_client.ping
-                )
+                await asyncio.get_event_loop().run_in_executor(None, self.redis_client.ping)
 
                 return HealthStatus(
                     service_name=service_config["name"],
@@ -440,21 +415,15 @@ class HealthMonitor:
                 error_message=str(e),
             )
 
-    async def _check_docker_service(
-        self, service_config: Dict[str, Any]
-    ) -> HealthStatus:
+    async def _check_docker_service(self, service_config: Dict[str, Any]) -> HealthStatus:
         """檢查 Docker 容器服務"""
         try:
-            container_name = service_config.get(
-                "container_name", service_config["name"]
-            )
+            container_name = service_config.get("container_name", service_config["name"])
 
             if self.docker_client:
                 container = self.docker_client.containers.get(container_name)
 
-                status = (
-                    "healthy" if container.status == "running" else "unhealthy"
-                )
+                status = "healthy" if container.status == "running" else "unhealthy"
 
                 return HealthStatus(
                     service_name=service_config["name"],
@@ -557,19 +526,13 @@ class HealthMonitor:
 
             if failure_count >= alert_threshold:
                 last_alert = previous_state.get("last_alert")
-                if (
-                    not last_alert or (current_time - last_alert).seconds > 300
-                ):  # 5分鐘間隔
+                if not last_alert or (current_time - last_alert).seconds > 300:  # 5分鐘間隔
                     await self._send_alert(health_status, failure_count)
-                    self.service_states[service_name][
-                        "last_alert"
-                    ] = current_time
+                    self.service_states[service_name]["last_alert"] = current_time
 
     async def _check_dependencies(self, health_statuses: List[HealthStatus]):
         """檢查服務依賴關係"""
-        status_map = {
-            status.service_name: status for status in health_statuses
-        }
+        status_map = {status.service_name: status for status in health_statuses}
 
         for status in health_statuses:
             for dependency in status.dependencies:
@@ -579,24 +542,17 @@ class HealthMonitor:
                         service_name=status.service_name, dependency=dependency
                     ).set(1 if dep_status.status == "healthy" else 0)
 
-    async def _evaluate_system_health(
-        self, health_statuses: List[HealthStatus]
-    ):
+    async def _evaluate_system_health(self, health_statuses: List[HealthStatus]):
         """評估整體系統健康"""
         total_services = len(health_statuses)
-        healthy_services = sum(
-            1 for s in health_statuses if s.status == "healthy"
-        )
+        healthy_services = sum(1 for s in health_statuses if s.status == "healthy")
         critical_services = [
             s
             for s in health_statuses
-            if s.status != "healthy"
-            and self._is_critical_service(s.service_name)
+            if s.status != "healthy" and self._is_critical_service(s.service_name)
         ]
 
-        system_health_score = (
-            healthy_services / total_services if total_services > 0 else 0
-        )
+        system_health_score = healthy_services / total_services if total_services > 0 else 0
 
         # 記錄系統健康狀態
         self.logger.info(
@@ -606,9 +562,7 @@ class HealthMonitor:
 
         # 如果有關鍵服務故障，發送系統級告警
         if critical_services:
-            await self._send_system_alert(
-                critical_services, system_health_score
-            )
+            await self._send_system_alert(critical_services, system_health_score)
 
     def _is_critical_service(self, service_name: str) -> bool:
         """檢查是否為關鍵服務"""
@@ -622,9 +576,7 @@ class HealthMonitor:
         """更新系統指標到 Prometheus"""
         # 可以在這裡添加系統指標的 Prometheus 更新
 
-    async def _send_alert(
-        self, health_status: HealthStatus, failure_count: int
-    ):
+    async def _send_alert(self, health_status: HealthStatus, failure_count: int):
         """發送告警"""
         alert_data = {
             "service": health_status.service_name,
@@ -648,9 +600,7 @@ class HealthMonitor:
         if self.config["alerts"]["webhook"]["enabled"]:
             await self._send_webhook_alert(alert_data)
 
-        self.logger.warning(
-            f"Alert sent for {health_status.service_name}: {health_status.status}"
-        )
+        self.logger.warning(f"Alert sent for {health_status.service_name}: {health_status.status}")
 
     async def _send_recovery_alert(self, health_status: HealthStatus):
         """發送恢復告警"""
@@ -663,16 +613,12 @@ class HealthMonitor:
 
         self.logger.info(f"Service recovered: {health_status.service_name}")
 
-    async def _send_system_alert(
-        self, critical_services: List[HealthStatus], health_score: float
-    ):
+    async def _send_system_alert(self, critical_services: List[HealthStatus], health_score: float):
         """發送系統級告警"""
         system_alert = {
             "alert_type": "system_health",
             "health_score": health_score,
-            "critical_services_down": [
-                s.service_name for s in critical_services
-            ],
+            "critical_services_down": [s.service_name for s in critical_services],
             "timestamp": datetime.now().isoformat(),
         }
 
@@ -691,13 +637,9 @@ class HealthMonitor:
         try:
             webhook_url = self.config["alerts"]["webhook"]["url"]
             async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    webhook_url, json=alert_data
-                ) as response:
+                async with session.post(webhook_url, json=alert_data) as response:
                     if response.status != 200:
-                        self.logger.error(
-                            f"Webhook alert failed: {response.status}"
-                        )
+                        self.logger.error(f"Webhook alert failed: {response.status}")
         except Exception as e:
             self.logger.error(f"Failed to send webhook alert: {e}")
 
