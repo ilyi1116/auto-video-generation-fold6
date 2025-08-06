@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 # 添加項目根目錄到Python路徑
-project_root = Path(__file__).parent.parent
+project_root = Path(__file__).parent.paren
 sys.path.insert(0, str(project_root))
 
 
@@ -46,7 +46,7 @@ class ProductionValidator:
             "src",
             "src/shared",
             "src/shared/database",
-            "src/shared/services", 
+            "src/shared/services",
             "src/services",
             "tests",
             "config",
@@ -60,7 +60,7 @@ class ProductionValidator:
             if not exists:
                 all_exist = False
 
-        return all_exist
+        return all_exis
 
     def validate_core_files(self) -> bool:
         """驗證核心文件存在"""
@@ -83,7 +83,7 @@ class ProductionValidator:
             if not exists:
                 all_exist = False
 
-        return all_exist
+        return all_exis
 
     def validate_configuration_files(self) -> bool:
         """驗證配置文件"""
@@ -91,7 +91,7 @@ class ProductionValidator:
 
         config_files = [
             "config/environments/development.env",
-            "config/environments/production.env", 
+            "config/environments/production.env",
             "config/environments/testing.env",
             "config/monitoring-config.yaml",
             "config/logging-config.yaml",
@@ -105,7 +105,7 @@ class ProductionValidator:
             if not exists:
                 all_exist = False
 
-        return all_exist
+        return all_exis
 
     def validate_service_directories(self) -> bool:
         """驗證服務目錄結構"""
@@ -114,7 +114,7 @@ class ProductionValidator:
         services = [
             "api-gateway",
             "auth-service",
-            "video-service", 
+            "video-service",
             "ai-service",
         ]
 
@@ -123,7 +123,7 @@ class ProductionValidator:
             service_dir = project_root / "src" / "services" / service
             exists = service_dir.exists()
             self.test(f"Service directory: {service}", exists)
-            
+
             if exists:
                 # 檢查Dockerfile
                 dockerfile = service_dir / "Dockerfile"
@@ -134,7 +134,7 @@ class ProductionValidator:
             else:
                 all_exist = False
 
-        return all_exist
+        return all_exis
 
     def validate_imports(self) -> bool:
         """驗證關鍵模塊可以導入"""
@@ -143,7 +143,7 @@ class ProductionValidator:
         modules_to_test = [
             "src.shared.database.models",
             "src.shared.database.connection",
-            "src.shared.services.service_discovery", 
+            "src.shared.services.service_discovery",
             "src.shared.services.message_queue",
             "src.shared.config",
         ]
@@ -165,28 +165,28 @@ class ProductionValidator:
 
         try:
             from src.shared.database import User, Video, VideoAsset, ProcessingTask
-            
+
             # 檢查模型屬性
             models_ok = True
-            
+
             # 檢查User模型
             user_attrs = hasattr(User, '__tablename__') and hasattr(User, 'email')
             self.test("User model structure", user_attrs)
             if not user_attrs:
                 models_ok = False
-                
+
             # 檢查Video模型
             video_attrs = hasattr(Video, '__tablename__') and hasattr(Video, 'title')
             self.test("Video model structure", video_attrs)
             if not video_attrs:
                 models_ok = False
-                
+
             # 檢查VideoAsset模型
             asset_attrs = hasattr(VideoAsset, '__tablename__') and hasattr(VideoAsset, 'asset_type')
             self.test("VideoAsset model structure", asset_attrs)
             if not asset_attrs:
                 models_ok = False
-                
+
             # 檢查ProcessingTask模型
             task_attrs = hasattr(ProcessingTask, '__tablename__') and hasattr(ProcessingTask, 'task_type')
             self.test("ProcessingTask model structure", task_attrs)
@@ -207,23 +207,23 @@ class ProductionValidator:
             from src.shared.services import ServiceRegistry, ServiceInstance, ServiceStatus
 
             registry = ServiceRegistry()
-            
+
             # 創建測試服務
             test_service = ServiceInstance(
-                "test-validation-service", 
-                "localhost", 
+                "test-validation-service",
+                "localhost",
                 9999,
                 status=ServiceStatus.HEALTHY
             )
-            
+
             # 註冊服務
             registry.register_service(test_service)
-            
+
             # 驗證服務註冊
             instances = registry.get_service_instances("test-validation-service")
             service_registered = len(instances) == 1 and instances[0].name == "test-validation-service"
             self.test("Service registration", service_registered)
-            
+
             return service_registered
 
         except Exception as e:
@@ -239,14 +239,14 @@ class ProductionValidator:
 
             # 創建測試隊列
             queue = MessageQueue("redis://localhost:6379/15")
-            
+
             # 檢查基本方法存在
             has_methods = (
-                hasattr(queue, 'add_task') and 
-                hasattr(queue, 'publish_event') and
-                hasattr(queue, 'publish')
+                hasattr(queue, 'add_task')
+                and hasattr(queue, 'publish_event')
+                and hasattr(queue, 'publish')
             )
-            
+
             self.test("MessageQueue methods available", has_methods)
             return has_methods
 
@@ -260,29 +260,29 @@ class ProductionValidator:
 
         try:
             import subprocess
-            
+
             # 檢查docker-compose命令
             result = subprocess.run(
-                ["docker-compose", "--version"], 
-                capture_output=True, 
+                ["docker-compose", "--version"],
+                capture_output=True,
                 text=True
             )
             docker_available = result.returncode == 0
             self.test("Docker Compose available", docker_available)
-            
+
             if not docker_available:
                 return False
-            
+
             # 驗證docker-compose.yml語法
             result = subprocess.run(
                 ["docker-compose", "config", "--quiet"],
                 capture_output=True,
                 text=True,
-                cwd=project_root
+                cwd=project_roo
             )
             config_valid = result.returncode == 0
             self.test("Docker Compose config syntax", config_valid)
-            
+
             return config_valid
 
         except Exception as e:
@@ -314,11 +314,11 @@ class ProductionValidator:
         print(f"\n{'='*60}")
         print("📊 生產環境部署驗證報告")
         print(f"{'='*60}")
-        
+
         for result in self.results:
             print(result)
-        
-        print(f"\n📈 驗證統計:")
+
+        print("\n📈 驗證統計:")
         print(f"   總測試數量: {self.total_tests}")
         print(f"   通過測試: {self.passed_tests}")
         print(f"   失敗測試: {self.total_tests - self.passed_tests}")
@@ -326,10 +326,10 @@ class ProductionValidator:
         print(f"   驗證時間: {end_time - start_time:.2f}秒")
 
         if all_passed:
-            print(f"\n🎉 生產環境部署驗證通過！")
+            print("\n🎉 生產環境部署驗證通過！")
             print("   系統已準備好進行生產部署。")
         else:
-            print(f"\n⚠️ 生產環境部署驗證失敗！")
+            print("\n⚠️ 生產環境部署驗證失敗！")
             print("   請修復失敗的項目後重新驗證。")
 
         return all_passed, self.results
@@ -339,7 +339,7 @@ async def main():
     """主函數"""
     validator = ProductionValidator()
     success, results = await validator.run_validation()
-    
+
     # 返回適當的退出碼
     sys.exit(0 if success else 1)
 

@@ -125,7 +125,7 @@ class LoadBalancerMiddleware(BaseHTTPMiddleware):
                 if "application/json" in content_type:
                     try:
                         json_data = json.loads(body.decode("utf-8"))
-                    except:
+                    except (json.JSONDecodeError, UnicodeDecodeError):
                         data = body
                 else:
                     data = body

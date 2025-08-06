@@ -94,11 +94,11 @@ def main():
                 # 重新檢查
                 is_valid_after, _ = check_syntax(file_path)
                 if is_valid_after:
-                    print(f"  ✅ 修復成功")
+                    print("  ✅ 修復成功")
                 else:
-                    print(f"  ❌ 修復失敗，需要手動處理")
+                    print("  ❌ 修復失敗，需要手動處理")
 
-    print(f"\n總結:")
+    print("\n總結:")
     print(f"- 檢查文件: {len(python_files)}")
     print(f"- 發現語法錯誤: {len(syntax_errors)}")
     print(f"- 自動修復: {len(fixed_files)}")

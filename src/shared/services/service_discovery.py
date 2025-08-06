@@ -299,7 +299,7 @@ class HealthChecker:
                         health_data = await response.json()
                         if isinstance(health_data, dict):
                             instance.metadata.update(health_data)
-                    except:
+                    except Exception:
                         pass
                 else:
                     instance.status = ServiceStatus.UNHEALTHY

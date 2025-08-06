@@ -112,7 +112,6 @@ class CircuitBreakerOpenError(Exception):
     """熔斷器開啟異常"""
 
 
-
 class ServiceClient:
     """服務間通訊客戶端"""
 
@@ -356,7 +355,6 @@ class ServiceClient:
 
 class ServiceUnavailableError(Exception):
     """服務不可用異常"""
-
 
 
 class HTTPError(Exception):

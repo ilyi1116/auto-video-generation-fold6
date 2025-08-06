@@ -129,7 +129,7 @@ def main():
         is_valid_after, error_after = check_syntax(full_path)
 
         if is_valid_after:
-            print(f"   ✅ 修復成功")
+            print("   ✅ 修復成功")
             fixed_count += 1
         else:
             print(f"   ❌ 修復失敗: {error_after}")

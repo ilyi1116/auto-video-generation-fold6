@@ -11,8 +11,6 @@ This service orchestrates the video generation process by coordinating:
 import asyncio
 import logging
 import os
-
-# 導入統一資料庫模型
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -27,29 +25,30 @@ from pydantic import BaseModel, Field
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.shared.database import (
+# 需要在 sys.path 修改後導入的模組
+from src.shared.database import (  # noqa: E402
     ProcessingTask,
     Video,
     VideoAsset,
     get_async_db,
 )
-from src.shared.services.message_queue import (
+from src.shared.services.message_queue import (  # noqa: E402
     Message,
     MessageHandler,
     VideoEvents,
     get_message_queue,
     publish_video_event,
 )
-from src.shared.services.service_discovery import (
+from src.shared.services.service_discovery import (  # noqa: E402
     get_service_registry,
 )
 
-from .ai.gemini_client import GeminiClient
-from .ai.stable_diffusion_client import StableDiffusionClient
-from .ai.suno_client import SunoAIClient
-from .auth import verify_token
-from .routers import entrepreneur_workflows, social_media, video_generation
-from .video.composer import VideoComposer
+from .ai.gemini_client import GeminiClient  # noqa: E402
+from .ai.stable_diffusion_client import StableDiffusionClient  # noqa: E402
+from .ai.suno_client import SunoAIClient  # noqa: E402
+from .auth import verify_token  # noqa: E402
+from .routers import entrepreneur_workflows, social_media, video_generation  # noqa: E402
+from .video.composer import VideoComposer  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
