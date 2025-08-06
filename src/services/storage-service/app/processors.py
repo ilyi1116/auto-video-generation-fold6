@@ -261,7 +261,7 @@ class VideoProcessor(FileProcessor):
 
     def __init__(self):
         self.supported_formats = ["mp4", "avi", "mov", "webm"]
-    
+
     def _safe_parse_fraction(self, fraction_str: str) -> float:
         """安全解析分數字符串，避免使用 eval()"""
         try:

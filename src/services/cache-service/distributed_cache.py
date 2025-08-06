@@ -94,7 +94,7 @@ class ConsistentHash:
         """計算哈希值"""
         # 使用 SHA256 替代 MD5 以提高安全性
         return int(hashlib.sha256(key.encode("utf-8")).hexdigest(), 16)
-    
+
     def _safe_serialize(self, obj):
         """安全的序列化方法，優先使用 JSON"""
         try:
@@ -106,7 +106,7 @@ class ConsistentHash:
             pickled = pickle.dumps(obj)
             encoded = base64.b64encode(pickled).decode('utf-8')
             return f"pickle_b64:{encoded}"
-    
+
     def _safe_deserialize(self, value):
         """安全的反序列化方法"""
         if isinstance(value, str):
@@ -117,7 +117,7 @@ class ConsistentHash:
                 if not getattr(settings, 'ALLOW_PICKLE_DESERIALIZATION', False):
                     logger.error("Pickle deserialization disabled for security. Enable ALLOW_PICKLE_DESERIALIZATION if needed.")
                     raise ValueError("Pickle deserialization is disabled for security reasons")
-                
+
                 logger.warning("Deserializing pickle data - ensure source is trusted")
                 encoded = value[11:]
                 try:
