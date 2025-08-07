@@ -21,7 +21,7 @@ wheels/
 *.egg
 MANIFEST
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
@@ -90,3 +90,9 @@ coverage.xml
 # Temporary files
 tmp/
 temp/
+
+# SvelteKit build cache
+.svelte-kit/
+
+# Claude local settings
+.claude/
