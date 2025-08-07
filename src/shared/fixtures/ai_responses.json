@@ -1,0 +1,171 @@
+{
+  "script_templates": {
+    "educational": {
+      "intro_templates": [
+        "歡迎來到今天的{{channel_name}}！我是{{host_name}}，今天要和大家分享關於{{topic}}的內容。",
+        "大家好！在今天的影片中，我們要深入探討{{topic}}這個話題。",
+        "Hello大家好！{{host_name}}又來了，今天要帶大家了解{{topic}}的重要概念。"
+      ],
+      "main_content_templates": [
+        "首先，讓我們來看看{{topic}}的基本概念。{{topic}}主要是指...",
+        "接下來，我想和大家分享{{topic}}的三個核心要點。第一個是...",
+        "為了更好地理解{{topic}}，我們可以從這幾個角度來分析..."
+      ],
+      "conclusion_templates": [
+        "總結一下今天的內容，{{topic}}的關鍵在於理解這些概念並實際應用。",
+        "希望這個影片能幫助大家更好地了解{{topic}}。記得按讚訂閱，我們下次見！",
+        "以上就是關於{{topic}}的分享，如果你有任何問題，歡迎在下方留言討論。"
+      ]
+    },
+    "entertaining": {
+      "intro_templates": [
+        "各位觀眾朋友們大家好！今天{{host_name}}要來和大家聊聊{{topic}}的有趣話題！",
+        "嘿！大家好呀～今天要來分享一個超有趣的{{topic}}內容，準備好了嗎？",
+        "歡迎收看，我是{{host_name}}！今天要帶大家看看{{topic}}的奇妙世界。"
+      ],
+      "main_content_templates": [
+        "你們知道嗎？{{topic}}其實有很多有趣的地方，比如說...",
+        "讓我來告訴你們一個關於{{topic}}的驚人事實！",
+        "說到{{topic}}，我最近發現了一個超級有意思的現象..."
+      ],
+      "conclusion_templates": [
+        "怎麼樣？今天的{{topic}}內容是不是很有趣呢？記得分享給朋友們！",
+        "好啦，今天的分享就到這裡，喜歡的話記得按讚訂閱喔！",
+        "以上就是今天的{{topic}}內容，我們下次再見囉！"
+      ]
+    },
+    "tutorial": {
+      "intro_templates": [
+        "大家好！今天要來教大家如何{{skill}}，跟著我的步驟一起來做吧！",
+        "想學會{{skill}}嗎？沒問題！今天就讓我一步步教給你。",
+        "Hello！{{host_name}}來教學啦！今天的主題是{{skill}}，超級實用的技能。"
+      ],
+      "main_content_templates": [
+        "首先第一步，我們需要準備{{materials}}。接下來...",
+        "步驟一：{{step1}}。這個步驟很關鍵，一定要注意...",
+        "現在讓我示範給大家看，{{skill}}的核心技巧就是..."
+      ],
+      "conclusion_templates": [
+        "學會了嗎？{{skill}}其實就是這麼簡單！多練習幾次就熟練了。",
+        "好的，{{skill}}的教學就完成了！有問題的話歡迎留言問我。",
+        "恭喜你學會了{{skill}}！記得實際操作練習才會進步喔。"
+      ]
+    }
+  },
+  "image_prompts": {
+    "tech": [
+      "Modern technology laboratory with AI robots and holographic displays",
+      "Futuristic cityscape with smart buildings and flying cars",
+      "Person using advanced VR headset in a digital environment",
+      "Artificial intelligence neural network visualization", 
+      "Sleek modern office with multiple monitors showing code"
+    ],
+    "lifestyle": [
+      "Cozy modern living room with plants and natural lighting",
+      "Person enjoying morning coffee while working on laptop",
+      "Beautiful minimalist kitchen with organized cooking ingredients",
+      "Peaceful meditation space with candles and soft textures",
+      "Organized home office workspace with inspirational decorations"
+    ],
+    "business": [
+      "Professional business meeting in modern conference room",
+      "Entrepreneur presenting ideas on a whiteboard",
+      "Modern startup office space with collaborative work areas",
+      "Business charts and graphs on a digital dashboard",
+      "Professional handshake in corporate environment"
+    ],
+    "education": [
+      "Students collaborating in modern classroom with tablets",
+      "Teacher explaining concepts on interactive whiteboard", 
+      "Library study space with books and natural lighting",
+      "Online learning setup with computer and educational materials",
+      "Creative workshop space with art supplies and learning tools"
+    ]
+  },
+  "voice_options": {
+    "male_voices": [
+      {
+        "name": "台灣男聲-專業",
+        "voice_id": "tw_male_professional",
+        "description": "沉穩專業的男性聲音，適合商業和教育內容",
+        "age_range": "30-45",
+        "tone": "professional"
+      },
+      {
+        "name": "台灣男聲-親和",
+        "voice_id": "tw_male_friendly", 
+        "description": "親和友善的男性聲音，適合生活和娛樂內容",
+        "age_range": "25-35",
+        "tone": "friendly"
+      }
+    ],
+    "female_voices": [
+      {
+        "name": "台灣女聲-甜美",
+        "voice_id": "tw_female_sweet",
+        "description": "甜美清新的女性聲音，適合年輕觀眾內容",
+        "age_range": "20-30",
+        "tone": "sweet"
+      },
+      {
+        "name": "台灣女聲-知性",
+        "voice_id": "tw_female_intelligent",
+        "description": "知性優雅的女性聲音，適合教育和專業內容", 
+        "age_range": "28-40",
+        "tone": "intelligent"
+      }
+    ]
+  },
+  "sample_responses": {
+    "script_generation": {
+      "success_response": {
+        "success": true,
+        "data": {
+          "script": "歡迎來到今天的科技頻道！我是小明，今天要和大家分享AI技術的最新發展。\n\n首先，讓我們來看看AI在日常生活中的應用。從智能手機的語音助手到自動駕駛汽車，AI已經深度融入我們的生活...",
+          "word_count": 245,
+          "estimated_duration": "90-120秒",
+          "tone": "educational",
+          "structure": {
+            "intro": "歡迎來到今天的科技頻道！我是小明...",
+            "main_content": "首先，讓我們來看看AI在日常生活中的應用...",
+            "conclusion": "以上就是今天關於AI技術的分享，感謝大家的收看！"
+          }
+        }
+      }
+    },
+    "image_generation": {
+      "success_response": {
+        "success": true,
+        "data": {
+          "images": [
+            {
+              "url": "https://picsum.photos/1280/720?random=101",
+              "prompt": "Modern AI laboratory with holographic displays",
+              "style": "realistic",
+              "resolution": "1280x720"
+            },
+            {
+              "url": "https://picsum.photos/1280/720?random=102", 
+              "prompt": "Futuristic technology workspace",
+              "style": "realistic",
+              "resolution": "1280x720"
+            }
+          ],
+          "generated_at": "2024-01-15T10:30:00Z"
+        }
+      }
+    },
+    "voice_synthesis": {
+      "success_response": {
+        "success": true,
+        "data": {
+          "audio_url": "https://example.com/audio/synthesized_voice_123.mp3",
+          "duration": 95.5,
+          "voice_used": "tw_male_professional",
+          "text_length": 245,
+          "file_size": "2.1MB"
+        }
+      }
+    }
+  }
+}

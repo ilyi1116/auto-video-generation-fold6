@@ -20,30 +20,35 @@ export const nodes = [
 	() => import('./nodes/16'),
 	() => import('./nodes/17'),
 	() => import('./nodes/18'),
-	() => import('./nodes/19')
+	() => import('./nodes/19'),
+	() => import('./nodes/20'),
+	() => import('./nodes/21'),
+	() => import('./nodes/22')
 ];
 
 export const server_loads = [];
 
 export const dictionary = {
-		"/": [2],
-		"/ai": [3],
-		"/ai/images": [4],
-		"/ai/music": [5],
-		"/ai/script": [6],
-		"/ai/voice": [7],
-		"/analytics": [8],
-		"/create": [9],
-		"/dashboard": [10],
-		"/forgot-password": [11],
-		"/login": [12],
-		"/pricing": [13],
-		"/profile": [14],
-		"/projects": [15],
-		"/register": [16],
-		"/settings": [17],
-		"/social": [18],
-		"/trends": [19]
+		"/": [3],
+		"/admin": [4,[2]],
+		"/admin/mock-data": [5,[2]],
+		"/ai": [6],
+		"/ai/images": [7],
+		"/ai/music": [8],
+		"/ai/script": [9],
+		"/ai/voice": [10],
+		"/analytics": [11],
+		"/create": [12],
+		"/dashboard": [13],
+		"/forgot-password": [14],
+		"/login": [15],
+		"/pricing": [16],
+		"/profile": [17],
+		"/projects": [18],
+		"/register": [19],
+		"/settings": [20],
+		"/social": [21],
+		"/trends": [22]
 	};
 
 export const hooks = {

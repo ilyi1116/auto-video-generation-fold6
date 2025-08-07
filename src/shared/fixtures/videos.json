@@ -1,0 +1,148 @@
+{
+  "video_templates": [
+    {
+      "title": "AI技術的未來發展趨勢",
+      "description": "深入探討人工智能在各個領域的應用前景和挑戰",
+      "topic": "人工智能",
+      "style": "educational",
+      "platform": "youtube",
+      "language": "zh-TW",
+      "duration_seconds": 300,
+      "tags": ["AI", "科技", "未來", "趨勢"],
+      "category": "科技教育",
+      "target_audience": "科技愛好者",
+      "thumbnail_style": "professional",
+      "script_template": "在今天的影片中，我們要來討論{{topic}}。首先，讓我們了解目前的發展狀況...接下來，我們將探討未來的可能性..."
+    },
+    {
+      "title": "5分鐘學會{{skill}}",
+      "description": "快速掌握{{skill}}的核心概念和實用技巧",
+      "topic": "{{skill}}",
+      "style": "tutorial", 
+      "platform": "tiktok",
+      "language": "zh-TW",
+      "duration_seconds": 60,
+      "tags": ["教學", "快速學習", "技能"],
+      "category": "教育",
+      "target_audience": "學習者",
+      "thumbnail_style": "bright",
+      "script_template": "想要快速學會{{skill}}嗎？我來教你最重要的3個秘訣！第一個秘訣是..."
+    },
+    {
+      "title": "{{product}}開箱評測",
+      "description": "詳細測試{{product}}的功能特色和使用體驗",
+      "topic": "產品評測",
+      "style": "review",
+      "platform": "youtube",
+      "language": "zh-TW", 
+      "duration_seconds": 600,
+      "tags": ["開箱", "評測", "產品"],
+      "category": "科技評測",
+      "target_audience": "消費者",
+      "thumbnail_style": "product-focused",
+      "script_template": "大家好！今天要來開箱{{product}}。首先讓我們看看包裝...接下來測試主要功能..."
+    },
+    {
+      "title": "創業路上的{{number}}個重要選擇",
+      "description": "分享創業過程中遇到的關鍵決策點和經驗分享",
+      "topic": "創業經驗",
+      "style": "inspirational",
+      "platform": "youtube",
+      "language": "zh-TW",
+      "duration_seconds": 480,
+      "tags": ["創業", "經驗分享", "商業"],
+      "category": "商業",
+      "target_audience": "創業者",
+      "thumbnail_style": "motivational",
+      "script_template": "創業這條路上，我學到了{{number}}個重要的經驗。第一個是..."
+    },
+    {
+      "title": "日常生活中的{{topic}}小技巧",
+      "description": "分享實用的生活小竅門，讓日常更便利",
+      "topic": "生活妙招",
+      "style": "lifestyle",
+      "platform": "tiktok",
+      "language": "zh-TW",
+      "duration_seconds": 45,
+      "tags": ["生活", "小技巧", "實用"],
+      "category": "生活",
+      "target_audience": "一般大眾",
+      "thumbnail_style": "lifestyle",
+      "script_template": "你知道嗎？{{topic}}還可以這樣用！讓我來分享幾個超實用的小技巧..."
+    }
+  ],
+  "sample_videos": [
+    {
+      "title": "ChatGPT使用指南完整教學",
+      "description": "從基礎到進階，完整掌握ChatGPT的使用技巧",
+      "topic": "AI工具教學",
+      "style": "educational",
+      "platform": "youtube", 
+      "language": "zh-TW",
+      "status": "COMPLETED",
+      "progress_percentage": 100.0,
+      "duration_seconds": 720,
+      "thumbnail_url": "https://picsum.photos/1280/720?random=1",
+      "final_video_url": "https://example.com/videos/chatgpt-guide.mp4",
+      "view_count": 15420,
+      "like_count": 1240,
+      "share_count": 89
+    },
+    {
+      "title": "30秒學會Photoshop摳圖技巧", 
+      "description": "快速掌握Photoshop最實用的摳圖方法",
+      "topic": "設計技巧",
+      "style": "tutorial",
+      "platform": "tiktok",
+      "language": "zh-TW", 
+      "status": "GENERATING_SCRIPT",
+      "progress_percentage": 35.0,
+      "duration_seconds": 60,
+      "thumbnail_url": "https://picsum.photos/720/1280?random=2",
+      "view_count": 0,
+      "like_count": 0,
+      "share_count": 0
+    },
+    {
+      "title": "2024年最值得投資的科技股分析",
+      "description": "深度分析科技股的投資機會和風險評估",
+      "topic": "投資理財",
+      "style": "analytical", 
+      "platform": "youtube",
+      "language": "zh-TW",
+      "status": "PENDING",
+      "progress_percentage": 0.0,
+      "duration_seconds": 900,
+      "thumbnail_url": "https://picsum.photos/1280/720?random=3",
+      "view_count": 0,
+      "like_count": 0, 
+      "share_count": 0
+    }
+  ],
+  "content_categories": [
+    {
+      "name": "科技教育",
+      "description": "AI、程式設計、科技趨勢等教育內容",
+      "keywords": ["AI", "程式設計", "科技", "教學", "未來"],
+      "target_platforms": ["youtube", "bilibili"]
+    },
+    {
+      "name": "生活技巧", 
+      "description": "日常生活的實用技巧和小竅門",
+      "keywords": ["生活", "技巧", "妙招", "便利", "實用"],
+      "target_platforms": ["tiktok", "instagram"]
+    },
+    {
+      "name": "商業創業",
+      "description": "創業經驗、商業分析、投資理財", 
+      "keywords": ["創業", "商業", "投資", "理財", "經驗"],
+      "target_platforms": ["youtube", "linkedin"]
+    },
+    {
+      "name": "產品評測",
+      "description": "科技產品開箱、評測、比較",
+      "keywords": ["開箱", "評測", "產品", "比較", "推薦"],
+      "target_platforms": ["youtube", "bilibili"]
+    }
+  ]
+}

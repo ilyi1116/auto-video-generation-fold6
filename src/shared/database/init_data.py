@@ -15,32 +15,32 @@ sys.path.insert(0, str(project_root))
 from src.shared.database.connection import create_tables_sync, get_db
 from src.shared.database.models import User, Video, VideoStatus, ProcessingTask, TaskStatus, UserRole
 from src.shared.security import get_password_hash
+from src.shared.fixtures import get_test_users, get_sample_videos
 
 
 def create_test_users(db):
     """創建測試用戶"""
     
-    test_users = [
-        {
-            "username": "testuser1",
-            "email": "test1@example.com",
-            "full_name": "Test User One",
-            "password": "password123"
-        },
-        {
-            "username": "testuser2", 
-            "email": "test2@example.com",
-            "full_name": "Test User Two",
-            "password": "password123"
-        },
-        {
-            "username": "admin",
-            "email": "admin@example.com",
-            "full_name": "Admin User",
-            "password": "admin123",
-            "role": UserRole.ADMIN
+    # 從假資料配置載入測試用戶
+    test_users_data = get_test_users()
+    
+    # 轉換為舊格式以保持相容性
+    test_users = []
+    for user_data in test_users_data:
+        user_config = {
+            "username": user_data["username"],
+            "email": user_data["email"], 
+            "full_name": user_data["full_name"],
+            "password": user_data["password"]
         }
-    ]
+        
+        # 處理角色
+        if user_data["role"] == "ADMIN":
+            user_config["role"] = UserRole.ADMIN
+        else:
+            user_config["role"] = UserRole.USER
+            
+        test_users.append(user_config)
     
     created_users = []
     

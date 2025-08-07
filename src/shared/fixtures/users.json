@@ -1,0 +1,97 @@
+{
+  "test_users": [
+    {
+      "username": "testuser1",
+      "email": "test1@example.com",
+      "full_name": "測試用戶一號",
+      "password": "password123",
+      "role": "USER",
+      "is_active": true,
+      "is_verified": true,
+      "avatar_url": "https://ui-avatars.com/api/?name=測試用戶一號&background=4f46e5&color=fff",
+      "profile": {
+        "bio": "我是專門用來測試系統功能的測試用戶",
+        "location": "台北, 台灣",
+        "website": "https://example.com",
+        "social_links": {
+          "youtube": "https://youtube.com/@testuser1",
+          "tiktok": "https://tiktok.com/@testuser1"
+        }
+      }
+    },
+    {
+      "username": "testuser2", 
+      "email": "test2@example.com",
+      "full_name": "測試用戶二號",
+      "password": "password123",
+      "role": "USER",
+      "is_active": true,
+      "is_verified": true,
+      "avatar_url": "https://ui-avatars.com/api/?name=測試用戶二號&background=7c3aed&color=fff",
+      "profile": {
+        "bio": "創作短影片愛好者，專注於教育和娛樂內容",
+        "location": "高雄, 台灣",
+        "website": "https://testuser2.blog.com",
+        "social_links": {
+          "youtube": "https://youtube.com/@testuser2",
+          "tiktok": "https://tiktok.com/@testuser2",
+          "instagram": "https://instagram.com/testuser2"
+        }
+      }
+    },
+    {
+      "username": "admin",
+      "email": "admin@example.com", 
+      "full_name": "系統管理員",
+      "password": "admin123",
+      "role": "ADMIN",
+      "is_active": true,
+      "is_verified": true,
+      "avatar_url": "https://ui-avatars.com/api/?name=Admin&background=059669&color=fff",
+      "profile": {
+        "bio": "系統管理員帳號，負責平台維護和用戶支援",
+        "location": "台北, 台灣",
+        "website": "https://admin.autovideo.com"
+      }
+    },
+    {
+      "username": "creator1",
+      "email": "creator1@example.com",
+      "full_name": "創作者小明",
+      "password": "creator123",
+      "role": "USER",
+      "is_active": true,
+      "is_verified": true,
+      "avatar_url": "https://ui-avatars.com/api/?name=創作者小明&background=dc2626&color=fff",
+      "profile": {
+        "bio": "科技YouTuber，專門製作AI和程式設計相關內容",
+        "location": "台中, 台灣",
+        "website": "https://tech-creator.tw",
+        "social_links": {
+          "youtube": "https://youtube.com/@techcreator",
+          "tiktok": "https://tiktok.com/@techcreator",
+          "twitter": "https://twitter.com/techcreator"
+        }
+      }
+    },
+    {
+      "username": "educator1",
+      "email": "educator1@example.com",
+      "full_name": "教育家小華",
+      "password": "educator123", 
+      "role": "USER",
+      "is_active": true,
+      "is_verified": true,
+      "avatar_url": "https://ui-avatars.com/api/?name=教育家小華&background=f59e0b&color=fff",
+      "profile": {
+        "bio": "線上教育講師，致力於知識普及和教學創新",
+        "location": "台南, 台灣",
+        "website": "https://edu-expert.tw",
+        "social_links": {
+          "youtube": "https://youtube.com/@eduexpert",
+          "facebook": "https://facebook.com/eduexpert"
+        }
+      }
+    }
+  ]
+}

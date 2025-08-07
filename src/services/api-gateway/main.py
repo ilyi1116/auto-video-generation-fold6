@@ -32,6 +32,9 @@ from src.shared.config import get_service_settings
 from src.shared.security import verify_password, get_password_hash, create_access_token
 from src.shared.ai_service_client import get_ai_client
 
+# 導入路由模組
+from routers.mock_data import router as mock_data_router
+
 # 設置日誌
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,6 +62,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# 註冊路由
+app.include_router(mock_data_router)
 
 # 安全設置
 security = HTTPBearer()
