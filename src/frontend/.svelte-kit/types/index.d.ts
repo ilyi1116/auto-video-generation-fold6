@@ -1,9 +1,9 @@
 type DynamicRoutes = {
-	
+	"/video/[videoId]": { videoId: string }
 };
 
 type Layouts = {
-	"/": undefined;
+	"/": { videoId?: string };
 	"/admin": undefined;
 	"/admin/mock-data": undefined;
 	"/ai": undefined;
@@ -14,6 +14,7 @@ type Layouts = {
 	"/analytics": undefined;
 	"/create": undefined;
 	"/dashboard": undefined;
+	"/demo": undefined;
 	"/forgot-password": undefined;
 	"/login": undefined;
 	"/pricing": undefined;
@@ -22,16 +23,19 @@ type Layouts = {
 	"/register": undefined;
 	"/settings": undefined;
 	"/social": undefined;
-	"/trends": undefined
+	"/trends": undefined;
+	"/videos": undefined;
+	"/video": { videoId?: string };
+	"/video/[videoId]": { videoId: string }
 };
 
-export type RouteId = "/" | "/admin" | "/admin/mock-data" | "/ai" | "/ai/images" | "/ai/music" | "/ai/script" | "/ai/voice" | "/analytics" | "/create" | "/dashboard" | "/forgot-password" | "/login" | "/pricing" | "/profile" | "/projects" | "/register" | "/settings" | "/social" | "/trends";
+export type RouteId = "/" | "/admin" | "/admin/mock-data" | "/ai" | "/ai/images" | "/ai/music" | "/ai/script" | "/ai/voice" | "/analytics" | "/create" | "/dashboard" | "/demo" | "/forgot-password" | "/login" | "/pricing" | "/profile" | "/projects" | "/register" | "/settings" | "/social" | "/trends" | "/videos" | "/video" | "/video/[videoId]";
 
 export type RouteParams<T extends RouteId> = T extends keyof DynamicRoutes ? DynamicRoutes[T] : Record<string, never>;
 
 export type LayoutParams<T extends RouteId> = Layouts[T] | Record<string, never>;
 
-export type Pathname = "/" | "/admin" | "/admin/mock-data" | "/ai" | "/ai/images" | "/ai/music" | "/ai/script" | "/ai/voice" | "/analytics" | "/create" | "/dashboard" | "/forgot-password" | "/login" | "/pricing" | "/profile" | "/projects" | "/register" | "/settings" | "/social" | "/trends";
+export type Pathname = "/" | "/admin" | "/admin/mock-data" | "/ai" | "/ai/images" | "/ai/music" | "/ai/script" | "/ai/voice" | "/analytics" | "/create" | "/dashboard" | "/demo" | "/forgot-password" | "/login" | "/pricing" | "/profile" | "/projects" | "/register" | "/settings" | "/social" | "/trends" | "/videos" | "/video" | `/video/${string}` & {};
 
 export type ResolvedPathname = `${"" | `/${string}`}${Pathname}`;
 

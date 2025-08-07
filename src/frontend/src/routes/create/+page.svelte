@@ -3,6 +3,8 @@
   import { goto } from '$app/navigation';
   import { toastStore } from '$lib/stores/toast.js';
   import { apiClient } from '$lib/api/client.js';
+  import { notifications, trackVideoProgress, simulateProgress } from '$lib/stores/notifications.js';
+  import Navigation from '$lib/components/layout/Navigation.svelte';
 
   // Import step components
   import StepIndicator from '$lib/components/create/StepIndicator.svelte';
@@ -242,7 +244,16 @@ If you found this valuable, please like and subscribe for more content like this
 
     isGenerating = true;
     
+    // 創建進度通知
+    const notificationId = trackVideoProgress(
+      `video_${Date.now()}`,
+      projectData.title || 'New Video Project'
+    );
+    
     try {
+      // 模擬進度更新
+      simulateProgress(notificationId, projectData.title || 'New Video Project');
+      
       await new Promise(resolve => setTimeout(resolve, 8000));
       
       projectData.video = {
@@ -255,6 +266,14 @@ If you found this valuable, please like and subscribe for more content like this
 
       toastStore.success('Video assembled successfully!');
     } catch (error) {
+      // 更新通知為失敗狀態
+      notifications.update(notificationId, {
+        type: 'error',
+        title: '影片處理失敗',
+        message: `影片 "${projectData.title}" 處理失敗`,
+        status: 'failed',
+        progress: 0
+      });
       toastStore.error('Failed to assemble video');
     } finally {
       isGenerating = false;
@@ -282,8 +301,12 @@ If you found this valuable, please like and subscribe for more content like this
   <title>Create Video - AutoVideo</title>
 </svelte:head>
 
-<div class="max-w-4xl mx-auto">
-  <!-- Header -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Navigation -->
+  <Navigation />
+  
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
   <div class="mb-8">
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create New Video</h1>
     <p class="text-gray-600 dark:text-gray-400">
@@ -341,4 +364,5 @@ If you found this valuable, please like and subscribe for more content like this
       on:download={handleDownload}
     />
   {/if}
+  </div>
 </div>

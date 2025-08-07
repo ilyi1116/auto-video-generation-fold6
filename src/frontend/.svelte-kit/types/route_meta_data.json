@@ -10,6 +10,7 @@
 	"/analytics": [],
 	"/create": [],
 	"/dashboard": [],
+	"/demo": [],
 	"/forgot-password": [],
 	"/login": [],
 	"/pricing": [],
@@ -18,5 +19,9 @@
 	"/register": [],
 	"/settings": [],
 	"/social": [],
-	"/trends": []
+	"/trends": [],
+	"/videos": [],
+	"/video/[videoId]": [
+		"src/routes/video/[videoId]/+page.js"
+	]
 }

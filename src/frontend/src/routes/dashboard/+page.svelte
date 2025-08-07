@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { authStore } from '$lib/stores/auth.js';
   import { apiClient } from '$lib/api/client.js';
+  import Navigation from '$lib/components/layout/Navigation.svelte';
   import { 
     Play, 
     Plus, 
@@ -11,8 +12,7 @@
     Clock,
     Eye,
     Heart,
-    Share,
-    LogOut
+    Share
   } from 'lucide-svelte';
 
   let stats = {
@@ -56,10 +56,6 @@
     window.location.href = '/projects';
   }
 
-  function handleLogout() {
-    authStore.logout();
-    window.location.href = '/';
-  }
 </script>
 
 <svelte:head>
@@ -68,6 +64,9 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Navigation -->
+  <Navigation />
+  
   <!-- Header -->
   <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,14 +87,6 @@
           >
             <Plus class="w-5 h-5 mr-2" />
             Create New Video
-          </button>
-          
-          <button
-            on:click={handleLogout}
-            class="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center"
-          >
-            <LogOut class="w-4 h-4 mr-2" />
-            Logout
           </button>
         </div>
       </div>

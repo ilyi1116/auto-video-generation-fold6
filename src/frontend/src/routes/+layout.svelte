@@ -2,13 +2,25 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { authStore } from '$lib/stores/auth.js';
+  import { webSocket } from '$lib/stores/notifications.js';
   import Toast from '$lib/components/Toast.svelte';
+  import ProgressToast from '$lib/components/notifications/ProgressToast.svelte';
 
   let mounted = false;
 
   onMount(() => {
     // Initialize auth state automatically
     authStore.init();
+    
+    // Connect WebSocket if authenticated
+    authStore.subscribe((auth) => {
+      if (auth.isAuthenticated && auth.user) {
+        webSocket.connect(auth.user.id || auth.user.email);
+      } else {
+        webSocket.disconnect();
+      }
+    });
+    
     mounted = true;
   });
 </script>
@@ -18,6 +30,8 @@
     <slot />
     <!-- Toast Notifications -->
     <Toast />
+    <!-- Progress Notifications -->
+    <ProgressToast />
   </div>
 {:else}
   <!-- Loading state while initializing -->
