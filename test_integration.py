@@ -89,7 +89,7 @@ class APITester:
                 "language": "zh-TW"
             }
             response = await self.client.post(
-                f"{API_BASE_URL}/api/v1/generate/script", 
+                f"{API_BASE_URL}/api/v1/ai/generate-script", 
                 json=script_data,
                 headers=headers
             )
@@ -128,7 +128,7 @@ class APITester:
                 "size": "1024x1024"
             }
             response = await self.client.post(
-                f"{API_BASE_URL}/api/v1/generate/image", 
+                f"{API_BASE_URL}/api/v1/ai/generate-image", 
                 json=image_data,
                 headers=headers
             )
@@ -167,7 +167,7 @@ class APITester:
                 "speed": 1.0
             }
             response = await self.client.post(
-                f"{API_BASE_URL}/api/v1/generate/voice", 
+                f"{API_BASE_URL}/api/v1/ai/generate-voice", 
                 json=voice_data,
                 headers=headers
             )

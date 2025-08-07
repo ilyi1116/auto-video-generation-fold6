@@ -75,12 +75,29 @@ class BaseServiceSettings(BaseSettings):
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # CORS 配置
-    cors_origins: list[str] = []
+    cors_origins: str = os.getenv("CORS_ORIGINS", "")
     cors_credentials: bool = os.getenv("CORS_CREDENTIALS", "false").lower() == "true"
 
     # 監控配置
     prometheus_enabled: bool = os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
     jaeger_enabled: bool = os.getenv("JAEGER_ENABLED", "false").lower() == "true"
+    
+    # 儲存配置
+    upload_dir: str = os.getenv("UPLOAD_DIR", "./uploads")
+    s3_endpoint: Optional[str] = os.getenv("S3_ENDPOINT", None)
+    
+    # AI 服務配置
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    suno_api_key: str = os.getenv("SUNO_API_KEY", "")
+    stable_diffusion_api_key: str = os.getenv("STABLE_DIFFUSION_API_KEY", "")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-pro")
+    stable_diffusion_api_url: str = os.getenv("STABLE_DIFFUSION_API_URL", "https://api.stability.ai/v1")
+    suno_api_url: str = os.getenv("SUNO_API_URL", "https://api.sunoai.com")
+    
+    # JWT 配置
+    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "your-secret-key")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+    jwt_expire_minutes: int = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
 
     class Config:
         """Pydantic 配置"""
@@ -89,12 +106,13 @@ class BaseServiceSettings(BaseSettings):
         env_file_encoding = "utf-8"
 
     def __init__(self, **kwargs):
-        # 處理 CORS_ORIGINS 字符串轉換為列表
-        cors_origins_str = os.getenv("CORS_ORIGINS", "")
-        if cors_origins_str:
-            self.cors_origins = [origin.strip() for origin in cors_origins_str.split(",")]
-
         super().__init__(**kwargs)
+        
+        # 處理 CORS_ORIGINS 字符串轉換為列表
+        if isinstance(self.cors_origins, str) and self.cors_origins:
+            self.cors_origins = [origin.strip() for origin in self.cors_origins.split(",")]
+        elif not self.cors_origins:
+            self.cors_origins = ["http://localhost:3000", "http://localhost:5173"]
 
     @property
     def is_development(self) -> bool:

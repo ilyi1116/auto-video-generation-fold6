@@ -18,6 +18,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+# 導入共享模組
+import sys
+from pathlib import Path
+
+# 添加專案根目錄到Python路徑
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 # 導入影片處理器
 from src.shared.video_processor import VideoProcessor, VideoQuality, create_simple_video
 from src.shared.config import get_service_settings

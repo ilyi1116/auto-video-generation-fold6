@@ -14,9 +14,32 @@ from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+# 導入共享模組
+import sys
+from pathlib import Path
+
+# 添加專案根目錄到Python路徑
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 # 導入AI客戶端
 from .gemini_client import GeminiClient, GeminiGenerationConfig
-from ..music-service.suno_client import SunoClient, MusicGenerationRequest as SunoMusicRequest
+
+# 修正music-service路徑（使用sys.path直接導入）
+import importlib.util
+music_service_path = project_root / "src" / "services" / "music-service" / "suno_client.py"
+spec = importlib.util.spec_from_file_location("suno_client", music_service_path)
+suno_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(suno_module)
+SunoClient = suno_module.SunoClient
+try:
+    MusicGenerationRequest = suno_module.MusicGenerationRequest
+except AttributeError:
+    # 如果沒有這個類，建立一個基本的
+    from pydantic import BaseModel
+    class MusicGenerationRequest(BaseModel):
+        prompt: str
+        duration: int = 30
 
 # 導入共享模組
 from src.shared.config import get_service_settings

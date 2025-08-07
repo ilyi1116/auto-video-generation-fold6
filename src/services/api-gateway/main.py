@@ -19,6 +19,13 @@ from sqlalchemy.orm import Session
 import jwt
 
 # 導入共享模組
+import sys
+from pathlib import Path
+
+# 添加專案根目錄到Python路徑
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 from src.shared.database.connection import get_db
 from src.shared.database.models import User, Video, VideoStatus, ProcessingTask, TaskStatus
 from src.shared.config import get_service_settings
