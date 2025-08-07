@@ -17,22 +17,33 @@ from .models import Base
 
 # 從環境變數獲取資料庫連接字符串
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/auto_video_db"
+    "DATABASE_URL", "sqlite:///./auto_video.db"  # 開發時使用SQLite，生產時使用PostgreSQL
 )
 
 # 轉換為異步連接字符串
 if DATABASE_URL.startswith("postgresql://"):
     ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("sqlite"):
+    ASYNC_DATABASE_URL = DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
 else:
     ASYNC_DATABASE_URL = DATABASE_URL
 
 # 創建同步和異步引擎
-sync_engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    echo=os.getenv("SQL_ECHO", "false").lower() == "true",
-)
+if DATABASE_URL.startswith("sqlite"):
+    # SQLite 特殊配置
+    sync_engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        echo=os.getenv("SQL_ECHO", "false").lower() == "true",
+    )
+else:
+    # PostgreSQL 或其他資料庫配置
+    sync_engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        echo=os.getenv("SQL_ECHO", "false").lower() == "true",
+    )
 
 async_engine = create_async_engine(
     ASYNC_DATABASE_URL,

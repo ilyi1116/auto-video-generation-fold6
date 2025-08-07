@@ -385,7 +385,7 @@ class MessageQueue:
         if not self.redis_pool:
             return {}
 
-        stats = {
+        stats: Dict[str, Any] = {
             "topics": {},
             "scheduled_count": 0,
             "completed_count": 0,

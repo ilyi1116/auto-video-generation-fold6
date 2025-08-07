@@ -95,7 +95,7 @@ class ResponseBuilder:
     """回應建構器"""
 
     def __init__(self):
-        self.response_data = {"metadata": APIMetadata()}
+        self.response_data: Dict[str, Any] = {"metadata": APIMetadata()}
 
     def status(self, status: ResponseStatus) -> "ResponseBuilder":
         """設置狀態"""
@@ -117,7 +117,7 @@ class ResponseBuilder:
         self.response_data["errors"] = errors
         return self
 
-    def add_error(self, code: str, message: str, field: str = None) -> "ResponseBuilder":
+    def add_error(self, code: str, message: str, field: Optional[str] = None) -> "ResponseBuilder":
         """添加錯誤"""
         if "errors" not in self.response_data:
             self.response_data["errors"] = []
@@ -381,7 +381,7 @@ class APIDocumentationGenerator:
     def __init__(self, service_name: str, version: str = "v1"):
         self.service_name = service_name
         self.version = version
-        self.endpoints = []
+        self.endpoints: List[APIEndpointDoc] = []
 
     def add_endpoint(self, endpoint: APIEndpointDoc):
         """添加端點"""
@@ -389,7 +389,7 @@ class APIDocumentationGenerator:
 
     def generate_openapi_spec(self) -> Dict[str, Any]:
         """生成 OpenAPI 規範"""
-        spec = {
+        spec: Dict[str, Any] = {
             "openapi": "3.0.0",
             "info": {
                 "title": f"{self.service_name} API",

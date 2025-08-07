@@ -296,7 +296,7 @@ class RateLimiter:
 
     def __init__(self, config: SecurityConfig):
         self.config = config
-        self.requests = {}  # 在生產環境中應該使用 Redis
+        self.requests: Dict[str, int] = {}  # 在生產環境中應該使用 Redis
 
     def is_allowed(self, identifier: str) -> bool:
         """檢查是否允許請求"""
@@ -573,3 +573,8 @@ def get_current_user():
     """獲取當前用戶的便捷函數"""
     security_manager = get_security_manager()
     return security_manager.get_current_user_dependency()
+
+
+def get_password_hash(password: str) -> str:
+    """哈希密碼的別名函數"""
+    return hash_password(password)

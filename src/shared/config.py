@@ -154,8 +154,14 @@ class AIServiceSettings(BaseServiceSettings):
     api_port: int = int(os.getenv("API_PORT", "8005"))
 
     # AI 配置
-    model_cache_dir: str = os.getenv("MODEL_CACHE_DIR", "./models")
+    ai_model_cache_dir: str = os.getenv("AI_MODEL_CACHE_DIR", "./models")
     max_concurrent_requests: int = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
+    
+    class Config:
+        """Pydantic 配置"""
+        env_file = load_env_file()
+        env_file_encoding = "utf-8"
+        protected_namespaces = ('settings_',)
 
 
 class StorageServiceSettings(BaseServiceSettings):
