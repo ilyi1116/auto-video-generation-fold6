@@ -62,8 +62,8 @@
 
   // Demo login
   function demoLogin() {
-    email = 'demo@example.com';
-    password = 'demo123';
+    email = 'test1@example.com';
+    password = 'password123';
   }
 
   // Social login handlers

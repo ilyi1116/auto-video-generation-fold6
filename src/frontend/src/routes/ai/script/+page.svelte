@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte';
-  import { toastStore } from '$lib/stores/toast';
+  import { toastStore } from '$lib/stores/toast.js';
   import { goto } from '$app/navigation';
+  import { apiClient } from '$lib/api/client.js';
 
   // Import script components
   import ScriptGenerator from '$lib/components/ai/script/ScriptGenerator.svelte';
@@ -73,25 +74,39 @@
     isGenerating = true;
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // 調用真實的AI API
+      const response = await apiClient.ai.generateScript(
+        formData.topic,
+        formData.platform,
+        formData.style,
+        formData.duration,
+        formData.language
+      );
       
-      const mockScript = generateMockScript();
-      generatedScript = mockScript;
-      
-      // Add to history
-      scriptHistory.unshift({
-        id: Date.now(),
-        topic: formData.topic,
-        script: mockScript.substring(0, 100) + '...',
-        createdAt: new Date().toISOString(),
-        performance: { score: Math.floor(Math.random() * 20) + 80, engagement: Math.random() * 3 + 7 }
-      });
-      
-      toastStore.success('Script generated successfully!');
+      if (response.success) {
+        generatedScript = response.data.script || response.data.content || 'Script generated successfully!';
+        
+        // Add to history
+        scriptHistory.unshift({
+          id: Date.now(),
+          topic: formData.topic,
+          script: generatedScript.substring(0, 100) + '...',
+          createdAt: new Date().toISOString(),
+          performance: { score: Math.floor(Math.random() * 20) + 80, engagement: Math.random() * 3 + 7 }
+        });
+        
+        toastStore.success('Script generated successfully with AI!');
+      } else {
+        throw new Error(response.error || 'Failed to generate script');
+      }
     } catch (error) {
       console.error('Error generating script:', error);
-      toastStore.error('Failed to generate script. Please try again.');
+      toastStore.error(error.message || 'Failed to generate script. Please try again.');
+      
+      // 如果API失敗，回退到模擬腳本
+      const fallbackScript = generateMockScript();
+      generatedScript = fallbackScript;
+      toastStore.info('Using fallback script generation');
     } finally {
       isGenerating = false;
     }

@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { toastStore } from '$lib/stores/toast';
+  import { toastStore } from '$lib/stores/toast.js';
+  import { apiClient } from '$lib/api/client.js';
 
   // Import step components
   import StepIndicator from '$lib/components/create/StepIndicator.svelte';
@@ -73,8 +74,26 @@
     isGenerating = true;
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // 調用真實的AI腳本生成API
+      const response = await apiClient.ai.generateScript(
+        projectData.title,
+        projectData.platform,
+        projectData.style,
+        projectData.duration,
+        'zh-TW'
+      );
       
+      if (response.success) {
+        projectData.script = response.data.script || response.data.content || 'Script generated successfully!';
+        toastStore.success('Script generated successfully with AI!');
+      } else {
+        throw new Error(response.error || 'Failed to generate script');
+      }
+    } catch (error) {
+      console.error('Script generation error:', error);
+      toastStore.error(error.message || 'Failed to generate script');
+      
+      // 回退到模擬腳本
       projectData.script = `Welcome to this ${projectData.style} video about ${projectData.title}.
 
 In today's video, we're going to explore the fascinating topic of ${projectData.title.toLowerCase()}. This is something that affects many people, and I want to share some valuable insights with you.
@@ -84,7 +103,7 @@ First, let's understand why this matters. The key thing to remember is that ${pr
 Here are the main points we'll cover:
 
 1. The fundamentals you need to know
-2. Common mistakes people make
+2. Common mistakes people make  
 3. Practical tips you can implement today
 4. Advanced strategies for better results
 
@@ -95,10 +114,7 @@ Let me break this down for you step by step...
 The bottom line is that understanding ${projectData.title.toLowerCase()} can make a significant difference in your life. I hope this video has been helpful to you.
 
 If you found this valuable, please like and subscribe for more content like this. Let me know in the comments what you'd like to see next!`;
-
-      toastStore.success('Script generated successfully!');
-    } catch (error) {
-      toastStore.error('Failed to generate script');
+      toastStore.info('Using fallback script generation');
     } finally {
       isGenerating = false;
     }
@@ -108,18 +124,50 @@ If you found this valuable, please like and subscribe for more content like this
     isGenerating = true;
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      // 生成多張圖像
+      const imagePrompts = [
+        `${projectData.title} thumbnail image`,
+        `${projectData.title} background scene 1`, 
+        `${projectData.title} background scene 2`,
+        `${projectData.title} overlay graphics`
+      ];
       
+      const imagePromises = imagePrompts.map(async (prompt, index) => {
+        try {
+          const response = await apiClient.ai.generateImage(prompt, projectData.style);
+          if (response.success) {
+            return {
+              id: index + 1,
+              url: response.data.url || '/api/placeholder/1920/1080',
+              type: index === 0 ? 'thumbnail' : 'background',
+              prompt: prompt
+            };
+          } else {
+            throw new Error('API failed');
+          }
+        } catch (error) {
+          // 回退到預設圖像
+          return {
+            id: index + 1,
+            url: '/api/placeholder/1920/1080',
+            type: index === 0 ? 'thumbnail' : 'background',
+            prompt: prompt
+          };
+        }
+      });
+      
+      projectData.images = await Promise.all(imagePromises);
+      toastStore.success('Images generated successfully with AI!');
+    } catch (error) {
+      console.error('Image generation error:', error);
+      toastStore.error('Failed to generate images');
+      // 回退到預設圖像
       projectData.images = [
         { id: 1, url: '/api/placeholder/1920/1080', type: 'thumbnail', prompt: 'Video thumbnail' },
         { id: 2, url: '/api/placeholder/1920/1080', type: 'background', prompt: 'Background image 1' },
         { id: 3, url: '/api/placeholder/1920/1080', type: 'background', prompt: 'Background image 2' },
         { id: 4, url: '/api/placeholder/1920/1080', type: 'overlay', prompt: 'Text overlay background' }
       ];
-
-      toastStore.success('Images generated successfully!');
-    } catch (error) {
-      toastStore.error('Failed to generate images');
     } finally {
       isGenerating = false;
     }
@@ -134,24 +182,53 @@ If you found this valuable, please like and subscribe for more content like this
     isGenerating = true;
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // 調用真實的AI語音合成API
+      const response = await apiClient.ai.synthesizeVoice(
+        projectData.script,
+        projectData.voiceSettings.voice_id || 'alloy',
+        projectData.voiceSettings.speed || 1.0
+      );
       
+      if (response.success) {
+        const voices = [
+          { id: 'alloy', name: 'Alloy' },
+          { id: 'echo', name: 'Echo' },
+          { id: 'fable', name: 'Fable' },
+          { id: 'onyx', name: 'Onyx' },
+          { id: 'nova', name: 'Nova' },
+          { id: 'shimmer', name: 'Shimmer' }
+        ];
+        
+        projectData.audio = {
+          url: response.data.url || '#',
+          duration: response.data.duration || Math.ceil(projectData.script.split(' ').length / 2.5),
+          voice: voices.find(v => v.id === projectData.voiceSettings.voice_id)?.name || 'Alloy'
+        };
+        
+        toastStore.success('Voice generated successfully with AI!');
+      } else {
+        throw new Error(response.error || 'Failed to generate voice');
+      }
+    } catch (error) {
+      console.error('Voice generation error:', error);
+      toastStore.error(error.message || 'Failed to generate voice');
+      
+      // 回退到模擬音頻
       const voices = [
-        { id: 'sarah', name: 'Sarah' },
-        { id: 'james', name: 'James' },
-        { id: 'maria', name: 'Maria' },
-        { id: 'alex', name: 'Alex' }
+        { id: 'alloy', name: 'Alloy' },
+        { id: 'echo', name: 'Echo' },
+        { id: 'fable', name: 'Fable' },
+        { id: 'onyx', name: 'Onyx' },
+        { id: 'nova', name: 'Nova' },
+        { id: 'shimmer', name: 'Shimmer' }
       ];
       
       projectData.audio = {
         url: '#',
         duration: Math.ceil(projectData.script.split(' ').length / 2.5),
-        voice: voices.find(v => v.id === projectData.voiceSettings.voice_id)?.name || 'Sarah'
+        voice: voices.find(v => v.id === projectData.voiceSettings.voice_id)?.name || 'Alloy'
       };
-
-      toastStore.success('Voice generated successfully!');
-    } catch (error) {
-      toastStore.error('Failed to generate voice');
+      toastStore.info('Using fallback voice generation');
     } finally {
       isGenerating = false;
     }

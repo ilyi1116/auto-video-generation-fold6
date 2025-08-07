@@ -6,8 +6,8 @@
 import { browser } from '$app/environment';
 
 const API_BASE_URL = browser 
-  ? (import.meta.env.VITE_API_URL || 'http://localhost:8001')
-  : 'http://localhost:8001';
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:8000')
+  : 'http://localhost:8000';
 
 // HTTP 客戶端基類
 class HttpClient {
@@ -175,20 +175,20 @@ export const apiClient = {
   // AI 服務相關 API
   ai: {
     // 腳本生成
-    generateScript: (prompt, options = {}) => 
-      httpClient.post('/api/v1/ai/script/generate', { prompt, ...options }),
+    generateScript: (topic, platform = 'youtube', style = 'educational', duration = 60, language = 'zh-TW') => 
+      httpClient.post('/api/v1/generate/script', { topic, platform, style, duration, language }),
     
     // 圖像生成
-    generateImage: (prompt, options = {}) => 
-      httpClient.post('/api/v1/ai/images/generate', { prompt, ...options }),
+    generateImage: (prompt, style = 'realistic', size = '1024x1024') => 
+      httpClient.post('/api/v1/generate/image', { prompt, style, size }),
     
     // 音樂生成
-    generateMusic: (prompt, options = {}) => 
-      httpClient.post('/api/v1/ai/music/generate', { prompt, ...options }),
+    generateMusic: (prompt, style = 'ambient', duration = 60) => 
+      httpClient.post('/api/v1/generate/music', { prompt, style, duration }),
     
     // 語音合成
-    synthesizeVoice: (text, options = {}) => 
-      httpClient.post('/api/v1/ai/voice/synthesize', { text, ...options })
+    synthesizeVoice: (text, voice = 'alloy', speed = 1.0) => 
+      httpClient.post('/api/v1/generate/voice', { text, voice, speed })
   },
 
   // 影片相關 API

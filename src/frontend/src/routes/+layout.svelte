@@ -2,6 +2,7 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { authStore } from '$lib/stores/auth.js';
+  import Toast from '$lib/components/Toast.svelte';
 
   let mounted = false;
 
@@ -15,6 +16,8 @@
 {#if mounted}
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <slot />
+    <!-- Toast Notifications -->
+    <Toast />
   </div>
 {:else}
   <!-- Loading state while initializing -->

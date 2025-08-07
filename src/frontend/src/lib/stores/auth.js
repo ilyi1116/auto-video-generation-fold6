@@ -28,14 +28,18 @@ const createAuthStore = () => {
         const token = localStorage.getItem('auth_token');
         if (token) {
           // 驗證 token 有效性
-          const user = await apiClient.auth.verifyToken(token);
-          set({
-            isAuthenticated: true,
-            user,
-            token,
-            loading: false,
-            error: null
-          });
+          const response = await apiClient.auth.verifyToken(token);
+          if (response.success) {
+            set({
+              isAuthenticated: true,
+              user: response.data.user,
+              token,
+              loading: false,
+              error: null
+            });
+          } else {
+            throw new Error(response.error || 'Token invalid');
+          }
         } else {
           set({
             isAuthenticated: false,
@@ -66,21 +70,28 @@ const createAuthStore = () => {
       update(state => ({ ...state, loading: true, error: null }));
       
       try {
-        const { user, token } = await apiClient.auth.login(email, password);
+        const response = await apiClient.auth.login(email, password);
         
-        if (browser) {
-          localStorage.setItem('auth_token', token);
+        // 處理新的API響應格式
+        if (response.success) {
+          const { user, access_token } = response.data;
+          
+          if (browser) {
+            localStorage.setItem('auth_token', access_token);
+          }
+          
+          set({
+            isAuthenticated: true,
+            user,
+            token: access_token,
+            loading: false,
+            error: null
+          });
+          
+          return { success: true };
+        } else {
+          throw new Error(response.error || 'Login failed');
         }
-        
-        set({
-          isAuthenticated: true,
-          user,
-          token,
-          loading: false,
-          error: null
-        });
-        
-        return { success: true };
       } catch (error) {
         set({
           isAuthenticated: false,
@@ -98,21 +109,28 @@ const createAuthStore = () => {
       update(state => ({ ...state, loading: true, error: null }));
       
       try {
-        const { user, token } = await apiClient.auth.register(userData);
+        const response = await apiClient.auth.register(userData);
         
-        if (browser) {
-          localStorage.setItem('auth_token', token);
+        // 處理新的API響應格式
+        if (response.success) {
+          const { user, access_token } = response.data;
+          
+          if (browser) {
+            localStorage.setItem('auth_token', access_token);
+          }
+          
+          set({
+            isAuthenticated: true,
+            user,
+            token: access_token,
+            loading: false,
+            error: null
+          });
+          
+          return { success: true };
+        } else {
+          throw new Error(response.error || 'Registration failed');
         }
-        
-        set({
-          isAuthenticated: true,
-          user,
-          token,
-          loading: false,
-          error: null
-        });
-        
-        return { success: true };
       } catch (error) {
         set({
           isAuthenticated: false,
