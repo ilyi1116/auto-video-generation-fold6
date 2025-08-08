@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { apiClient } from '$lib/utils/api.js';
+	import { apiClient } from '$lib/api/client.js';
 
 	let stats = {
 		totalUsers: 0,

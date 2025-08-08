@@ -1,4 +1,4 @@
-import { tokens } from './src/lib/design/tokens.js';
+// import { tokens } from './src/lib/design/tokens.js';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -7,63 +7,101 @@ export default {
   theme: {
     // 使用設計 tokens 來定義基礎主題
     extend: {
-      // 顏色系統 - 從設計 tokens 引入
+      // 顏色系統 - 保持原有配置
       colors: {
-        ...tokens.colors,
-        // 保持向後兼容的語義化命名
-        success: tokens.colors.semantic.success,
-        warning: tokens.colors.semantic.warning,
-        error: tokens.colors.semantic.error,
-        info: tokens.colors.semantic.info,
+        primary: {
+          50: "#f0f9ff",
+          100: "#e0f2fe",
+          200: "#bae6fd",
+          300: "#7dd3fc",
+          400: "#38bdf8",
+          500: "#0ea5e9",
+          600: "#0284c7",
+          700: "#0369a1",
+          800: "#075985",
+          900: "#0c4a6e",
+          950: "#082f49",
+        },
+        secondary: {
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          200: "#e2e8f0",
+          300: "#cbd5e1",
+          400: "#94a3b8",
+          500: "#64748b",
+          600: "#475569",
+          700: "#334155",
+          800: "#1e293b",
+          900: "#0f172a",
+          950: "#020617",
+        },
+        success: {
+          50: "#f0fdf4",
+          100: "#dcfce7",
+          200: "#bbf7d0",
+          300: "#86efac",
+          400: "#4ade80",
+          500: "#22c55e",
+          600: "#16a34a",
+          700: "#15803d",
+          800: "#166534",
+          900: "#14532d",
+        },
+        warning: {
+          50: "#fffbeb",
+          100: "#fef3c7",
+          200: "#fde68a",
+          300: "#fcd34d",
+          400: "#fbbf24",
+          500: "#f59e0b",
+          600: "#d97706",
+          700: "#b45309",
+          800: "#92400e",
+          900: "#78350f",
+        },
+        error: {
+          50: "#fef2f2",
+          100: "#fee2e2",
+          200: "#fecaca",
+          300: "#fca5a5",
+          400: "#f87171",
+          500: "#ef4444",
+          600: "#dc2626",
+          700: "#b91c1c",
+          800: "#991b1b",
+          900: "#7f1d1d",
+        },
       },
       
       // 字體系統
-      fontFamily: tokens.typography.fontFamily,
-      fontSize: tokens.typography.fontSize,
-      fontWeight: tokens.typography.fontWeight,
+      fontFamily: {
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+      },
       
       // 間距系統
       spacing: {
-        ...tokens.spacing,
         // 保持現有的自定義間距
         18: "4.5rem",
         88: "22rem",
       },
       
-      // 邊框半徑
-      borderRadius: tokens.borderRadius,
-      
-      // 陰影系統 - 結合 tokens 和現有配置
+      // 陰影系統
       boxShadow: {
-        ...tokens.shadow,
         // 保持現有的自定義陰影
         soft: "0 2px 15px 0 rgba(0, 0, 0, 0.05)",
         medium: "0 4px 25px 0 rgba(0, 0, 0, 0.1)",
         hard: "0 10px 40px 0 rgba(0, 0, 0, 0.15)",
       },
       
-      // Z-index 層級
-      zIndex: tokens.zIndex,
-      
-      // 斷點系統
-      screens: tokens.breakpoints,
-      
-      // 動畫系統 - 結合 tokens 和現有配置
-      transitionDuration: tokens.animation.duration,
-      transitionTimingFunction: tokens.animation.timingFunction,
+      // 動畫系統
       animation: {
-        // 從 tokens 繼承基礎動畫時間
-        "fade-in": `fadeIn ${tokens.animation.duration[500]} ${tokens.animation.timingFunction.out}`,
-        "slide-up": `slideUp ${tokens.animation.duration[300]} ${tokens.animation.timingFunction.out}`,
-        "slide-in": `slideIn ${tokens.animation.duration[300]} ${tokens.animation.timingFunction.out}`,
-        "scale-in": `scaleIn ${tokens.animation.duration[200]} ${tokens.animation.timingFunction.out}`,
+        "fade-in": "fadeIn 0.5s ease-in-out",
+        "slide-up": "slideUp 0.3s ease-out",
+        "slide-in": "slideIn 0.3s ease-out",
+        "scale-in": "scaleIn 0.2s ease-out",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "bounce-subtle": "bounceSubtle 2s infinite",
-        
-        // 新增基於 tokens 的動畫
-        "fade-in-fast": `fadeIn ${tokens.animation.duration[200]} ${tokens.animation.timingFunction.out}`,
-        "slide-up-fast": `slideUp ${tokens.animation.duration[150]} ${tokens.animation.timingFunction.out}`,
-        "scale-in-fast": `scaleIn ${tokens.animation.duration[100]} ${tokens.animation.timingFunction.out}`,
       },
       keyframes: {
         fadeIn: {
@@ -113,33 +151,6 @@ export default {
   },
   plugins: [
     require("@tailwindcss/forms"),
-    require("@tailwindcss/typography"),
-    
-    // 自定義插件：生成 CSS 變量
-    function({ addBase }) {
-      const cssVariables = {};
-      
-      // 生成顏色 CSS 變量
-      const addColorVariables = (colors, prefix = '') => {
-        Object.entries(colors).forEach(([key, value]) => {
-          if (typeof value === 'object' && value !== null) {
-            addColorVariables(value, `${prefix}${key}-`);
-          } else {
-            cssVariables[`--color-${prefix}${key}`] = value;
-          }
-        });
-      };
-      
-      addColorVariables(tokens.colors);
-      
-      // 生成其他設計變量
-      Object.entries(tokens.spacing).forEach(([key, value]) => {
-        cssVariables[`--spacing-${key}`] = value;
-      });
-      
-      addBase({
-        ':root': cssVariables
-      });
-    }
+    require("@tailwindcss/typography")
   ],
 };
