@@ -188,6 +188,10 @@ def generate_mock_script(topic: str, style: str = 'educational') -> str:
     """生成模擬腳本"""
     return mock_data_manager.generate_mock_script(topic, style)
 
+def get_sample_videos(status: str = None) -> List[Dict[str, Any]]:
+    """獲取範例影片"""
+    return mock_data_manager.get_sample_videos(status)
+
 def generate_mock_response(response_type: str, **kwargs) -> Dict[str, Any]:
     """生成模擬回應"""
     return mock_data_manager.generate_mock_response(response_type, **kwargs)

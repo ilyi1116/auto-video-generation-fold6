@@ -45,7 +45,6 @@ factory-boy==3.3.0
 
 # Machine learning testing
 scikit-learn>=1.4.0
-pytest-ml==0.1.0
 
 # Type stubs
 types-requests==2.31.0.10

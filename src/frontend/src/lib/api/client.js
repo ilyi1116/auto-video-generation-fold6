@@ -48,7 +48,7 @@ class HttpClient {
       // 處理 HTTP 錯誤
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Request failed' }));
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
       
       // 嘗試解析 JSON，如果失敗則返回空對象

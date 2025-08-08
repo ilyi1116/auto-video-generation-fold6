@@ -27,7 +27,6 @@ sqlalchemy[asyncio]==2.0.25
 pytest-postgresql==5.0.0
 
 # Celery testing
-pytest-celery==0.0.0a1
 celery[pytest]==5.3.4
 
 # Time zone handling for scheduler testing

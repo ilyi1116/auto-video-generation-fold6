@@ -112,8 +112,17 @@
       
       if (!result.success) {
         isLoading = false;
+        toastStore.error(result.error || 'Registration failed. Please try again.');
+      } else {
+        // 註冊成功，顯示成功消息並重定向
+        toastStore.success('Account created successfully! Welcome to AutoVideo!');
+        isLoading = false;
+        
+        // 等待一下讓用戶看到成功消息，然後重定向
+        setTimeout(() => {
+          goto('/dashboard');
+        }, 1500);
       }
-      // Success handling is done in the auth store
     } catch (error) {
       console.error('Registration error:', error);
       toastStore.error('An unexpected error occurred. Please try again.');

@@ -51,7 +51,7 @@ database_url = os.getenv(
     "postgresql://postgres:postgres@localhost:5432/auto_video_db",
 )
 
-config.set_main_option("sqlalchemy.url", database_url)
+config.set_main_option("sqlalchemy.url", database_url.replace("postgresql://", "postgresql+asyncpg://"))
 
 # 解析配置文件的日誌設定
 if config.config_file_name is not None:
@@ -102,7 +102,9 @@ def do_run_migrations(connection: Connection) -> None:
 async def run_async_migrations() -> None:
     """非同步模式執行遷移"""
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = get_database_url()
+    # 確保使用非同步驅動程式
+    async_url = get_database_url().replace("postgresql://", "postgresql+asyncpg://")
+    configuration["sqlalchemy.url"] = async_url
 
     connectable = async_engine_from_config(
         configuration,

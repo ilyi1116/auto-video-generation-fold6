@@ -40,15 +40,13 @@ FROM base as dependencies
 COPY requirements.txt ./
 RUN set -ex \
     && pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir --compile -r requirements.txt \
-    && pip cache purge \
-    && find /usr/local/lib/python3.11 -name '*.pyc' -delete \
-    && find /usr/local/lib/python3.11 -name '*.pyo' -delete
+    && pip install --no-cache-dir --compile -r requirements.txt     && find /usr/local/lib/python3.11 -name '*.pyc' -delete     && find /usr/local/lib/python3.11 -name '*.pyo' -delete
 
 # Stage 3: Development environment
 FROM dependencies as development
 
 # Install development dependencies
+COPY requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
 # Copy source code
@@ -142,9 +140,6 @@ FROM development as testing
 
 # Install additional testing tools
 RUN pip install --no-cache-dir pytest-cov pytest-asyncio httpx
-
-# Copy test files if they exist
-COPY tests/ tests/ 2>/dev/null || true
 
 # Switch to non-root user
 USER appuser

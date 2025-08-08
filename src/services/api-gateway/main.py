@@ -84,7 +84,9 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    subscribe_newsletter: Optional[bool] = False
 
 
 class VideoCreateRequest(BaseModel):
@@ -190,11 +192,12 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     
     # 創建新用戶
     hashed_password = get_password_hash(request.password)
+    full_name = f"{request.first_name or ''} {request.last_name or ''}".strip()
     db_user = User(
         email=request.email,
         username=request.email.split("@")[0],  # 使用email前綴作為用戶名
         hashed_password=hashed_password,
-        full_name=request.full_name,
+        full_name=full_name,
         is_active=True,
         is_verified=False,
     )
@@ -213,17 +216,37 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     return {
         "success": True,
         "data": {
-            "user": UserResponse(
-                id=db_user.id,
-                email=db_user.email,
-                full_name=db_user.full_name,
-                role=db_user.role.value,
-                is_active=db_user.is_active,
-                created_at=db_user.created_at,
-            ),
+            "user": {
+                "id": db_user.id,
+                "email": db_user.email,
+                "first_name": request.first_name,
+                "last_name": request.last_name,
+                "full_name": db_user.full_name,
+                "role": db_user.role.value,
+                "is_active": db_user.is_active,
+                "created_at": db_user.created_at,
+            },
             "access_token": access_token,
             "token_type": "bearer",
             "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        }
+    }
+
+
+@app.get("/api/v1/auth/verify")
+async def verify_token(current_user: User = Depends(get_current_user)):
+    """驗證 JWT token"""
+    return {
+        "success": True,
+        "data": {
+            "user": {
+                "id": current_user.id,
+                "email": current_user.email,
+                "full_name": current_user.full_name,
+                "role": current_user.role.value,
+                "is_active": current_user.is_active,
+                "created_at": current_user.created_at,
+            }
         }
     }
 

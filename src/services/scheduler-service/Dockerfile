@@ -138,9 +138,6 @@ FROM development as testing
 # Install additional testing tools
 RUN pip install --no-cache-dir pytest-cov pytest-asyncio httpx
 
-# Copy test files if they exist
-COPY tests/ tests/ 2>/dev/null || true
-
 # Switch to non-root user
 USER appuser
 

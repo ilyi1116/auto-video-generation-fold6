@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { apiClient } from '$lib/utils/api.js';
+	import { apiClient } from '$lib/api/client';
 	import { toastStore } from '$lib/stores/toast.js';
 
 	let currentTab = 'users';
@@ -353,6 +353,7 @@
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
 								{#each sampleVideos as video}
+									{@const statusInfo = getStatusInfo(video.status)}
 									<tr class="hover:bg-gray-50">
 										<td class="px-6 py-4">
 											<div class="flex items-center">
@@ -373,7 +374,6 @@
 											</div>
 										</td>
 										<td class="px-6 py-4 whitespace-nowrap">
-											{@const statusInfo = getStatusInfo(video.status)}
 											<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {getStatusColor(statusInfo.color)}">
 												{statusInfo.text}
 											</span>

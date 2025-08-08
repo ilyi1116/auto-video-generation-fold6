@@ -39,10 +39,7 @@ COPY requirements.txt requirements-dev.txt ./
 # Install Python dependencies with optimizations
 RUN set -ex \
     && pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir --compile -r requirements.txt \
-    && pip cache purge \
-    && find /usr/local/lib/python3.11 -name '*.pyc' -delete \
-    && find /usr/local/lib/python3.11 -name '*.pyo' -delete
+    && pip install --no-cache-dir --compile -r requirements.txt     && find /usr/local/lib/python3.11 -name '*.pyc' -delete     && find /usr/local/lib/python3.11 -name '*.pyo' -delete
 
 # Stage 3: Development environment
 FROM dependencies as development

@@ -69,49 +69,45 @@ class DatabaseMigrationManager:
 
         # 資料庫配置
         self.db_config = {
-            "host": os.getenv("DB_HOST", "localhost"),
-            "port": int(os.getenv("DB_PORT", "5432")),
-            "user": os.getenv("DB_USER", "postgres"),
-            "password": os.getenv("DB_PASSWORD", "password"),
-            "main_database": os.getenv("DB_NAME", "auto_video_generation"),
+            "url": os.getenv("DATABASE_URL"),
         }
 
     def get_db_connection(self, database: Optional[str] = None):
         """建立資料庫連接"""
-        db_name = database or self.db_config["main_database"]
-        return psycopg2.connect(
-            host=self.db_config["host"],
-            port=self.db_config["port"],
-            user=self.db_config["user"],
-            password=self.db_config["password"],
-            database=db_name,
-        )
+        if database:
+            # If a specific database is requested, modify the URL
+            # This assumes the DATABASE_URL is in the format postgresql://user:password@host:port/dbname
+            parts = self.db_config["url"].rsplit("/", 1)
+            db_url = f"{parts[0]}/{database}"
+        else:
+            db_url = self.db_config["url"]
+        return psycopg2.connect(db_url)
 
     def create_databases(self) -> None:
         """建立所有必要的資料庫"""
         print("🗄️  建立資料庫...")
 
         # 連接到 postgres 系統資料庫來建立其他資料庫
-        conn = psycopg2.connect(
-            host=self.db_config["host"],
-            port=self.db_config["port"],
-            user=self.db_config["user"],
-            password=self.db_config["password"],
-            database="postgres",
-        )
+        # Assuming the main DATABASE_URL points to the 'auto_video_generation' database
+        # We need to connect to 'postgres' database to create new databases
+        postgres_url = self.db_config["url"].rsplit("/", 1)[0] + "/postgres"
+        conn = psycopg2.connect(postgres_url)
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
+
+        # Extract main_database name from DATABASE_URL
+        main_database_name = self.db_config["url"].split("/")[-1]
 
         # 建立主資料庫
         try:
             cursor.execute(
                 sql.SQL("CREATE DATABASE {}").format(
-                    sql.Identifier(self.db_config["main_database"])
+                    sql.Identifier(main_database_name)
                 )
             )
-            print(f"✅ 建立主資料庫: {self.db_config['main_database']}")
+            print(f"✅ 建立主資料庫: {main_database_name}")
         except psycopg2.errors.DuplicateDatabase:
-            print(f"📋 主資料庫已存在: {self.db_config['main_database']}")
+            print(f"📋 主資料庫已存在: {main_database_name}")
 
         # 建立各服務的獨立資料庫（如果需要的話）
         for service_name, config in self.services.items():
@@ -145,10 +141,7 @@ class DatabaseMigrationManager:
         """建立初始遷移"""
         print("📝 建立初始遷移...")
 
-        os.environ["DATABASE_URL"] = (
-            f"postgresql://{self.db_config['user']}:{self.db_config['password']}@"
-            f"{self.db_config['host']}:{self.db_config['port']}/{self.db_config['main_database']}"
-        )
+        os.environ["DATABASE_URL"] = self.db_config["url"]
 
         try:
             result = subprocess.run(
@@ -177,10 +170,7 @@ class DatabaseMigrationManager:
         """升級資料庫"""
         print(f"⬆️  升級資料庫到版本: {revision}")
 
-        os.environ["DATABASE_URL"] = (
-            f"postgresql://{self.db_config['user']}:{self.db_config['password']}@"
-            f"{self.db_config['host']}:{self.db_config['port']}/{self.db_config['main_database']}"
-        )
+        os.environ["DATABASE_URL"] = self.db_config["url"]
 
         try:
             result = subprocess.run(
@@ -203,10 +193,7 @@ class DatabaseMigrationManager:
         """降級資料庫"""
         print(f"⬇️  降級資料庫到版本: {revision}")
 
-        os.environ["DATABASE_URL"] = (
-            f"postgresql://{self.db_config['user']}:{self.db_config['password']}@"
-            f"{self.db_config['host']}:{self.db_config['port']}/{self.db_config['main_database']}"
-        )
+        os.environ["DATABASE_URL"] = self.db_config["url"]
 
         try:
             result = subprocess.run(
@@ -229,10 +216,7 @@ class DatabaseMigrationManager:
         """顯示當前資料庫版本"""
         print("📋 檢查當前資料庫版本...")
 
-        os.environ["DATABASE_URL"] = (
-            f"postgresql://{self.db_config['user']}:{self.db_config['password']}@"
-            f"{self.db_config['host']}:{self.db_config['port']}/{self.db_config['main_database']}"
-        )
+        os.environ["DATABASE_URL"] = self.db_config["url"]
 
         try:
             result = subprocess.run(
@@ -289,7 +273,7 @@ class DatabaseMigrationManager:
 
         # 檢查資料庫連接
         try:
-            conn = self.get_db_connection()
+            conn = psycopg2.connect(self.db_config["url"])
             conn.close()
             print("✅ 資料庫連接正常")
         except Exception as e:
@@ -311,8 +295,7 @@ class DatabaseMigrationManager:
                 subprocess.run(
                     [
                         "pg_dump",
-                        f"postgresql://{self.db_config['user']}:{self.db_config['password']}@"
-                        f"{self.db_config['host']}:{self.db_config['port']}/{self.db_config['main_database']}",
+                        self.db_config["url"],
                     ],
                     stdout=f,
                     check=True,
@@ -335,8 +318,7 @@ class DatabaseMigrationManager:
                 subprocess.run(
                     [
                         "psql",
-                        f"postgresql://{self.db_config['user']}:{self.db_config['password']}@"
-                        f"{self.db_config['host']}:{self.db_config['port']}/{self.db_config['main_database']}",
+                        self.db_config["url"],
                     ],
                     stdin=f,
                     check=True,

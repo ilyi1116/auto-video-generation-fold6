@@ -5,6 +5,7 @@
 export { default as Button } from './Button.svelte';
 export { default as Input } from './Input.svelte';
 export { default as Card } from './Card.svelte';
+export { default as Badge } from './Badge.svelte';
 export { default as LazyImage } from './LazyImage.svelte';
 export { default as VirtualGrid } from './VirtualGrid.svelte';
 export { default as GlobalLoading } from './GlobalLoading.svelte';
@@ -33,6 +34,10 @@ export const componentVariants = {
     variants: ['default', 'elevated', 'outlined', 'filled'],
     sizes: ['sm', 'md', 'lg', 'xl', 'full'],
     paddings: ['none', 'sm', 'default', 'lg', 'xl']
+  },
+  badge: {
+    variants: ['default', 'primary', 'secondary', 'success', 'warning', 'danger', 'info', 'outline'],
+    sizes: ['xs', 'sm', 'md', 'lg']
   }
 };
 

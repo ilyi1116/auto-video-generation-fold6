@@ -442,12 +442,21 @@
                   目前密碼
                 </label>
                 <div class="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    bind:value={passwordData.currentPassword}
-                    class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="請輸入目前密碼"
-                  />
+                  {#if showPassword}
+                    <input
+                      type="text"
+                      bind:value={passwordData.currentPassword}
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="請輸入目前密碼"
+                    />
+                  {:else}
+                    <input
+                      type="password"
+                      bind:value={passwordData.currentPassword}
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="請輸入目前密碼"
+                    />
+                  {/if}
                   <button
                     type="button"
                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
@@ -467,12 +476,21 @@
                   新密碼
                 </label>
                 <div class="relative">
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    bind:value={passwordData.newPassword}
-                    class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="請輸入新密碼"
-                  />
+                  {#if showNewPassword}
+                    <input
+                      type="text"
+                      bind:value={passwordData.newPassword}
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="請輸入新密碼"
+                    />
+                  {:else}
+                    <input
+                      type="password"
+                      bind:value={passwordData.newPassword}
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="請輸入新密碼"
+                    />
+                  {/if}
                   <button
                     type="button"
                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
@@ -492,12 +510,21 @@
                   確認新密碼
                 </label>
                 <div class="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    bind:value={passwordData.confirmPassword}
-                    class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="請再次輸入新密碼"
-                  />
+                  {#if showConfirmPassword}
+                    <input
+                      type="text"
+                      bind:value={passwordData.confirmPassword}
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="請再次輸入新密碼"
+                    />
+                  {:else}
+                    <input
+                      type="password"
+                      bind:value={passwordData.confirmPassword}
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="請再次輸入新密碼"
+                    />
+                  {/if}
                   <button
                     type="button"
                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"

@@ -419,7 +419,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
-      - ./auto_generate_video_fold6.old/database/seeds:/docker-entrypoint-initdb.d/seeds:ro
     networks:
       - app-network
     restart: unless-stopped
@@ -442,11 +441,10 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-6380}:6379"
     command: redis-server --appendonly yes --maxmemory ${REDIS_MAX_MEMORY:-512mb} --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
-      - ./auto_generate_video_fold6.old/config/redis.conf:/etc/redis/redis.conf:ro
     networks:
       - app-network
     restart: unless-stopped
@@ -512,12 +510,16 @@ services:
         COPY alembic.ini .
         COPY alembic/ ./alembic/
         COPY src/ ./src/
-        COPY auto_generate_video_fold6.old/database/ ./auto_generate_video_fold6/database/
         COPY scripts/db-migration-manager.py ./scripts/
+        ARG DATABASE_URL
+        ENV DATABASE_URL=$DATABASE_URL
         RUN pip install --no-cache-dir -e .
         RUN pip install alembic asyncpg psycopg2-binary
+      args:
+        DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-auto_video_generation}
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-auto_video_generation}
       - PYTHONPATH=/app
     depends_on:
       postgres:
@@ -545,7 +547,6 @@ services:
         WORKDIR /app
         COPY pyproject.toml .
         COPY src/ ./src/
-        COPY auto_generate_video_fold6.old/database/ ./auto_generate_video_fold6/database/
         RUN pip install --no-cache-dir -e .
         RUN pip install asyncpg psycopg2-binary
     environment:
@@ -573,8 +574,6 @@ services:
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
-      - ./auto_generate_video_fold6.old/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./auto_generate_video_fold6.old/monitoring/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     networks:
       - app-network
