@@ -15,13 +15,22 @@
 	"/demo": [],
 	"/docs": [],
 	"/forgot-password": [],
-	"/login": [],
+	"/login": [
+		"src/routes/login/+page.js"
+	],
 	"/pricing": [],
 	"/profile": [],
 	"/projects": [],
-	"/register": [],
+	"/register-simple": [],
+	"/register-test": [
+		"src/routes/register-test/+page.js"
+	],
+	"/register": [
+		"src/routes/register/+page.js"
+	],
 	"/settings": [],
 	"/social": [],
+	"/test": [],
 	"/trends": [],
 	"/videos": [],
 	"/video/[videoId]": [

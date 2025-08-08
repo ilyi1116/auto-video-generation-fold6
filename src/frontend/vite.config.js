@@ -13,12 +13,23 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: false,
-    host: true,
+    host: "127.0.0.1", // 強制使用 IPv4
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "http://127.0.0.1:8000", // 使用 IPv4 地址
         changeOrigin: true,
         secure: false,
+        configure: (proxy, options) => {
+          proxy.on("error", (err, req, res) => {
+            console.log("proxy error", err);
+          });
+          proxy.on("proxyReq", (proxyReq, req, res) => {
+            console.log("Sending Request to the Target:", req.method, req.url);
+          });
+          proxy.on("proxyRes", (proxyRes, req, res) => {
+            console.log("Received Response from the Target:", proxyRes.statusCode, req.url);
+          });
+        },
       },
     },
   },

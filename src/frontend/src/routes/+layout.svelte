@@ -8,7 +8,7 @@
   import ProgressToast from '$lib/components/notifications/ProgressToast.svelte';
   import GlobalLoading from '$lib/components/ui/GlobalLoading.svelte';
   import GlobalError from '$lib/components/ui/GlobalError.svelte';
-  import VitalsMonitor from '$lib/components/performance/VitalsMonitor.svelte';
+  // import VitalsMonitor from '$lib/components/performance/VitalsMonitor.svelte';
   
   // 開發環境下導入調試工具
   let debugTools;
@@ -22,9 +22,9 @@
   
   // 性能監控配置
   $: vitalsConfig = {
-    enabled: true, // 總是啟用性能監控
+    enabled: false, // 暫時禁用性能監控避免 API 錯誤
     debug: dev, // 開發環境下啟用調試
-    showWidget: dev, // 開發環境下顯示監控小組件
+    showWidget: false, // 暫時禁用監控小組件
     position: 'bottom-right',
     customTags: {
       app: 'auto-video-frontend',
@@ -61,7 +61,7 @@
     <GlobalError />
     
     <!-- Performance Monitoring -->
-    <VitalsMonitor {...vitalsConfig} />
+    <!-- <VitalsMonitor {...vitalsConfig} /> -->
   </div>
 {:else}
   <!-- Loading state while initializing -->

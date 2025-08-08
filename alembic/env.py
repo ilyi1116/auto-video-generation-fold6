@@ -102,9 +102,7 @@ def do_run_migrations(connection: Connection) -> None:
 async def run_async_migrations() -> None:
     """非同步模式執行遷移"""
     configuration = config.get_section(config.config_ini_section, {})
-    # 確保使用非同步驅動程式
-    async_url = get_database_url().replace("postgresql://", "postgresql+asyncpg://")
-    configuration["sqlalchemy.url"] = async_url
+    configuration["sqlalchemy.url"] = get_database_url().replace("postgresql://", "postgresql+asyncpg://")
 
     connectable = async_engine_from_config(
         configuration,

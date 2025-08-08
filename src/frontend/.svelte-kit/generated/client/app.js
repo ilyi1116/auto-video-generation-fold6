@@ -29,7 +29,10 @@ export const nodes = [
 	() => import('./nodes/25'),
 	() => import('./nodes/26'),
 	() => import('./nodes/27'),
-	() => import('./nodes/28')
+	() => import('./nodes/28'),
+	() => import('./nodes/29'),
+	() => import('./nodes/30'),
+	() => import('./nodes/31')
 ];
 
 export const server_loads = [];
@@ -55,12 +58,15 @@ export const dictionary = {
 		"/pricing": [20],
 		"/profile": [21],
 		"/projects": [22],
+		"/register-simple": [24],
+		"/register-test": [25],
 		"/register": [23],
-		"/settings": [24],
-		"/social": [25],
-		"/trends": [26],
-		"/videos": [28],
-		"/video/[videoId]": [27]
+		"/settings": [26],
+		"/social": [27],
+		"/test": [28],
+		"/trends": [29],
+		"/videos": [31],
+		"/video/[videoId]": [30]
 	};
 
 export const hooks = {

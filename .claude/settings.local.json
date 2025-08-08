@@ -87,7 +87,10 @@
       "Bash(node:*)",
       "Bash(psql:*)",
       "Bash(createdb:*)",
-      "Bash(dropdb:*)"
+      "Bash(dropdb:*)",
+      "Bash(echo:*)",
+      "Bash(export DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/auto_video_db\")",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

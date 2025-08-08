@@ -34,4 +34,3 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO auto_video_u
 -- 這些將由 SQLAlchemy 處理，但可以在這裡預定義一些特殊索引
 
 -- 系統配置表的初始數據將通過應用程序插入
-EOF < /dev/null
