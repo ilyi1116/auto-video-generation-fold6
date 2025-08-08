@@ -12,8 +12,8 @@ type EnsureDefined<T> = T extends null | undefined ? {} : T;
 type OptionalUnion<U extends Record<string, any>, A extends keyof U = U extends U ? keyof U : never> = U extends unknown ? { [P in Exclude<A, keyof U>]?: never } & U : never;
 export type Snapshot<T = any> = Kit.Snapshot<T>;
 type PageParentData = EnsureDefined<LayoutData>;
-type LayoutRouteId = RouteId | "/" | "/account/settings" | "/admin" | "/admin/mock-data" | "/ai" | "/ai/images" | "/ai/music" | "/ai/script" | "/ai/voice" | "/analytics" | "/assets" | "/create" | "/dashboard" | "/demo" | "/docs" | "/forgot-password" | "/login" | "/pricing" | "/profile" | "/projects" | "/register" | "/register-simple" | "/register-test" | "/settings" | "/social" | "/test" | "/trends" | "/video/[videoId]" | "/videos" | null
-type LayoutParams = RouteParams & { videoId?: string }
+type LayoutRouteId = RouteId | "/" | "/ai" | "/ai/images" | "/ai/music" | "/ai/script" | "/ai/voice" | "/analytics" | "/create" | "/dashboard" | "/forgot-password" | "/login" | "/pricing" | "/profile" | "/projects" | "/register" | "/settings" | "/social" | "/trends" | null
+type LayoutParams = RouteParams & {  }
 type LayoutParentData = EnsureDefined<{}>;
 
 export type PageServerData = null;
