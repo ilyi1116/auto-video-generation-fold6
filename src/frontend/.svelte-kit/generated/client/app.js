@@ -23,32 +23,42 @@ export const nodes = [
 	() => import('./nodes/19'),
 	() => import('./nodes/20'),
 	() => import('./nodes/21'),
-	() => import('./nodes/22')
+	() => import('./nodes/22'),
+	() => import('./nodes/23'),
+	() => import('./nodes/24'),
+	() => import('./nodes/25'),
+	() => import('./nodes/26'),
+	() => import('./nodes/27')
 ];
 
 export const server_loads = [];
 
 export const dictionary = {
 		"/": [3],
-		"/admin": [4,[2]],
-		"/admin/mock-data": [5,[2]],
-		"/ai": [6],
-		"/ai/images": [7],
-		"/ai/music": [8],
-		"/ai/script": [9],
-		"/ai/voice": [10],
-		"/analytics": [11],
-		"/create": [12],
-		"/dashboard": [13],
-		"/forgot-password": [14],
-		"/login": [15],
-		"/pricing": [16],
-		"/profile": [17],
-		"/projects": [18],
-		"/register": [19],
-		"/settings": [20],
-		"/social": [21],
-		"/trends": [22]
+		"/account/settings": [4],
+		"/admin": [5,[2]],
+		"/admin/mock-data": [6,[2]],
+		"/ai": [7],
+		"/ai/images": [8],
+		"/ai/music": [9],
+		"/ai/script": [10],
+		"/ai/voice": [11],
+		"/analytics": [12],
+		"/assets": [13],
+		"/create": [14],
+		"/dashboard": [15],
+		"/demo": [16],
+		"/forgot-password": [17],
+		"/login": [18],
+		"/pricing": [19],
+		"/profile": [20],
+		"/projects": [21],
+		"/register": [22],
+		"/settings": [23],
+		"/social": [24],
+		"/trends": [25],
+		"/videos": [27],
+		"/video/[videoId]": [26]
 	};
 
 export const hooks = {

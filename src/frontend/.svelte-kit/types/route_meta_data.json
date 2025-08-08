@@ -1,5 +1,6 @@
 {
 	"/": [],
+	"/account/settings": [],
 	"/admin": [],
 	"/admin/mock-data": [],
 	"/ai": [],
@@ -8,6 +9,7 @@
 	"/ai/script": [],
 	"/ai/voice": [],
 	"/analytics": [],
+	"/assets": [],
 	"/create": [],
 	"/dashboard": [],
 	"/demo": [],

@@ -5,6 +5,8 @@
   import { webSocket } from '$lib/stores/notifications.js';
   import Toast from '$lib/components/Toast.svelte';
   import ProgressToast from '$lib/components/notifications/ProgressToast.svelte';
+  import GlobalLoading from '$lib/components/ui/GlobalLoading.svelte';
+  import GlobalError from '$lib/components/ui/GlobalError.svelte';
 
   let mounted = false;
 
@@ -32,6 +34,10 @@
     <Toast />
     <!-- Progress Notifications -->
     <ProgressToast />
+    <!-- Global Loading -->
+    <GlobalLoading />
+    <!-- Global Error Handler -->
+    <GlobalError />
   </div>
 {:else}
   <!-- Loading state while initializing -->
