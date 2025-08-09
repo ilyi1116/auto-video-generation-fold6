@@ -2,24 +2,28 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { authStore } from '$lib/stores/auth.js';
 
   export let data;
 
   let email = data?.email || '';
   let password = '';
-  let isLoading = false;
   let errors = {};
   let message = '';
 
-  // 不依賴store的認證檢查
+  // 使用 authStore 檢查認證狀態
   onMount(() => {
-    if (browser) {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        goto('/dashboard');
-      }
+    if ($authStore.isAuthenticated) {
+      goto('/dashboard');
     }
   });
+
+  // 響應認證狀態變化
+  $: {
+    if ($authStore.isAuthenticated) {
+      goto('/dashboard');
+    }
+  }
 
   // 表單驗證
   function validateForm() {
@@ -31,44 +35,28 @@
     return Object.keys(errors).length === 0;
   }
 
-  // 處理登入
+  // 處理登入 - 使用 authStore
   async function handleSubmit() {
     if (!validateForm()) return;
 
-    isLoading = true;
     message = '';
+    errors = {};
     
     try {
-      const response = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.toLowerCase(),
-          password: password
-        })
-      });
+      const result = await authStore.login(email.toLowerCase(), password);
       
-      const result = await response.json();
-      
-      if (result.success && result.data) {
+      if (result.success) {
         message = '登入成功！正在重定向...';
-        
-        // 保存token
-        if (browser) {
-          localStorage.setItem('auth_token', result.data.access_token);
-        }
-        
+        // authStore 會自動處理重定向
         setTimeout(() => {
           goto('/dashboard');
-        }, 1500);
+        }, 500);
       } else {
         errors.general = result.error || 'Login failed. Please check your credentials.';
       }
     } catch (error) {
       console.error('Login error:', error);
       errors.general = 'Network error occurred. Please try again.';
-    } finally {
-      isLoading = false;
     }
   }
 
@@ -198,7 +186,7 @@
             bind:value={email}
             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white {errors.email ? 'border-red-500' : ''}"
             placeholder="Enter your email"
-            disabled={isLoading}
+            disabled={$authStore.loading}
           />
           {#if errors.email}
             <p class="text-red-600 text-xs mt-1">{errors.email}</p>
@@ -221,7 +209,7 @@
             bind:value={password}
             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white {errors.password ? 'border-red-500' : ''}"
             placeholder="Enter your password"
-            disabled={isLoading}
+            disabled={$authStore.loading}
           />
           {#if errors.password}
             <p class="text-red-600 text-xs mt-1">{errors.password}</p>
@@ -245,10 +233,10 @@
         <div>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={$authStore.loading}
             class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {#if isLoading}
+            {#if $authStore.loading}
               <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
               Signing in...
             {:else}

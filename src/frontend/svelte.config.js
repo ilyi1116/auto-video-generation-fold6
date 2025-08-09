@@ -22,7 +22,7 @@ const config = {
         "style-src": ["self", "unsafe-inline"],
         "img-src": ["self", "data:", "https:"],
         "font-src": ["self", "data:", "https:"],
-        "connect-src": ["self", "http://localhost:8000", "ws://localhost:*"],
+        "connect-src": ["self", "http://localhost:8001", "ws://localhost:*"],
         "media-src": ["self"],
         "object-src": ["none"],
         "child-src": ["none"],

@@ -6,8 +6,8 @@
 import { browser } from '$app/environment';
 
 const API_BASE_URL = browser 
-  ? (import.meta.env.VITE_API_URL || 'http://localhost:8000')
-  : 'http://localhost:8000';
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:8001')
+  : 'http://localhost:8001';
 
 // HTTP 客戶端基類
 class HttpClient {

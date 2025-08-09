@@ -1,20 +1,39 @@
 {
 	"/": [],
+	"/account/settings": [],
+	"/admin": [],
+	"/admin/mock-data": [],
 	"/ai": [],
 	"/ai/images": [],
 	"/ai/music": [],
 	"/ai/script": [],
 	"/ai/voice": [],
 	"/analytics": [],
+	"/assets": [],
 	"/create": [],
 	"/dashboard": [],
+	"/demo": [],
+	"/docs": [],
 	"/forgot-password": [],
-	"/login": [],
+	"/login": [
+		"src/routes/login/+page.js"
+	],
 	"/pricing": [],
 	"/profile": [],
 	"/projects": [],
-	"/register": [],
+	"/register-simple": [],
+	"/register-test": [
+		"src/routes/register-test/+page.js"
+	],
+	"/register": [
+		"src/routes/register/+page.js"
+	],
 	"/settings": [],
 	"/social": [],
-	"/trends": []
+	"/test": [],
+	"/trends": [],
+	"/videos": [],
+	"/video/[videoId]": [
+		"src/routes/video/[videoId]/+page.js"
+	]
 }
