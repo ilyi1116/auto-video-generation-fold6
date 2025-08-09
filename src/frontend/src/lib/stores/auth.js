@@ -74,7 +74,7 @@ const createAuthStore = () => {
         
         // 處理新的API響應格式
         if (response.success) {
-          const { user, access_token } = response.data;
+          const { user, token: access_token } = response.data;
           
           if (browser) {
             localStorage.setItem('auth_token', access_token);
@@ -113,7 +113,7 @@ const createAuthStore = () => {
         
         // 處理新的API響應格式
         if (response.success) {
-          const { user, access_token } = response.data;
+          const { user, token: access_token } = response.data;
           
           if (browser) {
             localStorage.setItem('auth_token', access_token);

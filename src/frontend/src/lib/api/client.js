@@ -175,8 +175,8 @@ export const apiClient = {
   // AI 服務相關 API
   ai: {
     // 腳本生成
-    generateScript: (topic, platform = 'youtube', style = 'educational', duration = 60, language = 'zh-TW') => 
-      httpClient.post('/api/v1/generate/script', { topic, platform, style, duration, language }),
+    generateScript: (topic, platform = 'youtube', style = 'educational', duration = 60, language = 'zh-TW', description = '', enableSearch = true, timeRange = 'w') => 
+      httpClient.post('/api/v1/generate/script', { topic, platform, style, duration, language, description, enable_search: enableSearch, time_range: timeRange }),
     
     // 圖像生成
     generateImage: (prompt, style = 'realistic', size = '1024x1024') => 

@@ -47,10 +47,7 @@
       
       if (result.success) {
         message = '登入成功！正在重定向...';
-        // authStore 會自動處理重定向
-        setTimeout(() => {
-          goto('/dashboard');
-        }, 500);
+        // authStore 會自動觸發重定向，不需要手動調用
       } else {
         errors.general = result.error || 'Login failed. Please check your credentials.';
       }
@@ -62,8 +59,8 @@
 
   // Demo登入
   function demoLogin() {
-    email = 'test1@example.com';
-    password = 'password123';
+    email = 'demo@example.com';
+    password = 'demo123';
   }
 
   // 社交登入處理

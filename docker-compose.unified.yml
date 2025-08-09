@@ -15,7 +15,7 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - API_BASE_URL=http://api-gateway:8000
+      - VITE_API_URL=http://api-gateway:8000
       - PUBLIC_API_URL=${PUBLIC_API_URL:-http://localhost:8000}
     env_file:
       - .env
@@ -141,13 +141,66 @@ services:
       - app-network
     restart: unless-stopped
 
+  # 數據處理服務
+  data-service:
+    build:
+      context: ./src/services/data-ingestion
+      dockerfile: Dockerfile
+    ports:
+      - "${DATA_SERVICE_PORT:-8002}:8002"
+    volumes:
+      - ./src/services/data-ingestion:/app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-auto_video_generation}
+      - REDIS_URL=redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # 推理服務
+  inference-service:
+    build:
+      context: ./src/services/inference-service
+      dockerfile: Dockerfile
+    ports:
+      - "${INFERENCE_SERVICE_PORT:-8003}:8003"
+    volumes:
+      - ./src/services/inference-service/app:/app/app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-auto_video_generation}
+      - REDIS_URL=redis://redis:6379/3
+      - S3_ENDPOINT_URL=http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    restart: unless-stopped
+
   # 儲存服務
   storage-service:
     build:
       context: ./src/services/storage-service
       dockerfile: Dockerfile
     ports:
-      - "${STORAGE_SERVICE_PORT:-8009}:8009"
+      - "${STORAGE_SERVICE_PORT:-8009}:8000"
     volumes:
       - ./src/services/storage-service/app:/app/app
       - /tmp:/tmp
@@ -176,7 +229,7 @@ services:
       context: ./src/services/video-service
       dockerfile: Dockerfile
     ports:
-      - "${VIDEO_SERVICE_PORT:-8004}:8004"
+      - "${VIDEO_SERVICE_PORT:-8004}:8003"
     volumes:
       - ./src/services/video-service/app:/app/app
       - /tmp:/tmp

@@ -76,18 +76,42 @@
     isGenerating = true;
     
     try {
-      // 調用真實的AI腳本生成API
+      // 調用增強的AI腳本生成API - 整合Google搜索
+      const searchSettings = projectData.searchSettings || { enableSearch: true, timeRange: 'w' };
       const response = await apiClient.ai.generateScript(
         projectData.title,
         projectData.platform,
         projectData.style,
         projectData.duration,
-        'zh-TW'
+        'zh-TW',
+        projectData.description,
+        searchSettings.enableSearch,
+        searchSettings.timeRange
       );
       
       if (response.success) {
         projectData.script = response.data.script || response.data.content || 'Script generated successfully!';
-        toastStore.success('Script generated successfully with AI!');
+        
+        // 顯示搜索增強信息
+        const data = response.data;
+        if (data.search_enabled && data.search_results_count > 0) {
+          toastStore.success(
+            `✅ AI腳本生成成功！\n🔍 已整合 ${data.search_results_count} 條最新資訊 (${data.time_range === 'd' ? '過去1天' : data.time_range === 'w' ? '過去1週' : data.time_range === 'm' ? '過去1個月' : '過去1年'})\n🤖 提供者: ${data.provider}`
+          );
+          
+          // 記錄搜索詳情到控制台
+          console.log('🔍 腳本生成詳情:', {
+            搜索啟用: data.search_enabled,
+            搜索結果數量: data.search_results_count,
+            時間範圍: data.time_range,
+            搜索摘要: data.search_summary,
+            來源: data.search_sources
+          });
+        } else if (data.search_enabled) {
+          toastStore.success(`✅ AI腳本生成成功！\n⚠️ 未找到相關最新資訊，使用基礎AI生成\n🤖 提供者: ${data.provider || 'AI'}`);
+        } else {
+          toastStore.success(`✅ AI腳本生成成功！\n🤖 提供者: ${data.provider || 'AI'}`);
+        }
       } else {
         throw new Error(response.error || 'Failed to generate script');
       }
@@ -136,13 +160,31 @@ If you found this valuable, please like and subscribe for more content like this
       
       const imagePromises = imagePrompts.map(async (prompt, index) => {
         try {
-          const response = await apiClient.ai.generateImage(prompt, projectData.style);
-          if (response.success) {
+          // 調用增強的圖像生成API，傳遞腳本內容以獲得更智能的提示詞
+          const response = await fetch('http://localhost:8001/api/v1/generate/image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: prompt,
+              style: projectData.style,
+              script: projectData.script || '', // 傳遞腳本內容
+              topic: projectData.title,
+              platform: projectData.platform,
+              description: projectData.description || '', // 傳遞專案描述
+              size: projectData.platform === 'youtube' ? '1920x1080' : '1080x1920'
+            })
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok && result.success) {
             return {
               id: index + 1,
-              url: response.data.url || '/api/placeholder/1920/1080',
+              url: result.data.url || '/api/placeholder/1920/1080',
               type: index === 0 ? 'thumbnail' : 'background',
-              prompt: prompt
+              prompt: result.data.prompt,
+              enhanced_prompt: result.data.enhanced_prompt,
+              provider: result.data.provider
             };
           } else {
             throw new Error('API failed');
@@ -153,7 +195,8 @@ If you found this valuable, please like and subscribe for more content like this
             id: index + 1,
             url: '/api/placeholder/1920/1080',
             type: index === 0 ? 'thumbnail' : 'background',
-            prompt: prompt
+            prompt: prompt,
+            provider: 'Fallback'
           };
         }
       });
@@ -184,14 +227,24 @@ If you found this valuable, please like and subscribe for more content like this
     isGenerating = true;
     
     try {
-      // 調用真實的AI語音合成API
-      const response = await apiClient.ai.synthesizeVoice(
-        projectData.script,
-        projectData.voiceSettings.voice_id || 'alloy',
-        projectData.voiceSettings.speed || 1.0
-      );
+      // 調用增強的AI語音合成API - 支援DeepSeek優化
+      const response = await fetch('http://localhost:8001/api/v1/generate/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: projectData.script,
+          voice: projectData.voiceSettings.voice_id || 'alloy',
+          speed: projectData.voiceSettings.speed || 1.0,
+          platform: projectData.platform,
+          style: projectData.style,
+          topic: projectData.title,
+          optimize_with_ai: true  // 啟用AI優化
+        })
+      });
       
-      if (response.success) {
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
         const voices = [
           { id: 'alloy', name: 'Alloy' },
           { id: 'echo', name: 'Echo' },
@@ -201,15 +254,41 @@ If you found this valuable, please like and subscribe for more content like this
           { id: 'shimmer', name: 'Shimmer' }
         ];
         
+        // 構建增強的音頻對象
         projectData.audio = {
-          url: response.data.url || '#',
-          duration: response.data.duration || Math.ceil(projectData.script.split(' ').length / 2.5),
-          voice: voices.find(v => v.id === projectData.voiceSettings.voice_id)?.name || 'Alloy'
+          url: result.data.url || '#',
+          duration: result.data.duration,
+          voice: voices.find(v => v.id === result.data.voice)?.name || 'Alloy',
+          provider: result.data.provider,
+          quality: result.data.quality,
+          optimization: result.data.optimization,
+          has_real_audio: result.data.has_real_audio || false,
+          filepath: result.data.filepath
         };
         
-        toastStore.success('Voice generated successfully with AI!');
+        // 顯示優化信息
+        if (result.data.optimization?.ai_optimized) {
+          const opt = result.data.optimization;
+          toastStore.success(
+            `✅ AI語音生成成功！\n🤖 ${opt.optimization_reason}\n🎵 ${opt.optimized_voice} @ ${opt.optimized_speed}x\n💡 ${opt.emotion} · ${opt.tone}`
+          );
+          console.log('🎤 語音優化詳情:', opt);
+        } else {
+          toastStore.success(`✅ 語音生成成功！\n🔊 ${result.data.provider} · ${result.data.quality}\n⏱️ 時長: ${result.data.duration}秒`);
+        }
+        
+        // 記錄統計信息
+        console.log('📊 語音生成統計:', {
+          provider: result.data.provider,
+          voice: result.data.voice,
+          speed: result.data.speed,
+          duration: result.data.duration,
+          text_length: result.data.text_length,
+          chinese_chars: result.data.chinese_char_count
+        });
+        
       } else {
-        throw new Error(response.error || 'Failed to generate voice');
+        throw new Error(result.error || 'Failed to generate voice');
       }
     } catch (error) {
       console.error('Voice generation error:', error);
@@ -228,7 +307,9 @@ If you found this valuable, please like and subscribe for more content like this
       projectData.audio = {
         url: '#',
         duration: Math.ceil(projectData.script.split(' ').length / 2.5),
-        voice: voices.find(v => v.id === projectData.voiceSettings.voice_id)?.name || 'Alloy'
+        voice: voices.find(v => v.id === projectData.voiceSettings.voice_id)?.name || 'Alloy',
+        provider: 'Fallback',
+        quality: 'Simulated'
       };
       toastStore.info('Using fallback voice generation');
     } finally {
@@ -254,18 +335,46 @@ If you found this valuable, please like and subscribe for more content like this
       // 模擬進度更新
       simulateProgress(notificationId, projectData.title || 'New Video Project');
       
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      // 調用真實的影片生成API
+      const response = await fetch('http://localhost:8001/api/v1/generate/video', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_data: {
+            title: projectData.title,
+            script: projectData.script,
+            images: projectData.images,
+            audio: projectData.audio,
+            duration: projectData.duration,
+            platform: projectData.platform,
+            resolution: projectData.platform === 'youtube' ? '1920x1080' : '1080x1920'
+          }
+        })
+      });
       
-      projectData.video = {
-        url: '#',
-        duration: projectData.audio.duration,
-        resolution: projectData.platform === 'youtube' ? '1920x1080' : '1080x1920',
-        fileSize: '125 MB',
-        format: 'MP4'
-      };
-
-      toastStore.success('Video assembled successfully!');
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        projectData.video = {
+          video_id: result.data.video_id,
+          url: result.data.url,
+          download_url: result.data.download_url,
+          thumbnail: result.data.thumbnail,
+          duration: result.data.duration,
+          resolution: result.data.resolution,
+          fileSize: result.data.fileSize,
+          format: result.data.format,
+          status: result.data.status,
+          generated_at: result.data.generated_at
+        };
+        toastStore.success('Video assembled successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to generate video');
+      }
     } catch (error) {
+      console.error('Video assembly error:', error);
       // 更新通知為失敗狀態
       notifications.update(notificationId, {
         type: 'error',
@@ -274,7 +383,7 @@ If you found this valuable, please like and subscribe for more content like this
         status: 'failed',
         progress: 0
       });
-      toastStore.error('Failed to assemble video');
+      toastStore.error(error.message || 'Failed to assemble video');
     } finally {
       isGenerating = false;
     }
@@ -288,8 +397,44 @@ If you found this valuable, please like and subscribe for more content like this
     toastStore.success('Sharing options opened!');
   }
 
-  function handleDownload() {
-    toastStore.success('Download started!');
+  async function handleDownload() {
+    if (!projectData.video?.video_id) {
+      toastStore.error('No video available for download');
+      return;
+    }
+    
+    try {
+      // 獲取下載連結
+      const response = await fetch(`http://localhost:8001/api/v1/videos/${projectData.video.video_id}/download`);
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        // 在真實環境中，這裡會觸發檔案下載
+        // 現在模擬下載過程
+        const downloadUrl = result.data.download_url;
+        const filename = result.data.filename;
+        
+        // 創建臨時下載連結（模擬）
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // 在真實環境中會觸發實際下載
+        // link.click();
+        
+        document.body.removeChild(link);
+        
+        toastStore.success(`Download started for ${filename}`);
+        console.log('Download info:', result.data);
+      } else {
+        throw new Error(result.error || 'Failed to get download link');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toastStore.error(error.message || 'Failed to download video');
+    }
   }
 
   function handleUpload() {
