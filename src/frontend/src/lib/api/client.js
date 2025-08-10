@@ -273,6 +273,37 @@ export const apiClient = {
     
     ping: () => 
       httpClient.get('/ping')
+  },
+
+  // 內容模板管理 API
+  templates: {
+    // 獲取模板列表
+    list: (params = {}) => 
+      httpClient.get('/api/v1/templates', params),
+    
+    // 獲取特定模板詳情
+    get: (templateId) => 
+      httpClient.get(`/api/v1/templates/${templateId}`),
+    
+    // 使用模板生成內容
+    generate: (templateId, parameters, useAi = true) => 
+      httpClient.post('/api/v1/templates/generate', { 
+        template_id: templateId, 
+        parameters, 
+        use_ai: useAi 
+      }),
+    
+    // 獲取模板分類
+    getCategories: () => 
+      httpClient.get('/api/v1/templates/categories'),
+    
+    // 按分類獲取模板
+    getByCategory: (category) => 
+      httpClient.get('/api/v1/templates', { category }),
+    
+    // 按平台獲取模板
+    getByPlatform: (platform) => 
+      httpClient.get('/api/v1/templates', { platform })
   }
 };
 

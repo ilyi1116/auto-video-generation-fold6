@@ -367,6 +367,226 @@ mock_analytics = {
     "totalShares": 89374,
 }
 
+# 內容模板存儲
+content_templates = {
+    "social_media_post": {
+        "id": "social_media_post",
+        "name": "社群媒體貼文",
+        "description": "適用於Facebook、Instagram、Twitter等社群平台的貼文模板",
+        "category": "social_media",
+        "platform": ["facebook", "instagram", "twitter", "linkedin"],
+        "template_structure": {
+            "hook": "引人注目的開頭",
+            "content": "主要內容",
+            "cta": "行動呼籲",
+            "hashtags": "相關標籤"
+        },
+        "prompt_template": """
+創建一個{style}風格的社群媒體貼文，主題：{topic}
+        
+結構要求：
+1. 開頭要引人注目，激發好奇心
+2. 內容要有價值，提供實用資訊
+3. 結尾要有明確的行動呼籲
+4. 加入3-5個相關hashtags
+
+平台特性：{platform}
+目標受眾：{target_audience}
+貼文長度：{length}字以內
+語調：{tone}
+        """,
+        "example": "🎯 你知道嗎？90%的成功創業者都有這個習慣...\n\n每天花10分鐘規劃明日重點，讓效率提升300%！\n\n✅ 列出3個最重要任務\n✅ 設定明確完成時間\n✅ 預留緩衝時間應對意外\n\n👇 留言分享你的時間管理秘訣！\n\n#時間管理 #創業 #效率提升 #成功習慣",
+        "usage_count": 245,
+        "success_rate": 87.5,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    },
+    "blog_article": {
+        "id": "blog_article",
+        "name": "部落格文章",
+        "description": "深度內容創作，適合SEO優化的長文章模板",
+        "category": "content_marketing",
+        "platform": ["blog", "website", "medium"],
+        "template_structure": {
+            "title": "吸引人的標題",
+            "introduction": "引言段落",
+            "main_sections": "主要章節",
+            "conclusion": "總結",
+            "seo_elements": "SEO元素"
+        },
+        "prompt_template": """
+撰寫一篇關於{topic}的專業部落格文章
+
+文章架構：
+1. 引人入勝的標題（包含關鍵字：{keywords}）
+2. 吸引讀者的開頭段落
+3. 3-5個主要段落，每段都有小標題
+4. 實用的建議或步驟
+5. 強有力的結論
+6. 相關的內部/外部連結建議
+
+文章要求：
+- 字數：{word_count}字左右
+- 語調：{tone}
+- SEO友善：自然融入關鍵字
+- 讀者價值：提供實用見解
+        """,
+        "example": "# 2024年內容行銷趨勢：5個不可忽視的策略\n\n## 前言\n在數位行銷快速演變的時代，內容行銷策略也需要跟上潮流...\n\n## 1. AI輔助內容創作\n人工智慧正在改變內容創作的遊戲規則...",
+        "usage_count": 189,
+        "success_rate": 92.1,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    },
+    "ad_copy": {
+        "id": "ad_copy",
+        "name": "廣告文案",
+        "description": "高轉換率的廣告文案模板，適用於Google、Facebook廣告",
+        "category": "advertising",
+        "platform": ["google_ads", "facebook_ads", "instagram_ads", "linkedin_ads"],
+        "template_structure": {
+            "headline": "主標題",
+            "subheadline": "副標題",
+            "benefits": "產品優勢",
+            "social_proof": "社會證明",
+            "cta": "行動呼籲"
+        },
+        "prompt_template": """
+創建一個高轉換的廣告文案，產品/服務：{product}
+
+廣告架構：
+1. 吸引注意的主標題
+2. 解釋產品價值的副標題
+3. 3個核心優勢/好處
+4. 社會證明（如果有）
+5. 急迫性/稀缺性元素
+6. 強力的CTA按鈕文字
+
+目標：
+- 平台：{platform}
+- 目標客群：{target_audience}
+- 廣告目標：{campaign_objective}
+- 預算範圍：{budget_range}
+- 文案長度：{length}字以內
+        """,
+        "example": "🔥 限時優惠！專業網站設計只要9999元\n\n❌ 還在用過時的網站嗎？\n✅ 現代化響應式設計\n✅ SEO優化\n✅ 7天內完成\n\n⭐ 已服務300+滿意客戶\n💰 現在下單再送免費維護3個月\n\n⏰ 僅限本週，名額有限！\n\n👆 立即免費諮詢",
+        "usage_count": 312,
+        "success_rate": 84.2,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    },
+    "email_marketing": {
+        "id": "email_marketing",
+        "name": "電子郵件行銷",
+        "description": "提高開信率和點擊率的電子郵件模板",
+        "category": "email_marketing",
+        "platform": ["email"],
+        "template_structure": {
+            "subject": "主旨行",
+            "preheader": "預覽文字",
+            "greeting": "問候語",
+            "content": "郵件內容",
+            "cta": "行動呼籲"
+        },
+        "prompt_template": """
+創建一封{email_type}電子郵件
+
+郵件要求：
+1. 吸引人的主旨行（50字以內）
+2. 個人化的問候語
+3. 有價值的內容
+4. 明確的行動呼籲
+5. 專業的簽名檔
+
+參數：
+- 收件人：{recipient_type}
+- 目標：{email_goal}
+- 語調：{tone}
+- 內容長度：{length}
+- 產品/服務：{product}
+        """,
+        "example": "主旨：【限時】你的專屬折扣碼到期倒數3天⏰\n\n親愛的王先生，\n\n感謝您對我們產品的關注！\n\n還記得您上次瀏覽的「專業攝影課程」嗎？\n\n🎉 好消息：我們為您準備了專屬20%折扣！\n折扣碼：VIP20（限時3天）\n\n這門課程已幫助500+學員：\n✅ 掌握專業攝影技巧\n✅ 提升作品質量\n✅ 建立攝影事業\n\n⏰ 優惠倒數：72小時\n\n立即使用折扣碼 →\n\n祝您學習愉快，\nXXX攝影學院團隊",
+        "usage_count": 156,
+        "success_rate": 78.9,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    },
+    "video_script": {
+        "id": "video_script",
+        "name": "影片腳本",
+        "description": "適用於YouTube、TikTok等影片平台的腳本模板",
+        "category": "video_content",
+        "platform": ["youtube", "tiktok", "instagram_reels", "bilibili"],
+        "template_structure": {
+            "hook": "開場引鉤",
+            "intro": "介紹段",
+            "main_content": "主要內容",
+            "transition": "過渡段",
+            "conclusion": "結論",
+            "cta": "行動呼籲"
+        },
+        "prompt_template": """
+創建一個{platform}平台的影片腳本，主題：{topic}
+
+腳本架構：
+1. 前3秒抓住觀眾注意（黃金開場）
+2. 快速介紹自己和主題
+3. 主要內容分3-5個要點
+4. 適當的過渡和互動
+5. 強力的結尾和CTA
+
+要求：
+- 影片長度：{duration}秒
+- 目標觀眾：{target_audience}
+- 影片風格：{style}
+- 語調：{tone}
+- 包含互動元素（問題、投票等）
+        """,
+        "example": "[開場] 你知道為什麼90%的人減肥都失敗嗎？\n\n[0:05] 嗨大家好，我是營養師小美，今天要分享3個減肥成功的秘訣！\n\n[0:12] 第一個秘訣：不要節食，而是要...\n[0:25] 第二個：運動要這樣做才有效...\n[0:40] 第三個：大多數人都忽略的心理因素...\n\n[0:55] 如果你想要完整的減肥計劃，留言「我要瘦」，我會私訊給你！\n\n[1:00] 記得按讚訂閱，我們下個影片見！",
+        "usage_count": 423,
+        "success_rate": 89.3,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    },
+    "product_description": {
+        "id": "product_description",
+        "name": "產品描述",
+        "description": "電商平台適用的產品描述模板，提高轉換率",
+        "category": "ecommerce",
+        "platform": ["shopify", "woocommerce", "amazon", "pchome"],
+        "template_structure": {
+            "headline": "產品標題",
+            "benefits": "產品優勢",
+            "features": "功能特色",
+            "specifications": "規格說明",
+            "guarantee": "保證承諾"
+        },
+        "prompt_template": """
+為{product}撰寫專業的電商產品描述
+
+描述要求：
+1. 吸引人的產品標題
+2. 3-5個核心賣點/優勢
+3. 詳細的功能特色
+4. 技術規格（如適用）
+5. 使用場景和效果
+6. 保證和售後服務
+7. 急迫性元素
+
+目標：
+- 平台：{platform}
+- 目標客群：{target_customer}
+- 價格範圍：{price_range}
+- 產品類別：{category}
+- 競爭優勢：{competitive_advantage}
+        """,
+        "example": "【限量現貨】專業無線藍牙耳機 | 40小時超長續航 | 主動降噪\n\n🎵 為什麼選擇我們的藍牙耳機？\n\n✅ 40小時馬拉松續航 - 一週充電一次\n✅ 智能主動降噪 - 沉浸式音樂體驗\n✅ 高保真音質 - 專業調音師認證\n✅ 舒適佩戴 - 人體工學設計，久戴不累\n✅ 快速配對 - 開蓋即連，告別繁瑣步驟\n\n📋 產品規格：\n• 藍牙版本：5.3\n• 續航時間：40小時（含充電盒）\n• 充電時間：1.5小時\n• 防水等級：IPX7\n• 重量：僅4.2g（單耳）\n\n🎁 限時優惠：\n原價2999元，現在只要1899元！\n免運費 | 7天無理由退換 | 12個月保固\n\n⏰ 庫存有限，立即下單！",
+        "usage_count": 278,
+        "success_rate": 91.7,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+}
+
 
 # Pydantic 模型
 class LoginRequest(BaseModel):
@@ -422,6 +642,15 @@ async def debug_audio_playback():
     """提供音頻播放診斷工具頁面"""
     return FileResponse(
         "debug_audio_playback.html", 
+        media_type="text/html",
+        headers={"Cache-Control": "no-cache"}
+    )
+
+@app.get("/template_demo.html")
+async def serve_template_demo():
+    """提供內容模板系統演示頁面"""
+    return FileResponse(
+        "template_demo.html", 
         media_type="text/html",
         headers={"Cache-Control": "no-cache"}
     )
@@ -1672,6 +1901,262 @@ async def internal_error_handler(request: Request, exc):
             "message": "An unexpected error occurred",
         },
     )
+
+
+# === 內容模板管理 API ===
+
+@app.get("/api/v1/templates")
+async def get_templates(category: Optional[str] = None, platform: Optional[str] = None):
+    """獲取內容模板列表"""
+    try:
+        filtered_templates = {}
+        
+        for template_id, template in content_templates.items():
+            # 按分類篩選
+            if category and template.get("category") != category:
+                continue
+            
+            # 按平台篩選
+            if platform and platform not in template.get("platform", []):
+                continue
+            
+            # 返回簡化版本，不包含完整的 prompt_template
+            simplified_template = {
+                "id": template["id"],
+                "name": template["name"],
+                "description": template["description"],
+                "category": template["category"],
+                "platform": template["platform"],
+                "template_structure": template["template_structure"],
+                "example": template["example"][:200] + "..." if len(template.get("example", "")) > 200 else template.get("example", ""),
+                "usage_count": template.get("usage_count", 0),
+                "success_rate": template.get("success_rate", 0),
+                "created_at": template["created_at"],
+                "updated_at": template["updated_at"]
+            }
+            filtered_templates[template_id] = simplified_template
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "templates": filtered_templates,
+                "total": len(filtered_templates),
+                "filters": {
+                    "categories": list(set(t["category"] for t in content_templates.values())),
+                    "platforms": list(set(p for t in content_templates.values() for p in t["platform"]))
+                }
+            }
+        })
+    except Exception as e:
+        print(f"❌ 獲取模板列表錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to get templates",
+                "message": str(e)
+            }
+        )
+
+
+@app.get("/api/v1/templates/{template_id}")
+async def get_template(template_id: str):
+    """獲取特定模板的詳細信息"""
+    try:
+        if template_id not in content_templates:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Template not found",
+                    "message": f"Template '{template_id}' does not exist"
+                }
+            )
+        
+        template = content_templates[template_id].copy()
+        
+        return JSONResponse({
+            "success": True,
+            "data": {"template": template}
+        })
+    except Exception as e:
+        print(f"❌ 獲取模板詳情錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to get template details",
+                "message": str(e)
+            }
+        )
+
+
+class TemplateGenerateRequest(BaseModel):
+    template_id: str
+    parameters: Dict[str, str]
+    use_ai: Optional[bool] = True
+
+
+@app.post("/api/v1/templates/generate")
+async def generate_content_from_template(request: TemplateGenerateRequest):
+    """使用模板生成內容"""
+    try:
+        template_id = request.template_id
+        parameters = request.parameters
+        use_ai = request.use_ai
+        
+        if template_id not in content_templates:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Template not found",
+                    "message": f"Template '{template_id}' does not exist"
+                }
+            )
+        
+        template = content_templates[template_id]
+        prompt_template = template["prompt_template"]
+        
+        # 格式化提示詞模板
+        try:
+            formatted_prompt = prompt_template.format(**parameters)
+        except KeyError as e:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "Missing parameter",
+                    "message": f"Required parameter missing: {e}"
+                }
+            )
+        
+        generated_content = ""
+        provider = "Mock Generator"
+        
+        if use_ai and DEEPSEEK_API_KEY:
+            try:
+                messages = [
+                    {
+                        "role": "system",
+                        "content": f"你是一個專業的{template['category']}內容創作專家，擅長創作高質量的{template['name']}。請根據用戶的要求創作內容，確保內容專業、吸引人且符合平台特色。"
+                    },
+                    {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }
+                ]
+                
+                generated_content = await call_deepseek_api(messages)
+                provider = "DeepSeek AI"
+                print(f"✅ 使用AI生成內容成功: {template['name']}")
+                
+            except Exception as e:
+                print(f"⚠️ AI生成失敗，使用模板示例: {e}")
+                generated_content = template.get("example", "內容生成失敗")
+                provider = "Template Example"
+        else:
+            # 使用模板示例或簡單的參數替換
+            generated_content = template.get("example", "")
+            # 簡單的參數替換
+            for key, value in parameters.items():
+                generated_content = generated_content.replace(f"{{{key}}}", value)
+            provider = "Template Based"
+        
+        # 更新使用統計
+        content_templates[template_id]["usage_count"] = content_templates[template_id].get("usage_count", 0) + 1
+        content_templates[template_id]["updated_at"] = datetime.now().isoformat() + "Z"
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "content": generated_content,
+                "template_used": {
+                    "id": template_id,
+                    "name": template["name"],
+                    "category": template["category"]
+                },
+                "parameters_used": parameters,
+                "generation_info": {
+                    "provider": provider,
+                    "use_ai": use_ai,
+                    "generated_at": datetime.now().isoformat() + "Z",
+                    "content_length": len(generated_content),
+                    "word_count": len(generated_content.split())
+                }
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 內容生成錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to generate content",
+                "message": str(e)
+            }
+        )
+
+
+@app.get("/api/v1/templates/categories")
+async def get_template_categories():
+    """獲取所有模板分類和統計信息"""
+    try:
+        categories = {}
+        
+        for template in content_templates.values():
+            category = template["category"]
+            if category not in categories:
+                categories[category] = {
+                    "name": category,
+                    "display_name": {
+                        "social_media": "社群媒體",
+                        "content_marketing": "內容行銷",
+                        "advertising": "廣告文案",
+                        "email_marketing": "電子郵件行銷",
+                        "video_content": "影片內容",
+                        "ecommerce": "電子商務"
+                    }.get(category, category.title()),
+                    "templates": [],
+                    "total_usage": 0,
+                    "avg_success_rate": 0
+                }
+            
+            categories[category]["templates"].append({
+                "id": template["id"],
+                "name": template["name"],
+                "usage_count": template.get("usage_count", 0),
+                "success_rate": template.get("success_rate", 0)
+            })
+            categories[category]["total_usage"] += template.get("usage_count", 0)
+        
+        # 計算平均成功率
+        for category_data in categories.values():
+            if category_data["templates"]:
+                category_data["avg_success_rate"] = sum(
+                    t["success_rate"] for t in category_data["templates"]
+                ) / len(category_data["templates"])
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "categories": categories,
+                "total_categories": len(categories),
+                "total_templates": len(content_templates)
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 獲取模板分類錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to get template categories",
+                "message": str(e)
+            }
+        )
 
 
 if __name__ == "__main__":
