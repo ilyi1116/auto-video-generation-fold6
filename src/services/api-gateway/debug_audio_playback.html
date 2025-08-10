@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音頻播放診斷工具</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 40px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .time-display {
+            font-family: monospace;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 音頻播放診斷工具</h1>
+        
+        <div class="test-section">
+            <h3>📡 後端連接測試</h3>
+            <button onclick="testBackendConnection()">測試後端連接</button>
+            <div id="backend-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎤 語音生成測試</h3>
+            <button onclick="generateTestVoice()">生成測試語音</button>
+            <div id="generation-status"></div>
+            <div id="audio-info"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔊 音頻播放測試</h3>
+            <div id="audio-player-container"></div>
+            <div class="controls">
+                <button id="play-btn" onclick="togglePlayback()" disabled>▶️ 播放</button>
+                <button onclick="testDirectAccess()" disabled id="direct-btn">🔗 直接訪問測試</button>
+                <button onclick="downloadAudio()" disabled id="download-btn">📥 下載測試</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="time-display">
+                <span id="current-time">0:00</span> / <span id="total-time">0:00</span>
+            </div>
+            <div id="playback-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠️ 瀏覽器兼容性測試</h3>
+            <button onclick="testBrowserSupport()">測試瀏覽器支援</button>
+            <div id="browser-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 診斷日誌</h3>
+            <div id="debug-log" style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;"></div>
+            <button onclick="clearLog()">清除日誌</button>
+        </div>
+    </div>
+
+    <script>
+        let audioElement = null;
+        let currentAudioUrl = null;
+        let debugLog = document.getElementById('debug-log');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'color: red;' : 
+                              type === 'success' ? 'color: green;' : 
+                              type === 'warning' ? 'color: orange;' : 'color: black;';
+            debugLog.innerHTML += `<div style="${colorClass}">[${timestamp}] ${message}</div>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[Audio Debug] ${message}`);
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        async function testBackendConnection() {
+            log('開始測試後端連接...', 'info');
+            try {
+                const response = await fetch('http://localhost:8001/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('backend-status', `✅ 後端連接成功: ${data.service}`, 'success');
+                    log(`後端服務正常: ${data.service}`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                showStatus('backend-status', `❌ 後端連接失敗: ${error.message}`, 'error');
+                log(`後端連接失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateTestVoice() {
+            log('開始生成測試語音...', 'info');
+            showStatus('generation-status', '🔄 正在生成語音...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/generate/voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: '這是一個音頻播放測試。如果你能聽到這段話，說明語音生成和播放都正常工作。',
+                        voice: 'alloy',
+                        speed: 1.0,
+                        platform: 'youtube',
+                        style: 'educational',
+                        topic: '音頻測試',
+                        optimize_with_ai: true
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showStatus('generation-status', '✅ 語音生成成功！', 'success');
+                        
+                        currentAudioUrl = data.data.url;
+                        const audioInfo = `
+                            <strong>語音信息：</strong><br>
+                            🔊 提供者: ${data.data.provider}<br>
+                            🎵 語音: ${data.data.voice} @ ${data.data.speed}x<br>
+                            ⏱️ 時長: ${data.data.duration} 秒<br>
+                            📊 品質: ${data.data.quality}<br>
+                            🔗 URL: <a href="${data.data.url}" target="_blank">${data.data.url}</a><br>
+                            📁 真實文件: ${data.data.has_real_audio ? '✅ 是' : '❌ 否'}
+                        `;
+                        showStatus('audio-info', audioInfo, 'success');
+                        
+                        // 啟用播放按鈕
+                        document.getElementById('play-btn').disabled = false;
+                        document.getElementById('direct-btn').disabled = false;
+                        document.getElementById('download-btn').disabled = false;
+                        
+                        // 創建音頻播放器
+                        setupAudioPlayer(data.data.url);
+                        
+                        log(`語音生成成功: ${data.data.provider}, URL: ${data.data.url}`, 'success');
+                    } else {
+                        throw new Error(data.error || '語音生成失敗');
+                    }
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                showStatus('generation-status', `❌ 語音生成失敗: ${error.message}`, 'error');
+                log(`語音生成失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function setupAudioPlayer(url) {
+            log(`設置音頻播放器: ${url}`, 'info');
+            
+            // 移除舊的播放器
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.remove();
+            }
+
+            // 創建新的音頻元素
+            audioElement = new Audio(url);
+            audioElement.preload = 'metadata';
+            audioElement.crossOrigin = 'anonymous';
+            
+            // 事件監聽器
+            audioElement.addEventListener('loadstart', () => {
+                log('開始載入音頻文件...', 'info');
+            });
+
+            audioElement.addEventListener('loadedmetadata', () => {
+                log(`音頻元數據載入完成: 時長 ${audioElement.duration.toFixed(1)} 秒`, 'success');
+                document.getElementById('total-time').textContent = formatTime(audioElement.duration);
+            });
+
+            audioElement.addEventListener('canplaythrough', () => {
+                log('音頻文件可以完整播放', 'success');
+                showStatus('playback-status', '✅ 音頻文件已就緒，可以播放', 'success');
+            });
+
+            audioElement.addEventListener('play', () => {
+                log('音頻開始播放', 'success');
+                document.getElementById('play-btn').textContent = '⏸️ 暫停';
+            });
+
+            audioElement.addEventListener('pause', () => {
+                log('音頻暫停播放', 'info');
+                document.getElementById('play-btn').textContent = '▶️ 播放';
+            });
+
+            audioElement.addEventListener('timeupdate', () => {
+                const progress = (audioElement.currentTime / audioElement.duration) * 100;
+                document.getElementById('progress-fill').style.width = progress + '%';
+                document.getElementById('current-time').textContent = formatTime(audioElement.currentTime);
+            });
+
+            audioElement.addEventListener('ended', () => {
+                log('音頻播放結束', 'info');
+                document.getElementById('play-btn').textContent = '▶️ 播放';
+            });
+
+            audioElement.addEventListener('error', (e) => {
+                const errorCode = audioElement.error ? audioElement.error.code : 'unknown';
+                const errorMsg = getAudioErrorMessage(errorCode);
+                log(`音頻播放錯誤: ${errorMsg} (code: ${errorCode})`, 'error');
+                showStatus('playback-status', `❌ 音頻播放錯誤: ${errorMsg}`, 'error');
+            });
+
+            // 將音頻元素加入DOM以便調試
+            const container = document.getElementById('audio-player-container');
+            container.innerHTML = '<p>HTML5 音頻播放器:</p>';
+            container.appendChild(audioElement);
+            audioElement.controls = true;
+            audioElement.style.width = '100%';
+        }
+
+        function togglePlayback() {
+            if (!audioElement) {
+                log('音頻播放器未初始化', 'error');
+                return;
+            }
+
+            if (audioElement.paused) {
+                log('嘗試播放音頻...', 'info');
+                audioElement.play().then(() => {
+                    log('音頻播放成功啟動', 'success');
+                }).catch(error => {
+                    log(`音頻播放失敗: ${error.message}`, 'error');
+                    showStatus('playback-status', `❌ 播放失敗: ${error.message}`, 'error');
+                });
+            } else {
+                audioElement.pause();
+                log('音頻已暫停', 'info');
+            }
+        }
+
+        async function testDirectAccess() {
+            if (!currentAudioUrl) {
+                log('沒有可用的音頻URL', 'error');
+                return;
+            }
+
+            log(`測試直接訪問音頻文件: ${currentAudioUrl}`, 'info');
+            
+            try {
+                const response = await fetch(currentAudioUrl, { method: 'HEAD' });
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    const contentLength = response.headers.get('content-length');
+                    log(`直接訪問成功: ${contentType}, ${contentLength} 字節`, 'success');
+                    showStatus('playback-status', `✅ 直接訪問測試成功 (${contentType}, ${contentLength} 字節)`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`直接訪問失敗: ${error.message}`, 'error');
+                showStatus('playback-status', `❌ 直接訪問失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function downloadAudio() {
+            if (!currentAudioUrl) {
+                log('沒有可用的音頻URL進行下載', 'error');
+                return;
+            }
+
+            log(`嘗試下載音頻文件: ${currentAudioUrl}`, 'info');
+            
+            const link = document.createElement('a');
+            link.href = currentAudioUrl;
+            link.download = `test_audio_${Date.now()}.mp3`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            
+            try {
+                link.click();
+                log('下載已啟動', 'success');
+                showStatus('playback-status', '✅ 下載已啟動', 'success');
+            } catch (error) {
+                log(`下載失敗: ${error.message}`, 'error');
+                showStatus('playback-status', `❌ 下載失敗: ${error.message}`, 'error');
+            } finally {
+                document.body.removeChild(link);
+            }
+        }
+
+        function testBrowserSupport() {
+            log('測試瀏覽器音頻支援...', 'info');
+            
+            const audio = document.createElement('audio');
+            const tests = {
+                'MP3': audio.canPlayType('audio/mpeg'),
+                'MP4': audio.canPlayType('audio/mp4'),
+                'OGG': audio.canPlayType('audio/ogg'),
+                'WAV': audio.canPlayType('audio/wav'),
+                'WebM': audio.canPlayType('audio/webm')
+            };
+
+            let supportInfo = '<strong>瀏覽器音頻格式支援:</strong><br>';
+            for (const [format, support] of Object.entries(tests)) {
+                const level = support === 'probably' ? '✅ 完全支援' :
+                             support === 'maybe' ? '⚠️ 可能支援' : '❌ 不支援';
+                supportInfo += `${format}: ${level}<br>`;
+                log(`${format}: ${level} (${support})`, support ? 'success' : 'warning');
+            }
+
+            // 檢查 Web Audio API
+            const hasWebAudio = !!(window.AudioContext || window.webkitAudioContext);
+            supportInfo += `Web Audio API: ${hasWebAudio ? '✅ 支援' : '❌ 不支援'}<br>`;
+            log(`Web Audio API: ${hasWebAudio ? '支援' : '不支援'}`, hasWebAudio ? 'success' : 'warning');
+
+            // 檢查用戶媒體權限
+            supportInfo += `用戶代理: ${navigator.userAgent.split(' ').slice(-2).join(' ')}<br>`;
+            
+            showStatus('browser-status', supportInfo, 'info');
+        }
+
+        function getAudioErrorMessage(code) {
+            const errors = {
+                1: 'MEDIA_ERR_ABORTED - 音頻下載被中止',
+                2: 'MEDIA_ERR_NETWORK - 網路錯誤',
+                3: 'MEDIA_ERR_DECODE - 音頻解碼錯誤',
+                4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - 音頻格式不支援'
+            };
+            return errors[code] || '未知錯誤';
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function clearLog() {
+            debugLog.innerHTML = '';
+            log('診斷日誌已清除', 'info');
+        }
+
+        // 初始化
+        log('音頻播放診斷工具已載入', 'success');
+        
+        // 自動測試瀏覽器支援
+        setTimeout(testBrowserSupport, 1000);
+    </script>
+</body>
+</html>

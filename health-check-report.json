@@ -1,0 +1,95 @@
+{
+  "timestamp": "2025-08-05T22:21:16.698107",
+  "results": {
+    "api-gateway": {
+      "status": "error",
+      "response_time": 3.1,
+      "error": "Cannot connect to host localhost:8000 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8000), [Errno 61] Connect call failed ('::1', 8000, 0, 0)]",
+      "critical": true
+    },
+    "auth-service": {
+      "status": "error",
+      "response_time": 0.71,
+      "error": "Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8001), [Errno 61] Connect call failed ('::1', 8001, 0, 0)]",
+      "critical": true
+    },
+    "data-service": {
+      "status": "error",
+      "response_time": 0.68,
+      "error": "Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8002), [Errno 61] Connect call failed ('::1', 8002, 0, 0)]",
+      "critical": true
+    },
+    "inference-service": {
+      "status": "error",
+      "response_time": 0.69,
+      "error": "Cannot connect to host localhost:8003 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8003), [Errno 61] Connect call failed ('::1', 8003, 0, 0)]",
+      "critical": true
+    },
+    "video-service": {
+      "status": "error",
+      "response_time": 0.69,
+      "error": "Cannot connect to host localhost:8004 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8004), [Errno 61] Connect call failed ('::1', 8004, 0, 0)]",
+      "critical": false
+    },
+    "ai-service": {
+      "status": "error",
+      "response_time": 0.71,
+      "error": "Cannot connect to host localhost:8005 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8005), [Errno 61] Connect call failed ('::1', 8005, 0, 0)]",
+      "critical": false
+    },
+    "social-service": {
+      "status": "error",
+      "response_time": 0.64,
+      "error": "Cannot connect to host localhost:8006 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8006), [Errno 61] Connect call failed ('::1', 8006, 0, 0)]",
+      "critical": false
+    },
+    "trend-service": {
+      "status": "error",
+      "response_time": 0.64,
+      "error": "Cannot connect to host localhost:8007 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8007), [Errno 61] Connect call failed ('::1', 8007, 0, 0)]",
+      "critical": false
+    },
+    "scheduler-service": {
+      "status": "error",
+      "response_time": 0.73,
+      "error": "Cannot connect to host localhost:8008 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8008), [Errno 61] Connect call failed ('::1', 8008, 0, 0)]",
+      "critical": false
+    },
+    "storage-service": {
+      "status": "error",
+      "response_time": 0.64,
+      "error": "Cannot connect to host localhost:8009 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 8009), [Errno 61] Connect call failed ('::1', 8009, 0, 0)]",
+      "critical": true
+    },
+    "postgres": {
+      "status": "error",
+      "response_time": 0.46,
+      "error": "Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 5432), [Errno 61] Connect call failed ('::1', 5432, 0, 0)",
+      "critical": true
+    },
+    "redis": {
+      "status": "healthy",
+      "response_time": 0.57,
+      "message": "Port 6379 is open",
+      "critical": true
+    },
+    "prometheus": {
+      "status": "error",
+      "response_time": 0.97,
+      "error": "Cannot connect to host localhost:9090 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 9090), [Errno 61] Connect call failed ('::1', 9090, 0, 0)]",
+      "critical": false
+    },
+    "grafana": {
+      "status": "error",
+      "response_time": 0.78,
+      "error": "Cannot connect to host localhost:3000 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('127.0.0.1', 3000), [Errno 61] Connect call failed ('::1', 3000, 0, 0)]",
+      "critical": false
+    }
+  },
+  "summary": {
+    "total_services": 14,
+    "healthy": 1,
+    "failed": 13,
+    "critical_failures": 6
+  }
+}

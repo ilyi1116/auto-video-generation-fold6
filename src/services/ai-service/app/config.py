@@ -23,7 +23,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "RS256")
 
     # AI Service API Keys
+    deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "")
+    deepseek_api_url: str = os.getenv("DEEPSEEK_API_URL", "https://api.deepseek.com")
+    deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+    openai_api_url: str = os.getenv("OPENAI_API_URL", "https://api.openai.com/v1")
+    openai_tts_model: str = os.getenv("OPENAI_TTS_MODEL", "tts-1")
+    openai_tts_voice: str = os.getenv("OPENAI_TTS_VOICE", "alloy")
     google_api_key: str = os.getenv("GOOGLE_API_KEY", "")
     stability_api_key: str = os.getenv("STABILITY_API_KEY", "")
     anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")

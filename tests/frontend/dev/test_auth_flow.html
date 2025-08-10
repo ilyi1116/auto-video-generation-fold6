@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>認證流程測試</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>認證流程測試</h1>
+    <div>
+        <h2>登入測試</h2>
+        <button onclick="testLogin()">測試登入 API</button>
+        <button onclick="testVerify()">測試驗證 API</button>
+        <button onclick="clearStorage()">清除 LocalStorage</button>
+    </div>
+    
+    <div id="results" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;">
+        <h3>測試結果:</h3>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1';
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            output.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            console.log(message);
+        }
+
+        async function testLogin() {
+            log('開始測試登入...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@example.com',
+                        password: 'demo123'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ 登入成功!', 'success');
+                    log(`Token: ${result.data.token}`, 'info');
+                    log(`用戶: ${result.data.user.email}`, 'info');
+                    
+                    // 保存 token 到 localStorage
+                    localStorage.setItem('auth_token', result.data.token);
+                    log('Token 已保存到 localStorage', 'info');
+                } else {
+                    log(`❌ 登入失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ 登入請求失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVerify() {
+            log('開始測試 Token 驗證...', 'info');
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                log('❌ 沒有找到 Token，請先登入', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Token 驗證成功!', 'success');
+                    log(`用戶: ${result.data.user.email}`, 'info');
+                } else {
+                    log(`❌ Token 驗證失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ 驗證請求失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            log('✅ LocalStorage 已清除', 'success');
+        }
+
+        // 頁面載入時檢查當前狀態
+        window.onload = function() {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                log(`發現已存在的 Token: ${token.substring(0, 20)}...`, 'info');
+            } else {
+                log('沒有找到已存在的 Token', 'info');
+            }
+        };
+    </script>
+</body>
+</html>

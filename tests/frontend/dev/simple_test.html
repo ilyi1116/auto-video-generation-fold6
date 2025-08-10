@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>簡單登入測試</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>簡單登入測試</h1>
+    <button onclick="testDirectFetch()">測試直接 Fetch</button>
+    <button onclick="testWithProxy()">測試代理 Fetch</button>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        async function testDirectFetch() {
+            log('測試直接連接到後端...');
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@example.com',
+                        password: 'demo123'
+                    })
+                });
+                
+                const result = await response.json();
+                log('✅ 直接連接成功: ' + JSON.stringify(result));
+            } catch (error) {
+                log('❌ 直接連接失敗: ' + error.message);
+            }
+        }
+
+        async function testWithProxy() {
+            log('測試通過代理連接...');
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@example.com',
+                        password: 'demo123'
+                    })
+                });
+                
+                const result = await response.json();
+                log('✅ 代理連接成功: ' + JSON.stringify(result));
+            } catch (error) {
+                log('❌ 代理連接失敗: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡單音頻測試</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            line-height: 1.6; 
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        audio {
+            width: 100%;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 簡單音頻播放測試</h1>
+    
+    <p>此頁面用來測試音頻播放功能。測試最新生成的音頻文件：</p>
+    
+    <div>
+        <h3>方法1: HTML5 Audio Element (controls)</h3>
+        <audio id="audio1" controls preload="metadata">
+            <source src="http://localhost:8001/audio/voice_1754749761_alloy_edge.mp3" type="audio/mpeg">
+            您的瀏覽器不支援音頻播放。
+        </audio>
+    </div>
+    
+    <div>
+        <h3>方法2: JavaScript Audio Object</h3>
+        <button onclick="testJSAudio()">▶️ 測試JS音頻播放</button>
+        <button onclick="stopJSAudio()">⏹️ 停止</button>
+        <div id="js-status">尚未測試</div>
+    </div>
+    
+    <div>
+        <h3>方法3: 直接URL訪問測試</h3>
+        <button onclick="testDirectURL()">🔗 測試直接訪問</button>
+        <button onclick="window.open('http://localhost:8001/audio/voice_1754749761_alloy_edge.mp3', '_blank')">📂 在新頁面打開</button>
+        <div id="url-status">尚未測試</div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <script>
+        let jsAudio = null;
+        
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${time}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[Audio Test] ${message}`);
+        }
+
+        function setStatus(id, message, color = 'black') {
+            document.getElementById(id).innerHTML = `<span style="color: ${color}">${message}</span>`;
+        }
+
+        async function testJSAudio() {
+            log('開始測試JavaScript Audio對象播放...');
+            
+            try {
+                if (jsAudio) {
+                    jsAudio.pause();
+                    jsAudio = null;
+                }
+
+                const audioUrl = 'http://localhost:8001/audio/voice_1754749761_alloy_edge.mp3';
+                log(`音頻URL: ${audioUrl}`);
+                
+                jsAudio = new Audio(audioUrl);
+                jsAudio.crossOrigin = 'anonymous';
+                jsAudio.preload = 'metadata';
+
+                // 事件監聽器
+                jsAudio.addEventListener('loadstart', () => {
+                    log('✅ 開始載入音頻');
+                    setStatus('js-status', '正在載入...', 'orange');
+                });
+
+                jsAudio.addEventListener('loadedmetadata', () => {
+                    log(`✅ 音頻元數據載入完成，時長: ${jsAudio.duration.toFixed(1)} 秒`);
+                    setStatus('js-status', `元數據已載入，時長: ${jsAudio.duration.toFixed(1)} 秒`, 'blue');
+                });
+
+                jsAudio.addEventListener('canplaythrough', () => {
+                    log('✅ 音頻可以完整播放');
+                    setStatus('js-status', '音頻就緒，可以播放', 'green');
+                });
+
+                jsAudio.addEventListener('play', () => {
+                    log('▶️ 音頻開始播放');
+                    setStatus('js-status', '正在播放...', 'green');
+                });
+
+                jsAudio.addEventListener('pause', () => {
+                    log('⏸️ 音頻已暫停');
+                    setStatus('js-status', '播放已暫停', 'orange');
+                });
+
+                jsAudio.addEventListener('ended', () => {
+                    log('⏹️ 音頻播放結束');
+                    setStatus('js-status', '播放結束', 'gray');
+                });
+
+                jsAudio.addEventListener('error', (e) => {
+                    const error = jsAudio.error;
+                    const errorMsg = error ? `錯誤代碼 ${error.code}: ${error.message || '未知錯誤'}` : '未知錯誤';
+                    log(`❌ 音頻錯誤: ${errorMsg}`);
+                    setStatus('js-status', `播放錯誤: ${errorMsg}`, 'red');
+                });
+
+                // 嘗試播放
+                log('嘗試播放音頻...');
+                const playPromise = jsAudio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            log('✅ JavaScript播放成功啟動');
+                        })
+                        .catch(error => {
+                            log(`❌ JavaScript播放失敗: ${error.message}`);
+                            setStatus('js-status', `播放失敗: ${error.message}`, 'red');
+                        });
+                }
+
+            } catch (error) {
+                log(`❌ JavaScript音頻測試異常: ${error.message}`);
+                setStatus('js-status', `測試異常: ${error.message}`, 'red');
+            }
+        }
+
+        function stopJSAudio() {
+            if (jsAudio) {
+                jsAudio.pause();
+                jsAudio.currentTime = 0;
+                log('⏹️ JavaScript音頻已停止');
+                setStatus('js-status', '已停止', 'gray');
+            } else {
+                log('⚠️ 沒有正在播放的音頻');
+            }
+        }
+
+        async function testDirectURL() {
+            log('測試直接URL訪問...');
+            setStatus('url-status', '正在測試...', 'orange');
+            
+            try {
+                const audioUrl = 'http://localhost:8001/audio/voice_1754749761_alloy_edge.mp3';
+                const response = await fetch(audioUrl, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    const contentLength = response.headers.get('content-length');
+                    const lastModified = response.headers.get('last-modified');
+                    
+                    log(`✅ URL訪問成功:`);
+                    log(`   內容類型: ${contentType}`);
+                    log(`   文件大小: ${contentLength} 字節`);
+                    log(`   修改時間: ${lastModified}`);
+                    
+                    setStatus('url-status', 
+                        `✅ 訪問成功 (${contentType}, ${(contentLength/1024).toFixed(1)}KB)`, 
+                        'green'
+                    );
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ URL訪問失敗: ${error.message}`);
+                setStatus('url-status', `❌ 訪問失敗: ${error.message}`, 'red');
+            }
+        }
+
+        // 初始化
+        log('🎵 音頻測試頁面已載入');
+        log('請點擊不同的測試按鈕來診斷音頻播放問題');
+        
+        // 測試HTML5 audio element
+        const audio1 = document.getElementById('audio1');
+        audio1.addEventListener('loadedmetadata', () => {
+            log(`✅ HTML5 Audio元素載入完成，時長: ${audio1.duration.toFixed(1)} 秒`);
+        });
+        
+        audio1.addEventListener('play', () => {
+            log('▶️ HTML5 Audio元素開始播放');
+        });
+        
+        audio1.addEventListener('error', (e) => {
+            const error = audio1.error;
+            const errorMsg = error ? `錯誤代碼 ${error.code}` : '未知錯誤';
+            log(`❌ HTML5 Audio元素錯誤: ${errorMsg}`);
+        });
+    </script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import time
 import uuid
 from typing import Any, Dict, List
 
+import aiohttp
 import google.generativeai as genai
 import openai
 import structlog
@@ -18,12 +19,24 @@ class TextGenerator:
     def __init__(self):
         self.openai_client = None
         self.google_client = None
+        self.deepseek_session = None
         self.initialized = False
 
     async def initialize(self):
         """Initialize text generation services"""
         try:
             logger.info("Initializing Text Generator")
+
+            # Initialize DeepSeek
+            if settings.deepseek_api_key:
+                self.deepseek_session = aiohttp.ClientSession(
+                    headers={
+                        "Authorization": f"Bearer {settings.deepseek_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    timeout=aiohttp.ClientTimeout(total=60)
+                )
+                logger.info("DeepSeek client initialized")
 
             # Initialize OpenAI
             if settings.openai_api_key:
@@ -47,12 +60,14 @@ class TextGenerator:
         """Shutdown text generation services"""
         if self.openai_client:
             await self.openai_client.close()
+        if self.deepseek_session:
+            await self.deepseek_session.close()
         self.initialized = False
         logger.info("Text Generator shutdown complete")
 
     def is_healthy(self) -> bool:
         """Check if text generation service is healthy"""
-        return self.initialized and (self.openai_client or self.google_client)
+        return self.initialized and (self.deepseek_session or self.openai_client or self.google_client)
 
     async def generate_script(
         self,
@@ -237,12 +252,41 @@ class TextGenerator:
 
     async def _generate_text(self, prompt: str, max_tokens: int = 500) -> str:
         """Generate text using available AI service"""
-        if self.openai_client:
+        if self.deepseek_session:
+            return await self._generate_with_deepseek(prompt, max_tokens)
+        elif self.openai_client:
             return await self._generate_with_openai(prompt, max_tokens)
         elif self.google_client:
             return await self._generate_with_gemini(prompt, max_tokens)
         else:
             raise Exception("No AI text generation service available")
+
+    async def _generate_with_deepseek(self, prompt: str, max_tokens: int) -> str:
+        """Generate text using DeepSeek API"""
+        payload = {
+            "model": settings.deepseek_model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "stream": False
+        }
+        
+        try:
+            async with self.deepseek_session.post(
+                f"{settings.deepseek_api_url}/chat/completions",
+                json=payload
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data["choices"][0]["message"]["content"].strip()
+                else:
+                    error_text = await response.text()
+                    logger.error(f"DeepSeek API error: {response.status} - {error_text}")
+                    raise Exception(f"DeepSeek API failed with status {response.status}")
+        except Exception as e:
+            logger.error(f"DeepSeek generation failed: {str(e)}")
+            raise
 
     async def _generate_with_openai(self, prompt: str, max_tokens: int) -> str:
         """Generate text using OpenAI GPT"""
@@ -278,15 +322,15 @@ class TextGenerator:
         tone: str,
     ) -> str:
         """Build prompt for script generation"""
-        ", ".join(keywords) if keywords else ""
+        keyword_text = ", ".join(keywords) if keywords else ""
+        word_count = int(duration_seconds * 2.5)
 
-        return """Create an engaging video script for social media             platforms like TikTok and YouTube Shorts.
+        return f"""Create an engaging video script for social media platforms like TikTok and YouTube Shorts.
 
 REQUIREMENTS:
 - Topic: {topic}
 - Style: {style}
-- Target Duration: {duration_seconds} seconds (
-    approximately {duration_seconds * 2.5} words)
+- Target Duration: {duration_seconds} seconds (approximately {word_count} words)
 - Target Audience: {target_audience}
 - Tone: {tone}
 {f"- Include Keywords: {keyword_text}" if keyword_text else ""}
@@ -305,7 +349,7 @@ STYLE CHARACTERISTICS:
 - Humorous: Include light humor, wordplay, relatable situations
 - Professional: Use formal language, expert positioning
 
-Please write ONLY the script content, no additional formatting or     explanations."""
+Please write ONLY the script content, no additional formatting or explanations."""
 
     def _build_title_prompt(
         self,
@@ -315,10 +359,9 @@ Please write ONLY the script content, no additional formatting or     explanatio
         target_keywords: List[str],
     ) -> str:
         """Build prompt for title generation"""
-        ", ".join(target_keywords) if target_keywords else ""
+        keyword_text = ", ".join(target_keywords) if target_keywords else ""
 
-        return """Generate 8 compelling video titles based on this \
-            script content:
+        return f"""Generate 8 compelling video titles based on this script content:
 
 SCRIPT CONTENT:
 {script_content[:500]}...
@@ -345,10 +388,10 @@ Format your response as a numbered list:
         """Build prompt for script optimization"""
         if current_duration > target_duration:
             action = "shorten"
-            current_duration - target_duration
+            difference = current_duration - target_duration
         else:
             action = "expand"
-            target_duration - current_duration
+            difference = target_duration - current_duration
 
         optimization_guidance = (
             "Remove redundant points, combine ideas, use more concise language"
