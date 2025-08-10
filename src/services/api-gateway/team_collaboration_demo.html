@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>團隊協作管理系統</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; padding: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px; margin: 0 auto; padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white; padding: 30px; text-align: center;
+            border-radius: 15px; margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header p { margin: 15px 0 0; opacity: 0.9; font-size: 1.1em; }
+        
+        .tabs {
+            display: flex; background: white; border-radius: 15px 15px 0 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .tab {
+            flex: 1; padding: 20px; text-align: center; cursor: pointer;
+            background: #f8fafc; border: none; font-size: 16px; font-weight: 500;
+            transition: all 0.3s; position: relative;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .tab:not(.active):hover {
+            background: #e2e8f0; color: #4facfe;
+        }
+        
+        .tab-content {
+            background: white; padding: 40px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; border-radius: 12px;
+            text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .stat-number { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
+        .stat-label { font-size: 0.9em; opacity: 0.9; }
+        
+        .data-table {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+            background: white; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 15px; text-align: left; font-weight: 600;
+        }
+        .data-table td {
+            padding: 15px; border-bottom: 1px solid #e2e8f0;
+        }
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            object-fit: cover; margin-right: 10px;
+        }
+        .user-info {
+            display: flex; align-items: center;
+        }
+        .user-details {
+            display: flex; flex-direction: column;
+        }
+        .user-name { font-weight: 600; }
+        .user-email { font-size: 0.9em; color: #666; }
+        
+        .role-badge {
+            padding: 6px 12px; border-radius: 20px; font-size: 0.8em;
+            font-weight: 500; text-align: center; display: inline-block;
+        }
+        .role-admin { background: #fee; color: #c53030; }
+        .role-manager { background: #e6fffa; color: #00695c; }
+        .role-member { background: #e6f3ff; color: #2563eb; }
+        .role-viewer { background: #f7fafc; color: #4a5568; }
+        
+        .status-badge {
+            padding: 4px 8px; border-radius: 12px; font-size: 0.8em;
+            font-weight: 500; text-align: center; display: inline-block;
+        }
+        .status-active { background: #c6f6d5; color: #22543d; }
+        .status-inactive { background: #fed7d7; color: #742a2a; }
+        .status-pending { background: #fef5e7; color: #7c2d12; }
+        
+        .btn { 
+            padding: 12px 24px; border: none; border-radius: 8px; 
+            cursor: pointer; font-weight: 500; transition: all 0.2s;
+            font-size: 14px; margin: 0 5px;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0;
+        }
+        .btn-danger {
+            background: #fed7d7; color: #742a2a; border: 1px solid #fc8181;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        
+        .form-section {
+            background: #f8fafc; padding: 25px; border-radius: 12px;
+            margin: 20px 0; border: 1px solid #e2e8f0;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-label { 
+            display: block; font-weight: 500; margin-bottom: 8px; 
+            color: #2d3748; 
+        }
+        .form-input, .form-select {
+            width: 100%; padding: 12px; border: 1px solid #e2e8f0;
+            border-radius: 8px; font-size: 14px;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none; border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .permissions-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin: 20px 0;
+        }
+        .permission-category {
+            background: white; padding: 20px; border-radius: 12px;
+            border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .permission-category h4 {
+            margin: 0 0 15px; color: #2d3748;
+            padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;
+        }
+        .permission-item {
+            display: flex; align-items: center; margin: 10px 0;
+            padding: 8px; border-radius: 6px; background: #f8fafc;
+        }
+        .permission-checkbox {
+            margin-right: 10px;
+        }
+        .permission-info {
+            flex: 1;
+        }
+        .permission-name { font-weight: 500; color: #2d3748; }
+        .permission-desc { font-size: 0.8em; color: #666; margin-top: 2px; }
+        
+        .action-buttons {
+            display: flex; justify-content: flex-end; gap: 10px;
+            margin-top: 20px; padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 5% auto; padding: 0;
+            border-radius: 12px; width: 90%; max-width: 600px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white; padding: 25px; border-radius: 12px 12px 0 0;
+        }
+        .modal-body { padding: 30px; }
+        .close {
+            color: white; float: right; font-size: 28px;
+            font-weight: bold; cursor: pointer;
+        }
+        
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .error { 
+            background: #fed7d7; color: #742a2a; padding: 15px; 
+            border-radius: 8px; margin: 20px 0; border: 1px solid #fc8181;
+        }
+        .success {
+            background: #c6f6d5; color: #22543d; padding: 15px;
+            border-radius: 8px; margin: 20px 0; border: 1px solid #9ae6b4;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .tabs { flex-direction: column; }
+            .tab-content { padding: 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .permissions-grid { grid-template-columns: 1fr; }
+            .data-table { font-size: 0.9em; }
+            .data-table th, .data-table td { padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 團隊協作管理系統</h1>
+            <p>用戶管理、權限控制和團隊協作功能演示</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('users')">👥 用戶管理</button>
+            <button class="tab" onclick="openTab('teams')">🏢 團隊管理</button>
+            <button class="tab" onclick="openTab('permissions')">🔐 權限管理</button>
+            <button class="tab" onclick="openTab('roles')">🎭 角色管理</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- 用戶管理面板 -->
+            <div id="users" class="tab-panel active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-users">-</div>
+                        <div class="stat-label">總用戶數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="active-users">-</div>
+                        <div class="stat-label">活躍用戶</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pending-invitations">-</div>
+                        <div class="stat-label">待處理邀請</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="admin-count">-</div>
+                        <div class="stat-label">管理員數量</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>用戶列表</h3>
+                    <button class="btn btn-primary" onclick="openInviteModal()">
+                        ➕ 邀請用戶
+                    </button>
+                </div>
+
+                <table class="data-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>用戶</th>
+                            <th>角色</th>
+                            <th>部門</th>
+                            <th>狀態</th>
+                            <th>最後登入</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr>
+                            <td colspan="6" class="loading">載入中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 團隊管理面板 -->
+            <div id="teams" class="tab-panel">
+                <h3>我的團隊</h3>
+                <div id="teams-container" class="loading">載入中...</div>
+            </div>
+
+            <!-- 權限管理面板 -->
+            <div id="permissions" class="tab-panel">
+                <h3>權限管理</h3>
+                <p>以下是系統中所有可用的權限，按功能類別組織：</p>
+                <div id="permissions-container" class="loading">載入中...</div>
+            </div>
+
+            <!-- 角色管理面板 -->
+            <div id="roles" class="tab-panel">
+                <h3>角色與權限配置</h3>
+                <div id="roles-container" class="loading">載入中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 邀請用戶模態框 -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal('inviteModal')">&times;</span>
+                <h2>邀請用戶加入團隊</h2>
+            </div>
+            <div class="modal-body">
+                <form id="invite-form" onsubmit="sendInvitation(event)">
+                    <div class="form-group">
+                        <label class="form-label">電子郵件 *</label>
+                        <input type="email" id="invite-email" class="form-input" required 
+                               placeholder="輸入用戶電子郵件地址">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">角色</label>
+                        <select id="invite-role" class="form-select">
+                            <option value="member">成員</option>
+                            <option value="manager">主管</option>
+                            <option value="admin">管理員</option>
+                            <option value="viewer">觀看者</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">邀請訊息（可選）</label>
+                        <textarea id="invite-message" class="form-input" rows="3" 
+                                placeholder="為什麼邀請此用戶加入團隊？"></textarea>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('inviteModal')">
+                            取消
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            發送邀請
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯用戶模態框 -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal('editUserModal')">&times;</span>
+                <h2>編輯用戶資料</h2>
+            </div>
+            <div class="modal-body">
+                <form id="edit-user-form" onsubmit="updateUser(event)">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="form-group">
+                        <label class="form-label">姓名 *</label>
+                        <input type="text" id="edit-user-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">角色</label>
+                        <select id="edit-user-role" class="form-select">
+                            <option value="member">成員</option>
+                            <option value="manager">主管</option>
+                            <option value="admin">管理員</option>
+                            <option value="viewer">觀看者</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">部門</label>
+                        <input type="text" id="edit-user-department" class="form-input" 
+                               placeholder="例如：Marketing, IT, Content">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">狀態</label>
+                        <select id="edit-user-status" class="form-select">
+                            <option value="active">活躍</option>
+                            <option value="inactive">停用</option>
+                            <option value="pending">待處理</option>
+                        </select>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('editUserModal')">
+                            取消
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            更新用戶
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8001';
+        let currentUsers = [];
+        let currentTeams = [];
+        let currentRoles = {};
+        let currentPermissions = {};
+
+        // 標籤切換功能
+        function openTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const panels = document.querySelectorAll('.tab-panel');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            panels.forEach(panel => panel.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            // 載入對應的數據
+            switch(tabName) {
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'teams':
+                    loadTeams();
+                    break;
+                case 'permissions':
+                    loadPermissions();
+                    break;
+                case 'roles':
+                    loadRoles();
+                    break;
+            }
+        }
+
+        // 載入用戶列表
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentUsers = result.data.users;
+                    currentRoles = result.data.roles;
+                    currentPermissions = result.data.permissions;
+                    displayUsers(currentUsers);
+                    updateUserStats(currentUsers);
+                } else {
+                    showError('用戶', result.error);
+                }
+            } catch (error) {
+                showError('用戶', error.message);
+            }
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <img src="${user.avatar}" alt="${user.name}" class="user-avatar">
+                            <div class="user-details">
+                                <div class="user-name">${user.name}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge role-${user.role}">
+                            ${currentRoles[user.role]?.name || user.role}
+                        </span>
+                    </td>
+                    <td>${user.department || '-'}</td>
+                    <td>
+                        <span class="status-badge status-${user.status}">
+                            ${getStatusDisplayName(user.status)}
+                        </span>
+                    </td>
+                    <td>${formatDateTime(user.last_login)}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editUser('${user.id}')">
+                            編輯
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteUser('${user.id}', '${user.name}')">
+                            刪除
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateUserStats(users) {
+            document.getElementById('total-users').textContent = users.length;
+            document.getElementById('active-users').textContent = 
+                users.filter(u => u.status === 'active').length;
+            document.getElementById('pending-invitations').textContent = 0; // 模擬數據
+            document.getElementById('admin-count').textContent = 
+                users.filter(u => u.role === 'admin').length;
+        }
+
+        // 載入團隊列表
+        async function loadTeams() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/teams`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentTeams = result.data.teams;
+                    displayTeams(currentTeams);
+                } else {
+                    showError('團隊', result.error);
+                }
+            } catch (error) {
+                showError('團隊', error.message);
+            }
+        }
+
+        function displayTeams(teams) {
+            const container = document.getElementById('teams-container');
+            
+            if (teams.length === 0) {
+                container.innerHTML = '<p>目前沒有團隊資料</p>';
+                return;
+            }
+            
+            container.innerHTML = teams.map(team => `
+                <div class="form-section">
+                    <h4>${team.name}</h4>
+                    <p>${team.description || '暫無描述'}</p>
+                    <div style="margin: 15px 0;">
+                        <strong>成員數量:</strong> ${team.member_count} 人
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <strong>成員列表:</strong>
+                        <div style="margin-top: 10px;">
+                            ${team.member_details.map(member => `
+                                <div style="display: inline-flex; align-items: center; margin: 5px 10px 5px 0;">
+                                    <img src="${member.avatar}" alt="${member.name}" class="user-avatar" style="width: 30px; height: 30px; margin-right: 8px;">
+                                    <span>${member.name}</span>
+                                    <span class="role-badge role-${member.role}" style="margin-left: 8px; font-size: 0.7em;">
+                                        ${currentRoles[member.role]?.name || member.role}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary">
+                            編輯團隊
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 載入權限列表
+        async function loadPermissions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/permissions`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayPermissions(result.data.permissions_by_category);
+                } else {
+                    showError('權限', result.error);
+                }
+            } catch (error) {
+                showError('權限', error.message);
+            }
+        }
+
+        function displayPermissions(permissionsByCategory) {
+            const container = document.getElementById('permissions-container');
+            
+            const categoryNames = {
+                content: '內容管理',
+                user: '用戶管理', 
+                team: '團隊管理',
+                system: '系統管理'
+            };
+            
+            container.innerHTML = `
+                <div class="permissions-grid">
+                    ${Object.entries(permissionsByCategory).map(([category, permissions]) => `
+                        <div class="permission-category">
+                            <h4>${categoryNames[category] || category}</h4>
+                            ${permissions.map(permission => `
+                                <div class="permission-item">
+                                    <div class="permission-info">
+                                        <div class="permission-name">${permission.name}</div>
+                                        <div class="permission-desc">${permission.description}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 載入角色列表
+        async function loadRoles() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/roles`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayRoles(result.data.roles, result.data.permissions);
+                } else {
+                    showError('角色', result.error);
+                }
+            } catch (error) {
+                showError('角色', error.message);
+            }
+        }
+
+        function displayRoles(roles, permissions) {
+            const container = document.getElementById('roles-container');
+            
+            container.innerHTML = Object.values(roles).map(role => `
+                <div class="form-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>
+                            <span class="role-badge role-${role.id}">${role.name}</span>
+                            <span style="margin-left: 10px; font-weight: normal; color: #666;">
+                                權限級別: ${role.level}
+                            </span>
+                        </h4>
+                    </div>
+                    <p>${role.description}</p>
+                    <div style="margin: 15px 0;">
+                        <strong>包含權限 (${role.permissions.length}個):</strong>
+                        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${role.permissions.map(permId => {
+                                const perm = permissions[permId];
+                                return perm ? `
+                                    <span style="background: #e6f3ff; color: #2563eb; padding: 4px 8px; 
+                                                 border-radius: 12px; font-size: 0.8em;">
+                                        ${perm.name}
+                                    </span>
+                                ` : '';
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 邀請用戶功能
+        function openInviteModal() {
+            document.getElementById('inviteModal').style.display = 'block';
+        }
+
+        async function sendInvitation(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('invite-email').value;
+            const role = document.getElementById('invite-role').value;
+            const message = document.getElementById('invite-message').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users/invite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        role: role,
+                        team_id: 'team_001',
+                        invited_by: 'user_001',
+                        message: message
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('邀請已發送到 ' + email);
+                    closeModal('inviteModal');
+                    document.getElementById('invite-form').reset();
+                } else {
+                    showError('發送邀請', result.error);
+                }
+            } catch (error) {
+                showError('發送邀請', error.message);
+            }
+        }
+
+        // 編輯用戶功能
+        function editUser(userId) {
+            const user = currentUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('edit-user-id').value = user.id;
+            document.getElementById('edit-user-name').value = user.name;
+            document.getElementById('edit-user-role').value = user.role;
+            document.getElementById('edit-user-department').value = user.department || '';
+            document.getElementById('edit-user-status').value = user.status;
+            
+            document.getElementById('editUserModal').style.display = 'block';
+        }
+
+        async function updateUser(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('edit-user-id').value;
+            const updateData = {
+                name: document.getElementById('edit-user-name').value,
+                role: document.getElementById('edit-user-role').value,
+                department: document.getElementById('edit-user-department').value,
+                status: document.getElementById('edit-user-status').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('用戶資料已更新');
+                    closeModal('editUserModal');
+                    loadUsers(); // 重新載入用戶列表
+                } else {
+                    showError('更新用戶', result.error);
+                }
+            } catch (error) {
+                showError('更新用戶', error.message);
+            }
+        }
+
+        // 刪除用戶功能
+        async function deleteUser(userId, userName) {
+            if (!confirm(`確定要刪除用戶 "${userName}" 嗎？此操作無法撤銷。`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess(`用戶 "${userName}" 已刪除`);
+                    loadUsers(); // 重新載入用戶列表
+                } else {
+                    showError('刪除用戶', result.error);
+                }
+            } catch (error) {
+                showError('刪除用戶', error.message);
+            }
+        }
+
+        // 模態框功能
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // 工具函數
+        function getStatusDisplayName(status) {
+            const statusNames = {
+                active: '活躍',
+                inactive: '停用',
+                pending: '待處理'
+            };
+            return statusNames[status] || status;
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-TW');
+        }
+
+        function showError(action, message) {
+            console.error(`${action}錯誤:`, message);
+            // 這裡可以顯示錯誤提示
+            alert(`${action}失敗: ${message}`);
+        }
+
+        function showSuccess(message) {
+            console.log('成功:', message);
+            // 這裡可以顯示成功提示
+            alert(message);
+        }
+
+        // 頁面載入完成後自動載入數據
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+        });
+
+        console.log('🏢 團隊協作管理系統已載入');
+        console.log('功能特色：');
+        console.log('  ✅ 完整的用戶管理 (CRUD)');
+        console.log('  ✅ 角色基礎存取控制 (RBAC)');
+        console.log('  ✅ 權限管理系統');
+        console.log('  ✅ 團隊協作功能');
+        console.log('  ✅ 用戶邀請機制');
+    </script>
+</body>
+</html>

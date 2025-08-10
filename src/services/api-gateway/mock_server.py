@@ -449,8 +449,235 @@ def create_script_prompt(topic, platform, style, duration, language="zh-TW", des
 
     return prompt
 
+# 團隊協作功能數據模型
+class User(BaseModel):
+    id: Optional[str] = None
+    email: str
+    name: str
+    password: str
+    role: str = "member"  # admin, manager, member, viewer
+    department: Optional[str] = None
+    permissions: List[str] = []
+    status: str = "active"  # active, inactive, pending
+    avatar: Optional[str] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    last_login: Optional[str] = None
+
+class Team(BaseModel):
+    id: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    owner_id: str
+    members: List[str] = []  # user_ids
+    created_at: Optional[str] = None
+    settings: Dict = {}
+
+class Permission(BaseModel):
+    id: str
+    name: str
+    description: str
+    category: str  # content, user, team, system
+
+class Role(BaseModel):
+    id: str
+    name: str
+    description: str
+    permissions: List[str] = []
+    level: int = 0  # 權限級別，數字越大權限越高
+
+class UserInvitation(BaseModel):
+    id: Optional[str] = None
+    email: str
+    role: str
+    team_id: str
+    invited_by: str
+    status: str = "pending"  # pending, accepted, declined, expired
+    created_at: Optional[str] = None
+    expires_at: Optional[str] = None
+
+class TeamMembershipRequest(BaseModel):
+    email: str
+    role: str = "member"
+    message: Optional[str] = None
+
+class UpdateUserRequest(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    department: Optional[str] = None
+    status: Optional[str] = None
+
+class UpdateRolePermissionsRequest(BaseModel):
+    permissions: List[str]
+
+# 權限定義
+default_permissions = {
+    "content.create": {
+        "id": "content.create",
+        "name": "創建內容",
+        "description": "可以創建新的內容項目",
+        "category": "content"
+    },
+    "content.edit": {
+        "id": "content.edit",
+        "name": "編輯內容",
+        "description": "可以編輯現有內容",
+        "category": "content"
+    },
+    "content.delete": {
+        "id": "content.delete",
+        "name": "刪除內容",
+        "description": "可以刪除內容項目",
+        "category": "content"
+    },
+    "content.publish": {
+        "id": "content.publish",
+        "name": "發布內容",
+        "description": "可以發布內容到社群平台",
+        "category": "content"
+    },
+    "calendar.manage": {
+        "id": "calendar.manage",
+        "name": "管理日曆",
+        "description": "可以管理內容日曆和排程",
+        "category": "content"
+    },
+    "user.view": {
+        "id": "user.view",
+        "name": "查看用戶",
+        "description": "可以查看團隊成員資訊",
+        "category": "user"
+    },
+    "user.manage": {
+        "id": "user.manage",
+        "name": "管理用戶",
+        "description": "可以邀請、編輯和管理用戶",
+        "category": "user"
+    },
+    "team.manage": {
+        "id": "team.manage",
+        "name": "管理團隊",
+        "description": "可以管理團隊設定和成員",
+        "category": "team"
+    },
+    "analytics.view": {
+        "id": "analytics.view",
+        "name": "查看分析",
+        "description": "可以查看內容分析和統計數據",
+        "category": "system"
+    },
+    "system.admin": {
+        "id": "system.admin",
+        "name": "系統管理",
+        "description": "完整系統管理權限",
+        "category": "system"
+    }
+}
+
+# 預設角色定義
+default_roles = {
+    "admin": {
+        "id": "admin",
+        "name": "管理員",
+        "description": "系統管理員，具有完整權限",
+        "permissions": list(default_permissions.keys()),
+        "level": 100
+    },
+    "manager": {
+        "id": "manager",
+        "name": "主管",
+        "description": "團隊主管，可以管理內容和用戶",
+        "permissions": [
+            "content.create", "content.edit", "content.delete", "content.publish",
+            "calendar.manage", "user.view", "user.manage", "analytics.view"
+        ],
+        "level": 50
+    },
+    "member": {
+        "id": "member",
+        "name": "成員",
+        "description": "一般成員，可以創建和編輯內容",
+        "permissions": [
+            "content.create", "content.edit", "content.publish",
+            "calendar.manage", "user.view", "analytics.view"
+        ],
+        "level": 20
+    },
+    "viewer": {
+        "id": "viewer",
+        "name": "觀看者",
+        "description": "只能查看內容，無法編輯",
+        "permissions": [
+            "user.view", "analytics.view"
+        ],
+        "level": 10
+    }
+}
+
 # 模擬數據存儲
-mock_users = {}
+mock_users = {
+    "user_001": {
+        "id": "user_001",
+        "email": "admin@example.com",
+        "name": "系統管理員",
+        "password": "admin123",  # 在實際應用中應該加密
+        "role": "admin",
+        "department": "IT",
+        "permissions": list(default_permissions.keys()),
+        "status": "active",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-08-10T10:00:00Z",
+        "last_login": "2024-08-10T09:30:00Z"
+    },
+    "user_002": {
+        "id": "user_002",
+        "email": "manager@example.com",
+        "name": "內容主管",
+        "password": "manager123",
+        "role": "manager",
+        "department": "Marketing",
+        "permissions": default_roles["manager"]["permissions"],
+        "status": "active",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=manager",
+        "created_at": "2024-01-15T00:00:00Z",
+        "updated_at": "2024-08-10T08:00:00Z",
+        "last_login": "2024-08-10T08:15:00Z"
+    },
+    "user_003": {
+        "id": "user_003",
+        "email": "creator@example.com",
+        "name": "內容創作者",
+        "password": "creator123",
+        "role": "member",
+        "department": "Content",
+        "permissions": default_roles["member"]["permissions"],
+        "status": "active",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=creator",
+        "created_at": "2024-02-01T00:00:00Z",
+        "updated_at": "2024-08-10T07:30:00Z",
+        "last_login": "2024-08-10T07:45:00Z"
+    }
+}
+
+mock_teams = {
+    "team_001": {
+        "id": "team_001",
+        "name": "內容創作團隊",
+        "description": "負責品牌內容創作和社群媒體管理",
+        "owner_id": "user_001",
+        "members": ["user_001", "user_002", "user_003"],
+        "created_at": "2024-01-01T00:00:00Z",
+        "settings": {
+            "allow_member_invite": False,
+            "require_approval_for_publish": True,
+            "default_content_retention_days": 90
+        }
+    }
+}
+
+mock_invitations = {}
+
 mock_videos = []
 mock_analytics = {
     "totalVideos": 156,
@@ -883,6 +1110,538 @@ async def get_profile():
             },
         },
     )
+
+
+# 團隊協作功能 API 端點
+
+def generate_id(prefix: str) -> str:
+    """生成唯一ID"""
+    import uuid
+    return f"{prefix}_{str(uuid.uuid4())[:8]}"
+
+def has_permission(user_id: str, permission: str) -> bool:
+    """檢查用戶是否有特定權限"""
+    if user_id not in mock_users:
+        return False
+    
+    user = mock_users[user_id]
+    return permission in user.get("permissions", [])
+
+def get_current_user_id(request: Request) -> str:
+    """從請求中獲取當前用戶ID（模擬）"""
+    # 在實際應用中，這裡會從JWT token中提取用戶ID
+    return "user_001"  # 默認返回管理員用戶
+
+
+# 用戶管理端點
+@app.get("/api/v1/users")
+async def list_users(request: Request):
+    """獲取用戶列表"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "user.view"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有查看用戶的權限"}
+            )
+        
+        # 返回用戶列表（不包含密碼）
+        users = []
+        for user_data in mock_users.values():
+            user_info = user_data.copy()
+            user_info.pop("password", None)  # 移除密碼字段
+            users.append(user_info)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "users": users,
+                    "total": len(users),
+                    "roles": default_roles,
+                    "permissions": default_permissions
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"獲取用戶列表失敗: {str(e)}"}
+        )
+
+@app.post("/api/v1/users/invite")
+async def invite_user(request: Request, invitation: UserInvitation):
+    """邀請新用戶加入團隊"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "user.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有管理用戶的權限"}
+            )
+        
+        # 檢查用戶是否已存在
+        for user in mock_users.values():
+            if user["email"] == invitation.email:
+                return JSONResponse(
+                    status_code=400,
+                    content={"success": False, "error": "該用戶已經存在"}
+                )
+        
+        # 創建邀請
+        invitation_id = generate_id("inv")
+        invitation_data = {
+            "id": invitation_id,
+            "email": invitation.email,
+            "role": invitation.role,
+            "team_id": "team_001",  # 默認團隊
+            "invited_by": current_user_id,
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat() + "Z",
+            "expires_at": (datetime.utcnow() + timedelta(days=7)).isoformat() + "Z"
+        }
+        
+        mock_invitations[invitation_id] = invitation_data
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "invitation": invitation_data,
+                    "message": "邀請已發送"
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"邀請用戶失敗: {str(e)}"}
+        )
+
+@app.get("/api/v1/users/{user_id}")
+async def get_user(request: Request, user_id: str):
+    """獲取特定用戶資料"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限（用戶可以查看自己的資料）
+        if user_id != current_user_id and not has_permission(current_user_id, "user.view"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有查看用戶資料的權限"}
+            )
+        
+        if user_id not in mock_users:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "用戶不存在"}
+            )
+        
+        user_data = mock_users[user_id].copy()
+        user_data.pop("password", None)  # 移除密碼字段
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {"user": user_data}
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"獲取用戶資料失敗: {str(e)}"}
+        )
+
+@app.put("/api/v1/users/{user_id}")
+async def update_user(request: Request, user_id: str, update_data: UpdateUserRequest):
+    """更新用戶資料"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if user_id != current_user_id and not has_permission(current_user_id, "user.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有修改用戶資料的權限"}
+            )
+        
+        if user_id not in mock_users:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "用戶不存在"}
+            )
+        
+        # 更新用戶資料
+        user_data = mock_users[user_id]
+        
+        if update_data.name is not None:
+            user_data["name"] = update_data.name
+        
+        if update_data.department is not None:
+            user_data["department"] = update_data.department
+        
+        # 只有管理員可以修改角色和狀態
+        if has_permission(current_user_id, "user.manage"):
+            if update_data.role is not None and update_data.role in default_roles:
+                user_data["role"] = update_data.role
+                user_data["permissions"] = default_roles[update_data.role]["permissions"]
+            
+            if update_data.status is not None:
+                user_data["status"] = update_data.status
+        
+        user_data["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        
+        # 返回更新後的資料（不包含密碼）
+        result_data = user_data.copy()
+        result_data.pop("password", None)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "user": result_data,
+                    "message": "用戶資料已更新"
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"更新用戶資料失敗: {str(e)}"}
+        )
+
+@app.delete("/api/v1/users/{user_id}")
+async def delete_user(request: Request, user_id: str):
+    """刪除用戶"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "user.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有刪除用戶的權限"}
+            )
+        
+        # 不能刪除自己
+        if user_id == current_user_id:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "不能刪除自己的帳戶"}
+            )
+        
+        if user_id not in mock_users:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "用戶不存在"}
+            )
+        
+        # 移除用戶
+        deleted_user = mock_users.pop(user_id)
+        deleted_user.pop("password", None)  # 移除密碼字段
+        
+        # 從團隊中移除
+        for team in mock_teams.values():
+            if user_id in team["members"]:
+                team["members"].remove(user_id)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "deleted_user": deleted_user,
+                    "message": "用戶已刪除"
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"刪除用戶失敗: {str(e)}"}
+        )
+
+
+# 團隊管理端點
+@app.get("/api/v1/teams")
+async def list_teams(request: Request):
+    """獲取團隊列表"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "team.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有查看團隊的權限"}
+            )
+        
+        # 獲取用戶所屬的團隊
+        user_teams = []
+        for team_data in mock_teams.values():
+            if current_user_id in team_data["members"]:
+                # 為每個團隊添加成員詳細資訊
+                team_with_members = team_data.copy()
+                team_members = []
+                
+                for member_id in team_data["members"]:
+                    if member_id in mock_users:
+                        member = mock_users[member_id].copy()
+                        member.pop("password", None)
+                        team_members.append(member)
+                
+                team_with_members["member_details"] = team_members
+                team_with_members["member_count"] = len(team_members)
+                
+                user_teams.append(team_with_members)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "teams": user_teams,
+                    "total": len(user_teams)
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"獲取團隊列表失敗: {str(e)}"}
+        )
+
+@app.get("/api/v1/teams/{team_id}")
+async def get_team(request: Request, team_id: str):
+    """獲取團隊詳情"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        if team_id not in mock_teams:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "團隊不存在"}
+            )
+        
+        team_data = mock_teams[team_id]
+        
+        # 檢查用戶是否是團隊成員
+        if current_user_id not in team_data["members"] and not has_permission(current_user_id, "team.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有查看此團隊的權限"}
+            )
+        
+        # 添加成員詳細資訊
+        team_with_details = team_data.copy()
+        team_members = []
+        
+        for member_id in team_data["members"]:
+            if member_id in mock_users:
+                member = mock_users[member_id].copy()
+                member.pop("password", None)
+                team_members.append(member)
+        
+        team_with_details["member_details"] = team_members
+        team_with_details["member_count"] = len(team_members)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {"team": team_with_details}
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"獲取團隊詳情失敗: {str(e)}"}
+        )
+
+@app.put("/api/v1/teams/{team_id}")
+async def update_team(request: Request, team_id: str, team_data: Team):
+    """更新團隊資訊"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        if team_id not in mock_teams:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "團隊不存在"}
+            )
+        
+        existing_team = mock_teams[team_id]
+        
+        # 檢查權限（團隊所有者或有團隊管理權限）
+        if existing_team["owner_id"] != current_user_id and not has_permission(current_user_id, "team.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有修改團隊設定的權限"}
+            )
+        
+        # 更新團隊資訊
+        existing_team["name"] = team_data.name
+        if team_data.description:
+            existing_team["description"] = team_data.description
+        if team_data.settings:
+            existing_team["settings"].update(team_data.settings)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "team": existing_team,
+                    "message": "團隊資訊已更新"
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"更新團隊資訊失敗: {str(e)}"}
+        )
+
+
+# 權限管理端點
+@app.get("/api/v1/permissions")
+async def list_permissions(request: Request):
+    """獲取所有權限列表"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "user.manage"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有查看權限的權限"}
+            )
+        
+        # 按類別組織權限
+        permissions_by_category = {}
+        for permission in default_permissions.values():
+            category = permission["category"]
+            if category not in permissions_by_category:
+                permissions_by_category[category] = []
+            permissions_by_category[category].append(permission)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "permissions": default_permissions,
+                    "permissions_by_category": permissions_by_category,
+                    "roles": default_roles
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"獲取權限列表失敗: {str(e)}"}
+        )
+
+@app.get("/api/v1/roles")
+async def list_roles(request: Request):
+    """獲取所有角色列表"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "user.view"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有查看角色的權限"}
+            )
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "roles": default_roles,
+                    "permissions": default_permissions
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"獲取角色列表失敗: {str(e)}"}
+        )
+
+@app.put("/api/v1/roles/{role_id}/permissions")
+async def update_role_permissions(request: Request, role_id: str, update_request: UpdateRolePermissionsRequest):
+    """更新角色權限"""
+    try:
+        current_user_id = get_current_user_id(request)
+        
+        # 檢查權限
+        if not has_permission(current_user_id, "system.admin"):
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "沒有修改角色權限的權限"}
+            )
+        
+        if role_id not in default_roles:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "角色不存在"}
+            )
+        
+        # 驗證權限是否存在
+        invalid_permissions = [p for p in update_request.permissions if p not in default_permissions]
+        if invalid_permissions:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": f"無效的權限: {', '.join(invalid_permissions)}"}
+            )
+        
+        # 更新角色權限
+        default_roles[role_id]["permissions"] = update_request.permissions
+        
+        # 更新所有使用此角色的用戶權限
+        for user_id, user_data in mock_users.items():
+            if user_data["role"] == role_id:
+                user_data["permissions"] = update_request.permissions
+                user_data["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "data": {
+                    "role": default_roles[role_id],
+                    "updated_users_count": sum(1 for user in mock_users.values() if user["role"] == role_id),
+                    "message": "角色權限已更新"
+                }
+            }
+        )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"更新角色權限失敗: {str(e)}"}
+        )
 
 
 # 影片管理端點
