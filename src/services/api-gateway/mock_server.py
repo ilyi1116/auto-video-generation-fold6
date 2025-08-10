@@ -62,6 +62,98 @@ OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech"
 GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
 GOOGLE_SEARCH_ENGINE_ID = os.getenv("GOOGLE_SEARCH_ENGINE_ID", "")
 
+# 內容日曆與排程系統數據模型
+class ContentCalendarItem(BaseModel):
+    id: Optional[str] = None
+    title: str
+    content: str
+    template_id: str
+    template_parameters: Dict
+    scheduled_date: str  # ISO format datetime
+    status: str = "draft"  # draft, scheduled, published, failed
+    platform: str
+    tags: List[str] = []
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    user_id: str = "user123"  # Mock user ID
+
+class ContentScheduleRequest(BaseModel):
+    title: str
+    template_id: str
+    template_parameters: Dict
+    scheduled_date: str
+    platform: str
+    tags: List[str] = []
+
+# 模擬內容日曆數據存儲
+content_calendar_items = {
+    "cal_001": {
+        "id": "cal_001",
+        "title": "AI科技趨勢分享",
+        "content": "🤖 2024年AI發展趨勢分析\n\n人工智慧正在快速改變我們的生活...",
+        "template_id": "social_media_post",
+        "template_parameters": {
+            "topic": "AI科技趨勢",
+            "style": "professional",
+            "tone": "informative",
+            "target_audience": "科技愛好者",
+            "length": "200",
+            "platform": "linkedin"
+        },
+        "scheduled_date": "2025-08-11T10:00:00Z",
+        "status": "scheduled",
+        "platform": "linkedin",
+        "tags": ["AI", "科技", "趨勢"],
+        "created_at": "2025-08-10T12:00:00Z",
+        "updated_at": "2025-08-10T12:00:00Z",
+        "user_id": "user123"
+    },
+    "cal_002": {
+        "id": "cal_002",
+        "title": "健康生活小貼士",
+        "content": "🌱 5個簡單的健康習慣，讓你精力充沛一整天！",
+        "template_id": "social_media_post",
+        "template_parameters": {
+            "topic": "健康生活",
+            "style": "friendly",
+            "tone": "motivational",
+            "target_audience": "一般大眾",
+            "length": "150",
+            "platform": "facebook"
+        },
+        "scheduled_date": "2025-08-12T09:00:00Z",
+        "status": "draft",
+        "platform": "facebook",
+        "tags": ["健康", "生活", "習慣"],
+        "created_at": "2025-08-10T11:30:00Z",
+        "updated_at": "2025-08-10T11:30:00Z",
+        "user_id": "user123"
+    },
+    "cal_003": {
+        "id": "cal_003",
+        "title": "產品發布預告",
+        "content": "🚀 重磅消息！我們即將發布革命性的新產品...",
+        "template_id": "ad_copy",
+        "template_parameters": {
+            "product": "智能助手應用",
+            "platform": "facebook_ads",
+            "target_audience": "25-35歲職場人士",
+            "campaign_objective": "awareness",
+            "budget_range": "1000-5000",
+            "tone": "enthusiastic",
+            "style": "professional",
+            "length": "200"
+        },
+        "scheduled_date": "2025-08-15T14:00:00Z",
+        "status": "scheduled",
+        "platform": "facebook",
+        "tags": ["產品", "發布", "廣告"],
+        "created_at": "2025-08-10T10:00:00Z",
+        "updated_at": "2025-08-10T10:00:00Z",
+        "user_id": "user123"
+    }
+}
+
 # DeepSeek API 客户端
 async def call_deepseek_api(messages, model="deepseek-chat", temperature=0.7, max_tokens=2000):
     """调用DeepSeek API生成内容"""
@@ -386,14 +478,20 @@ content_templates = {
         
 結構要求：
 1. 開頭要引人注目，激發好奇心
-2. 內容要有價值，提供實用資訊
+2. 內容要有價值，提供實用資訊  
 3. 結尾要有明確的行動呼籲
 4. 加入3-5個相關hashtags
 
 平台特性：{platform}
 目標受眾：{target_audience}
-貼文長度：{length}字以內
 語調：{tone}
+
+**重要：嚴格控制內容長度**
+- 總字數必須控制在{length}字以內
+- 請精確計算字數，包含emoji和符號
+- 如果{length}少於100字，內容要特別簡潔
+- 如果{length}超過300字，可以增加更多細節和段落
+- 生成後請確認字數符合要求
         """,
         "example": "🎯 你知道嗎？90%的成功創業者都有這個習慣...\n\n每天花10分鐘規劃明日重點，讓效率提升300%！\n\n✅ 列出3個最重要任務\n✅ 設定明確完成時間\n✅ 預留緩衝時間應對意外\n\n👇 留言分享你的時間管理秘訣！\n\n#時間管理 #創業 #效率提升 #成功習慣",
         "usage_count": 245,
@@ -466,7 +564,15 @@ content_templates = {
 - 目標客群：{target_audience}
 - 廣告目標：{campaign_objective}
 - 預算範圍：{budget_range}
-- 文案長度：{length}字以內
+- 語調：{tone}
+- 風格：{style}
+
+**重要：嚴格控制廣告長度**
+- 總字數必須控制在{length}字以內
+- 請精確計算字數，包含emoji和符號
+- 如果{length}少於150字，只保留核心賣點
+- 如果{length}超過250字，可以增加更多產品特色和優勢
+- 生成後請確認字數符合廣告平台要求
         """,
         "example": "🔥 限時優惠！專業網站設計只要9999元\n\n❌ 還在用過時的網站嗎？\n✅ 現代化響應式設計\n✅ SEO優化\n✅ 7天內完成\n\n⭐ 已服務300+滿意客戶\n💰 現在下單再送免費維護3個月\n\n⏰ 僅限本週，名額有限！\n\n👆 立即免費諮詢",
         "usage_count": 312,
@@ -1997,6 +2103,373 @@ class TemplateGenerateRequest(BaseModel):
     use_ai: Optional[bool] = True
 
 
+async def generate_content_with_precise_length(template, parameters, target_length, max_attempts=3):
+    """
+    使用迭代策略生成精確長度的內容
+    
+    Args:
+        template: 模板對象
+        parameters: 參數字典
+        target_length: 目標長度
+        max_attempts: 最大嘗試次數
+    
+    Returns:
+        生成的內容字符串
+    """
+    
+    # 設定容錯範圍：±10%
+    tolerance = 0.1
+    min_length = int(target_length * (1 - tolerance))
+    max_length = int(target_length * (1 + tolerance))
+    
+    # 根據目標長度調整 max_tokens
+    max_tokens = min(max(target_length * 2, 100), 4000)
+    
+    print(f"🎯 開始精確長度生成: 目標={target_length}字, 容許範圍={min_length}-{max_length}字")
+    
+    for attempt in range(max_attempts):
+        try:
+            # 準備提示詞，強調長度控制
+            formatted_prompt = template['prompt_template']
+            for key, value in parameters.items():
+                formatted_prompt = formatted_prompt.replace(f"{{{key}}}", str(value))
+            
+            # 根據目標長度調整提示詞策略
+            if target_length <= 50:
+                length_instruction = f"請生成恰好{target_length}字左右的簡短內容，每個字都要精煉有力。"
+            elif target_length <= 100:
+                length_instruction = f"請生成約{target_length}字的內容，內容要精簡明確，控制在{target_length}±5字範圍內。"
+            elif target_length <= 300:
+                length_instruction = f"請生成約{target_length}字的中等長度內容，控制在{min_length}-{max_length}字範圍內。"
+            else:
+                length_instruction = f"請生成約{target_length}字的詳細內容，確保字數控制在{min_length}-{max_length}字範圍內。"
+            
+            messages = [
+                {
+                    "role": "system",
+                    "content": f"""你是一個專業的{template['category']}內容創作專家，擅長創作高質量的{template['name']}。
+
+重要要求：
+1. 嚴格控制內容長度：{length_instruction}
+2. 內容要專業、吸引人且符合平台特色
+3. 請直接輸出最終內容，不要包含任何解釋或元數據
+4. 如果內容超過指定長度，請主動削減；如果不足，請適當擴展
+
+當前是第{attempt + 1}次嘗試生成。"""
+                },
+                {
+                    "role": "user",
+                    "content": formatted_prompt + f"\n\n特別提醒：請嚴格控制內容長度在{target_length}字左右（容許範圍：{min_length}-{max_length}字）"
+                }
+            ]
+            
+            # 使用動態溫度：第一次嘗試用較低溫度確保品質，後續嘗試增加創意
+            temperature = 0.3 + (attempt * 0.2)
+            
+            generated_content = await call_deepseek_api(
+                messages, 
+                temperature=temperature, 
+                max_tokens=max_tokens
+            )
+            
+            # 清理內容（移除多餘的換行和空格）
+            generated_content = '\n'.join(line.strip() for line in generated_content.split('\n') if line.strip())
+            
+            current_length = len(generated_content)
+            accuracy = 100 * (1 - abs(current_length - target_length) / target_length)
+            
+            print(f"🔍 第{attempt + 1}次生成結果: {current_length}字 (準確度: {accuracy:.1f}%)")
+            
+            # 檢查是否在容許範圍內
+            if min_length <= current_length <= max_length:
+                print(f"✅ 長度控制成功: {current_length}字 (目標: {target_length}字, 準確度: {accuracy:.1f}%)")
+                return generated_content
+            
+            # 如果不在範圍內，但是最後一次嘗試，使用智能調整
+            if attempt == max_attempts - 1:
+                if current_length > max_length:
+                    print(f"⚙️ 最終嘗試：內容過長，進行智能截斷")
+                    adjusted_content = smart_truncate_content(generated_content, target_length, template['category'])
+                    final_length = len(adjusted_content)
+                    final_accuracy = 100 * (1 - abs(final_length - target_length) / target_length)
+                    print(f"✅ 智能調整完成: {final_length}字 (準確度: {final_accuracy:.1f}%)")
+                    return adjusted_content
+                elif current_length < min_length:
+                    print(f"⚙️ 最終嘗試：內容過短，嘗試智能擴展")
+                    # 簡單的內容擴展策略
+                    if target_length <= 100:
+                        # 短內容：添加表情符號和強調
+                        expanded_content = generated_content + f"\n\n分享你的想法！"
+                    else:
+                        # 長內容：添加總結
+                        expanded_content = generated_content + f"\n\n💡 總結：以上就是關於{parameters.get('topic', '此主題')}的重點內容。"
+                    
+                    final_length = len(expanded_content)
+                    if final_length <= max_length:
+                        final_accuracy = 100 * (1 - abs(final_length - target_length) / target_length)
+                        print(f"✅ 智能擴展完成: {final_length}字 (準確度: {final_accuracy:.1f}%)")
+                        return expanded_content
+                    else:
+                        # 擴展後太長，返回原內容
+                        print(f"⚠️ 擴展後過長，返回原內容: {current_length}字")
+                        return generated_content
+            
+            # 準備下一次嘗試的策略調整
+            if current_length > max_length:
+                print(f"📝 第{attempt + 2}次將要求更簡潔的內容")
+            else:
+                print(f"📝 第{attempt + 2}次將要求更詳細的內容")
+                
+        except Exception as e:
+            print(f"❌ 第{attempt + 1}次生成失敗: {str(e)}")
+            if attempt == max_attempts - 1:
+                # 最後一次嘗試失敗，使用模板回退
+                print("🔄 使用模板回退策略")
+                fallback_content = apply_smart_template_substitution(template, parameters)
+                return smart_truncate_content(fallback_content, target_length, template['category'])
+    
+    # 理論上不會到達這裡，但作為安全回退
+    fallback_content = apply_smart_template_substitution(template, parameters)
+    return smart_truncate_content(fallback_content, target_length, template['category'])
+
+def smart_truncate_content(content, target_length, category):
+    """智能截斷內容，保持結構完整和內容比例"""
+    if len(content) <= target_length:
+        return content
+    
+    print(f"🔧 智能截斷開始: {len(content)}字 → {target_length}字 (類型: {category})")
+    
+    # 如果是超短內容(≤50字)，使用句子級別的精確截斷
+    if target_length <= 50:
+        return smart_truncate_short_content(content, target_length)
+    
+    # 如果是短到中等內容(51-200字)，使用段落級別截斷
+    elif target_length <= 200:
+        return smart_truncate_medium_content(content, target_length)
+    
+    # 長內容使用現有邏輯
+    else:
+        return smart_truncate_long_content(content, target_length, category)
+
+def smart_truncate_short_content(content, target_length):
+    """為超短內容(≤50字)進行精確截斷"""
+    # 按句號、感嘆號、問號分割
+    sentences = []
+    current = ""
+    
+    for char in content:
+        current += char
+        if char in "。！？\n":
+            if current.strip():
+                sentences.append(current.strip())
+                current = ""
+    
+    # 添加剩餘內容
+    if current.strip():
+        sentences.append(current.strip())
+    
+    # 逐句添加，直到接近目標長度
+    result = ""
+    for sentence in sentences:
+        if len(result + sentence) <= target_length:
+            result += sentence
+        else:
+            # 如果單句過長，進行字符級截斷
+            remaining = target_length - len(result)
+            if remaining > 5:  # 保留最少5字
+                # 尋找合適的斷點
+                truncated = sentence[:remaining]
+                # 避免在詞中間截斷，尋找最後一個標點或空格
+                for i in range(len(truncated) - 1, 0, -1):
+                    if truncated[i] in "，、。！？ ":
+                        truncated = truncated[:i+1]
+                        break
+                result += truncated
+            break
+    
+    # 如果結果仍然為空或太短，取原內容前部分
+    if not result or len(result) < target_length * 0.3:
+        result = content[:target_length]
+        # 嘗試在合適位置結束
+        for i in range(min(target_length, len(result)) - 1, max(1, int(target_length * 0.5)), -1):
+            if result[i] in "，、。！？ ":
+                result = result[:i+1]
+                break
+    
+    print(f"✅ 短內容截斷完成: {len(result)}字")
+    return result.strip()
+
+def smart_truncate_medium_content(content, target_length):
+    """為中等長度內容(51-200字)進行截斷"""
+    # 首先嘗試按句子精確截斷
+    sentences = []
+    current = ""
+    
+    # 分割句子（按句號、感嘆號、問號、換行）
+    for char in content:
+        current += char
+        if char in "。！？\n":
+            if current.strip():
+                sentences.append(current.strip())
+                current = ""
+    
+    # 添加剩餘內容
+    if current.strip():
+        sentences.append(current.strip())
+    
+    # 逐句添加，直到接近目標長度
+    result = ""
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+            
+        # 考慮添加這個句子
+        potential_result = result + ("\n" if result and not result.endswith("\n") else "") + sentence
+        
+        if len(potential_result) <= target_length:
+            result = potential_result
+        else:
+            # 檢查是否值得添加部分句子
+            remaining = target_length - len(result)
+            if remaining >= 15:  # 如果剩餘空間足夠
+                # 截斷當前句子到合適長度
+                truncated = sentence[:remaining]
+                # 尋找合適的截斷點（避免在詞中間）
+                for i in range(len(truncated) - 1, max(0, remaining - 10), -1):
+                    if truncated[i] in "，、。！？ ":
+                        truncated = truncated[:i+1]
+                        break
+                
+                if len(truncated) >= 10:  # 確保截斷的部分有意義
+                    result += ("\n" if result and not result.endswith("\n") else "") + truncated
+            break
+    
+    # 如果結果為空或太短，使用簡單截斷
+    if not result or len(result) < target_length * 0.6:
+        result = content[:target_length]
+        # 嘗試在標點處結束
+        for i in range(min(target_length, len(result)) - 1, max(1, int(target_length * 0.7)), -1):
+            if result[i] in "，、。！？":
+                result = result[:i+1]
+                break
+    
+    print(f"✅ 中等內容截斷完成: {len(result)}字")
+    return result.strip()
+
+def smart_truncate_long_content(content, target_length, category):
+    
+    # 按段落分割內容（用雙換行分割）
+    paragraphs = content.split('\n\n')
+    if len(paragraphs) == 1:
+        # 如果沒有段落分割，按行分割
+        paragraphs = content.split('\n')
+    
+    result_paragraphs = []
+    current_length = 0
+    
+    # 先計算每個段落的重要性
+    important_markers = ['#', '👆', '📢', '🎯', '✅', '⭐', '💰', '⏰', '🔥']
+    
+    # 第一輪：保留重要段落
+    for i, paragraph in enumerate(paragraphs):
+        paragraph = paragraph.strip()
+        if not paragraph:
+            continue
+            
+        paragraph_length = len(paragraph) + 2  # +2 for double newline
+        
+        # 檢查是否是重要段落
+        is_important = (i == 0 or  # 首段重要
+                       any(marker in paragraph for marker in important_markers) or
+                       paragraph.startswith('#'))
+        
+        # 如果是重要段落或者還有空間，就添加
+        if is_important or (current_length + paragraph_length <= target_length * 0.8):
+            if current_length + paragraph_length <= target_length:
+                result_paragraphs.append(paragraph)
+                current_length += paragraph_length
+            else:
+                # 嘗試截斷這個段落
+                remaining_space = target_length - current_length - 10  # 留10字給結尾
+                if remaining_space > 50:  # 如果剩餘空間足夠
+                    truncated_paragraph = paragraph[:remaining_space] + "..."
+                    result_paragraphs.append(truncated_paragraph)
+                break
+    
+    # 第二輪：如果內容太短，嘗試添加更多段落
+    if current_length < target_length * 0.6:
+        for paragraph in paragraphs:
+            paragraph = paragraph.strip()
+            if paragraph and paragraph not in result_paragraphs:
+                paragraph_length = len(paragraph) + 2
+                if current_length + paragraph_length <= target_length:
+                    result_paragraphs.append(paragraph)
+                    current_length += paragraph_length
+                else:
+                    break
+    
+    truncated = '\n\n'.join(result_paragraphs).strip()
+    
+    # 確保有合適的結尾
+    if len(truncated) < target_length - 10:
+        if category == 'social_media' and not any(marker in truncated for marker in ['#', '👆', '📢']):
+            if '💰' in content or '🔥' in content:
+                truncated += "\n\n立即了解更多！"
+            else:
+                truncated += "\n\n分享你的想法！"
+        elif category == 'advertising' and not any(marker in truncated.lower() for marker in ['立即', '馬上', '現在']):
+            truncated += "\n\n立即行動！"
+    
+    # 最終長度檢查和修整
+    if len(truncated) > target_length:
+        # 如果仍然過長，進行最終截斷
+        truncated = truncated[:target_length-3] + "..."
+    
+    return truncated
+
+def apply_smart_template_substitution(template, parameters):
+    """智能模板參數替換"""
+    base_content = template.get("example", "")
+    
+    # 根據主題客製化內容
+    if parameters.get('topic'):
+        topic = parameters['topic']
+        if template['category'] == 'social_media':
+            generated_content = f"🎯 關於{topic}的重要訊息...\n\n{base_content.split('...')[1] if '...' in base_content else base_content}"
+        elif template['category'] == 'advertising':
+            generated_content = f"🔥 {topic}限時優惠！\n\n{base_content}"
+        elif template['category'] == 'content_marketing':
+            generated_content = f"# {topic}完整指南\n\n在談論{topic}這個話題時，我們需要深入了解...\n\n{base_content.split('...', 1)[1] if '...' in base_content else base_content}"
+        elif template['category'] == 'email_marketing':
+            generated_content = f"主旨：關於{topic}的重要消息\n\n親愛的朋友，\n\n關於{topic}，我想與您分享...\n\n{base_content}"
+        elif template['category'] == 'video_content':
+            generated_content = f"[開場] 今天我們要談論{topic}！\n\n{base_content}"
+        elif template['category'] == 'ecommerce':
+            generated_content = f"【熱銷商品】{topic} | 限量現貨\n\n{base_content}"
+        else:
+            generated_content = base_content
+    else:
+        generated_content = base_content
+    
+    # 基本參數替換
+    for key, value in parameters.items():
+        if value:  # 只替換非空值
+            generated_content = generated_content.replace(f"{{{key}}}", value)
+            # 同時處理常見的參數變化
+            if key == 'target_audience':
+                generated_content = generated_content.replace("目標客群", value)
+                generated_content = generated_content.replace("目標受眾", value)
+            elif key == 'style':
+                if value == 'professional':
+                    generated_content = generated_content.replace("輕鬆", "專業")
+                    generated_content = generated_content.replace("親切", "正式")
+                elif value == 'casual':
+                    generated_content = generated_content.replace("專業", "輕鬆")
+                    generated_content = generated_content.replace("正式", "親切")
+    
+    return generated_content
+
 @app.post("/api/v1/templates/generate")
 async def generate_content_from_template(request: TemplateGenerateRequest):
     """使用模板生成內容"""
@@ -2018,50 +2491,91 @@ async def generate_content_from_template(request: TemplateGenerateRequest):
         template = content_templates[template_id]
         prompt_template = template["prompt_template"]
         
-        # 格式化提示詞模板
+        # 格式化提示詞模板 - 使用更智能的處理方式
         try:
-            formatted_prompt = prompt_template.format(**parameters)
+            # 填充預設值
+            safe_parameters = parameters.copy()
+            
+            # 為常見缺失參數提供預設值
+            if 'product' not in safe_parameters and safe_parameters.get('topic'):
+                safe_parameters['product'] = safe_parameters['topic']
+            if 'campaign_objective' not in safe_parameters:
+                safe_parameters['campaign_objective'] = '提升品牌知名度'
+            if 'budget_range' not in safe_parameters:
+                safe_parameters['budget_range'] = '中等預算'
+            if 'keywords' not in safe_parameters and safe_parameters.get('topic'):
+                safe_parameters['keywords'] = safe_parameters['topic']
+            if 'word_count' not in safe_parameters and safe_parameters.get('length'):
+                safe_parameters['word_count'] = safe_parameters['length']
+            if 'duration' not in safe_parameters:
+                safe_parameters['duration'] = '60'
+            if 'price_range' not in safe_parameters:
+                safe_parameters['price_range'] = '合理價格'
+            if 'category' not in safe_parameters:
+                safe_parameters['category'] = template['category']
+            if 'competitive_advantage' not in safe_parameters:
+                safe_parameters['competitive_advantage'] = '品質優良'
+            if 'email_type' not in safe_parameters:
+                safe_parameters['email_type'] = '促銷'
+            if 'email_goal' not in safe_parameters:
+                safe_parameters['email_goal'] = '增加互動'
+            if 'recipient_type' not in safe_parameters:
+                safe_parameters['recipient_type'] = '潛在客戶'
+            
+            formatted_prompt = prompt_template.format(**safe_parameters)
         except KeyError as e:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "Missing parameter",
-                    "message": f"Required parameter missing: {e}"
+            print(f"⚠️ 仍有缺失參數 {e}，使用智能回退")
+            # 直接使用智能模板替換而不用 AI
+            generated_content = apply_smart_template_substitution(template, parameters)
+            provider = "Smart Template (Missing Params)"
+            
+            # 更新使用統計
+            content_templates[template_id]["usage_count"] = content_templates[template_id].get("usage_count", 0) + 1
+            content_templates[template_id]["updated_at"] = datetime.now().isoformat() + "Z"
+            
+            return JSONResponse({
+                "success": True,
+                "data": {
+                    "content": generated_content,
+                    "template_used": {
+                        "id": template_id,
+                        "name": template["name"],
+                        "category": template["category"]
+                    },
+                    "parameters_used": parameters,
+                    "generation_info": {
+                        "provider": provider,
+                        "use_ai": use_ai,
+                        "generated_at": datetime.now().isoformat() + "Z",
+                        "content_length": len(generated_content),
+                        "word_count": len(generated_content.split()),
+                        "note": f"Missing parameter {e}, used smart template substitution"
+                    }
                 }
-            )
+            })
         
         generated_content = ""
         provider = "Mock Generator"
         
         if use_ai and DEEPSEEK_API_KEY:
             try:
-                messages = [
-                    {
-                        "role": "system",
-                        "content": f"你是一個專業的{template['category']}內容創作專家，擅長創作高質量的{template['name']}。請根據用戶的要求創作內容，確保內容專業、吸引人且符合平台特色。"
-                    },
-                    {
-                        "role": "user",
-                        "content": formatted_prompt
-                    }
-                ]
-                
-                generated_content = await call_deepseek_api(messages)
-                provider = "DeepSeek AI"
-                print(f"✅ 使用AI生成內容成功: {template['name']}")
+                # 使用新的精確長度控制AI生成
+                target_length = int(parameters.get('length', '200'))
+                generated_content = await generate_content_with_precise_length(
+                    template, parameters, target_length
+                )
+                provider = "DeepSeek AI (Precise Length)"
+                    
+                print(f"✅ 使用精確長度AI生成成功: {template['name']} ({len(generated_content)}字)")
                 
             except Exception as e:
-                print(f"⚠️ AI生成失敗，使用模板示例: {e}")
-                generated_content = template.get("example", "內容生成失敗")
-                provider = "Template Example"
+                print(f"⚠️ 精確AI生成失敗，使用智能模板回退: {e}")
+                generated_content = apply_smart_template_substitution(template, parameters)
+                provider = "Smart Template Fallback"
         else:
-            # 使用模板示例或簡單的參數替換
-            generated_content = template.get("example", "")
-            # 簡單的參數替換
-            for key, value in parameters.items():
-                generated_content = generated_content.replace(f"{{{key}}}", value)
-            provider = "Template Based"
+            # 使用智能模板替換
+            generated_content = apply_smart_template_substitution(template, parameters)
+            provider = "Smart Template Based"
         
         # 更新使用統計
         content_templates[template_id]["usage_count"] = content_templates[template_id].get("usage_count", 0) + 1
@@ -2159,6 +2673,375 @@ async def get_template_categories():
         )
 
 
+# ==========================================
+# 內容日曆與排程系統 API 端點
+# ==========================================
+
+@app.get("/api/v1/calendar")
+async def get_calendar_items(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    status: Optional[str] = None,
+    platform: Optional[str] = None
+):
+    """獲取內容日曆列表"""
+    try:
+        items = list(content_calendar_items.values())
+        
+        # 按日期排序
+        items.sort(key=lambda x: x["scheduled_date"])
+        
+        # 篩選條件
+        if start_date:
+            items = [item for item in items if item["scheduled_date"] >= start_date]
+        if end_date:
+            items = [item for item in items if item["scheduled_date"] <= end_date]
+        if status:
+            items = [item for item in items if item["status"] == status]
+        if platform:
+            items = [item for item in items if item["platform"] == platform]
+        
+        # 統計信息
+        status_counts = {}
+        platform_counts = {}
+        
+        for item in content_calendar_items.values():
+            status = item["status"]
+            platform = item["platform"]
+            
+            status_counts[status] = status_counts.get(status, 0) + 1
+            platform_counts[platform] = platform_counts.get(platform, 0) + 1
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "items": items,
+                "total": len(items),
+                "statistics": {
+                    "status_counts": status_counts,
+                    "platform_counts": platform_counts,
+                    "upcoming_today": len([
+                        item for item in content_calendar_items.values()
+                        if item["scheduled_date"].startswith("2025-08-10") and item["status"] == "scheduled"
+                    ]),
+                    "total_scheduled": len([
+                        item for item in content_calendar_items.values()
+                        if item["status"] == "scheduled"
+                    ])
+                }
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 獲取日曆內容錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to get calendar items",
+                "message": str(e)
+            }
+        )
+
+
+@app.post("/api/v1/calendar/schedule")
+async def schedule_content(request: ContentScheduleRequest):
+    """排程新內容"""
+    try:
+        # 生成唯一ID
+        new_id = f"cal_{int(time.time())}"
+        
+        # 使用模板生成內容
+        try:
+            # 首先生成實際內容
+            generate_response = await generate_content_with_precise_length(
+                template_id=request.template_id,
+                parameters=request.template_parameters,
+                target_length=int(request.template_parameters.get("length", "200")),
+                max_attempts=2
+            )
+            
+            generated_content = generate_response.get("content", "生成內容失敗")
+            
+        except Exception as gen_error:
+            print(f"⚠️ 內容生成失敗，使用預設內容: {gen_error}")
+            generated_content = f"📅 排程內容：{request.title}\n\n這是一個排程的內容項目，將在指定時間發布。"
+        
+        # 創建日曆項目
+        new_item = {
+            "id": new_id,
+            "title": request.title,
+            "content": generated_content,
+            "template_id": request.template_id,
+            "template_parameters": request.template_parameters,
+            "scheduled_date": request.scheduled_date,
+            "status": "scheduled",
+            "platform": request.platform,
+            "tags": request.tags,
+            "created_at": datetime.utcnow().isoformat() + "Z",
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "user_id": "user123"
+        }
+        
+        # 保存到存儲
+        content_calendar_items[new_id] = new_item
+        
+        print(f"✅ 成功排程內容: {request.title} at {request.scheduled_date}")
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "item": new_item,
+                "message": f"內容已成功排程到 {request.scheduled_date}"
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 排程內容錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to schedule content",
+                "message": str(e)
+            }
+        )
+
+
+@app.get("/api/v1/calendar/analytics")
+async def get_calendar_analytics():
+    """獲取內容日曆分析數據"""
+    try:
+        items = list(content_calendar_items.values())
+        
+        # 按狀態統計
+        status_stats = {}
+        platform_stats = {}
+        monthly_stats = {}
+        tag_stats = {}
+        
+        for item in items:
+            # 狀態統計
+            status = item["status"]
+            status_stats[status] = status_stats.get(status, 0) + 1
+            
+            # 平台統計
+            platform = item["platform"]
+            platform_stats[platform] = platform_stats.get(platform, 0) + 1
+            
+            # 月度統計
+            month = item["scheduled_date"][:7]  # YYYY-MM
+            monthly_stats[month] = monthly_stats.get(month, 0) + 1
+            
+            # 標籤統計
+            for tag in item.get("tags", []):
+                tag_stats[tag] = tag_stats.get(tag, 0) + 1
+        
+        # 排程趨勢
+        upcoming_7_days = []
+        today = datetime.utcnow()
+        for i in range(7):
+            date = (today + timedelta(days=i)).strftime("%Y-%m-%d")
+            count = len([
+                item for item in items 
+                if item["scheduled_date"].startswith(date) and item["status"] == "scheduled"
+            ])
+            upcoming_7_days.append({"date": date, "count": count})
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "total_items": len(items),
+                "status_distribution": status_stats,
+                "platform_distribution": platform_stats,
+                "monthly_distribution": monthly_stats,
+                "tag_distribution": dict(sorted(tag_stats.items(), key=lambda x: x[1], reverse=True)[:10]),
+                "upcoming_7_days": upcoming_7_days,
+                "performance_metrics": {
+                    "completion_rate": round(
+                        (status_stats.get("published", 0) / max(len(items), 1)) * 100, 1
+                    ),
+                    "avg_daily_posts": round(len(items) / 30, 1),  # 假設30天期間
+                    "most_active_platform": max(platform_stats.items(), key=lambda x: x[1])[0] if platform_stats else "N/A"
+                }
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 獲取日曆分析錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to get calendar analytics",
+                "message": str(e)
+            }
+        )
+
+
+@app.get("/api/v1/calendar/{item_id}")
+async def get_calendar_item(item_id: str):
+    """獲取特定日曆項目詳情"""
+    try:
+        if item_id not in content_calendar_items:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Calendar item not found",
+                    "message": f"找不到ID為 {item_id} 的日曆項目"
+                }
+            )
+        
+        item = content_calendar_items[item_id]
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "item": item
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 獲取日曆項目錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to get calendar item",
+                "message": str(e)
+            }
+        )
+
+
+@app.put("/api/v1/calendar/{item_id}")
+async def update_calendar_item(item_id: str, updated_item: ContentCalendarItem):
+    """更新日曆項目"""
+    try:
+        if item_id not in content_calendar_items:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Calendar item not found",
+                    "message": f"找不到ID為 {item_id} 的日曆項目"
+                }
+            )
+        
+        # 保留原有的創建時間和ID
+        original_item = content_calendar_items[item_id]
+        updated_data = updated_item.model_dump()
+        updated_data["id"] = item_id
+        updated_data["created_at"] = original_item["created_at"]
+        updated_data["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        
+        # 更新存儲
+        content_calendar_items[item_id] = updated_data
+        
+        print(f"✅ 成功更新日曆項目: {item_id}")
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "item": updated_data,
+                "message": "日曆項目已成功更新"
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 更新日曆項目錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to update calendar item",
+                "message": str(e)
+            }
+        )
+
+
+@app.delete("/api/v1/calendar/{item_id}")
+async def delete_calendar_item(item_id: str):
+    """刪除日曆項目"""
+    try:
+        if item_id not in content_calendar_items:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Calendar item not found",
+                    "message": f"找不到ID為 {item_id} 的日曆項目"
+                }
+            )
+        
+        deleted_item = content_calendar_items.pop(item_id)
+        
+        print(f"✅ 成功刪除日曆項目: {item_id}")
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "deleted_item": deleted_item,
+                "message": "日曆項目已成功刪除"
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 刪除日曆項目錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to delete calendar item",
+                "message": str(e)
+            }
+        )
+
+
+@app.post("/api/v1/calendar/{item_id}/publish")
+async def publish_calendar_item(item_id: str):
+    """立即發布日曆項目"""
+    try:
+        if item_id not in content_calendar_items:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Calendar item not found",
+                    "message": f"找不到ID為 {item_id} 的日曆項目"
+                }
+            )
+        
+        # 模擬發布過程
+        item = content_calendar_items[item_id]
+        
+        # 更新狀態為已發布
+        item["status"] = "published"
+        item["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        item["published_at"] = datetime.utcnow().isoformat() + "Z"
+        
+        print(f"✅ 成功發布內容: {item['title']} 到 {item['platform']}")
+        
+        return JSONResponse({
+            "success": True,
+            "data": {
+                "item": item,
+                "message": f"內容已成功發布到 {item['platform']}"
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ 發布內容錯誤: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Failed to publish content",
+                "message": str(e)
+            }
+        )
+
+
 if __name__ == "__main__":
     import uvicorn
 
@@ -2179,12 +3062,29 @@ if __name__ == "__main__":
     print("   📥 Video Management:")
     print("   - Download: GET http://localhost:8001/api/v1/videos/{video_id}/download")
     print("   - Details: GET http://localhost:8001/api/v1/videos/{video_id}")
+    print("   📋 Template System:")
+    print("   - Templates: GET http://localhost:8001/api/v1/templates")
+    print("   - Generate: POST http://localhost:8001/api/v1/templates/generate")
+    print("   📅 Content Calendar (NEW!):")
+    print("   - Calendar: GET http://localhost:8001/api/v1/calendar")
+    print("   - Schedule: POST http://localhost:8001/api/v1/calendar/schedule")
+    print("   - Item Details: GET http://localhost:8001/api/v1/calendar/{item_id}")
+    print("   - Update Item: PUT http://localhost:8001/api/v1/calendar/{item_id}")
+    print("   - Delete Item: DELETE http://localhost:8001/api/v1/calendar/{item_id}")
+    print("   - Publish: POST http://localhost:8001/api/v1/calendar/{item_id}/publish")
+    print("   - Analytics: GET http://localhost:8001/api/v1/calendar/analytics")
     print("\n🌐 CORS enabled for:")
     print("   - http://localhost:3000 (SvelteKit dev)")
     print("   - http://localhost:5173 (Vite dev)")
     print("\n📧 Demo credentials:")
     print("   Email: demo@example.com")
     print("   Password: demo123")
+    print("\n📅 Content Calendar Features:")
+    print("   - ✅ 內容排程與日曆視圖")
+    print("   - ✅ 多平台發布支援")  
+    print("   - ✅ 標籤分類管理")
+    print("   - ✅ 分析統計報表")
+    print("   - ✅ 即時發布功能")
 
     uvicorn.run(
         "mock_server:app",
