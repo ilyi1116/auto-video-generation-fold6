@@ -1,0 +1,123 @@
+{
+  "test_summary": {
+    "total_tests": 12,
+    "passed_tests": 6,
+    "failed_tests": 6,
+    "success_rate": "50.0%"
+  },
+  "engines_available": false,
+  "test_results": [
+    {
+      "test_name": "MoviePy Import",
+      "status": "\u274c FAILED",
+      "success": false,
+      "message": "MoviePy not available - video processing will be limited",
+      "details": {},
+      "timestamp": 1754921172.9257312
+    },
+    {
+      "test_name": "PIL Import",
+      "status": "\u2705 PASSED",
+      "success": true,
+      "message": "PIL/Pillow successfully imported",
+      "details": {},
+      "timestamp": 1754921172.925753
+    },
+    {
+      "test_name": "NumPy Import",
+      "status": "\u2705 PASSED",
+      "success": true,
+      "message": "NumPy successfully imported",
+      "details": {
+        "version": "2.0.2"
+      },
+      "timestamp": 1754921172.9257689
+    },
+    {
+      "test_name": "librosa Import",
+      "status": "\u2705 PASSED",
+      "success": true,
+      "message": "Advanced audio analysis available",
+      "details": {},
+      "timestamp": 1754921172.9288168
+    },
+    {
+      "test_name": "cv2 Import",
+      "status": "\u2705 PASSED",
+      "success": true,
+      "message": "Computer vision operations available",
+      "details": {},
+      "timestamp": 1754921172.9288561
+    },
+    {
+      "test_name": "scipy Import",
+      "status": "\u2705 PASSED",
+      "success": true,
+      "message": "Scientific computing available",
+      "details": {},
+      "timestamp": 1754921173.023811
+    },
+    {
+      "test_name": "Video Engine Test",
+      "status": "\u274c FAILED",
+      "success": false,
+      "message": "Video engine not available",
+      "details": {},
+      "timestamp": 1754921173.023885
+    },
+    {
+      "test_name": "Effects System Test",
+      "status": "\u274c FAILED",
+      "success": false,
+      "message": "Effects system not available",
+      "details": {},
+      "timestamp": 1754921173.0239098
+    },
+    {
+      "test_name": "Audio Sync Engine Test",
+      "status": "\u274c FAILED",
+      "success": false,
+      "message": "Audio sync engine not available",
+      "details": {},
+      "timestamp": 1754921173.023929
+    },
+    {
+      "test_name": "Batch Processor Test",
+      "status": "\u274c FAILED",
+      "success": false,
+      "message": "Batch processor not available",
+      "details": {},
+      "timestamp": 1754921173.023948
+    },
+    {
+      "test_name": "System Integration Test",
+      "status": "\u274c FAILED",
+      "success": false,
+      "message": "Advanced modules not available for integration test",
+      "details": {},
+      "timestamp": 1754921173.023965
+    },
+    {
+      "test_name": "Performance Benchmarks",
+      "status": "\u2705 PASSED",
+      "success": true,
+      "message": "Completed 2 performance tests",
+      "details": {
+        "benchmarks": [
+          {
+            "test": "NumPy Matrix Multiplication",
+            "time": 0.856778621673584,
+            "operations_per_second": 1.167162642371556
+          },
+          {
+            "test": "PIL Image Processing",
+            "time": 0.03539609909057617,
+            "operations_per_second": 28.2517007719147
+          }
+        ]
+      },
+      "timestamp": 1754921173.916178
+    }
+  ],
+  "generated_at": 1754921173.916935
+}
