@@ -229,7 +229,7 @@ jobs:
     
     steps:
     - name: 📥 Download All Reports
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v5
       with:
         path: security-reports
 
