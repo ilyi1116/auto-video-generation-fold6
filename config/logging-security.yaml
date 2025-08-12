@@ -1,0 +1,176 @@
+# 安全日誌配置 - 防止敏感數據洩露
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  secure:
+    class: src.shared.log_security.SecurityLogFormatter
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+  json_secure:
+    class: src.shared.log_security.SecurityLogFormatter
+    format: '{"timestamp":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","function":"%(funcName)s","line":%(lineno)d,"message":"%(message)s"}'
+    datefmt: '%Y-%m-%dT%H:%M:%S'
+
+filters:
+  sensitive_data:
+    class: src.shared.log_security.SensitiveDataFilter
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: secure
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: secure
+    filename: logs/application.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+  security_file:
+    class: logging.handlers.RotatingFileHandler
+    level: WARNING
+    formatter: json_secure
+    filename: logs/security.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 10
+    encoding: utf8
+
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: json_secure
+    filename: logs/errors.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 10
+    encoding: utf8
+
+loggers:
+  # 應用程式日誌
+  src:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  # 安全審計日誌
+  security_audit:
+    level: INFO
+    handlers: [security_file]
+    propagate: false
+
+  # FastAPI 日誌
+  uvicorn:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  uvicorn.access:
+    level: INFO
+    handlers: [file]
+    propagate: false
+
+  uvicorn.error:
+    level: WARNING
+    handlers: [console, error_file]
+    propagate: false
+
+  # 資料庫日誌
+  sqlalchemy:
+    level: WARNING
+    handlers: [file]
+    propagate: false
+
+  sqlalchemy.engine:
+    level: WARNING
+    handlers: [file]
+    propagate: false
+
+  # Redis 日誌
+  aioredis:
+    level: INFO
+    handlers: [file]
+    propagate: false
+
+  # 第三方服務日誌
+  openai:
+    level: WARNING
+    handlers: [file]
+    propagate: false
+
+  httpx:
+    level: WARNING
+    handlers: [file]
+    propagate: false
+
+root:
+  level: INFO
+  handlers: [console, file, error_file]
+
+# 安全日誌規則
+security_rules:
+  # 自動遮罩的敏感數據類型
+  sensitive_data_types:
+    - api_keys
+    - passwords
+    - tokens
+    - secrets
+    - emails
+    - credit_cards
+    - ssn
+
+  # 需要特殊處理的日誌級別
+  sensitive_levels:
+    - ERROR
+    - CRITICAL
+    - WARNING
+
+  # 安全事件類型
+  security_events:
+    authentication:
+      - login_success
+      - login_failure
+      - logout
+      - password_change
+      - account_lockout
+
+    authorization:
+      - access_denied
+      - privilege_escalation
+      - resource_access
+
+    data_access:
+      - sensitive_data_access
+      - data_export
+      - data_modification
+
+    system:
+      - configuration_change
+      - service_start
+      - service_stop
+      - error_threshold_exceeded
+
+  # 告警規則
+  alerts:
+    failed_login_threshold: 5
+    error_rate_threshold: 10
+    sensitive_data_access_threshold: 3
+
+# 日誌保留政策
+retention:
+  application_logs: 30  # 天
+  security_logs: 90     # 天
+  error_logs: 60        # 天
+  access_logs: 7        # 天
+
+# 日誌歸檔配置
+archival:
+  enabled: true
+  compression: gzip
+  archive_after_days: 7
+  delete_after_days: 365

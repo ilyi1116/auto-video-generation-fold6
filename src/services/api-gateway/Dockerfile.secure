@@ -1,0 +1,122 @@
+# 安全強化的 API Gateway Dockerfile
+# 多階段構建，最小化攻擊面
+
+# ===========================================
+# Stage 1: 建置階段
+# ===========================================
+FROM python:3.11-slim as builder
+
+# 建立建置用戶
+RUN groupadd -r builder && useradd -r -g builder builder
+
+# 安裝建置依賴
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# 設定工作目錄
+WORKDIR /build
+
+# 複製依賴文件
+COPY pyproject.toml ./
+COPY requirements.txt ./
+
+# 建立虛擬環境並安裝依賴
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 安裝 Python 依賴
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ===========================================
+# Stage 2: 運行階段 (安全最小化)
+# ===========================================
+FROM python:3.11-slim as runtime
+
+# 建立應用用戶和群組
+ARG USER_ID=1001
+ARG GROUP_ID=1001
+RUN groupadd -r -g ${GROUP_ID} appuser && \
+    useradd -r -u ${USER_ID} -g appuser -s /bin/false -c "Application User" appuser
+
+# 安裝運行時必要套件
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# 從建置階段複製虛擬環境
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 設定工作目錄
+WORKDIR /app
+
+# 建立必要目錄並設定權限
+RUN mkdir -p /app/logs /app/temp /app/certs && \
+    chown -R appuser:appuser /app
+
+# 複製應用程式檔案
+COPY --chown=appuser:appuser ./app /app/app
+COPY --chown=appuser:appuser ./main.py /app/
+COPY --chown=appuser:appuser ./requirements.txt /app/
+
+# 設定安全環境變數
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app \
+    PATH="/opt/venv/bin:$PATH" \
+    # 安全設定
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# 設定檔案權限
+RUN chmod -R 755 /app && \
+    chmod -R 700 /app/logs && \
+    chmod -R 700 /app/temp && \
+    chmod -R 700 /app/certs && \
+    find /app -name "*.py" -exec chmod 644 {} \; && \
+    chmod 755 /app/main.py
+
+# 健康檢查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 暴露端口
+EXPOSE 8000
+
+# 切換到非特權用戶
+USER appuser
+
+# 設定入口點
+ENTRYPOINT ["python", "main.py"]
+
+# 預設命令
+CMD ["--host", "0.0.0.0", "--port", "8000"]
+
+# ===========================================
+# 安全標籤和元數據
+# ===========================================
+LABEL maintainer="Auto Video AI Team" \
+      version="1.0.0" \
+      description="Secure API Gateway Service" \
+      security.scan="enabled" \
+      security.non-root="true" \
+      security.readonly="recommended"
+
+# 安全注意事項：
+# 1. 使用多階段構建減少攻擊面
+# 2. 非 root 用戶運行 (appuser:1001)
+# 3. 最小化基礎映像 (python:3.11-slim)
+# 4. 清理不必要的套件和快取
+# 5. 設定適當的檔案權限
+# 6. 禁用 Python 位元組碼寫入
+# 7. 啟用健康檢查
+# 8. 使用 PYTHONHASHSEED=random 增強安全性
