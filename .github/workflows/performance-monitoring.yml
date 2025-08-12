@@ -416,7 +416,7 @@ jobs:
     
     steps:
     - name: 📥 Download All Results
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v5
       with:
         path: performance-results
 
