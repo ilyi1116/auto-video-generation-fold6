@@ -92,7 +92,8 @@
       "Bash(cd:*)",
       "Bash(./start_mvp.sh:*)",
       "Bash(./test_user_flow.sh:*)",
-      "Bash(./status_system.sh)"
+      "Bash(./status_system.sh)",
+      "Bash(pre-commit:*)"
     ],
     "deny": []
   }

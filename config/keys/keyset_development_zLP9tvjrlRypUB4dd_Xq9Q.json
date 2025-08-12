@@ -1,0 +1,16 @@
+{
+  "environment": "development",
+  "generated_at": "2025-08-12T03:23:00.474572",
+  "key_id": "zLP9tvjrlRypUB4dd_Xq9Q",
+  "keys": {
+    "jwt_algorithm": "HS256",
+    "jwt_secret_key": "Kh2XpyVf_IBaLEn0PajhCZVSNmZ7YYlbz9-QyHLgQAw=",
+    "session_key": "XpcNRSPiPm375CUTt3k8-bFAxGTZMU-ulk_lj4z7Sn4=",
+    "db_encryption_key": "F6-jLzMp5Q-NpvqD54PAFSZgnvoQfR_l0UvWCZ2NiPQ=",
+    "api_key_encryption": "ykbqOWE6wITP19VbLbAjJzosJh3qdhP3mYvhRFFLGvw=",
+    "csrf_key": "WZhCOqeMNcnmgn_XAmZBrw==",
+    "password_reset_key": "xp1avNeozYrnFO_05YCqa8eC3y6VE6HZwbWIVLtsLYw=",
+    "email_verification_key": "z4aR-BX0s-W0d0fgQso-PP5sEkmjTpLp4AGtN9_XfmM=",
+    "file_upload_key": "FhOBntnwP6SBpd_vNoBiuwbyWO7HxPZsV6m-g_8aUIw="
+  }
+}

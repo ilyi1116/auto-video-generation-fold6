@@ -1,0 +1,166 @@
+# Cache Configuration for Auto Video Generation System
+# 緩存配置 - 多層次緩存策略
+
+# Redis Configuration
+redis:
+  url: "redis://localhost:6379/0"
+  connection_pool_size: 20
+  timeout_seconds: 5
+  retry_attempts: 3
+  max_memory_policy: "allkeys-lru"
+
+# Cache Settings
+cache:
+  default_ttl: 3600  # 1 hour
+  key_prefix: "av_cache:"
+  compression_enabled: true
+  serialization_format: "json"  # json or pickle
+  
+  # Cache warming
+  warming:
+    enabled: true
+    batch_size: 100
+    
+  # Performance settings
+  performance:
+    enable_monitoring: true
+    slow_query_threshold: 1.0  # seconds
+    max_memory_usage: "512mb"
+
+# Cache TTL Settings by Data Type (seconds)
+ttl_settings:
+  # User data
+  user_profile: 3600      # 1 hour
+  user_preferences: 7200  # 2 hours
+  user_subscription: 1800 # 30 minutes
+  
+  # Video projects
+  video_metadata: 3600    # 1 hour
+  video_thumbnails: 86400 # 24 hours
+  video_analytics: 1800   # 30 minutes
+  
+  # AI service responses
+  ai_text_generation: 7200    # 2 hours
+  ai_image_generation: 14400  # 4 hours
+  ai_voice_synthesis: 3600    # 1 hour
+  
+  # Trending data
+  trending_keywords: 1800     # 30 minutes
+  platform_trends: 3600      # 1 hour
+  viral_content: 900          # 15 minutes
+  
+  # System data
+  api_rate_limits: 300        # 5 minutes
+  health_checks: 60           # 1 minute
+  configuration: 1800         # 30 minutes
+
+# Cache Warming Strategies
+warming_strategies:
+  # Popular user data
+  popular_users:
+    enabled: true
+    schedule: "0 */6 * * *"  # Every 6 hours
+    batch_size: 50
+    
+  # Trending content
+  trending_data:
+    enabled: true
+    schedule: "*/15 * * * *"  # Every 15 minutes
+    platforms: ["youtube", "tiktok", "instagram"]
+    
+  # System configuration
+  system_config:
+    enabled: true
+    schedule: "0 0 * * *"  # Daily
+    
+# Cache Invalidation Rules
+invalidation:
+  # User-triggered invalidation
+  user_profile_update:
+    patterns: ["user:{user_id}:*"]
+    
+  video_project_update:
+    patterns: ["video:{video_id}:*", "user:{user_id}:videos:*"]
+    
+  subscription_change:
+    patterns: ["user:{user_id}:subscription:*", "user:{user_id}:limits:*"]
+    
+  # Time-based invalidation
+  trending_data_refresh:
+    schedule: "*/30 * * * *"  # Every 30 minutes
+    patterns: ["trending:*"]
+    
+# Cache Monitoring
+monitoring:
+  enabled: true
+  metrics:
+    - hit_rate
+    - miss_rate
+    - memory_usage
+    - connection_count
+    - slow_operations
+    
+  alerts:
+    low_hit_rate:
+      threshold: 70  # percent
+      action: "log_warning"
+      
+    high_memory_usage:
+      threshold: 80  # percent
+      action: "clear_expired"
+      
+    connection_pool_exhaustion:
+      threshold: 95  # percent
+      action: "scale_pool"
+
+# Environment-specific overrides
+environments:
+  development:
+    redis:
+      url: "redis://localhost:6379/15"
+    cache:
+      default_ttl: 600  # Shorter TTL for development
+      
+  testing:
+    redis:
+      url: "redis://localhost:6379/14"
+    cache:
+      default_ttl: 60   # Very short TTL for testing
+      compression_enabled: false
+      
+  production:
+    redis:
+      connection_pool_size: 50
+      max_memory_policy: "allkeys-lru"
+    cache:
+      default_ttl: 7200  # Longer TTL for production
+      compression_enabled: true
+    monitoring:
+      enabled: true
+      
+# Cache Backup and Recovery
+backup:
+  enabled: false  # Enable for critical production data
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 7
+  compression: true
+  
+# Performance Tuning
+performance_tuning:
+  # Connection pooling
+  connection_pool:
+    min_size: 5
+    max_size: 20
+    recycle_time: 3600
+    
+  # Memory management
+  memory:
+    max_memory: "1gb"
+    eviction_policy: "allkeys-lru"
+    lazy_expiration: true
+    
+  # Network optimization
+  network:
+    tcp_keepalive: true
+    compression: true
+    pipeline_size: 100

@@ -93,9 +93,14 @@ test = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
+    "pytest-xdist>=3.3.1",  # Parallel testing support
+    "pytest-timeout>=2.2.0",  # Test timeout support
+    "pytest-benchmark>=4.0.0",  # Performance benchmarking
+    "pytest-randomly>=3.15.0",  # Random test order
     "httpx>=0.25.0",
     "faker>=19.12.0",
     "coverage>=7.3.0",
+    "factory-boy>=3.3.0",  # Test data factories
 ]
 
 docs = [
@@ -134,7 +139,7 @@ reporting = [
 ]
 
 [tool.black]
-line-length = 79
+line-length = 100
 target-version = ['py311']
 include = '\.pyi?$'
 extend-exclude = '''
@@ -158,7 +163,7 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
-line_length = 79
+line_length = 100
 
 [tool.mypy]
 python_version = "3.11"
@@ -181,21 +186,43 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
+    "--tb=short",
     "--cov=src",
     "--cov-branch",
-    "--cov-report=term-missing",
+    "--cov-report=term-missing:skip-covered",
     "--cov-report=html:htmlcov",
     "--cov-report=xml",
     "--cov-fail-under=80",
+    # Parallel testing optimization
+    "-n", "auto",
+    # Smart test selection
+    "--lf",
+    "--ff",
+    # Performance monitoring
+    "--durations=10",
+    "--durations-min=1.0",
 ]
 testpaths = ["src/services/*/tests", "tests"]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-    "e2e: marks tests as end-to-end tests",
+    "unit: Unit tests - fast, isolated tests",
+    "integration: Integration tests - test service interactions", 
+    "e2e: End-to-end tests - full system tests (slow)",
+    "slow: Slow tests - typically >5 seconds",
+    "api: API endpoint tests",
+    "database: Database interaction tests",
+    "auth: Authentication and authorization tests",
+    "security: Security-related tests",
+    "performance: Performance benchmark tests",
+    "smoke: Smoke tests for basic functionality",
 ]
 asyncio_mode = "auto"
+timeout = 300
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "error::sqlalchemy.exc.SAWarning",
+]
 
 [tool.coverage.run]
 source = ["src/"]
@@ -241,7 +268,7 @@ skips = ["*_test.py", "test_*.py"]
 # Ruff 現代 Python 檢查工具配置
 [tool.ruff]
 target-version = "py311"
-line-length = 79
+line-length = 100
 exclude = [
     ".bzr",
     ".direnv",
@@ -290,7 +317,7 @@ max-complexity = 10
 
 # Flake8 配置
 [tool.flake8]
-max-line-length = 79
+max-line-length = 100
 extend-ignore = ["E203", "W503", "E501", "E302", "W391"]
 exclude = [
     ".git",
